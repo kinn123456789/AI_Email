@@ -1,37 +1,44 @@
 import smtplib
-import os
-
 from email.mime.text import MIMEText
-from dotenv import load_dotenv
 
-load_dotenv()
+def send_email(
+    from_email,
+    password,
+    to_email,
+    subject,
+    body
+):
 
-EMAIL = os.getenv("EMAIL")
-APP_PASSWORD = os.getenv("APP_PASSWORD")
+    try:
 
+        msg = MIMEText(body)
 
-def send_email(to_email, subject, body):
+        msg["Subject"] = subject
+        msg["From"] = from_email
+        msg["To"] = to_email
 
-    msg = MIMEText(body)
+        with smtplib.SMTP_SSL(
+            "smtp.gmail.com",
+            465#smtp port number
+        ) as server:
 
-    msg["From"] = EMAIL
-    msg["To"] = to_email
-    msg["Subject"] = subject
+            server.login(
+                from_email,
+                password
+            )
 
-    server = smtplib.SMTP(
-        "smtp.gmail.com",
-        587
-    )
+            server.send_message(msg)
 
-    server.starttls()
+        print(
+            f"Email sent from {from_email} to {to_email}"
+        )
 
-    server.login(
-        EMAIL,
-        APP_PASSWORD
-    )
+        return True
 
-    server.send_message(msg)
+    except Exception as e:
 
-    server.quit()
+        print(
+            f"Send Email Error: {e}"
+        )
 
-    print("Email sent!")
+        return False

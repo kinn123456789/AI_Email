@@ -21,7 +21,7 @@ app = FastAPI()
 
 @app.get("/")
 def home():
-    return {"message": "AI Triage Running"}
+    return {"message": "AI Email Agent Running"}
 
 @app.get("/emails")
 def emails():
@@ -40,26 +40,7 @@ def emails():
         })
 
     return result
-@app.get("/email/{email_id}")
-def view_email(request: Request, email_id: int):
-    # Fetch the full email details including the AI draft
-    email_data = get_email_by_id(email_id) # Ensure this returns [id, sender, subject, body, category, ai_summary, ai_draft_reply]
-    
-    return templates.TemplateResponse(
-        "email_detail.html",
-        {
-            "request": request,
-            "email": email_data
-        }
-    )
 
-@app.post("/email/{email_id}/send")
-def send_reply(email_id: int, request: Request):
-    # This route will be triggered by a "Send" button on your dashboard
-    # 1. Fetch the final edited reply from a form
-    # 2. Call your send_email function
-    # 3. Redirect back to /dashboard
-    return RedirectResponse(url="/dashboard")
 @app.get("/dashboard")
 def dashboard(request: Request):
 
@@ -77,7 +58,46 @@ def dashboard(request: Request):
             "counts": counts
         }
     )
-    
+    rows = get_emails()
+    counts = get_category_counts()
+
+    html = "<h1>AI Email Dashboard</h1>"
+    html += "<h2>Category Summary</h2>"
+
+    for category, count in counts:
+        html += f"""
+        <p>
+            <a href="/category/{category}">
+                {category}: {count}
+            </a>
+        </p>
+        """
+
+    for row in rows:
+
+        html += f"""
+        <div style='border:1px solid #ccc;padding:10px;margin:10px'>
+            <h3>
+                <a href="/email/{row[0]}">
+                    {row[2]}
+                </a>
+            </h3>
+
+            <p>{row[1]}</p>
+            <p>{row[3]}</p>
+            <p>Status: {row[4]}</p>
+        """
+
+        if row[4] == "New":
+            html += f'<a href="/start/{row[0]}">Start Work</a>'
+
+        elif row[4] == "In Progress":
+            html += f'<a href="/resolve/{row[0]}">Resolve</a>'
+
+        html += "</div>"
+
+    return html
+
 @app.get("/category/{category}", response_class=HTMLResponse)
 def category_view(category):
 
@@ -101,7 +121,28 @@ def category_view(category):
         """
 
     return html
+@app.get("/email/{email_id}", response_class=HTMLResponse)
+def email_detail(email_id):
 
+    row = get_email_by_id(email_id)
+
+    html = f"""
+
+    <a href="/dashboard">← Back to Dashboard</a>
+    <br><br>
+
+    <h1>{row[2]}</h1>
+
+    <p><b>Sender:</b> {row[1]}</p>
+
+    <p><b>Category:</b> {row[4]}</p>
+
+    <hr>
+
+    <pre>{row[3]}</pre>
+    """
+
+    return html
 @app.get("/resolve/{email_id}")
 def resolve_email(email_id):
 

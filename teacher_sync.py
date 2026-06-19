@@ -58,7 +58,7 @@ def sync_teacher_portal():
             messages = messages_response["response"]["messages"]
             print(
                 f"Messages in chat: {len(messages)}"
-            )
+        )
 
 
 
