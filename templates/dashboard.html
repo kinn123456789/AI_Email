@@ -8,7 +8,16 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body class="bg-gray-100 p-8">
+<body
+    class="min-h-screen p-10 font-sans text-stone-800"
+    style="
+        background-image: url('/static/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+>
+
 
 
 <h1 class="text-3xl font-bold mb-6">
@@ -16,8 +25,26 @@
 </h1>
 
 <!-- Dashboard Cards -->
-<div class="grid grid-cols-3 gap-6 mb-8">
+<div class="grid grid-cols-5 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-gray-500 text-sm">
+        Avg First Response
+    </h3>
 
+    <p class="text-3xl font-bold text-purple-600">
+        {{ avg_response }}
+    </p>
+</div>
+
+<div class="bg-white p-6 rounded-lg shadow">
+    <h3 class="text-gray-500 text-sm">
+        Avg Resolution
+    </h3>
+
+    <p class="text-3xl font-bold text-indigo-600">
+        {{ avg_resolution }}
+    </p>
+</div>
     <div class="bg-white p-6 rounded-lg shadow">
         <h3 class="text-gray-500 text-sm">
             Total Messages
@@ -29,13 +56,13 @@
     </div>
 
     <div class="bg-white p-6 rounded-lg shadow">
-        <h3 class="text-gray-500 text-sm">
-            Categories
-        </h3>
+    <h3 class="text-gray-500 text-sm">
+        Needs Review
+    </h3>
 
-        <p class="text-3xl font-bold">
-            {{ counts|length }}
-        </p>
+    <p class="text-3xl font-bold text-red-600">
+        {{ needs_review_count }}
+    </p>
     </div>
 
     <div class="bg-white p-6 rounded-lg shadow">
@@ -98,12 +125,28 @@
                 </th>
 
                 <th class="p-4 text-left">
-                    Status
+                    Priority
                 </th>
-
                 <th class="p-4 text-left">
-                    Action
-                </th>
+    Status
+</th>
+
+<th class="p-4 text-left">
+    Received
+</th>
+
+<th class="p-4 text-left">
+    First Reply
+</th>
+
+<th class="p-4 text-left">
+    Resolved
+</th>
+
+<th class="p-4 text-left">
+    Action
+</th>
+
 
             </tr>
 
@@ -115,52 +158,117 @@
 
             <tr class="border-t hover:bg-gray-50">
 
-                <td class="p-4">
-                    {{ email[2] }}
+                <td class="p-4 max-w-sm truncate">
+                    {{ email.subject }}
                 </td>
 
                 <td class="p-4">
-                    {{ email[1] }}
+                    {{ email.sender }}
                 </td>
 
                 <td class="p-4">
-                    {{ email[3] }}
+                    {{ email.category }}
                 </td>
+                <td class="p-4">
+
+
+{% if email.priority == "Urgent" %}
+
+<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+    Urgent
+</span>
+
+{% elif email.priority == "High" %}
+
+<span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
+    High
+</span>
+
+{% elif email.priority == "Medium" %}
+
+<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+    Medium
+</span>
+
+{% else %}
+
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+    Low
+</span>
+
+{% endif %}
+
+</td>
+
+<td class="p-4">
+
+{% if email.status == "Resolved" %}
+
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
+    Resolved
+</span>
+
+{% elif email.status == "Needs Review" %}
+
+<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
+    Needs Review
+</span>
+
+{% elif email.status == "In Progress" %}
+
+<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
+    In Progress
+</span>
+
+{% else %}
+
+<span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+    {{ email.status }}
+</span>
+
+{% endif %}
+
+</td>
+<td class="p-4">
+    {{ email.created_at }}
+</td>
+
+<td class="p-4">
+    {{ email.first_reply_at }}
+</td>
+
+<td class="p-4">
+    {{ email.resolved_at }}
+</td>
+
+
 
                 <td class="p-4">
 
-                    {% if email[4] == "Resolved" %}
+                    {% if email.status == "Needs Review" %}
 
-                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                        Resolved
-                    </span>
-
-                    {% elif email[4] == "In Progress" %}
-
-                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
-                        In Progress
-                    </span>
+                        <a href="/email/{{ email.id }}"
+                        class="bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700">
+                        Review
+                        </a>
 
                     {% else %}
 
-                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
-                        {{ email[4] }}
-                    </span>
+                        <span class="text-green-600 font-medium">
+                            Auto Handled by AI
+                        </span> 
 
-                    {% endif %}
+                        <br>
+                    
+                        <a href="/email/{{ email.id }}"
+                            class="text-green-600 font-medium underline">
+                            View Reply
+                        </a>
+                        
+                         
+{% endif %}
 
-                </td>
-
-                <td class="p-4">
-
-                    <a href="/email/{{ email[0] }}"
-                       class="text-blue-600 hover:underline">
-
-                        Review
-
-                    </a>
-
-                </td>
+</td>
 
             </tr>
 
@@ -171,7 +279,6 @@
     </table>
 
 </div>
-
 
 </body>
 </html>

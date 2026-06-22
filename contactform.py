@@ -3,7 +3,7 @@ import requests
 # 1. DEFINE the payload (the data you want to send)
 payload = {
     "name": "Your Name",
-    "email": "yourname@example.com",
+    "email": "test@example.com",
     "phone_number": "+1222222222",
     "message": "This is a test message from my script."
 }

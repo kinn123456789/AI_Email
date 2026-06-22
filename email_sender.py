@@ -1,5 +1,6 @@
 import smtplib
 from email.mime.text import MIMEText
+from email.utils import make_msgid
 
 def send_email(
     from_email,
@@ -17,9 +18,12 @@ def send_email(
         msg["From"] = from_email
         msg["To"] = to_email
 
+        message_id = make_msgid()
+        msg["Message-ID"] = message_id
+
         with smtplib.SMTP_SSL(
             "smtp.gmail.com",
-            465#smtp port number
+            465
         ) as server:
 
             server.login(
@@ -33,7 +37,7 @@ def send_email(
             f"Email sent from {from_email} to {to_email}"
         )
 
-        return True
+        return message_id
 
     except Exception as e:
 
@@ -41,4 +45,4 @@ def send_email(
             f"Send Email Error: {e}"
         )
 
-        return False
+        return None

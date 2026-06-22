@@ -16,11 +16,11 @@ def sync_teacher_portal():
 
     for teacher in teachers:
 
-        teacher_id = teacher["id"]
+        api_teacher_id = teacher["id"]
 
         print(f"\nProcessing teacher: {teacher['name']}")
 
-        chats = get_chats(teacher_id)
+        chats = get_chats(api_teacher_id)
         print(
             f"Teacher: {teacher['name']} | Chats: {len(chats)}"
         )
@@ -34,25 +34,33 @@ def sync_teacher_portal():
             parent_name = "Unknown"
             teacher_name = "Unknown"
 
+            parent_id = None
+            conversation_teacher_id = None
+
             for participant in chat["participants"]:
 
                 if participant["user_role"] == "parent":
                     parent_name = participant["user"]["name"]
+                    parent_id = participant["user"]["id"]
 
                 if participant["user_role"] == "teacher":
                     teacher_name = participant["user"]["name"]
+                    conversation_teacher_id = participant["user"]["id"]
 
             save_conversation(
                 chat_id,
                 parent_name,
                 teacher_name,
+                parent_id,
+                conversation_teacher_id,
                 chat["created_at"]
-            
             )
 
             print("Saved conversation:", chat_id)
 
-            messages_response = get_messages(chat_id, teacher_id)
+            messages_response = get_messages(
+                chat_id, 
+                api_teacher_id)
             if messages_response is None:
                 continue
             messages = messages_response["response"]["messages"]
@@ -64,7 +72,9 @@ def sync_teacher_portal():
 
 
             for message in messages:
-
+                
+                print(message)
+                
                 if conversation_message_exists(message["id"]):
                     continue
 

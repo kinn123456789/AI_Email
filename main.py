@@ -3,46 +3,81 @@ from ai_classifier import ai_triage
 from database import db_pool
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
+from email_sender import send_email
+from database import get_teacher_messages
 
-templates = Jinja2Templates(directory="templates")
 
+import os
 from database import (
     get_emails,
     get_category_counts,
     get_emails_by_category,
     get_email_by_id,
     update_status,
-    save_email
+    save_email,
+    set_first_reply_time,
+    set_resolved_time,
+    get_avg_first_response_time,
+    get_avg_resolution_time,
+    get_conversation,
+    get_conversation_messages,
+    get_contact_forms
 )
+templates = Jinja2Templates(directory="templates")
+
+
 
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 app = FastAPI()
 
-@app.get("/")
-def home():
-    return {"message": "AI Triage Running"}
+from fastapi.staticfiles import StaticFiles
 
+app.mount(
+    "/static",
+    StaticFiles(directory="static"),
+    name="static"
+)
+
+@app.get("/")
+def home(request: Request):
+
+    return templates.TemplateResponse(
+        "home.html",
+        {"request": request}
+    )
+
+
+
+@app.get("/conversation/{chat_id}")
+def conversation_detail(
+    request: Request,
+    chat_id: str
+):
+
+    conversation = get_conversation(chat_id)
+
+    print("CONVERSATION:")
+    print(conversation)
+
+    messages = get_conversation_messages(chat_id)
+
+    return templates.TemplateResponse(
+        "conversation_detail.html",
+        {
+            "request": request,
+            "conversation": conversation,
+            "messages": messages
+        }
+    )
 @app.get("/emails")
 def emails():
 
-    rows = get_emails()
-
-    result = []
-
-    for row in rows:
-
-        result.append({
-            "id": row[0],
-            "sender": row[1],
-            "subject": row[2],
-            "category": row[3]
-        })
-
-    return result
+    return get_emails()
 @app.get("/email/{email_id}")
 def view_email(request: Request, email_id: int):
     # Fetch the full email details including the AI draft
+    
     email_data = get_email_by_id(email_id) # Ensure this returns [id, sender, subject, body, category, ai_summary, ai_draft_reply]
     
     return templates.TemplateResponse(
@@ -53,20 +88,95 @@ def view_email(request: Request, email_id: int):
         }
     )
 
+@app.get("/teacher-dashboard")
+def teacher_dashboard(request: Request):
+
+    messages = get_teacher_messages()
+
+    return templates.TemplateResponse(
+        "teacher_dashboard.html",
+        {
+            "request": request,
+            "messages": messages
+        }
+    )
+
 @app.post("/email/{email_id}/send")
-def send_reply(email_id: int, request: Request):
-    # This route will be triggered by a "Send" button on your dashboard
-    # 1. Fetch the final edited reply from a form
-    # 2. Call your send_email function
-    # 3. Redirect back to /dashboard
-    return RedirectResponse(url="/dashboard")
+    
+# 1. Fetch the final edited reply from a form
+# 2. Call your send_email function
+# # 3. Redirect back to /dashboard
+async def send_reply(
+    email_id: int,
+    request: Request
+):
+
+    form = await request.form()
+
+    reply_body = form["reply_body"]
+    
+    email = get_email_by_id(email_id)
+    source = email["source"]
+    recipient = email["sender"]
+    subject = "Re: " + email["subject"]
+    if source == "Inbox 1":
+        from_email = os.getenv("EMAIL_1")
+        password = os.getenv("APP_PASSWORD_1")
+
+    elif source == "Inbox 2":
+        from_email = os.getenv("EMAIL_2")
+        password = os.getenv("APP_PASSWORD_2")
+
+    elif source == "Inbox 3":
+        from_email = os.getenv("EMAIL_3")
+        password = os.getenv("APP_PASSWORD_3")
+    else:
+    
+        return RedirectResponse(
+            url="/dashboard",
+            status_code=303
+        )
+    send_email(
+        from_email=from_email,
+        password=password,
+        to_email=recipient,
+        subject=subject,
+        body=reply_body
+    )
+
+    set_first_reply_time(email_id)
+
+
+    set_resolved_time(email_id)
+
+    update_status(
+        email_id,
+        "Resolved"
+    )
+
+
+   
+    
+    return RedirectResponse(
+        url="/dashboard",
+        status_code=303
+    )
+
+
+
+
+   
 @app.get("/dashboard")
 def dashboard(request: Request):
 
     rows = get_emails()
     counts = get_category_counts()
-
-    return templates.TemplateResponse( #Everything below this line will never run:
+    avg_response = get_avg_first_response_time()
+    avg_resolution = get_avg_resolution_time()
+    needs_review_count = len(
+    [e for e in rows if e["status"] == "Needs Review"]
+)
+    return templates.TemplateResponse( #Everything below this line will never run:(in this function)
                                         #Because Python exits the function as soon as it hits:
                                         #return templates.TemplateResponse
                                         #it sends that response to the browser and finishes the function—which is exactly what you want it to do!
@@ -74,9 +184,13 @@ def dashboard(request: Request):
         {
             "request": request,
             "emails": rows,
-            "counts": counts
+            "counts": counts,
+            "needs_review_count": needs_review_count,
+            "avg_response": avg_response,
+            "avg_resolution": avg_resolution
         }
     )
+
     
 @app.get("/category/{category}", response_class=HTMLResponse)
 def category_view(category):
@@ -90,13 +204,13 @@ def category_view(category):
         html += f"""
         <div style='border:1px solid #ccc;padding:10px;margin:10px'>
             <h3>
-            <a href="/email/{row[0]}">
-             {row[2]}
+            <a href="/email/{row['id']}">
+            {row['subject']}
             </a>
-            </h3>
-            <p>{row[1]}</p>
-            <p>{row[3]}</p>
-            <p>Status: {row[4]}</p>
+
+            <p>{row['sender']}</p>
+            <p>{row['category']}</p>
+            <p>Status: {row['status']}</p>
         </div>
         """
 
@@ -145,4 +259,17 @@ def submit_enquiry(data: dict):
         "category": result["category"],
         "priority": result["priority"]
     }
+@app.get("/contact-dashboard")
+def contact_dashboard(request: Request):
+
+    contacts = get_contact_forms()
+
+    return templates.TemplateResponse(
+        "contact_dashboard.html",
+        {
+            "request": request,
+            "contacts": contacts
+        }
+    )
+
 ##db_pool.closeall()

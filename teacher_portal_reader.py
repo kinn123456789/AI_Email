@@ -1,17 +1,24 @@
-import requests
-import os
+import requests#Used to call APIs requests.get,requets.post
+import os#Used to read environment variables:os.getenv("TEACHER_PORTAL_TOKEN")
 from dotenv import load_dotenv
 
 print("Current Directory:", os.getcwd())
 
-load_dotenv(dotenv_path=".env")
+load_dotenv(dotenv_path=".env")#Loads values from .env
 
 TOKEN = os.getenv("TEACHER_PORTAL_TOKEN")
 
 print("TOKEN EXISTS:", TOKEN is not None)
-print("TOKEN LENGTH:", len(TOKEN) if TOKEN else 0)
+print("TOKEN LENGTH:", len(TOKEN) if TOKEN else 0)#Shows length of token example 989
 
 BASE_URL = "https://api.coralacademy.com"
+#BASE_URL
+#= Destination
+#= Where the request goes
+
+#Origin
+#= Identity
+#= Who is making the request
 
 
 def get_chats(teacher_id):
@@ -31,7 +38,7 @@ def get_chats(teacher_id):
 
     print("\nSTATUS CODE:", response.status_code)
 
-    data = response.json()
+    data = response.json()# convverts json to python rescponse
 
     #print("\nFULL RESPONSE:")
     #print(data)
@@ -98,7 +105,7 @@ def get_teachers():
     return data["response"]["teachers"]
 
 
-if __name__ == "__main__":
+if __name__ == "__main__": #Run only when file executed directly Not when imported.
 
     teachers = get_teachers()
 

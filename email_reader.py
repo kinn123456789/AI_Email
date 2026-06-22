@@ -20,9 +20,14 @@ from database import (
     save_email,
     email_exists,
     save_attachment,
-    attachment_exists
+    attachment_exists,
+    reopen_thread,
+    update_sent_message_id,
+    set_sent_time,
+    set_first_reply_time,
+    set_resolved_time,
+    resolve_thread
 )
-
 
 # Configuration
 load_dotenv()
@@ -32,7 +37,6 @@ EMAIL_ACCOUNTS = [
     {"email": os.getenv("EMAIL_3"), "password": os.getenv("APP_PASSWORD_3"), "source": "Inbox 3"}
 ]
 ATTACHMENT_DIR = "attachments"
-
 
 if not os.path.exists(ATTACHMENT_DIR):
     os.makedirs(ATTACHMENT_DIR)
@@ -55,11 +59,8 @@ for account in EMAIL_ACCOUNTS:
 
     # Fetch Emails
     status, messages = mail.search(None, "UNSEEN")
-    
-
-    
     mail_ids = messages[0].split()
-    
+
     for email_id in mail_ids:
         _, msg_data = mail.fetch(email_id, "(RFC822)")
 
@@ -69,12 +70,8 @@ for account in EMAIL_ACCOUNTS:
 
             msg = email.message_from_bytes(response_part[1])
             sender_email = parseaddr(msg.get("From", ""))[1]
-            in_reply_to = msg.get("In-Reply-To") ##email it responded to
-
-            ##if sender_email and sender_email.lower() == account["email"].lower():
-              ##  print("Skipping own email") # Prevent replying to emails sent from the same inbox
-               ## continue
             message_id = msg.get("Message-ID")
+            
             if not message_id:
                 print("No Message-ID. Skipping...")
                 continue
@@ -83,26 +80,12 @@ for account in EMAIL_ACCOUNTS:
                 print("Already exists. Skipping...")
                 continue
 
-            
-
-            # If it's not a reply, it's a new email, so always process it
-
             # Subject Parsing
             subject_raw, encoding = decode_header(msg.get("Subject", "No Subject"))[0]
             subject = subject_raw.decode(encoding or "utf-8", errors="ignore") if isinstance(subject_raw, bytes) else subject_raw
             
-            # Prevent reply loops
-            ##if subject.lower().startswith("re:"):
-                ##print(f"Skipping reply email: {subject}")
-                ##continue
-            ##print(f"Processing: {subject}")
-            email_received_time = msg.get("Date")
-
-            log_event(
-                    message_id,
-                    "EMAIL_RECEIVED",
-                    f"Received at: {email_received_time}"
-            )
+            log_event(message_id, "EMAIL_RECEIVED", f"Received at: {msg.get('Date')}")
+            
             body = ""
             html_body = ""
             image_data_list = []
@@ -148,87 +131,51 @@ for account in EMAIL_ACCOUNTS:
                 body = soup.get_text(separator=" ", strip=True)
 
             in_reply_to = msg.get("In-Reply-To")
+            root_thread = None
 
             if in_reply_to:
                 root_thread = get_root_thread_id(in_reply_to)
-
                 thread_id = root_thread or in_reply_to
-
+                if root_thread:
+                    reopen_thread(root_thread)
             else:
                 thread_id = message_id
+            
             # AI Triage
             try:
                 start_time = time.time()
                 history = get_thread(thread_id)
-
-                print("\nTHREAD HISTORY")
-                print(history)
-                print("END THREAD HISTORY\n")
-
-                if history:
-                     print(f"Found {len(history)} previous messages in thread")
-
-                result = ai_triage(
-                    subject,
-                    body,
-                    history=history,
-                    images=image_data_list
-                )
-                processing_time = round(
-                    time.time() - start_time,
-                    2
-                )
+                result = ai_triage(subject, body, history=history, images=image_data_list)
+                
                 log_event(
                     message_id,
                     "AI_CLASSIFIED",
-                    f"Category={result['category']}, Priority={result['priority']}, Processing={processing_time}s"
+                    f"Category={result['category']}, Priority={result['priority']}, Processing={round(time.time() - start_time, 2)}s"
                 )
             except Exception as e:
                 print(f"AI Triage failed: {e}")
-                log_event(
-                        message_id,
-                        "AI_ERROR",
-                        str(e)
-                )
+                log_event(message_id, "AI_ERROR", str(e))
                 result = {"category": "Unclassified", "priority": "Low", "summary": "Error", "draft_reply": ""}
            
-            
             # Save to Database
             try:
-                    db_email_id = save_email(
-                        msg["From"],
-                        subject,
-                        body,
-                        result["category"],
-                        result["priority"],
-                        result["summary"],
-                        result["draft_reply"],
-                        message_id,
-                        thread_id,
-                        in_reply_to,
-                        source=account["source"]
-                    )
-
-                    mail.store(email_id, '+FLAGS', '\\Seen')
-                    print("Marked email as Seen")
+                db_email_id = save_email(
+                    msg["From"], subject, body, result["category"], result["priority"], 
+                    result["summary"], result["draft_reply"], message_id, thread_id, 
+                    in_reply_to, source=account["source"]
+                )
+                mail.store(email_id, '+FLAGS', '\\Seen')
             except Exception as e:
                 print(e)
                 continue
             
-
-           ## sender_email = parseaddr(msg["From"])[1]
-
-           ## print(f"Email saved: {subject}")
-            requires_review = (
-                result["priority"] in ["High", "Urgent"]
-            )
+            # Triage Logic (Review vs Auto-Send)
+            requires_review = (result["priority"] in ["High", "Urgent"])
+            
             if requires_review:
-
                 update_status(db_email_id, "Needs Review")
-
             else:
-
-                success = send_email(
+                sent_message_id = send_email(
                     account["email"],
                     account["password"],
                     sender_email,
@@ -236,33 +183,20 @@ for account in EMAIL_ACCOUNTS:
                     result["draft_reply"]
                 )
 
-                if success:
-                    print("Reply sent successfully")
+                if sent_message_id:
+                    update_sent_message_id(db_email_id, sent_message_id)
+                    set_sent_time(db_email_id)
+                    set_first_reply_time(db_email_id)
+                    set_resolved_time(db_email_id)
+                    #update_status(db_email_id, "Resolved")
 
-                    log_event(
-                        message_id,
-                        "REPLY_SENT",
-                        f"Reply sent to {sender_email}"
-                    )
-                    if db_email_id:
-                        update_status(db_email_id, "Resolved")
+                    resolve_thread(thread_id)
 
-                        log_event(
-                            message_id,
-                            "STATUS_UPDATED",
-                            "Status changed to Resolved"
-                        )
-
+                    log_event(message_id, "REPLY_SENT", f"Reply sent to {sender_email}")
                 else:
-                    log_event(
-                        message_id,
-                        "REPLY_FAILED",
-                        f"Failed sending to {sender_email}"
-                    )
-
-    
-
+                    log_event(message_id, "REPLY_FAILED", f"Failed sending to {sender_email}")
          
     # Logout to free up connection
+    
     mail.logout()
 db_pool.closeall()

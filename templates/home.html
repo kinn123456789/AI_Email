@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Triage</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body
+    class="min-h-screen p-10 font-sans text-stone-800"
+    style="
+        background-image: url('/static/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+>
+
+    <div class="max-w-5xl mx-auto">
+        <h1 class="text-5xl font-bold mb-12 text-center text-[#0F5D7A]">
+            AI Triage
+        </h1>
+
+        <div class="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent pointer-events-none"></div>
+
+        <div class="relative z-10">
+            <div class="grid grid-cols-2 gap-8">
+<a href="/dashboard"
+   class="bg-white/25 backdrop-blur-sm p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 text-center">
+
+    <div class="text-5xl mb-4">📥</div>
+    <h2 class="text-2xl font-semibold text-[#0F5D7A] mb-2">
+        Emails
+    </h2>
+    <p class="text-stone-600 mb-6">
+        View all 
+    </p>
+    <span class="inline-block bg-[#F76B2A] text-white px-6 py-2 rounded-full font-medium">
+        Open 
+    </span>
+
+</a>
+
+{#<a href="/emails-dashboard"
+   class="bg-white/25 backdrop-blur-sm p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 text-center">
+
+    <div class="text-5xl mb-4">📧</div>
+    <h2 class="text-2xl font-semibold text-[#0F5D7A] mb-2">
+        Emails
+    </h2>
+    <p class="text-stone-600 mb-6">
+        Review AI-drafted replies
+    </p>
+    <span class="inline-block bg-[#F76B2A] text-white px-6 py-2 rounded-full font-medium">
+        View Emails
+    </span>
+
+</a>#}
+
+<a href="/teacher-dashboard"
+   class="bg-white/25 backdrop-blur-sm p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 text-center">
+
+    <div class="text-5xl mb-4">🎓</div>
+    <h2 class="text-2xl font-semibold text-[#0F5D7A] mb-2">
+        Teacher Portal
+    </h2>
+    <p class="text-stone-600 mb-6">
+        Parent-teacher conversations
+    </p>
+    <span class="inline-block bg-[#F76B2A] text-white px-6 py-2 rounded-full font-medium">
+        Enter Portal
+    </span>
+
+</a>
+
+<a href="/contact-dashboard"
+   class="bg-white/25 backdrop-blur-sm p-8 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-300 text-center">
+
+    <div class="text-5xl mb-4">📝</div>
+    <h2 class="text-2xl font-semibold text-[#0F5D7A] mb-2">
+        Contact Forms
+    </h2>
+    <p class="text-stone-600 mb-6">
+        Website enquiries
+    </p>
+    <span class="inline-block bg-[#F76B2A] text-white px-6 py-2 rounded-full font-medium">
+        Check Inquiries
+    </span>
+
+</a>
+
+
+
+
+
+        </div>
+    </div>
+
+</body>
+</html>

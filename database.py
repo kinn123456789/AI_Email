@@ -3,6 +3,7 @@ import time
 
 
 from psycopg2.pool import SimpleConnectionPool
+from psycopg2.extras import RealDictCursor
 
 db_pool = SimpleConnectionPool(
     1,   # min connections
@@ -10,6 +11,7 @@ db_pool = SimpleConnectionPool(
     dbname="ai_email",
     user="kinnu"
 )
+
 def get_connection():
     return db_pool.getconn()
 ##def get_connection():
@@ -111,13 +113,26 @@ def email_exists(message_id):
     return exists
 def get_emails():
     conn = get_connection()
-    cursor = conn.cursor()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     cursor.execute("""
-        SELECT id, sender, subject, category, status
+        SELECT
+            id,
+            sender,
+            subject,
+            category,
+            priority,
+            status,
+            created_at,
+            first_reply_at,
+            resolved_at
         FROM messages
         ORDER BY id DESC
     """)
+
     rows = cursor.fetchall()
 
     cursor.close()
@@ -144,7 +159,9 @@ def get_category_counts():
 
 def get_emails_by_category(category):
     conn = get_connection()
-    cursor = conn.cursor() 
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    ) 
     cursor.execute("""
         SELECT id, sender, subject, category, status
         FROM messages
@@ -158,7 +175,9 @@ def get_emails_by_category(category):
 
 def get_email_by_id(email_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
 
     cursor.execute("""
         SELECT id,
@@ -169,7 +188,8 @@ def get_email_by_id(email_id):
         ai_summary,
         ai_draft_reply,
         priority,
-        status
+        status,
+        source
         FROM messages
         WHERE id = %s
     """, (email_id,))
@@ -194,26 +214,39 @@ def save_conversation(
     chat_id,
     parent_name,
     teacher_name,
+    parent_id,
+    teacher_id,
     updated_at
 ):
     conn = get_connection()
     cursor = conn.cursor()
+
     cursor.execute("""
         INSERT INTO conversations(
             chat_id,
             parent_name,
             teacher_name,
+            parent_id,
+            teacher_id,
             updated_at
         )
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s)
         ON CONFLICT (chat_id)
-        DO NOTHING
-    """, (
-        chat_id,
-        parent_name,
-        teacher_name,
-        updated_at
-    ))
+    DO UPDATE SET
+        parent_name = EXCLUDED.parent_name,
+        teacher_name = EXCLUDED.teacher_name,
+        parent_id = EXCLUDED.parent_id,
+        teacher_id = EXCLUDED.teacher_id,
+        updated_at = EXCLUDED.updated_at
+
+""", (
+    chat_id,
+    parent_name,
+    teacher_name,
+    parent_id,
+    teacher_id,
+    updated_at
+))
 
     conn.commit()
     cursor.close()
@@ -252,23 +285,14 @@ def save_conversation_message(
     cursor.close()
     db_pool.putconn(conn)
 
-def get_conversations():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("""
-        SELECT *
-        FROM conversations
-        ORDER BY updated_at DESC
-    """)
+from psycopg2.extras import RealDictCursor
 
-    rows= cursor.fetchall()
-    cursor.close()
-    db_pool.putconn(conn)
-    return rows
 
 def get_conversation_messages(chat_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
     cursor.execute("""
 
         SELECT *
@@ -281,6 +305,28 @@ def get_conversation_messages(chat_id):
     cursor.close()
     db_pool.putconn(conn)
     return rows
+
+from psycopg2.extras import RealDictCursor
+
+def get_conversation(chat_id):
+    conn = get_connection()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT *
+        FROM conversations
+        WHERE chat_id = %s
+    """, (chat_id,))
+
+    row = cursor.fetchone()
+
+    cursor.close()
+    db_pool.putconn(conn)
+
+    return row
 
 def conversation_message_exists(message_id):
     conn = get_connection()
@@ -360,34 +406,26 @@ def attachment_exists(
     return rows
 
 
-def get_unprocessed_contact_forms():
-
+def get_contact_forms():
     conn = get_connection()
-    cur = conn.cursor()
 
-    cur.execute("""
-        SELECT
-            id,
-            subject,
-            body
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT *
         FROM messages
         WHERE source = 'contact_form'
-        AND ai_summary IS NULL
+        ORDER BY created_at DESC
     """)
 
-    rows = cur.fetchall()
+    rows = cursor.fetchall()
 
-    cur.close()
+    cursor.close()
     db_pool.putconn(conn)
 
-    return [
-        {
-            "id": r[0],
-            "subject": r[1],
-            "body": r[2]
-        }
-        for r in rows
-    ]
+    return rows
 
 
 def update_ai_results(
@@ -484,3 +522,227 @@ def get_root_thread_id(message_id):
 
     return None
 
+def set_first_reply_time(email_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE messages
+        SET first_reply_at = NOW()
+        WHERE id = %s
+        AND first_reply_at IS NULL
+    """, (email_id,))
+
+    conn.commit()
+    cursor.close()
+    db_pool.putconn(conn)
+
+def set_resolved_time(email_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE messages
+        SET resolved_at = NOW()
+        WHERE id = %s
+        AND resolved_at IS NULL
+    """, (email_id,))
+
+    conn.commit()
+    cursor.close()
+    db_pool.putconn(conn)
+
+def reopen_thread(thread_id):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE messages
+        SET status = 'Needs Review'
+        WHERE thread_id = %s
+        AND status = 'Resolved'
+    """, (thread_id,))
+
+    conn.commit()
+
+    cursor.close()
+    db_pool.putconn(conn)
+def set_sent_time(email_id):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE messages
+        SET sent_at = CURRENT_TIMESTAMP
+        WHERE id = %s
+        AND sent_at IS NULL
+    """, (email_id,))
+
+    conn.commit()
+
+    cur.close()
+    db_pool.putconn(conn)
+
+def update_sent_message_id(
+    email_id,
+    sent_message_id
+):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE messages
+        SET sent_message_id = %s
+        WHERE id = %s
+    """, (
+        sent_message_id,
+        email_id
+    ))
+
+    conn.commit()
+
+    cursor.close()
+    db_pool.putconn(conn)
+def resolve_thread(thread_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE messages
+        SET status = 'Resolved'
+        WHERE thread_id = %s
+    """, (thread_id,))
+
+    conn.commit()
+
+    cursor.close()
+    db_pool.putconn(conn)
+
+def get_avg_first_response_time():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT AVG(first_reply_at - created_at)
+        FROM messages
+        WHERE first_reply_at IS NOT NULL
+    """)
+
+    result = cursor.fetchone()[0]
+
+    cursor.close()
+    db_pool.putconn(conn)
+
+    return result
+   
+def get_avg_resolution_time():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT AVG(resolved_at - created_at)
+        FROM messages
+        WHERE resolved_at IS NOT NULL
+    """)
+
+    result = cursor.fetchone()[0]
+
+    cursor.close()
+    db_pool.putconn(conn)
+
+    return result
+
+def get_unclassified_teacher_messages():
+
+    conn = get_connection()
+    
+    cursor = conn.cursor(
+    cursor_factory=RealDictCursor
+)
+
+    cursor.execute("""
+        SELECT
+            id,
+            message_id,
+            body
+        FROM conversation_messages
+    WHERE
+        ai_processed = FALSE
+        AND body IS NOT NULL
+        AND TRIM(body) <> ''
+        ORDER BY created_at
+        LIMIT 3
+    """)
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    db_pool.putconn(conn)
+
+    return rows
+
+def update_teacher_ai_fields(
+    message_id,
+    category,
+    priority,
+    summary,
+    draft_reply
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE conversation_messages
+        SET
+            ai_category = %s,
+            ai_priority = %s,
+            ai_summary = %s,
+            ai_draft_reply = %s,
+            ai_processed = TRUE
+        WHERE message_id = %s
+    """, (
+        category,
+        priority,
+        summary,
+        draft_reply,
+        message_id
+    ))
+
+    conn.commit()
+
+    cursor.close()
+
+from psycopg2.extras import RealDictCursor
+
+def get_teacher_messages():
+
+    conn = get_connection()
+
+    cursor = conn.cursor(
+        cursor_factory=RealDictCursor
+    )
+
+    cursor.execute("""
+        SELECT
+            id,
+            chat_id,
+            sender,
+            body,
+            ai_category,
+            ai_priority,
+            ai_summary,
+            created_at
+        FROM conversation_messages
+        ORDER BY created_at DESC
+        LIMIT 100
+    """)
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    db_pool.putconn(conn)
+
+    return rows
+    db_pool.putconn(conn)

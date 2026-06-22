@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teacher Dashboard</title>
+        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body
+    class="min-h-screen p-10 font-sans text-stone-800"
+    style="
+        background-image: url('/static/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+>
+
+<div class="max-w-5xl mx-auto">
+
+    <h1 class="text-4xl font-bold mb-8 text-[#0F5D7A]">
+        Teacher Portal
+    </h1>
+
+    <div class="grid gap-6">
+
+        {% for msg in messages %}
+
+        <div class="bg-white rounded-2xl shadow p-6">
+
+            <div class="flex justify-between items-start">
+
+                <div>
+                    <h2 class="text-lg font-semibold">
+                        {{ msg.sender }}
+                    </h2>
+
+                    <p class="text-gray-500 text-sm">
+                        Chat ID: {{ msg.chat_id }}
+                    </p>
+                    
+                </div>
+
+                <div class="flex gap-2">
+
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                        {{ msg.ai_category or "Unclassified" }}
+                    </span>
+
+                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
+                        {{ msg.ai_priority or "Normal" }}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="mt-4">
+
+                <p class="text-gray-700">
+                    {{ msg.body }}
+                </p>
+
+            </div>
+
+            <div class="bg-slate-50 rounded-xl p-4 mt-4">
+    <h4 class="font-semibold">AI Summary</h4>
+    <p>{{ msg.ai_summary }}</p>
+</div>
+
+            
+
+            <div class="mt-4">
+
+                <a
+    href="/conversation/{{ msg.chat_id }}"
+    class="inline-block mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+>
+    View Conversation
+</a>
+
+            </div>
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+</body>
+</html>
