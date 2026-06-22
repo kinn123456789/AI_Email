@@ -1,17 +1,21 @@
 import psycopg2
 import time
+import os
 
 
 from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import RealDictCursor
 
+#db_pool = SimpleConnectionPool(
+   # 1,   # min connections
+   # 10,  # max connections
+   # dbname="ai_email",
+   # user="kinnu"
+#)
 db_pool = SimpleConnectionPool(
-    1,   # min connections
-    10,  # max connections
-    dbname="ai_email",
-    user="kinnu"
+    1, 10,
+    dsn=os.environ.get("DATABASE_URL") # Use the Render connection string
 )
-
 def get_connection():
     return db_pool.getconn()
 ##def get_connection():
