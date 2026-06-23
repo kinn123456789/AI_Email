@@ -192,29 +192,22 @@ def dashboard(request: Request):
     )
 
     
-@app.get("/category/{category}", response_class=HTMLResponse)
-def category_view(category):
+@app.get("/category/{category}")
+def category_view(
+    request: Request,
+    category: str
+):
 
     rows = get_emails_by_category(category)
 
-    html = f"<h1>{category} Emails</h1>"
-
-    for row in rows:
-
-        html += f"""
-        <div style='border:1px solid #ccc;padding:10px;margin:10px'>
-            <h3>
-            <a href="/email/{row['id']}">
-            {row['subject']}
-            </a>
-
-            <p>{row['sender']}</p>
-            <p>{row['category']}</p>
-            <p>Status: {row['status']}</p>
-        </div>
-        """
-
-    return html
+    return templates.TemplateResponse(
+        "category.html",
+        {
+            "request": request,
+            "category": category,
+            "emails": rows
+        }
+    )
 
 @app.get("/resolve/{email_id}")
 def resolve_email(email_id):
