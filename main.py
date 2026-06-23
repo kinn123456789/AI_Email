@@ -265,4 +265,21 @@ def contact_dashboard(request: Request):
         }
     )
 
+@app.get("/category/{category}")
+def category_view(
+    request: Request,
+    category: str
+):
+
+    rows = get_emails_by_category(category)
+
+    return templates.TemplateResponse(
+        "category.html",
+        {
+            "request": request,
+            "category": category,
+            "emails": rows
+        }
+    )
+
 ##db_pool.closeall()
