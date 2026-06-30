@@ -1,37 +1,65 @@
-import smtplib
+import base64
+
 from email.mime.text import MIMEText
 from email.utils import make_msgid
 
+from google.oauth2.credentials import Credentials
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+
+
+SCOPES = ["https://mail.google.com/"]
+
+
 def send_email(
     from_email,
-    password,
+    token_file,
     to_email,
     subject,
     body
 ):
-
     try:
+        # Load OAuth credentials
+        creds = Credentials.from_authorized_user_file(
+            token_file,
+            SCOPES
+        )
 
-        msg = MIMEText(body)
+        # Refresh token if needed
+        if creds.expired and creds.refresh_token:
+            creds.refresh(Request())
 
-        msg["Subject"] = subject
-        msg["From"] = from_email
-        msg["To"] = to_email
+            with open(token_file, "w") as token:
+                token.write(creds.to_json())
+
+        # Build Gmail service
+        service = build(
+            "gmail",
+            "v1",
+            credentials=creds
+        )
+
+        # Create email
+        message = MIMEText(body)
+
+        message["To"] = to_email
+        message["From"] = from_email
+        message["Subject"] = subject
 
         message_id = make_msgid()
-        msg["Message-ID"] = message_id
+        message["Message-ID"] = message_id
 
-        with smtplib.SMTP_SSL(
-            "smtp.gmail.com",
-            465
-        ) as server:
+        raw_message = base64.urlsafe_b64encode(
+            message.as_bytes()
+        ).decode()
 
-            server.login(
-                from_email,
-                password
-            )
-
-            server.send_message(msg)
+        # Send email
+        service.users().messages().send(
+            userId="me",
+            body={
+                "raw": raw_message
+            }
+        ).execute()
 
         print(
             f"Email sent from {from_email} to {to_email}"
@@ -41,8 +69,6 @@ def send_email(
 
     except Exception as e:
 
-        print(
-            f"Send Email Error: {e}"
-        )
+        print(f"Send Email Error: {e}")
 
         return None

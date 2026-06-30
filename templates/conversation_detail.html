@@ -62,6 +62,37 @@
             {{ msg.body }}
         </p>
 
+        {% if msg.ai_summary %}
+
+<div class="bg-slate-50 rounded-xl p-4 mt-3">
+    <h4 class="font-semibold">
+        AI Summary
+    </h4>
+
+    <p>
+        {{ msg.ai_summary }}
+    </p>
+</div>
+
+{% endif %}
+{% if msg.ai_draft_reply %}
+
+<div class="bg-yellow-50 rounded-xl p-4 mt-3">
+    <h4 class="font-semibold">
+        AI Draft Reply
+    </h4>
+
+    <p>
+        {{ msg.ai_draft_reply }}
+    </p>
+</div>
+
+{% endif %}
+{% if msg.ai_draft_reply and msg.sender == conversation.parent_id %}
+
+
+
+{% endif %}
         <p class="text-sm text-gray-500 mt-2">
             {{ msg.created_at }}
         </p>
