@@ -3,3 +3,13 @@ venv/
 __pycache__/
 attachments/
 .vscode/
+
+# OAuth credentials and tokens
+credentials.json
+token_*.json
+
+# macOS
+.DS_Store
+
+# Python cache
+*.pyc
