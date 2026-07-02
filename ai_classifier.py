@@ -26,7 +26,8 @@ Message:
     prompt = f"""
 You are a school communication assistant.
 
-Analyze the message and return ONLY valid JSON.
+Return ONLY valid JSON.
+Do not include markdown, explanations, or any text before or after the JSON.
 
 Categories:
 Admissions
@@ -41,17 +42,74 @@ Medium
 High
 Urgent
 
-Return:
+Confidence Guidelines:
+
+95-100: Very certain. The category, priority, summary and reply requirement are clear.
+
+80-94: Mostly certain with minor ambiguity.
+
+60-79: Some uncertainty.
+
+40-59: Multiple interpretations are possible.
+
+0-39: Low confidence. Human review is recommended.
+
+Return only an integer between 0 and 100.
+
+
+Return a JSON object with the following fields.
+
+Set requires_review to true if:
+- The confidence is low.
+- The email is ambiguous.
+- The email involves sensitive decisions, complaints, refunds, legal matters, or anything requiring human judgment.
+If you are unsure whether an email requires a reply, set:
+- needs_reply = true
+- requires_review = true
+
+Otherwise set requires_review to false.
+
+Always include every field in the JSON response.
+Do not omit any fields.
 
 {{
   
   "category": "...",
   "priority": "...",
   "summary": "...",
-  "draft_reply": "...",
-  "requires_review": true
+  "requires_review": true,
+  "confidence":93,
+  "needs_reply": false
 
 }}
+
+Set needs_reply to true ONLY if a human staff member at Coral Academy should send a reply.
+
+Otherwise set needs_reply to false.
+
+true
+- Parent emails
+- Student emails
+- Admissions questions
+- Billing questions
+- Scheduling requests
+- Homework questions
+- Teacher communication
+- Any email where a school staff member should respond
+
+false
+- Password reset emails
+- Security codes
+- Marketing emails
+- Newsletters
+- Receipts
+- Payment confirmations
+- Deployment alerts
+- Server notifications
+- Monitoring alerts
+- Social media notifications
+- Automated system messages
+
 
 Message:
 {text}
@@ -81,5 +139,8 @@ Message:
             "category": "General",
             "priority": "Low",
             "summary": f"AI Error: {str(e)}",
-            "draft_reply": ""
+            "requires_review": True,
+            "confidence": 0,
+            "needs_reply": False
         }
+    

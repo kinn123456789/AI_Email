@@ -35,7 +35,7 @@ def refresh_rules():
 
         if rule_type == "sender":
             SENDERS[rule["rule_value"].lower()] = rule
-
+            
         elif rule_type == "domain":
             DOMAINS[rule["rule_value"].lower()] = rule
 
@@ -112,6 +112,17 @@ def is_automated_email(msg):
             rule["reason"] or f"Blocked sender: {sender}"
         )
 
+    if sender.endswith("@vercel.com"):
+        return True, "System Notification", "Vercel notification"
+
+    if sender.endswith("@retool.com"):
+        return True, "Billing Notification", "Retool notification"
+
+    if sender.endswith("@linkedin.com"):
+        return True, "Social Media", "LinkedIn notification"
+
+    if sender.endswith("@mailchimp.com"):
+        return True, "Marketing", "Mailchimp notification"
     # --------------------
     # Domain Rules
     # --------------------

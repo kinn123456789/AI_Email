@@ -19,101 +19,122 @@
 <div class="max-w-5xl mx-auto">
 
     <div class="flex justify-between items-center mb-8">
-
         <h1 class="text-4xl font-bold text-[#0F5D7A]">
             {{ category }} Emails
         </h1>
-
-        <a href="/dashboard"
-           class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg">
+        <a href="/dashboard" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
             ← Back
         </a>
-
     </div>
 
+    <!-- 1. Check if there are any emails first -->
+    {% if emails %}
     <div class="grid gap-6">
 
         {% for email in emails %}
+        <div class="bg-white rounded-2xl shadow p-6 border border-stone-100">
 
-        <div class="bg-white rounded-2xl shadow p-6">
-
-            <div class="flex justify-between items-start">
-
+            <div class="flex justify-between items-start gap-4">
                 <div>
-
-                    <a href="/email/{{ email.id }}"
-                       class="text-xl font-semibold text-blue-600 hover:underline">
-
+                    <a href="/email/{{ email.id }}" class="text-xl font-semibold text-blue-600 hover:underline">
                         {{ email.subject }}
-
                     </a>
-
-                    <p class="text-gray-500 mt-1">
+                    <p class="text-gray-500 mt-1 text-sm">
                         {{ email.sender }}
                     </p>
-
                 </div>
 
-                <div class="flex gap-2">
-
-                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm">
+                <div class="flex flex-wrap gap-2 justify-end">
+                    <!-- Category Badge -->
+                    <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
                         {{ email.category }}
                     </span>
 
+                    <!-- Priority Badge Tree -->
                     {% if email.priority == "Urgent" %}
-
-                    <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm">
-                        Urgent
-                    </span>
-
+                        <span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium">Urgent</span>
                     {% elif email.priority == "High" %}
-
-                    <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm">
-                        High
-                    </span>
-
+                        <span class="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-medium">High</span>
                     {% elif email.priority == "Medium" %}
-
-                    <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm">
-                        Medium
-                    </span>
-
+                        <span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-medium">Medium</span>
                     {% else %}
-
-                    <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm">
-                        Low
-                    </span>
-
+                        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">Low</span>
                     {% endif %}
 
+                    <!-- Fixed: Confidence Badge is now visible for ALL priorities -->
+                    {% if email.ai_confidence is not none %}
+                        {% if email.ai_confidence >= 90 %}
+                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">🤖 {{ email.ai_confidence }}%</span>
+                        {% elif email.ai_confidence >= 70 %}
+                            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">🤖 {{ email.ai_confidence }}%</span>
+                        {% else %}
+                            <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-medium">🤖 {{ email.ai_confidence }}%</span>
+                        {% endif %}
+                    {% endif %}
+                    {% if email.status == "Resolved" %}
+<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+    ✓ Resolved
+</span>
+
+{% elif email.status == "Needs Review" %}
+<span class="bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-medium">
+    Needs Review
+</span>
+
+{% elif email.status == "In Progress" %}
+<span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-xs font-medium">
+    In Progress
+</span>
+
+{% else %}
+<span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-medium">
+    {{ email.status }}
+</span>
+{% endif %}
                 </div>
-
             </div>
 
+            <!-- Card Content Body -->
             <div class="mt-4">
-
-                <p class="text-gray-700">
-                    {{ email.ai_summary }}
+                <p class="text-stone-600 text-sm leading-relaxed">
+                    {% if email.ai_summary %}
+                        {{ email.ai_summary }}
+                    {% else %}
+                        <span class="italic text-gray-400">No AI summary available.</span>
+                    {% endif %}
                 </p>
+                
+                <p class="text-xs text-gray-400 mt-2">
+    🕒 Received {{ email.created_at }}
+</p>
 
+                {% if email.knowledge_url %}
+                <p class="text-xs text-purple-600 font-medium mt-3 flex items-center gap-1">
+                    📘 Help Center article used
+                </p>
+                {% endif %}
             </div>
 
-            <div class="mt-4">
-
-                <a href="/email/{{ email.id }}"
-                   class="inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-
+            <!-- Action Button -->
+            <div class="mt-5 border-t border-stone-50 pt-4 flex justify-end">
+                <a href="/email/{{ email.id }}" class="inline-block bg-[#0F5D7A] text-white px-4 py-2 rounded-xl text-sm font-medium hover:opacity-90 transition">
                     View Email
-
                 </a>
-
             </div>
 
         </div>
-
         {% endfor %}
 
     </div>
+    
+    <!-- 2. Fallback if the collection is empty -->
+    {% else %}
+    <div class="bg-white/80 backdrop-blur-md rounded-2xl shadow p-12 text-center border border-stone-200/50">
+        <p class="text-gray-500 font-medium">
+            ✨ No emails found in this category.
+        </p>
+    </div>
+    {% endif %}
 
 </div>
 

@@ -3,6 +3,7 @@ import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
+import re
 
 load_dotenv()
 
@@ -17,15 +18,15 @@ def get_connection():
 
 # --- HELPER PATTERN: Every function now uses try/finally ---
 
-def save_email(sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source=None, contact_name=None, phone=None, status="New"):
+def save_email(sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source=None, contact_name=None, phone=None, status="New",requires_review=False, ai_confidence=None, knowledge_url=None):
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT INTO messages(sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            INSERT INTO messages(sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status,requires_review,ai_confidence,knowledge_url)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             RETURNING id
-        """, (sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status))
+        """, (sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status, requires_review, ai_confidence,knowledge_url))
         result = cursor.fetchone()
         conn.commit()
         return result[0] if result else None
@@ -46,9 +47,43 @@ def email_exists(message_id):
 def get_emails():
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     try:
-        cursor.execute("SELECT id, sender, subject, category, priority, status, created_at, first_reply_at, resolved_at FROM messages ORDER BY id DESC")
-        return cursor.fetchall()
+        cursor.execute("""
+            SELECT
+                id,
+                sender,
+                subject,
+                source,
+                category,
+                priority,
+                status,
+                created_at,
+                first_reply_at,
+                resolved_at,
+                knowledge_url,
+                ai_confidence,
+                ai_summary,
+                ai_draft_reply,
+                requires_review
+            FROM messages
+            ORDER BY id DESC
+        """)
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+
+            if row["first_reply_at"]:
+                row["first_reply_at"] = row["first_reply_at"].strftime("%b %-d, %-I:%M %p")
+
+            if row["resolved_at"]:
+                row["resolved_at"] = row["resolved_at"].strftime("%b %-d, %-I:%M %p")
+
+        return rows
+
     finally:
         cursor.close()
         db_pool.putconn(conn)
@@ -66,18 +101,56 @@ def get_category_counts():
 def get_emails_by_category(category):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     try:
-        cursor.execute("SELECT id, sender, subject, category, status FROM messages WHERE category = %s ORDER BY id DESC", (category,))
-        return cursor.fetchall()
+        cursor.execute("""
+            SELECT
+                id,
+                sender,
+                subject,
+                category,
+                priority,
+                status,
+                created_at,
+                ai_summary,
+                ai_confidence,
+                knowledge_url
+            FROM messages
+            WHERE category = %s
+            ORDER BY id DESC
+        """, (category,))
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+
+        return rows
+
     finally:
         cursor.close()
         db_pool.putconn(conn)
 
+from psycopg2.extras import RealDictCursor
+
 def get_email_by_id(email_id):
     conn = get_connection()
+    # RealDictCursor ensures this returns a dict-like object for Jinja
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute("SELECT id, sender, subject, body, category, ai_summary, ai_draft_reply, priority, status, source FROM messages WHERE id = %s", (email_id,))
+        # 1. Added the missing columns directly into the SELECT string
+        # 2. Made sure the second parameter to execute() is strictly a tuple containing just (email_id,)
+        cursor.execute(
+            """
+            SELECT id, sender, subject, body, category, ai_summary, 
+                   ai_draft_reply, priority, status, source, knowledge_url,
+                   ai_confidence, requires_review, created_at 
+            FROM messages 
+            WHERE id = %s
+            """, 
+            (email_id,)
+        )
         return cursor.fetchone()
     finally:
         cursor.close()
@@ -376,22 +449,152 @@ def historical_email_exists(message_id):
         cursor.close()
         db_pool.putconn(conn)
 
-def save_historical_email(message_id, thread_id, in_reply_to, reference_ids, sender, recipient, subject, body, sent_at, source_account, has_attachment, attachment_count):
+def get_unembedded_emails():
+
     conn = get_connection()
     cursor = conn.cursor()
+
     try:
         cursor.execute("""
-            INSERT INTO historical_emails (message_id, thread_id, in_reply_to, reference_ids, sender, recipient, subject, body, sent_at, source_account, has_attachment, attachment_count)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON CONFLICT (message_id) DO NOTHING
-            RETURNING id
-        """, (message_id, thread_id, in_reply_to, reference_ids, sender, recipient, subject, body, sent_at, source_account, has_attachment, attachment_count))
-        result = cursor.fetchone()
-        conn.commit()
-        return result[0] if result else None
-    except Exception:
-        conn.rollback()
-        raise
+            SELECT id, subject, body
+            FROM historical_emails
+            WHERE embedded = FALSE
+            ORDER BY id
+        """)
+
+        rows = cursor.fetchall()
+
+        
+
+        return rows
+
     finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def save_embedding(email_id, embedding):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            UPDATE historical_emails
+            SET embedding = %s,
+                embedded = TRUE
+            WHERE id = %s
+        """, (embedding, email_id))
+
+        conn.commit()
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+def     save_historical_email(
+    message_id,
+    thread_id,
+    in_reply_to,
+    sender,
+    recipient,
+    subject,
+    body,
+    sent_at,
+    source_account,
+    has_attachment=False,
+    attachment_count=0,
+    reference_ids=None
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            INSERT INTO historical_emails (
+                message_id,
+                thread_id,
+                in_reply_to,
+                sender,
+                recipient,
+                subject,
+                body,
+                sent_at,
+                source_account,
+                has_attachment,
+                attachment_count,
+                reference_ids
+            )
+            VALUES (
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+            )
+            RETURNING id
+        """, (
+            message_id,
+            thread_id,
+            in_reply_to,
+            sender,
+            recipient,
+            subject,
+            body,
+            sent_at,
+            source_account,
+            has_attachment,
+            attachment_count,
+            reference_ids
+        ))
+
+        email_id = cursor.fetchone()[0]
+
+        conn.commit()
+
+        return email_id
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+def get_historical_emails(email_ids):
+
+    if not email_ids:
+        return []
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            SELECT
+                id,
+                subject,
+                body
+            FROM historical_emails
+            WHERE id = ANY(%s)
+        """, (email_ids,))
+
+        rows = cursor.fetchall()
+
+        email_map = {
+            row[0]: {
+                "id": row[0],
+                "subject": row[1] or "",
+                "body": row[2] or ""
+            }
+            for row in rows
+        }
+
+        return [
+            email_map[email_id]
+            for email_id in email_ids
+            if email_id in email_map
+        ]
+
+    finally:
+
         cursor.close()
         db_pool.putconn(conn)

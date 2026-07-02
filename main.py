@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 from email_sender import send_email
 from database import get_teacher_messages
 
-
+import scheduler
 import os
 from database import (
     get_emails,
@@ -119,26 +119,36 @@ async def send_reply(
     source = email["source"]
     recipient = email["sender"]
     subject = "Re: " + email["subject"]
-    if source == "Inbox 1":
+    if source == "support@coralacademy.com":
         from_email = os.getenv("EMAIL_1")
-        password = os.getenv("APP_PASSWORD_1")
+        token_file = "token_support.json"
 
-    elif source == "Inbox 2":
+    elif source == "lucy@coralacademy.com":
         from_email = os.getenv("EMAIL_2")
-        password = os.getenv("APP_PASSWORD_2")
+        token_file = "token_lucy.json"
 
-    elif source == "Inbox 3":
+    elif source == "engineering@coralacademy.com":
         from_email = os.getenv("EMAIL_3")
-        password = os.getenv("APP_PASSWORD_3")
+        token_file = "token_engineering.json"
+
+   
     else:
     
         return RedirectResponse(
             url="/dashboard",
             status_code=303
         )
+    print("=" * 50)
+    print("ABOUT TO SEND")
+    print("Source     :", source)
+    print("From Email :", from_email)
+    print("Token File :", token_file)
+    print("To         :", recipient)
+    print("=" * 50)
+
     send_email(
         from_email=from_email,
-        password=password,
+        token_file=token_file,
         to_email=recipient,
         subject=subject,
         body=reply_body
