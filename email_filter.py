@@ -83,7 +83,8 @@ def is_automated_email(msg):
                 return (
                     True,
                     rule["category"],
-                    rule["reason"] or f"Precedence={value}"
+                    rule["reason"] or f"Precedence={value}",
+                    "support"
                 )
 
         elif value.lower() != "no":
@@ -91,7 +92,8 @@ def is_automated_email(msg):
             return (
                 True,
                 rule["category"],
-                rule["reason"] or f"Header: {header_name}"
+                rule["reason"] or f"Header: {header_name}",
+                "support"
             )
 
     # --------------------
@@ -109,20 +111,23 @@ def is_automated_email(msg):
         return (
             True,
             rule["category"],
-            rule["reason"] or f"Blocked sender: {sender}"
+            rule["reason"] or f"Blocked sender: {sender}",
+            "support"
         )
 
     if sender.endswith("@vercel.com"):
-        return True, "System Notification", "Vercel notification"
+        
+        return True, "System Notification", "Vercel notification", "support"
 
     if sender.endswith("@retool.com"):
-        return True, "Billing Notification", "Retool notification"
+       
+        return True, "Billing Notification", "Retool notification", "support"
 
     if sender.endswith("@linkedin.com"):
-        return True, "Social Media", "LinkedIn notification"
+        return True, "Social Media", "LinkedIn notification", "support"
 
-    if sender.endswith("@mailchimp.com"):
-        return True, "Marketing", "Mailchimp notification"
+    #if sender.endswith("@mailchimp.com"):
+       # return True, "Marketing", "Mailchimp notification"
     # --------------------
     # Domain Rules
     # --------------------
@@ -142,7 +147,8 @@ def is_automated_email(msg):
                 return (
                     True,
                     rule["category"],
-                    rule["reason"] or f"Blocked domain: {domain}"
+                    rule["reason"] or f"Blocked domain: {domain}",
+                    "support"
                 )
 
     # --------------------
@@ -161,7 +167,8 @@ def is_automated_email(msg):
             return (
                     True,
                     rule["category"],
-                    rule["reason"] or f"Subject matched '{pattern}'"
+                    rule["reason"] or f"Subject matched '{pattern}'",
+                    "support"
             )
 
     # --------------------
@@ -213,7 +220,8 @@ def is_automated_email(msg):
             return (
                     True,
                     rule["category"],
-                    rule["reason"] or f"Body matched '{pattern}'"
+                    rule["reason"] or f"Body matched '{pattern}'",
+                    "support"
             )
 
-    return False, "", ""
+    return False, "", "", "inbox"

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trial Email Details</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body
+    class="min-h-screen p-6 md:p-12 font-sans text-stone-700 bg-stone-50"
+    style="
+        background-image: url('/static/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+>
+    <div class="max-w-3xl mx-auto bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-xl shadow-stone-200/40 border border-stone-100/50">
+        <!-- Header -->
+        <div class="flex items-center gap-2 mb-6">
+            <span class="text-2xl">🚀</span>
+            <h1 class="text-2xl font-bold tracking-tight text-stone-800">Trial Follow-up: {{ email.subject }}</h1>
+        </div>
+        
+        <!-- Metadata Alert Card -->
+        <div class="mb-8 p-5 bg-gradient-to-br from-indigo-50/60 to-purple-50/60 border border-indigo-100 rounded-2xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <p class="font-semibold text-stone-800 text-base md:col-span-2 flex items-center gap-1.5 border-b border-indigo-100/60 pb-2 mb-1">
+                    👤 <span class="text-stone-500 font-normal">Parent:</span> {{ email.parent_name or 'N/A' }}
+                </p>
+                <p class="flex items-center gap-1.5">🎓 <span class="text-stone-500">Learner:</span> <span class="font-medium text-stone-800">{{ email.learner_name or 'N/A' }}</span></p>
+                <p class="flex items-center gap-1.5">📧 <span class="text-stone-500">Recipient:</span> <span class="font-medium text-stone-800">{{ email.recipient_email }}</span></p>
+                <p class="flex items-center gap-1.5">📌 <span class="text-stone-500">Status:</span> <span class="font-medium text-stone-800">{{ email.status|capitalize }}</span></p>
+                <p class="flex items-center gap-1.5">
+                    🕒 <span class="text-stone-500">Sent At:</span>
+                    <span class="font-medium text-stone-800">{{ email.sent_at.strftime("%d %b %Y %I:%M %p") if email.sent_at else 'Pending' }}</span>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Email Body -->
+        <div class="mb-8">
+            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1 mb-2">
+                ✉️ Email Content
+            </h2>
+            <div class="bg-stone-50/80 border border-stone-200/60 p-5 rounded-2xl whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-stone-600 text-sm leading-relaxed shadow-inner">
+                {{ email.email_body or "No email content available." }}
+            </div>
+        </div>
+
+        <!-- Footer / Navigation -->
+        <div class="border-t border-stone-100 pt-6 flex justify-between items-center">
+            <span class="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide uppercase">
+                Follow-up {{ email.email_number }}
+            </span>
+            <a href="/trial-followup" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-900 transition shadow-sm">
+                Back to Dashboard 🏡
+            </a>
+        </div>
+    </div>
+</body>
+</html>

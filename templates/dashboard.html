@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Inbox Dashboard</title>
-    <!-- Using the rock-solid Tailwind v4 browser script -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body
@@ -25,192 +24,154 @@
             <h3 class="text-gray-500 text-sm font-medium">Avg First Response</h3>
             <p class="text-3xl font-bold text-purple-600 mt-1">{{ avg_response }}</p>
         </div>
-
         <div class="bg-white p-6 rounded-lg shadow">
             <h3 class="text-gray-500 text-sm font-medium">Avg Resolution</h3>
             <p class="text-3xl font-bold text-indigo-600 mt-1">{{ avg_resolution }}</p>
         </div>
-
         <div class="bg-white p-6 rounded-lg shadow">
             <h3 class="text-gray-500 text-sm font-medium">Total Messages</h3>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ emails|length }}</p>
         </div>
-
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-gray-500 text-sm font-medium">Auto Replies</h3>
+            <p class="text-3xl font-bold text-green-600 mt-1">{{ auto_reply_count }}</p>
+        </div>
         <div class="bg-white p-6 rounded-lg shadow">
             <h3 class="text-gray-500 text-sm font-medium">Needs Review</h3>
             <p class="text-3xl font-bold text-red-600 mt-1">{{ needs_review_count }}</p>
         </div>
+    </div>
+<a href="/notifications"
+   class="bg-white rounded-2xl shadow p-6 hover:shadow-lg transition block">
 
-        <div class="bg-white p-6 rounded-lg shadow">
-            <h3 class="text-gray-500 text-sm font-medium">AI Inbox</h3>
-            <p class="text-3xl font-bold text-blue-600 mt-1">Active</p>
-        </div>
+    <div class="text-3xl mb-2">🔔</div>
+
+    <div class="text-lg font-bold">
+        Notifications
     </div>
 
-    <!-- Category Summary -->
-    <div class="bg-white rounded-lg shadow p-6 mb-8">
-        <h2 class="text-xl font-semibold mb-4 text-gray-800">Category Summary</h2>
-        <div class="flex flex-wrap gap-3">
-            {% for category, count in counts %}
-                <a href="/category/{{ category }}" class="bg-blue-50 text-blue-700 hover:bg-blue-100 px-4 py-2 rounded-lg text-sm font-medium transition">
-                    {{ category }} ({{ count }})
-                </a>
-            {% endfor %}
-        </div>
+    <div class="text-stone-500">
+        View automated emails →
     </div>
 
-    <!-- Fixed Table Card Component with Scroll Safeguards -->
+</a>
+    <!-- Table -->
     <div class="bg-white rounded-lg shadow overflow-x-auto w-full">
-        <table class="w-full table-fixed border-collapse min-w-[1450px]">
+        <table class="w-full table-fixed border-collapse min-w-[1100px]">
             <thead class="bg-gray-50 border-b border-gray-200 text-gray-600 text-sm font-medium">
                 <tr>
-                    <th class="w-80 p-4 text-left">Subject</th>
-                    <th class="w-44 p-4 text-left">Sender</th>
-                    <th class="w-40 p-4 text-left">Inbox</th>
+                    <th class="w-16 p-4 text-left">#</th>
+                    <th class="w-72 p-4 text-left">Subject</th>
+                    <th class="w-40 p-4 text-left">Sender</th>
+                    <th class="w-36 p-4 text-left">Inbox</th>
                     <th class="w-32 p-4 text-left">Category</th>
                     <th class="w-24 p-4 text-left">Priority</th>
                     <th class="w-24 p-4 text-left">Confidence</th>
                     <th class="w-40 p-4 text-left">Status</th>
+                    <th class="w-32 p-4 text-left">Handled By</th>
                     <th class="w-36 p-4 text-left">Received</th>
-                    <th class="w-24 p-4 text-left">First Reply</th>
-                    <th class="w-24 p-4 text-left">Resolved</th>
-                    <th class="w-36 p-4 text-center">Actions</th>
+                    <th class="w-32 p-4 text-center">Actions</th>
                 </tr>
             </thead>
             <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
                 {% for email in emails %}
                 <tr class="hover:bg-gray-50/70 transition">
-                    <!-- 1. Subject & Unique Reference Display -->
-                    <td class="p-4 max-w-xs font-medium text-gray-900">
-                        <div class="truncate" title="{{ email.subject }}">{{ email.subject }}</div>
-                        {% if email.message_id %}
-                            <div class="text-[10px] font-mono text-gray-400 mt-0.5 truncate tracking-tight" title="Gmail ID: {{ email.message_id }}">
-                                ID: {{ email.message_id.replace('<','').replace('>','') }}
-                            </div>
-                        {% endif %}
+                    <td class="p-4 text-gray-500">
+                            {{ loop.index }} (ID {{ email.id }})
                     </td>
-                    
-                    <!-- 2. Sender -->
                     <td class="p-4 truncate">
-                        {{ email.sender }}
+                        <div class="truncate font-medium text-gray-900" title="{{ email.subject }}">{{ email.subject }}</div>
                     </td>
-
-                    <!-- 3. Inbox Badge -->
-                    <td class="p-4 whitespace-nowrap">
+                    <td class="p-4 truncate" title="{{ email.sender }}">{{ email.sender }}</td>
+                    
+                    <!-- Inbox Column -->
+                    <td class="p-4">
                         {% if email.source == "support@coralacademy.com" %}
-                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-medium">
-                                📧 Support
-                            </span>
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-semibold">📧 Support</span>
                         {% elif email.source == "lucy@coralacademy.com" %}
-                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-medium">
-                                📧 Lucy
-                            </span>
+                            <span class="bg-pink-100 text-pink-700 px-2 py-1 rounded-full text-xs font-semibold">👩 Lucy</span>
                         {% elif email.source == "engineering@coralacademy.com" %}
-                            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-medium">
-                                📧 Engineering
-                            </span>
+                            <span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full text-xs font-semibold">⚙️ Engineering</span>
                         {% else %}
-                            <span class="text-gray-500 text-xs">
-                                {{ email.source }}
-                            </span>
+                            <span class="bg-gray-100 text-gray-600 px-2 py-1 rounded-full text-xs">Other</span>
                         {% endif %}
                     </td>
 
-                    <!-- 4. Category -->
-                    <td class="p-4 whitespace-nowrap">
-                        <span class="text-gray-600">{{ email.category }}</span>
+                    <td class="p-4">
+                        {% set cat_colors = {
+                            "Admissions": "bg-pink-100 text-pink-700", 
+                            "Support": "bg-blue-100 text-blue-700", 
+                            "Billing": "bg-amber-100 text-amber-700", 
+                            "Urgent": "bg-red-100 text-red-700", 
+                            "General": "bg-gray-100 text-gray-700", 
+                            "Technical": "bg-indigo-100 text-indigo-700", 
+                            "Teacher Portal": "bg-emerald-100 text-emerald-700", 
+                            "Contact Form": "bg-cyan-100 text-cyan-700"
+                        } %}
+                        <span class="px-2 py-1 rounded text-xs font-medium {{ cat_colors.get(email.category, 'bg-gray-100 text-gray-600') }}">
+                            {{ email.category }}
+                        </span>
                     </td>
 
-                    <!-- 5. Priority Badge -->
-                    <td class="p-4 whitespace-nowrap">
-                        {% if email.priority == "Urgent" %}
-                            <span class="bg-red-100 text-red-700 px-2.5 py-1 rounded-full text-xs font-semibold">Urgent</span>
-                        {% elif email.priority == "High" %}
-                            <span class="bg-orange-100 text-orange-700 px-2.5 py-1 rounded-full text-xs font-semibold">High</span>
-                        {% elif email.priority == "Medium" %}
-                            <span class="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-semibold">Medium</span>
-                        {% else %}
-                            <span class="bg-green-100 text-green-700 px-2.5 py-1 rounded-full text-xs font-semibold">Low</span>
-                        {% endif %}
+                    <td class="p-4">
+                        {% if email.priority == "Urgent" %}<span class="text-red-600 font-bold">Urgent</span>
+                        {% elif email.priority == "High" %}<span class="text-orange-600 font-bold">High</span>
+                        {% elif email.priority == "Medium" %}<span class="text-yellow-600 font-bold">Medium</span>
+                        {% elif email.priority == "Low" %}<span class="text-green-600 font-bold">Low</span>
+                        {% else %}<span class="text-gray-500">—</span>{% endif %}
                     </td>
 
-                    <!-- 6. Confidence Badge -->
-                    <td class="p-4 whitespace-nowrap">
-                        {% if email.ai_confidence is none %}
-                            <span class="text-gray-400 font-medium">—</span>
-                        {% elif email.ai_confidence >= 90 %}
-                            <span class="bg-emerald-100 text-emerald-700 px-2.5 py-1 rounded-full text-xs font-semibold">
+                    <td class="p-4">
+                        {% if email.ai_confidence %}
+                            <span class="
+                                {% if email.ai_confidence >= 90 %}text-green-600
+                                {% elif email.ai_confidence >= 70 %}text-yellow-600
+                                {% else %}text-red-600
+                                {% endif %} font-bold">
                                 {{ email.ai_confidence }}%
                             </span>
-                        {% elif email.ai_confidence >= 70 %}
-                            <span class="bg-amber-100 text-amber-700 px-2.5 py-1 rounded-full text-xs font-semibold">
-                                {{ email.ai_confidence }}%
-                            </span>
-                        {% else %}
-                            <span class="bg-rose-100 text-rose-700 px-2.5 py-1 rounded-full text-xs font-semibold">
-                                {{ email.ai_confidence }}%
-                            </span>
-                        {% endif %}
+                        {% else %}—{% endif %}
                     </td>
 
-                    <!-- 7. Enhanced Status Badges -->
-                    <td class="p-4 whitespace-nowrap">
-                        {% if email.status == "Replied" %}
-                            <span class="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-fit">
-                                <span class="text-emerald-500 font-bold">✓</span> Sent
-                            </span>
-                        {% elif email.status == "Resolved" %}
-                            <span class="bg-sky-50 text-sky-700 border border-sky-200 px-2.5 py-1 rounded-full text-xs font-semibold flex items-center gap-1 w-fit">
-                                Resolved
-                            </span>
-                        {% elif email.status == "Needs Review" %}
-                            <span class="bg-red-50 text-red-600 border border-red-200 px-2.5 py-1 rounded-full text-xs font-semibold">Needs Review</span>
-                        {% elif email.status == "In Progress" %}
-                            <span class="bg-yellow-100 text-yellow-700 px-2.5 py-1 rounded-full text-xs font-semibold">In Progress</span>
-                        {% else %}
-                            <span class="bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full text-xs font-medium">{{ email.status }}</span>
-                        {% endif %}
-                    </td>
 
-                    <!-- 8. Received -->
-                    <td class="p-4 text-gray-500 whitespace-nowrap">
-                        {{ email.created_at }}
-                    </td>
-
-                    <!-- 9. First Reply -->
-                    <td class="p-4 text-gray-500 whitespace-nowrap">
-                        {{ email.first_reply_at or '-' }}
-                    </td>
-
-                    <!-- 10. Resolved -->
-                    <td class="p-4 text-gray-500 whitespace-nowrap">
-                        {{ email.resolved_at or '-' }}
-                    </td>
-
-                    <!-- 11. Anchored Actions Buttons Panel -->
-                    <td class="p-4 w-36 whitespace-nowrap text-center">
+                    <td class="p-4">
                         {% if email.status == "Needs Review" %}
-                            <a href="/email/{{ email.id }}" class="inline-block bg-red-600 text-white px-3 py-1.5 rounded font-medium hover:bg-red-700 transition text-xs">
-                                Review
-                            </a>
+                            <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full text-xs font-semibold">🟠 Needs Review</span>
+                        {% elif email.status == "Replied" %}
+                            <span class="bg-green-100 text-green-700 px-2 py-1 rounded-full text-xs font-semibold">🟢 Replied</span>
+                        {% elif email.status == "Closed" %}
+                            <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">⚪ Closed</span>
+                        {% else %}{{ email.status }}{% endif %}
+                    </td>
+
+                    <td class="p-4">
+                        {% if email.handled_by == "AI" %}
+                            <span class="bg-purple-100 text-purple-700 px-2 py-1 rounded-full text-xs font-semibold">🤖 AI</span>
+
+                        {% elif email.handled_by == "Human" %}
+                            <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-xs font-semibold">👤 Human</span>
+
                         {% else %}
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="/email/{{ email.id }}" class="text-blue-600 hover:underline font-medium text-xs">
-                                    View Reply
-                                </a>
-                                {% if email.status != "Resolved" and email.status != "Replied" %}
-                                    <a href="/resolve/{{ email.id }}" class="bg-green-600 text-white px-2.5 py-1 rounded font-medium hover:bg-green-700 transition text-xs">
-                                        Resolve
-                                    </a>
-                                {% endif %}
-                            </div>
+                            <span class="bg-yellow-50 text-yellow-700 px-2 py-1 rounded-full text-xs">Pending</span>
                         {% endif %}
+                    </td>
+
+                    <td class="p-4 text-gray-500">{{ email.created_at }}</td>
+                    
+                    
+
+                    <td class="p-4 text-center">
+                        <a href="/email/{{ email.id }}" class="text-blue-600 font-bold hover:underline">
+                            {% if email.status == "Needs Review" %}Review →{% else %}View →{% endif %}
+                        </a>
                     </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+        <div class="bg-gray-50 border-t px-6 py-3 text-sm text-gray-500">
+            Showing {{ emails|length }} emails
+        </div>
     </div>
-
 </body>
 </html>

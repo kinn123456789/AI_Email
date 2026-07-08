@@ -5,6 +5,17 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
 from database import get_teacher_messages
+from fastapi import Form
+from trial_followup import (
+    get_trial_followup_dashboard,
+    get_followup_email_logs,
+    get_followup_email,
+    complete_followup_campaign,
+    get_completed_campaign_count,
+    get_completed_campaigns
+    
+    
+)
 
 import scheduler
 import os
@@ -21,7 +32,9 @@ from database import (
     get_avg_resolution_time,
     get_conversation,
     get_conversation_messages,
-    get_contact_forms
+    get_contact_forms,
+    update_final_reply, update_reply_type,get_email_thread,get_thread,
+    get_support_emails,
 )
 templates = Jinja2Templates(directory="templates")
 
@@ -75,16 +88,32 @@ def emails():
 
     return get_emails()
 @app.get("/email/{email_id}")
+@app.get("/email/{email_id}")
+@app.get("/email/{email_id}")
 def view_email(request: Request, email_id: int):
-    # Fetch the full email details including the AI draft
-    
-    email_data = get_email_by_id(email_id) # Ensure this returns [id, sender, subject, body, category, ai_summary, ai_draft_reply]
-    
+
+    email_data = get_email_by_id(email_id)
+
+    print("=" * 50)
+    print("EMAIL DATA")
+    print(email_data)
+
+    thread_id = email_data.get("thread_id")
+    print("THREAD:", thread_id)
+
+    conversation = get_thread(thread_id) if thread_id else []
+
+    print("Thread:", thread_id)
+    print("CONVERSATION:")
+    print(conversation)
+    print("=" * 50)
+
     return templates.TemplateResponse(
         "email_detail.html",
         {
             "request": request,
-            "email": email_data
+            "email": email_data,
+            "conversation": conversation
         }
     )
 
@@ -101,24 +130,28 @@ def teacher_dashboard(request: Request):
         }
     )
 
-@app.post("/email/{email_id}/send")
+
     
 # 1. Fetch the final edited reply from a form
 # 2. Call your send_email function
 # # 3. Redirect back to /dashboard
+
+
+
+from fastapi import Form, Request
+from fastapi.responses import RedirectResponse
+
+@app.post("/email/{email_id}/send")
 async def send_reply(
+    request: Request,
     email_id: int,
-    request: Request
+    reply_body: str = Form(...)
 ):
-
-    form = await request.form()
-
-    reply_body = form["reply_body"]
     
-    email = get_email_by_id(email_id)
-    source = email["source"]
-    recipient = email["sender"]
-    subject = "Re: " + email["subject"]
+    original_email = get_email_by_id(email_id)
+
+    source = original_email["source"]
+
     if source == "support@coralacademy.com":
         from_email = os.getenv("EMAIL_1")
         token_file = "token_support.json"
@@ -131,49 +164,65 @@ async def send_reply(
         from_email = os.getenv("EMAIL_3")
         token_file = "token_engineering.json"
 
-   
+    elif source == "shopsat19@gmail.com":
+        from_email = os.getenv("EMAIL_4")
+        token_file = "token_sat.json"
+
     else:
-    
         return RedirectResponse(
-            url="/dashboard",
+            "/dashboard",
             status_code=303
         )
-    print("=" * 50)
-    print("ABOUT TO SEND")
-    print("Source     :", source)
-    print("From Email :", from_email)
-    print("Token File :", token_file)
-    print("To         :", recipient)
-    print("=" * 50)
 
-    send_email(
+    sent_result = send_email(
         from_email=from_email,
         token_file=token_file,
-        to_email=recipient,
-        subject=subject,
-        body=reply_body
+        to_email=original_email["sender"],
+        subject=original_email["subject"],   # send_email() adds "Re:" automatically
+        body=reply_body,
+        thread_id=original_email["thread_id"],
+        original_msg_id=original_email["message_id"]
     )
+    mailbox=original_email["mailbox"]
 
-    set_first_reply_time(email_id)
+    if sent_result:
 
+        save_email(
+            sender=source,
+            subject=original_email["subject"],
+            body=reply_body,
+            category=original_email["category"],
+            priority=original_email["priority"],
+            ai_summary="Manual reply",
+            ai_draft_reply=reply_body,
+            message_id=sent_result["message_id"],
+            thread_id=original_email["thread_id"],
+            in_reply_to=original_email["message_id"],
+            source=source,
+            status="Replied",
+            reply_type="human",
+            mailbox=mailbox
+        )
 
-    set_resolved_time(email_id)
+        update_final_reply(email_id, reply_body)
+        update_reply_type(email_id, "human")
+        update_status(email_id, "Replied")
+        set_resolved_time(email_id)
+        set_first_reply_time(email_id)
 
-    update_status(
-        email_id,
-        "Resolved"
-    )
+        print(f"✅ Email {email_id} sent and saved successfully.")
 
+        return RedirectResponse(
+            url=f"/email/{email_id}?sent=true",
+            status_code=303
+        )
 
-   
-    
+    print(f"❌ Email sending failed for {email_id}")
+
     return RedirectResponse(
-        url="/dashboard",
+        url=f"/email/{email_id}?error=true",
         status_code=303
     )
-
-
-
 
    
 @app.get("/dashboard")
@@ -186,6 +235,9 @@ def dashboard(request: Request):
     needs_review_count = len(
     [e for e in rows if e["status"] == "Needs Review"]
 )
+    auto_reply_count = len(
+    [e for e in rows if e.get("reply_type") == "automatic"]
+)
     return templates.TemplateResponse( #Everything below this line will never run:(in this function)
                                         #Because Python exits the function as soon as it hits:
                                         #return templates.TemplateResponse
@@ -196,6 +248,7 @@ def dashboard(request: Request):
             "emails": rows,
             "counts": counts,
             "needs_review_count": needs_review_count,
+            "auto_reply_count": auto_reply_count,
             "avg_response": avg_response,
             "avg_resolution": avg_resolution
         }
@@ -219,19 +272,7 @@ def category_view(
         }
     )
 
-@app.get("/resolve/{email_id}")
-def resolve_email(email_id):
 
-    update_status(email_id, "Resolved")
-
-    return RedirectResponse(url="/dashboard")
-
-@app.get("/start/{email_id}")
-def start_email(email_id):
-
-    update_status(email_id, "In Progress")
-
-    return RedirectResponse(url=f"/email/{email_id}")
 @app.post("/submit-enquiry")
 def submit_enquiry(data: dict):
 
@@ -292,4 +333,80 @@ def category_view(
         }
     )
 
+@app.get("/trial-followup", response_class=HTMLResponse)
+def trial_followups(request: Request):
+
+    rows = get_followup_email_logs()
+    completed_campaigns = get_completed_campaign_count()
+
+    return templates.TemplateResponse(
+        "trial_followup.html",
+        {
+            "request": request,
+            "rows": rows,
+            "completed_campaigns": completed_campaigns
+        }
+    )
+@app.get("/trial-followup/email/{email_id}")
+def view_followup_email(
+    request: Request,
+    email_id: int
+):
+
+    email = get_followup_email(email_id)
+
+    return templates.TemplateResponse(
+        "trial_followup_emaildetail.html",
+        {
+            "request": request,
+            "email": email
+        }
+    )
+@app.get("/trial-followup/completed")
+def completed_campaigns(request: Request):
+
+    rows = get_completed_campaigns()
+
+    return templates.TemplateResponse(
+        "completed_campaigns.html",
+        {
+            "request": request,
+            "rows": rows
+        }
+    )
+@app.get("/email/{email_id}/dismiss")
+def dismiss_email(email_id: int):
+
+    update_reply_type(
+            email_id,
+            "none"
+    )
+
+    update_status(
+            email_id,
+            "Closed"
+    )
+    set_resolved_time(email_id)
+
+    update_reply_type(email_id, "none")
+
+    update_status(email_id, "Closed")
+
+    return RedirectResponse(
+        url=f"/email/{email_id}?dismissed=true",
+        status_code=303
+    )
+
+
+@app.get("/notifications")
+def notification_mailbox(request: Request):
+    rows = get_support_emails()
+
+    return templates.TemplateResponse(
+        "notifications.html",
+        {
+            "request": request,
+            "emails": rows
+        }
+    )
 ##db_pool.closeall()

@@ -5,6 +5,8 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 import re
 
+
+
 load_dotenv()
 
 # Increased max connections to 25 to handle bulk processing overhead
@@ -13,20 +15,65 @@ db_pool = SimpleConnectionPool(
     dsn=os.environ.get("DATABASE_URL")
 )
 
+
+
 def get_connection():
     return db_pool.getconn()
 
 # --- HELPER PATTERN: Every function now uses try/finally ---
 
-def save_email(sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source=None, contact_name=None, phone=None, status="New",requires_review=False, ai_confidence=None, knowledge_url=None):
+def save_email(
+    sender,
+    subject,
+    body,
+    category,
+    priority,
+    ai_summary,
+    ai_draft_reply,
+    message_id,
+    thread_id,
+    in_reply_to,
+    source=None,
+    contact_name=None,
+    phone=None,
+    status="New",
+    requires_review=False,
+    ai_confidence=None,
+    knowledge_url=None,
+    reply_type=None,
+    mailbox="inbox"
+):
     conn = get_connection()
     cursor = conn.cursor()
     try:
         cursor.execute("""
-            INSERT INTO messages(sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status,requires_review,ai_confidence,knowledge_url)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, (sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status, requires_review, ai_confidence,knowledge_url))
+            INSERT INTO messages(
+    sender,
+    subject,
+    body,
+    category,
+    priority,
+    ai_summary,
+    ai_draft_reply,
+    message_id,
+    thread_id,
+    in_reply_to,
+    source,
+    contact_name,
+    phone,
+    status,
+    requires_review,
+    ai_confidence,
+    knowledge_url,
+    reply_type,
+    mailbox
+)
+VALUES (
+    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
+    %s,%s,%s,%s,%s,%s,%s,%s,%s
+)
+RETURNING id
+        """, (sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status, requires_review, ai_confidence,knowledge_url,reply_type,mailbox))
         result = cursor.fetchone()
         conn.commit()
         return result[0] if result else None
@@ -58,6 +105,7 @@ def get_emails():
                 category,
                 priority,
                 status,
+                reply_type,
                 created_at,
                 first_reply_at,
                 resolved_at,
@@ -67,12 +115,15 @@ def get_emails():
                 ai_draft_reply,
                 requires_review
             FROM messages
-            ORDER BY id DESC
+            WHERE mailbox = 'inbox'
+            AND reply_type IS DISTINCT FROM 'gmail_manual'
+            ORDER BY id DESC;
         """)
 
         rows = cursor.fetchall()
 
         for row in rows:
+            
             if row["created_at"]:
                 row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
 
@@ -81,7 +132,29 @@ def get_emails():
 
             if row["resolved_at"]:
                 row["resolved_at"] = row["resolved_at"].strftime("%b %-d, %-I:%M %p")
+            reply_type = row["reply_type"]
+            status = row["status"]
 
+            if reply_type == "automatic":
+                row["handled_by"] = "AI"
+
+            elif reply_type == "human":
+                row["handled_by"] = "Human"
+
+            elif status in ["Replied", "Auto Replied", "No Reply Required"]:
+                row["handled_by"] = "AI"
+
+            elif row["requires_review"]:
+                row["handled_by"] = "Human"
+
+            else:
+                 row["handled_by"] = "Pending"
+            print(
+                    row["id"],
+                    row["status"],
+                    row["reply_type"],
+                    row["handled_by"]
+            )
         return rows
 
     finally:
@@ -145,7 +218,14 @@ def get_email_by_id(email_id):
             """
             SELECT id, sender, subject, body, category, ai_summary, 
                    ai_draft_reply, priority, status, source, knowledge_url,
-                   ai_confidence, requires_review, created_at 
+                   ai_confidence, requires_review, created_at,
+                   thread_id,
+                   message_id,
+                   in_reply_to,
+                   reply_type,
+                   mailbox
+                   
+                   
             FROM messages 
             WHERE id = %s
             """, 
@@ -285,11 +365,20 @@ def log_event(message_id, event_type, details):
         cursor.close()
         db_pool.putconn(conn)
 
+from psycopg2.extras import RealDictCursor
+
 def get_thread(thread_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    # Using RealDictCursor allows you to access data by column name
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute("SELECT sender, subject, body, created_at FROM messages WHERE thread_id = %s ORDER BY created_at", (thread_id,))
+        query = """
+            SELECT sender, body, created_at 
+            FROM messages 
+            WHERE thread_id = %s 
+            ORDER BY created_at ASC
+        """
+        cursor.execute(query, (thread_id,))
         return cursor.fetchall()
     finally:
         cursor.close()
@@ -596,5 +685,137 @@ def get_historical_emails(email_ids):
 
     finally:
 
+        cursor.close()
+        db_pool.putconn(conn)
+
+def update_final_reply(email_id, final_reply):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            UPDATE messages
+            SET final_reply = %s
+            WHERE id = %s
+        """, (
+            final_reply,
+            email_id
+        ))
+
+        conn.commit()
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+def update_reply_type(email_id, reply_type):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            UPDATE messages
+            SET reply_type = %s
+            WHERE id = %s
+        """, (
+            reply_type,
+            email_id
+        ))
+
+        conn.commit()
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+def get_email_thread(thread_id):
+
+    conn = db_pool.getconn()
+
+    try:
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT
+                id,
+                sender,
+                source,
+                body,
+                created_at,
+                reply_type,
+                status
+            FROM messages
+            WHERE thread_id = %s
+            ORDER BY created_at ASC
+        """, (thread_id,))
+
+        rows = cur.fetchall()
+
+        return rows
+
+    finally:
+        db_pool.putconn(conn)
+
+
+from psycopg2.extras import RealDictCursor
+
+def get_message_by_message_id(message_id):
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT *
+            FROM messages
+            WHERE message_id = %s
+            LIMIT 1
+        """, (message_id,))
+
+        return cursor.fetchone()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def get_support_emails():
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+
+        cursor.execute("""
+            SELECT
+                id,
+                sender,
+                subject,
+                source,
+                category,
+                priority,
+                status,
+                reply_type,
+                created_at,
+                ai_summary
+            FROM messages
+            WHERE mailbox = 'support'
+            ORDER BY created_at DESC
+        """)
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+
+        return rows
+
+    finally:
         cursor.close()
         db_pool.putconn(conn)

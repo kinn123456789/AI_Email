@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trial Follow-up Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body class="min-h-screen p-10 font-sans text-stone-800"
+    style="background-image: url('/static/background.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-3xl font-bold text-stone-900">Trial Follow-up Dashboard</h1>
+        <a href="/dashboard" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition">
+            ← AI Inbox
+        </a>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8 relative z-10">
+        <div class="bg-white/90 p-6 rounded-lg shadow-sm backdrop-blur-sm">
+            <h3 class="text-gray-500 text-sm">Emails Sent</h3>
+            <p class="text-3xl font-bold text-blue-600">{{ rows|length }}</p>
+        </div>
+        <div class="bg-white/90 p-6 rounded-lg shadow-sm backdrop-blur-sm">
+            <h3 class="text-gray-500 text-sm">Follow-up 1</h3>
+            <p class="text-3xl font-bold text-green-600">{{ rows|selectattr("email_number","equalto",1)|list|length }}</p>
+        </div>
+        <div class="bg-white/90 p-6 rounded-lg shadow-sm backdrop-blur-sm">
+            <h3 class="text-gray-500 text-sm">Follow-up 2</h3>
+            <p class="text-3xl font-bold text-yellow-600">{{ rows|selectattr("email_number","equalto",2)|list|length }}</p>
+        </div>
+        <div class="bg-white/90 p-6 rounded-lg shadow-sm backdrop-blur-sm">
+            <h3 class="text-gray-500 text-sm">Follow-up 3</h3>
+            <p class="text-3xl font-bold text-red-600">{{ rows|selectattr("email_number","equalto",3)|list|length }}</p>
+        </div>
+        <div class="bg-white/90 p-6 rounded-lg shadow-sm backdrop-blur-sm">
+            <h3 class="text-gray-500 text-sm">Active Campaigns</h3>
+            <p class="text-3xl font-bold text-purple-600">{{ active_campaigns }}</p>
+        </div>
+        
+        <!-- Completed Campaigns: z-20 ensures this sits above layout layers for 1-click interaction -->
+        <!-- Add 'onclick' and 'active:scale-95' for instant visual feedback -->
+<a href="/trial-followup/completed" 
+   onclick="this.querySelector('div').classList.add('animate-pulse', 'bg-purple-100')" 
+   class="block h-full group relative z-20 transition-all duration-200 active:scale-95">
+   
+   <div class="bg-white/90 p-6 rounded-lg shadow-sm backdrop-blur-sm hover:shadow-lg transition h-full flex flex-col justify-center border-2 border-transparent hover:border-purple-200 cursor-pointer">
+       <h3 class="text-gray-500 text-sm">Completed Campaigns</h3>
+       <p class="text-3xl font-bold text-purple-600">{{ completed_campaigns }}</p>
+   </div>
+</a>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white/90 rounded-lg shadow-lg overflow-x-auto backdrop-blur-sm">
+        {% if rows %}
+        <table class="w-full table-fixed border-collapse min-w-[1000px]">
+            <thead class="bg-gray-100 border-b border-gray-200 text-gray-600 text-sm font-medium">
+                <tr>
+                    <th class="p-4 text-left w-16">#</th>
+                    <th class="p-4 text-left">Parent</th>
+                    <th class="p-4 text-left">Learner</th>
+                    <th class="p-4 text-left">Recipient</th>
+                    <th class="p-4 text-left w-32">Type</th>
+                    <th class="p-4 text-left">Subject</th>
+                    <th class="p-4 text-left w-32">Status</th>
+                    <th class="p-4 text-left">Sent At</th>
+                    <th class="p-4 text-left">Gmail ID</th>
+                    <th class="p-4 text-left">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {% for row in rows %}
+                <tr class="hover:bg-gray-50/80 transition">
+                    <td class="p-4 text-gray-500 font-mono text-sm">{{ loop.index }}</td>
+                    <td class="p-4 truncate">{{ row.parent_name or 'N/A' }}</td>
+                    <td class="p-4 truncate">{{ row.learner_name or 'N/A' }}</td>
+                    <td class="p-4 truncate">{{ row.recipient_email }}</td>
+                    <td class="p-4">
+                        {% set colors = {1: 'bg-green-100 text-green-700', 2: 'bg-yellow-100 text-yellow-700', 3: 'bg-red-100 text-red-700'} %}
+                        <span class="{{ colors.get(row.email_number, 'bg-gray-100') }} px-2 py-1 rounded-full text-xs font-bold">
+                            Follow-up {{ row.email_number }}
+                        </span>
+                    </td>
+                    <td class="p-4 font-medium text-gray-800 truncate" title="{{ row.subject }}">
+                        {{ row.subject }}
+                    </td>
+                    <td class="p-4">
+                        <span class="{% if row.status == 'sent' %}bg-green-100 text-green-700{% else %}bg-orange-100 text-orange-700{% endif %} px-2 py-1 rounded-full text-xs font-medium">
+                            {{ row.status|capitalize }}
+                        </span>
+                    </td>
+                    <td class="p-4 text-sm text-gray-600">
+                        {% if row.sent_at %}{{ row.sent_at.strftime("%d %b %Y %I:%M %p") }}{% else %}<span class="text-gray-400 italic">Pending</span>{% endif %}
+                    </td>
+                    <td class="p-4 font-mono text-xs text-gray-500 truncate" title="{{ row.gmail_message_id or '' }}">
+                        {% if row.gmail_message_id %}
+                            {{ row.gmail_message_id[:12] }}...
+                        {% else %}
+                            ---
+                        {% endif %}
+                    </td>
+                    <td class="p-4">
+                        <a href="/trial-followup/email/{{ row.id }}" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="p-4 border-t border-gray-200 text-sm text-gray-500 bg-gray-50">
+            Showing {{ rows|length }} email records
+        </div>
+        {% else %}
+        <div class="p-10 text-center text-gray-500">
+            <p>No follow-up emails found in the database.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</body>
+</html>

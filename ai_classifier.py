@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 import os
 import json
 
-
 load_dotenv()
 
 client = OpenAI(
@@ -11,8 +10,7 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
-def ai_triage(subject, body,history=None, images=None):
-
+def ai_triage(subject, body, history=None, images=None):
     text = f"""
 Subject: {subject}
 
@@ -24,123 +22,75 @@ Message:
 """
 
     prompt = f"""
-You are a school communication assistant.
-
-Return ONLY valid JSON.
+You are a school communication assistant. Return ONLY valid JSON.
 Do not include markdown, explanations, or any text before or after the JSON.
 
-Categories:
-Admissions
-Teacher
-Billing
-Urgent
-General
-
-Priorities:
-Low
-Medium
-High
-Urgent
-
-Confidence Guidelines:
-
-95-100: Very certain. The category, priority, summary and reply requirement are clear.
-
-80-94: Mostly certain with minor ambiguity.
-
-60-79: Some uncertainty.
-
-40-59: Multiple interpretations are possible.
-
-0-39: Low confidence. Human review is recommended.
-
-Return only an integer between 0 and 100.
-
-
-Return a JSON object with the following fields.
+Categories: Admissions, Teacher, Billing, Urgent, General
+Priorities: Low, Medium, High, Urgent
 
 Set requires_review to true if:
-- The confidence is low.
-- The email is ambiguous.
-- The email involves sensitive decisions, complaints, refunds, legal matters, or anything requiring human judgment.
-If you are unsure whether an email requires a reply, set:
-- needs_reply = true
-- requires_review = true
+- Confidence < 80
+- The email is ambiguous
+- Involves sensitive decisions, complaints, refunds, legal matters, or human judgment.
 
-Otherwise set requires_review to false.
+Always set requires_review = true for:
+- Complaints, dissatisfaction, refund requests, policy exceptions, legal issues, 
+  child safety concerns, staff conduct issues, or lack of information.
 
-Always include every field in the JSON response.
-Do not omit any fields.
+Workflow Rules:
+If requires_review = true: needs_reply = true, reply_type = "human"
+If requires_review = false AND needs_reply = true: reply_type = "automatic"
+If requires_review = false AND needs_reply = false: reply_type = "none"
 
+Return JSON object:
 {{
-  
   "category": "...",
   "priority": "...",
   "summary": "...",
   "requires_review": true,
-  "confidence":93,
-  "needs_reply": false
-
+  "confidence": 93,
+  "needs_reply": false,
+  "reply_type": "human"
 }}
 
-Set needs_reply to true ONLY if a human staff member at Coral Academy should send a reply.
-
-Otherwise set needs_reply to false.
-
-true
-- Parent emails
-- Student emails
-- Admissions questions
-- Billing questions
-- Scheduling requests
-- Homework questions
-- Teacher communication
-- Any email where a school staff member should respond
-
-false
-- Password reset emails
-- Security codes
-- Marketing emails
-- Newsletters
-- Receipts
-- Payment confirmations
-- Deployment alerts
-- Server notifications
-- Monitoring alerts
-- Social media notifications
-- Automated system messages
-
-
-Message:
+Message to triage:
 {text}
 """
 
     try:
-
         response = client.chat.completions.create(
             model="gpt-5-nano",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ]
+            messages=[{"role": "user", "content": prompt}]
         )
 
-        return json.loads(
-            response.choices[0].message.content
-        )
+        result = json.loads(response.choices[0].message.content)
+
+        # Keyword Override
+        text_content = (subject + " " + body).lower()
+        human_keywords = [
+            "complaint", "refund", "legal", "lawyer", "sue", "waiver", 
+            "scholarship", "bullying", "harassment", "teacher behaviour", 
+            "teacher behavior"
+        ]
+
+        if any(word in text_content for word in human_keywords):
+            result["requires_review"] = True
+            result["needs_reply"] = True
+            result["reply_type"] = "human"
+
+            if result.get("priority") in ["Low", "Medium"]:
+                result["priority"] = "High"
+        print(json.dumps(result, indent=2))
+        return result
 
     except Exception as e:
-
         print("AI Error:", e)
-
         return {
             "category": "General",
             "priority": "Low",
             "summary": f"AI Error: {str(e)}",
             "requires_review": True,
             "confidence": 0,
-            "needs_reply": False
+            "needs_reply": False,
+            "reply_type": "human"
         }
-    

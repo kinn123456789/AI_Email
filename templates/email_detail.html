@@ -3,26 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review Email </title>
+    <title>Review Email</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body
-    class="min-h-screen p-6 md:p-12 font-sans text-stone-700 bg-stone-50"
-    style="
-        background-image: url('/static/background.png');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    "
->
+<body class="min-h-screen p-6 md:p-12 font-sans text-stone-700 bg-stone-50"
+      style="background-image: url('/static/background.png'); background-size: cover; background-position: center; background-repeat: no-repeat;">
+
+    {% if request.query_params.get("dismissed") %}
+    <div class="mb-6 max-w-3xl mx-auto bg-blue-50 border border-blue-200 text-blue-700 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-xl">✔️</span>
+        <div>
+            <div class="font-semibold">Conversation closed.</div>
+            <div class="text-sm">No further action is required.</div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="max-w-3xl mx-auto bg-white/90 backdrop-blur-md p-8 rounded-3xl shadow-xl shadow-rose-100/40 border border-rose-100/50">
-        <!-- Header -->
+        
         <div class="flex items-center gap-2 mb-6">
             <span class="text-2xl">✨</span>
-            <h1 class="text-2xl font-bold tracking-tight text-stone-800">Review: {{ email.subject }}</h1>
+            <h1 class="text-2xl font-bold tracking-tight text-stone-800">
+                Review: {{ email.subject }}
+            </h1>
         </div>
-        
-        <!-- Metadata Alert Card -->
+
         <div class="mb-8 p-5 bg-gradient-to-br from-rose-50/60 to-amber-50/60 border border-rose-100 rounded-2xl shadow-sm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm">
                 <p class="font-semibold text-stone-800 text-base md:col-span-2 flex items-center gap-1.5 border-b border-rose-100/60 pb-2 mb-1">
@@ -31,7 +36,6 @@
                 <p class="flex items-center gap-1.5">🏷️ <span class="text-stone-500">Category:</span> <span class="font-medium text-stone-800">{{ email.category }}</span></p>
                 <p class="flex items-center gap-1.5">🚨 <span class="text-stone-500">Priority:</span> <span class="font-medium text-stone-800">{{ email.priority }}</span></p>
                 <p class="flex items-center gap-1.5">📌 <span class="text-stone-500">Status:</span> <span class="font-medium text-stone-800">{{ email.status }}</span></p>
-                
                 <p class="flex items-center gap-1.5 text-stone-600">
                     🤖 <span class="text-stone-500">Confidence:</span>
                     {% if email.ai_confidence is none %}
@@ -44,130 +48,120 @@
                         <span class="text-rose-600 font-semibold">{{ email.ai_confidence }}%</span>
                     {% endif %}
                 </p>
-                <p class="flex items-center gap-1.5">
-                    🕒 <span class="text-stone-500">Received:</span>
-                    <span class="font-medium text-stone-800">{{ email.created_at }}</span>
-                </p>
+                <p class="flex items-center gap-1.5">🕒 <span class="text-stone-500">Received:</span> <span class="font-medium text-stone-800">{{ email.created_at }}</span></p>
             </div>
         </div>
         
-        <!-- Original Email Content -->
-        <!-- Original Email Content -->
-<div class="mb-6">
-    <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1">
-        📥 Original Message
-    </h2>
-    <!-- UPDATED: Changed break-all to break-words + overflow-wrap-anywhere for optimal readability -->
-    <div class="bg-stone-50/80 border border-stone-200/60 p-5 mt-2 rounded-2xl whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-stone-600 text-sm leading-relaxed shadow-inner">
-        {{ email.body }}
-    </div>
-</div>
-        </div>
-
-        <!-- AI Summary -->
         <div class="mb-6">
-            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1">
-                📝 AI Quick Summary
-            </h2>
-            <!-- FIXED: Added "break-words" here too, just in case summary includes a raw URL string -->
-            <div class="bg-amber-50/40 border border-amber-100 p-5 mt-2 rounded-2xl text-stone-600 text-sm leading-relaxed break-words">
-                {% if email.ai_summary %}
-                    {{ email.ai_summary }}
-                {% else %}
-                    <span class="italic text-stone-400">No AI summary available.</span>
-                {% endif %}
+            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1">📥 Conversation</h2>
+            <div class="bg-stone-50/80 border border-stone-200/60 p-5 mt-2 rounded-2xl whitespace-pre-wrap break-words [overflow-wrap:anywhere] text-stone-600 text-sm leading-relaxed shadow-inner">
+                <div class="space-y-5">
+                    {% for msg in conversation %}
+                    <div class="flex {{ 'justify-start' if msg.sender == email.sender else 'justify-end' }}">
+                        <div class="{{ 'bg-white' if msg.sender == email.sender else 'bg-blue-50 border border-blue-200' }} rounded-2xl p-4 max-w-xl shadow">
+                            <div class="font-semibold text-sm mb-2">{{ '👤 Parent' if msg.sender == email.sender else '🏫 Coral Academy' }}</div>
+                            <div class="whitespace-pre-wrap">{{ msg.body }}</div>
+                            <div class="text-xs text-gray-400 mt-3">{{ msg.created_at }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
-        <!-- Help Center URL Injection -->
+        <div class="mb-6">
+            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1">📝 AI Quick Summary</h2>
+            <div class="bg-amber-50/40 border border-amber-100 p-5 mt-2 rounded-2xl text-stone-600 text-sm leading-relaxed break-words">
+                {% if email.ai_summary %}{{ email.ai_summary }}{% else %}<span class="italic text-stone-400">No AI summary available.</span>{% endif %}
+            </div>
+        </div>
+
         {% if email.knowledge_url %}
         <div class="mb-6 p-4 bg-purple-50/50 border border-purple-100 rounded-2xl flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="text-lg">📚</span>
                 <div>
                     <h3 class="font-semibold text-stone-800 text-sm">Found a Knowledge Match!</h3>
-                    <p class="text-xs text-stone-500">Based on your official documentation</p>
                 </div>
             </div>
-            <a href="{{ email.knowledge_url }}" target="_blank" class="bg-white border border-purple-200 text-purple-600 hover:bg-purple-50 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm transition inline-flex items-center gap-1">
-                Read Article ↗
-            </a>
+            <a href="{{ email.knowledge_url }}" target="_blank" class="bg-white border border-purple-200 text-purple-600 px-4 py-2 rounded-xl text-xs font-semibold shadow-sm hover:bg-purple-50">Read Article ↗</a>
         </div>
         {% endif %}
         
-        <!-- Review Flag Status Indicator -->
         <div class="mb-6 flex items-center gap-2 px-1 text-sm">
             <span class="font-medium text-stone-500">Workflow Track:</span>
-            {% if email.requires_review %}
-                <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
-                    🎀 Needs Review
-                </span>
-            {% else %}
-                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold tracking-wide">
-                    🌸 AI Approved
-                </span>
-            {% endif %}
+            <span class="{{ 'bg-rose-100 text-rose-700' if email.requires_review else 'bg-emerald-100 text-emerald-700' }} px-3 py-1 rounded-full text-xs font-bold tracking-wide">
+                {{ '🎀 Needs Review' if email.requires_review else '🌸 AI Approved' }}
+            </span>
         </div>
 
         <div class="border-t border-stone-100 my-6"></div>
 
-        <!-- Action / Handling Section -->
-        {% if email.status == "Needs Review" %}
-        <form action="/email/{{ email.id }}/send" method="POST" class="space-y-2">
+        {% if request.query_params.get("sent") %}
+        <div id="reply-sent" class="bg-green-50 border border-green-200 rounded-2xl p-5 mb-6 text-center">
+            <h2 class="font-bold text-green-700 text-lg">
+                🎉 Reply Sent Successfully
+            </h2>
+            <p class="text-stone-600 mt-2">
+                You can continue replying until you resolve this conversation.
+            </p>
+        </div>
+
+        
+        {% endif %}
+
+        {% if email.status != "Closed" %}
+        <form action="/email/{{ email.id }}/send" method="POST" class="space-y-2" 
+              onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerText='Sending...';">
             <label class="block font-bold text-stone-800 text-sm tracking-wider uppercase px-1">
-                🎨 Proposed AI Reply:
+                ✍️ Compose Reply
             </label>
             <textarea
                 name="reply_body"
-                class="w-full h-60 p-5 mt-1 bg-stone-50/50 border border-stone-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-rose-300 font-mono text-sm leading-relaxed transition"
+                class="w-full h-60 p-5 mt-1 bg-stone-50 border border-stone-200 rounded-2xl"
                 required>{{ email.ai_draft_reply }}</textarea>
 
             <div class="pt-4 flex gap-3">
-                <button type="submit" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-900 shadow-md hover:shadow-lg transition cursor-pointer">
+                <button
+                    type="submit"
+                    class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold">
                     Send Out 🚀
                 </button>
-                <a href="/dashboard" class="bg-stone-100 text-stone-600 px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-200 transition text-center">
-                    Nevermind
+
+                <a href="/email/{{ email.id }}/dismiss"
+                   class="bg-stone-100 text-stone-600 px-6 py-3 rounded-xl">
+                    Resolve without Reply
                 </a>
             </div>
-        </form>
 
-        {% elif email.ai_draft_reply %}
-        <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl flex items-center gap-2 text-emerald-800 text-sm font-medium shadow-sm">
-            <span>🎉</span> This email was handled automatically by AI.
-        </div>
-
-        <div class="mt-6">
-            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase px-1">
-                Sent Response
-            </h2>
-            <div class="bg-stone-50 border border-stone-200/60 p-5 mt-2 rounded-2xl font-mono text-sm text-stone-600 whitespace-pre-wrap break-all leading-relaxed shadow-inner">
-                {{ email.ai_draft_reply }}
+            {% if request.query_params.get("error") %}
+            <div class="bg-red-100 text-red-700 p-3 rounded mt-4">
+                ❌ Failed to send email.
             </div>
-        </div>
-
-        <div class="mt-6">
-            <a href="/dashboard" class="inline-block bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-900 transition shadow-sm">
-                Back to Dashboard 🏡
-            </a>
-        </div>
-
+            {% endif %}
+        </form>
         {% else %}
-        <div class="bg-stone-100/50 border border-stone-200/80 p-5 rounded-2xl shadow-sm">
-            <p class="font-semibold text-stone-800 flex items-center gap-1.5">
-                <span>✓</span> No reply was required for this email.
-            </p>
-            <p class="text-sm text-stone-500 mt-2 leading-relaxed">
-                This interaction was classified as informational or a notification, so an active response draft wasn't generated.
-            </p>
+        <div class="bg-stone-100 border border-stone-200 rounded-2xl p-5">
+            <p class="font-semibold">✅ Conversation Closed</p>
         </div>
-
         <div class="mt-6">
-            <a href="/dashboard" class="inline-block bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-900 transition shadow-sm">
-                Back to Dashboard 🏡
+            <a href="/dashboard"
+               class="inline-block bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold">
+                ← Back to Inbox
             </a>
         </div>
         {% endif %}
     </div>
+
+    {% if request.query_params.get("sent") %}
+    <script>
+        window.addEventListener("load", function () {
+            const el = document.getElementById("reply-sent");
+            if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "center" });
+            }
+        });
+    </script>
+    {% endif %}
 </body>
 </html>

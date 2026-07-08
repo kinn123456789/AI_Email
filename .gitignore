@@ -5,9 +5,8 @@ attachments/
 .vscode/
 
 # OAuth credentials and tokens
-credentials.json
-token_*.json
-
+credentials*.json
+token*.json
 # macOS
 .DS_Store
 
