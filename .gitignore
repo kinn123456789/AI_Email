@@ -12,3 +12,6 @@ token*.json
 
 # Python cache
 *.pyc
+
+logs/
+*.log
