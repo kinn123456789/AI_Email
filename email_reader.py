@@ -4,11 +4,13 @@ import base64
 import time
 import imaplib
 import traceback
+
 from email.utils import parseaddr
 from email.header import decode_header
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from email_sender import send_email
+from sync_sent_gmail import main as sync_sent_mail
 
 # Vector & Knowledge Search
 from vector_search import search_similar_emails
@@ -58,7 +60,6 @@ def main():
         if not account.get("email") or not account.get("token"):
             continue
 
-        print(f"\n--- Checking {account['source']} ---")
         mail = None
         
         try:
@@ -69,8 +70,8 @@ def main():
             if status != "OK":
                 continue
 
-            mail_ids = messages[0].split()[-1:]
-            print(f"Unread emails: {len(mail_ids)}")
+            # EXACT ORIGINAL LIMITING LOGIC RESTORED
+            mail_ids = messages[0].split()[:1]
 
             for email_id in mail_ids:
                 status, msg_data = mail.fetch(email_id, "(RFC822)")
@@ -78,30 +79,17 @@ def main():
                     continue
                 
                 msg = email.message_from_bytes(msg_data[0][1])
-                print("\n" + "="*80)
-                print("NEW EMAIL RECEIVED")
-                print("="*80)
+                message_id = " ".join((msg.get("Message-ID") or "").split())
 
-                for key, value in msg.items():
-                    print(f"{key}: {value}")
-
-                print("="*80)
-                sender_email = parseaddr(msg.get("From", ""))[1]
-
-                print("Message-ID :", msg.get("Message-ID"))
-                print("In-Reply-To:", msg.get("In-Reply-To"))
-                print("References :", msg.get("References"))
-                
-                message_id = msg.get("Message-ID")
+                print("=" * 80)
+                print("MESSAGE ID :", message_id)       
                 
                 if not message_id or email_exists(message_id):
                     continue
 
                 subject_raw, encoding = decode_header(msg.get("Subject", "No Subject"))[0]
                 subject = subject_raw.decode(encoding or "utf-8", errors="ignore") if isinstance(subject_raw, bytes) else subject_raw
-
-                print(f"Processing {subject} from {sender_email}")
-                log_event(message_id, "EMAIL_RECEIVED", f"Received at: {msg.get('Date')}")
+                sender_email = parseaddr(msg.get("From", ""))[1]
                 
                 body, html_body, image_data_list = "", "", []
                 safe_message_id = message_id.replace("<", "").replace(">", "").replace("/", "_")
@@ -128,28 +116,19 @@ def main():
                 if not body.strip() and html_body:
                     body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
                 
-                
+                in_reply_to = " ".join((msg.get("In-Reply-To") or "").split())
 
-                in_reply_to = msg.get("In-Reply-To")
+                print("IN-REPLY-TO :", in_reply_to)
+                # THREADING FIX: Normalized header passed correctly
+                references_header = " ".join((msg.get("References") or "").split())
+                print("REFERENCES :", references_header)
                 
                 if in_reply_to:
                     parent = get_message_by_message_id(in_reply_to)
-
-                    # Fallback: search through References
-                    if not parent:
-                        references = msg.get("References")
-                        if references:
-                            print("RAW REFERENCES:", repr(references))
-                            for ref in references.split():
-                                print("Trying:", repr(ref))
-                                parent = get_message_by_message_id(ref)
-                                print("Lookup:", parent)
-                                if parent:
-                                    print("Found parent via References:", ref)
-                                    break
-
-                    print("Searching for:", in_reply_to)
-                    print("Parent found :", parent)
+                    if not parent and references_header:
+                        for ref in reversed(references_header.split()):
+                            parent = get_message_by_message_id(ref)
+                            if parent: break
                     
                     if parent:
                         thread_id = parent["thread_id"]
@@ -158,148 +137,89 @@ def main():
                         thread_id = message_id
                 else:
                     thread_id = message_id
-
-                print("Saving with thread_id:", thread_id)
-                print("="*80)
                 
-                # ... (rest of your logic starts here at the same indentation level)
-
                 skip, category, reason, mailbox = is_automated_email(msg)
                 if skip:
                     save_email(sender=sender_email, subject=subject, body=body, category=category,
                                priority="Low", ai_summary=reason, ai_draft_reply="",
                                message_id=message_id, thread_id=thread_id, in_reply_to=in_reply_to,
                                source=account["source"], status="No Reply Required", ai_confidence=None,reply_type="none",
-                               mailbox=mailbox)
+                               mailbox=mailbox, references_header=references_header)
                                 
                     log_event(message_id, "FILTERED", reason)
                     mail.store(email_id, '+FLAGS', '\\Seen')
                     continue
 
-                draft_reply, knowledge_url = "", None
-                
                 try:
-                    start_time = time.time()
                     history = get_thread(thread_id) if in_reply_to else []
-                    history_text = "\n".join([
-                            f"{m['sender']}:\n{m['body'] or ''}\n{'-'*40}"
-                            for m in history
-                    ])
-                        
+                    history_text = "\n".join([f"{m['sender']}:\n{m['body'] or ''}\n{'-'*40}" for m in history])
                     clean_body = clean_email_body(body)
                     result = ai_triage(subject, clean_body, history=history_text, images=image_data_list)
-                    
-                    similar_results = search_similar_emails(subject=subject, body=clean_body)
-                    reranked = rerank_emails(subject, clean_body, similar_results)
-                    selected_ids = [item["id"] for item in reranked.get("selected", [])]
-                    similar_emails = get_historical_emails(selected_ids)
-
-                    if result["requires_review"]:
-                        knowledge = []
-                        knowledge_url = None
-                    else:
-                        knowledge = search_knowledge_base(subject, clean_body, limit=3)
-                        knowledge_url = knowledge[0]["url"] if knowledge else None
-
-
-                    # TEMPORARY - remove after testing
-                    # ===============================
-                    # TEMPORARY TEST MODE
-                    # Route ALL emails to Human Review
-
-                    # ===============================
-                    result["requires_review"] = True
-                    result["needs_reply"] = True
-
-                    # AI classifier has the final say
-                    requires_review = result["requires_review"]
-
-                    
-
-                    if requires_review:
-                        status = "Needs Review"
-                    else:
-                        if result["needs_reply"]:
-                            status = "Auto Replied"
-                        else:
-                            status = "No Reply Required"
-                    
-                    if requires_review:
-                            reply_type = "human"
-                    elif result["needs_reply"]:
-                            reply_type = "automatic"
-                    else:
-                            reply_type = "none"
-               
-
-                    draft_reply = generate_reply(
-                        subject=subject, body=clean_body, category=result["category"],
-                        priority=result["priority"], thread_history=history_text,
-                        similar_emails=similar_emails, knowledge=knowledge
-                    )
-                    log_event(message_id, "AI_CLASSIFIED", f"Category={result['category']}, Processing={round(time.time()-start_time,2)}s")
-                
-                except Exception as e:
-                    print("AI ERROR:", repr(e))
-                    traceback.print_exc()
-                    log_event(message_id, "AI_ERROR", str(e))
-                    result = {"category": "Unclassified", "priority": "Low", "summary": "Error", "confidence": None}
-                    draft_reply = ""
-                    status = "Awaiting Review"
+                    print("=" * 80)
+                    print("AI RESULT")
+                    print(result)
+                    print("=" * 80)
                     requires_review = True
-                    reply_type = "human" 
-                
-                try:
+                    status = "Needs Review"
+                    reply_type = "human"
+                    
+                    #requires_review = result["requires_review"]
+                    #status = "Needs Review" if requires_review else ("Auto Replied" if result["needs_reply"] else "No Reply Required")
+                    #reply_type = "human" if requires_review else ("automatic" if result["needs_reply"] else "none")
+                    similar_emails = search_similar_emails(
+                            subject,
+                            clean_body
+                    )
+                    draft_reply = generate_reply(subject=subject, body=clean_body, category=result["category"],
+                        priority=result["priority"], thread_history=history_text,similar_emails=similar_emails)
+
+
+                    print("ABOUT TO SAVE EMAIL")
+                    print("Thread :", thread_id)
+                    print("Mailbox:", mailbox)
+                    print("Status :", status)
+
                     db_email_id = save_email(
                         sender_email, subject, body, result["category"], result["priority"],
                         result["summary"], draft_reply, message_id, thread_id, in_reply_to,
                         account["source"], status=status, requires_review=requires_review,
-                        ai_confidence=result.get("confidence"), knowledge_url=knowledge_url,
-                        reply_type=reply_type,mailbox=mailbox
+                        reply_type=reply_type, mailbox=mailbox, references_header=references_header
                     )
+
+
+                    print("SAVE SUCCESS")
+                    print("DB ID:", db_email_id)
                     
-                    if (
-                        draft_reply
-                        and result["needs_reply"]
-                        and not result["requires_review"]
-                    ):
-                        clean_subject = subject.strip()
-                        while clean_subject.lower().startswith("re:"):
-                            clean_subject = clean_subject[3:].strip()
-                        if in_reply_to:
-                            clean_subject = f"Re: {clean_subject}"
-                        
-                        sent_msg_id = send_email(
-                            from_email=account["source"], token_file=account["token"],
-                            to_email=sender_email, subject=clean_subject, body=draft_reply,
-                            thread_id=thread_id, original_msg_id=message_id    
-                        )
-                        
-                        if sent_msg_id:
-                            update_final_reply(db_email_id, draft_reply)
-                            update_reply_type(db_email_id, "automatic")
-                            update_status(db_email_id, "Replied")
+                    #if draft_reply and result["needs_reply"] and not requires_review:
+                      #  sent_msg_id = send_email(
+                         #   from_email=account["source"], token_file=account["token"],
+                          #  to_email=sender_email, subject=f"Re: {subject}", body=draft_reply,
+                          #  thread_id=thread_id, original_msg_id=message_id, previous_references=references_header    
+                       # )
 
-                            
-
-                            log_event(message_id, "EMAIL_SENT", f"Outbound response dispatched: {sent_msg_id}")
+                    
+                        #if sent_msg_id:
+                          #  update_final_reply(db_email_id, draft_reply)
+                          # update_reply_type(db_email_id, "automatic")
+                          #  update_status(db_email_id, "Replied")
                     
                     mail.store(email_id, '+FLAGS', '\\Seen')
                 except Exception as e:
-                    log_event(message_id, "DATABASE_ERROR", str(e))
+                    import traceback
 
-        except Exception as e:
-            print(f"Failed to process {account['source']}: {e}")
+                    print()
+                    print("=" * 80)
+                    print("EXCEPTION OCCURRED")
+                    traceback.print_exc()
+                    print("ERROR:", e)
+                    print("=" * 80)
+
+                    log_event(message_id, "AI_ERROR", str(e))
+
         finally:
             if mail:
-                try:
-                    mail.logout()
-                except:
-                    pass
-
-
-
-
+                mail.logout()
+    print("Syncing sent mails...")
+    sync_sent_mail()
 if __name__ == "__main__":
     main()
-    db_pool.closeall()

@@ -1,0 +1,210 @@
+2026-07-09 22:50:13,622 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-09 22:50:26,799 | INFO | ai_email | Duplicate skipped: <CAJ12SBFj3mH2j15DJP3G4ShHSLUh9Q9gNSOMzMV+rpEYyxWzuQ@mail.gmail.com>
+2026-07-09 22:50:27,198 | INFO | ai_email | Duplicate skipped: <CAJ12SBFWPHdXy1v111Ug7LJXyhRufQL5fNiuFt_orWNmUT0RRA@mail.gmail.com>
+2026-07-09 22:50:29,508 | INFO | ai_email | Duplicate skipped: <CAJ12SBFesyYjAq5nndnqxa3Z69nmR4mQv7Wbae3mCGie9JrUYA@mail.gmail.com>
+2026-07-09 22:50:31,183 | INFO | ai_email | Duplicate skipped: <CAJ12SBGE4O+p9AMCvJFuyLnK-9EZ6EbMhRBO7Q9MhnJqBv5JYQ@mail.gmail.com>
+2026-07-09 22:50:32,211 | INFO | ai_email | Duplicate skipped: <CAJ12SBGU3utcZ=ZhO6QabMJtZ2uJntt8cd+tF3gTcxgS6L-gxQ@mail.gmail.com>
+2026-07-09 22:50:33,287 | INFO | ai_email | Duplicate skipped: <CAJ12SBEDUrmRq1xjwrLWPO=W3c2s=UPBFeBzpRCC0uCKMEji=w@mail.gmail.com>
+2026-07-09 22:50:34,004 | INFO | ai_email | Duplicate skipped: <CAJ12SBEYHYsB1jppHZDhUxH34xEmcrg4muChN4ztudXRpu7i7w@mail.gmail.com>
+2026-07-09 22:50:34,618 | INFO | ai_email | Duplicate skipped: <CAJ12SBHS7KcNanTQ9VxnrJt6X0wJVN-hM_7aL-fCCQAaassS6A@mail.gmail.com>
+2026-07-09 22:50:35,373 | INFO | ai_email | Duplicate skipped: <CAJ12SBGDAuDY2FSfkBqigbBJbO_cWQspgf4C=vqhLPX-k51Sgg@mail.gmail.com>
+2026-07-09 22:50:36,080 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-09 22:50:36,081 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=10
+2026-07-10 12:09:01,074 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 12:09:03,901 | INFO | ai_email | Duplicate skipped: <CAJ12SBEYHYsB1jppHZDhUxH34xEmcrg4muChN4ztudXRpu7i7w@mail.gmail.com>
+2026-07-10 12:09:04,299 | INFO | ai_email | Duplicate skipped: <CAJ12SBHS7KcNanTQ9VxnrJt6X0wJVN-hM_7aL-fCCQAaassS6A@mail.gmail.com>
+2026-07-10 12:09:04,619 | INFO | ai_email | Duplicate skipped: <CAJ12SBGDAuDY2FSfkBqigbBJbO_cWQspgf4C=vqhLPX-k51Sgg@mail.gmail.com>
+2026-07-10 12:09:04,969 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-10 12:09:05,370 | INFO | ai_email | Thread linked: <CAJ12SBFUXo6YgvG2RcyFZbv=SmxDx6wXmKawpXR5W+cO+5v6aQ@mail.gmail.com> -> <CALFiiLZNfo5ZFacYj9Cw16bC2hK865KANuU5PtcgoMoAXG0ZUA@mail.gmail.com>
+2026-07-10 12:09:05,381 | INFO | ai_email | Imported: <CAJ12SBFUXo6YgvG2RcyFZbv=SmxDx6wXmKawpXR5W+cO+5v6aQ@mail.gmail.com>
+2026-07-10 12:09:06,150 | INFO | ai_email | Thread linked: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com> -> <CALFiiLZT-2CrB+1L4TZMiu5HdMWHgCymxeDmz8g-L3K0f5Bpzg@mail.gmail.com>
+2026-07-10 12:09:06,155 | INFO | ai_email | Imported: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com>
+2026-07-10 12:09:06,872 | INFO | ai_email | New thread: <CAJ12SBGzZDO7yLW5avvj2xv9_zU9_Z12bFnnCzNArZMen4PazQ@mail.gmail.com>
+2026-07-10 12:09:06,873 | INFO | ai_email | Imported: <CAJ12SBGzZDO7yLW5avvj2xv9_zU9_Z12bFnnCzNArZMen4PazQ@mail.gmail.com>
+2026-07-10 12:09:07,571 | INFO | ai_email | Thread linked: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com> -> <CALFiiLZRUgiNPXob=PMX=jazz3E6EwuURTOS=g5V6gJjziLOpA@mail.gmail.com>
+2026-07-10 12:09:07,580 | INFO | ai_email | Imported: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com>
+2026-07-10 12:09:08,340 | INFO | ai_email | Thread linked: <CAJ12SBHtJfyuCtkcHgDo98-YtJ4kagp1QSKJRzmCZYLU2p1Nfw@mail.gmail.com> -> <CALFiiLadZ0eA7AJSOJxto_CyYMHOd-t6bZqXLtgg8LkMrpkDyQ@mail.gmail.com>
+2026-07-10 12:09:08,349 | INFO | ai_email | Imported: <CAJ12SBHtJfyuCtkcHgDo98-YtJ4kagp1QSKJRzmCZYLU2p1Nfw@mail.gmail.com>
+2026-07-10 12:09:09,022 | INFO | ai_email | Thread linked: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com> -> <CALFiiLadZ0eA7AJSOJxto_CyYMHOd-t6bZqXLtgg8LkMrpkDyQ@mail.gmail.com>
+2026-07-10 12:09:09,030 | INFO | ai_email | Imported: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com>
+2026-07-10 12:09:09,368 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=6, Skipped=4
+2026-07-10 13:30:20,656 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 13:30:22,990 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 14:00:05,692 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:00:14,791 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 14:00:16,181 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:00:26,162 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:00:28,371 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 14:00:50,037 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:00:53,033 | INFO | ai_email | Thread linked: <CAJ12SBHgg0tvzGhcq8fVWbSyGOGspzWaSMP6DULb9_z-7jVkXw@mail.gmail.com> -> <CAJ12SBH8gYXQ=Zper+7N7vFK__Ur_PBoPogXK6HYwg3wpSVvdg@mail.gmail.com>
+2026-07-10 14:00:53,049 | INFO | ai_email | Imported: <CAJ12SBHgg0tvzGhcq8fVWbSyGOGspzWaSMP6DULb9_z-7jVkXw@mail.gmail.com>
+2026-07-10 14:00:53,362 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=1, Skipped=0
+2026-07-10 14:01:41,260 | INFO | googleapiclient.discovery_cache | file_cache is only supported with oauth2client<4.0.0
+2026-07-10 14:01:41,893 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:01:44,383 | INFO | ai_email | Thread linked: <CAJ12SBEOj1DVQtme7oxiO9+oJjkmFP2TyqyQ=J30F-FRaMwVeg@mail.gmail.com> -> <CAJ12SBH8gYXQ=Zper+7N7vFK__Ur_PBoPogXK6HYwg3wpSVvdg@mail.gmail.com>
+2026-07-10 14:01:44,397 | INFO | ai_email | Imported: <CAJ12SBEOj1DVQtme7oxiO9+oJjkmFP2TyqyQ=J30F-FRaMwVeg@mail.gmail.com>
+2026-07-10 14:01:44,740 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=1, Skipped=0
+2026-07-10 14:02:50,772 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:03:03,462 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 14:03:04,602 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:03:15,181 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:03:17,992 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 14:04:27,358 | INFO | googleapiclient.discovery_cache | file_cache is only supported with oauth2client<4.0.0
+2026-07-10 14:04:27,954 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:04:29,972 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 14:05:12,464 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:05:23,464 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 14:05:24,514 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:05:33,993 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:05:36,253 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 14:09:12,790 | INFO | googleapiclient.discovery_cache | file_cache is only supported with oauth2client<4.0.0
+2026-07-10 14:09:13,516 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:09:16,058 | INFO | ai_email | Thread linked: <CAJ12SBG26QOyYADfRUKusHsdUZ89xajtNfaS=xoz_TKdvFPG6g@mail.gmail.com> -> <CALFiiLauHJULAZhNyyZ27OvFgE3TMYh2dJ-_A6XHTg3eee3Lsw@mail.gmail.com>
+2026-07-10 14:09:16,075 | INFO | ai_email | Imported: <CAJ12SBG26QOyYADfRUKusHsdUZ89xajtNfaS=xoz_TKdvFPG6g@mail.gmail.com>
+2026-07-10 14:09:16,747 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=1, Skipped=0
+2026-07-10 14:09:58,136 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:10:12,381 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 14:10:13,457 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:10:28,256 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:10:30,665 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 14:11:13,486 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:11:28,337 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 14:11:29,477 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 14:11:42,027 | INFO | ai_email | Checking sent mail for satshop19@gmail.com
+2026-07-10 14:11:43,893 | INFO | ai_email | satshop19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 15:06:28,801 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:06:41,201 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 15:06:42,591 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:06:52,802 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:06:54,701 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 15:08:01,948 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:08:08,221 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 15:09:03,220 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:09:19,553 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 15:09:20,833 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:09:32,623 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:09:34,683 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 15:11:10,098 | INFO | googleapiclient.discovery_cache | file_cache is only supported with oauth2client<4.0.0
+2026-07-10 15:11:11,385 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:11:13,815 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=0, Skipped=0
+2026-07-10 15:29:58,876 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:30:12,096 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 15:30:13,676 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:30:25,493 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:30:30,209 | INFO | ai_email | Duplicate skipped: <CAJ12SBHiZkw2K9XH+gGxS97YXpZrTWQWAFDpjzjsPGxYMCHr8g@mail.gmail.com>
+2026-07-10 15:30:30,830 | INFO | ai_email | Duplicate skipped: <CAJ12SBERV5BSaf-k8iKkV2YdBW2RpZWP3qqPgfk1FEW9pdfAbg@mail.gmail.com>
+2026-07-10 15:30:31,538 | INFO | ai_email | Duplicate skipped: <CAJ12SBEBJvzfh-pD0=EFdMATDT+0uh3mSKaBCDqb27Eyw8HJLQ@mail.gmail.com>
+2026-07-10 15:30:32,137 | INFO | ai_email | Duplicate skipped: <CAJ12SBGY4-YCU0iBek1d1LsL1y_vcSsnHKHVL3efgJz0z5uBoQ@mail.gmail.com>
+2026-07-10 15:30:32,557 | INFO | ai_email | Duplicate skipped: <CAJ12SBEiScmoigTwC6us=LO7uorKRngef_dpuzO9hv--4PjzCg@mail.gmail.com>
+2026-07-10 15:30:33,076 | INFO | ai_email | Duplicate skipped: <CAJ12SBHbNtpaQaYv5hx9NEj_=OG1zM7GJoUwYLnymzY2Sb7Q3w@mail.gmail.com>
+2026-07-10 15:30:33,797 | INFO | ai_email | Duplicate skipped: <CAJ12SBGX8NmwOFKvv-xXpg7NKK3jreAg+ATyoUqB9sLGyeYfKw@mail.gmail.com>
+2026-07-10 15:30:34,208 | INFO | ai_email | Duplicate skipped: <CAJ12SBGCWC4R30n9xDRF+cC_o4N6OE2EsugRyR+9j5OvbBwWUA@mail.gmail.com>
+2026-07-10 15:30:34,547 | INFO | ai_email | Duplicate skipped: <CAJ12SBFNKpALfHPGHzPmQw+g8+qYcjg7TEok_sfQR5PhmOHrVQ@mail.gmail.com>
+2026-07-10 15:30:35,224 | INFO | ai_email | Duplicate skipped: <CAJ12SBF3M2VbZp2mmyT6--ejpVq8AeePRj24cfF2w44RS=_MAQ@mail.gmail.com>
+2026-07-10 15:30:35,517 | INFO | ai_email | Duplicate skipped: <CAJ12SBG=nMaLQn3mjvn0O31vEiEOBC0146q7RHv1j=xTuDY-xw@mail.gmail.com>
+2026-07-10 15:30:36,048 | INFO | ai_email | Duplicate skipped: <CAJ12SBFj3mH2j15DJP3G4ShHSLUh9Q9gNSOMzMV+rpEYyxWzuQ@mail.gmail.com>
+2026-07-10 15:30:36,398 | INFO | ai_email | Duplicate skipped: <CAJ12SBFWPHdXy1v111Ug7LJXyhRufQL5fNiuFt_orWNmUT0RRA@mail.gmail.com>
+2026-07-10 15:30:36,739 | INFO | ai_email | Duplicate skipped: <CAJ12SBFesyYjAq5nndnqxa3Z69nmR4mQv7Wbae3mCGie9JrUYA@mail.gmail.com>
+2026-07-10 15:30:37,268 | INFO | ai_email | Duplicate skipped: <CAJ12SBGU3utcZ=ZhO6QabMJtZ2uJntt8cd+tF3gTcxgS6L-gxQ@mail.gmail.com>
+2026-07-10 15:30:37,786 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-10 15:30:38,662 | INFO | ai_email | Duplicate skipped: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com>
+2026-07-10 15:30:39,268 | INFO | ai_email | Duplicate skipped: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com>
+2026-07-10 15:30:40,137 | INFO | ai_email | Duplicate skipped: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com>
+2026-07-10 15:30:40,569 | INFO | ai_email | Thread linked: <CAJ12SBFu9heqajTWznTwMR0bfikTc9L3Aqn_5aY-rzaGN6TP_w@mail.gmail.com> -> <CALFiiLZ-eko74=UVbfEzECGQHDkGpDZx8FqxQ_Xcsykd+C3bOg@mail.gmail.com>
+2026-07-10 15:30:40,582 | INFO | ai_email | Imported: <CAJ12SBFu9heqajTWznTwMR0bfikTc9L3Aqn_5aY-rzaGN6TP_w@mail.gmail.com>
+2026-07-10 15:30:40,935 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=1, Skipped=19
+2026-07-10 15:31:07,403 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:31:09,622 | INFO | ai_email | Duplicate skipped: <CAJ12SBERV5BSaf-k8iKkV2YdBW2RpZWP3qqPgfk1FEW9pdfAbg@mail.gmail.com>
+2026-07-10 15:31:09,928 | INFO | ai_email | Duplicate skipped: <CAJ12SBEBJvzfh-pD0=EFdMATDT+0uh3mSKaBCDqb27Eyw8HJLQ@mail.gmail.com>
+2026-07-10 15:31:10,217 | INFO | ai_email | Duplicate skipped: <CAJ12SBGY4-YCU0iBek1d1LsL1y_vcSsnHKHVL3efgJz0z5uBoQ@mail.gmail.com>
+2026-07-10 15:31:10,507 | INFO | ai_email | Duplicate skipped: <CAJ12SBEiScmoigTwC6us=LO7uorKRngef_dpuzO9hv--4PjzCg@mail.gmail.com>
+2026-07-10 15:31:10,807 | INFO | ai_email | Duplicate skipped: <CAJ12SBHbNtpaQaYv5hx9NEj_=OG1zM7GJoUwYLnymzY2Sb7Q3w@mail.gmail.com>
+2026-07-10 15:31:11,086 | INFO | ai_email | Duplicate skipped: <CAJ12SBGX8NmwOFKvv-xXpg7NKK3jreAg+ATyoUqB9sLGyeYfKw@mail.gmail.com>
+2026-07-10 15:31:11,388 | INFO | ai_email | Duplicate skipped: <CAJ12SBGCWC4R30n9xDRF+cC_o4N6OE2EsugRyR+9j5OvbBwWUA@mail.gmail.com>
+2026-07-10 15:31:11,670 | INFO | ai_email | Duplicate skipped: <CAJ12SBFNKpALfHPGHzPmQw+g8+qYcjg7TEok_sfQR5PhmOHrVQ@mail.gmail.com>
+2026-07-10 15:31:11,957 | INFO | ai_email | Duplicate skipped: <CAJ12SBF3M2VbZp2mmyT6--ejpVq8AeePRj24cfF2w44RS=_MAQ@mail.gmail.com>
+2026-07-10 15:31:12,249 | INFO | ai_email | Duplicate skipped: <CAJ12SBG=nMaLQn3mjvn0O31vEiEOBC0146q7RHv1j=xTuDY-xw@mail.gmail.com>
+2026-07-10 15:31:12,538 | INFO | ai_email | Duplicate skipped: <CAJ12SBFj3mH2j15DJP3G4ShHSLUh9Q9gNSOMzMV+rpEYyxWzuQ@mail.gmail.com>
+2026-07-10 15:31:12,837 | INFO | ai_email | Duplicate skipped: <CAJ12SBFWPHdXy1v111Ug7LJXyhRufQL5fNiuFt_orWNmUT0RRA@mail.gmail.com>
+2026-07-10 15:31:13,197 | INFO | ai_email | Duplicate skipped: <CAJ12SBFesyYjAq5nndnqxa3Z69nmR4mQv7Wbae3mCGie9JrUYA@mail.gmail.com>
+2026-07-10 15:31:13,477 | INFO | ai_email | Duplicate skipped: <CAJ12SBGU3utcZ=ZhO6QabMJtZ2uJntt8cd+tF3gTcxgS6L-gxQ@mail.gmail.com>
+2026-07-10 15:31:13,758 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-10 15:31:14,047 | INFO | ai_email | Duplicate skipped: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com>
+2026-07-10 15:31:14,326 | INFO | ai_email | Duplicate skipped: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com>
+2026-07-10 15:31:14,646 | INFO | ai_email | Duplicate skipped: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com>
+2026-07-10 15:31:14,926 | INFO | ai_email | Duplicate skipped: <CAJ12SBFu9heqajTWznTwMR0bfikTc9L3Aqn_5aY-rzaGN6TP_w@mail.gmail.com>
+2026-07-10 15:31:15,207 | INFO | ai_email | Thread linked: <CAJ12SBGsRBbD5cPkr8E-n_QffLxRD1He0i1HPh=tWHH_F9oGxQ@mail.gmail.com> -> <CALFiiLb6+mf7OKOUVLE=OatMbkFNYJQ6dmnhTjq4KCk-uzBnZw@mail.gmail.com>
+2026-07-10 15:31:15,223 | INFO | ai_email | Imported: <CAJ12SBGsRBbD5cPkr8E-n_QffLxRD1He0i1HPh=tWHH_F9oGxQ@mail.gmail.com>
+2026-07-10 15:31:15,505 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=1, Skipped=19
+2026-07-10 15:32:15,578 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:32:32,737 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/embeddings "HTTP/1.1 200 OK"
+2026-07-10 15:32:33,886 | INFO | httpx | HTTP Request: POST https://openrouter.ai/api/v1/chat/completions "HTTP/1.1 200 OK"
+2026-07-10 15:32:46,568 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:32:50,500 | INFO | ai_email | Duplicate skipped: <CAJ12SBERV5BSaf-k8iKkV2YdBW2RpZWP3qqPgfk1FEW9pdfAbg@mail.gmail.com>
+2026-07-10 15:32:51,008 | INFO | ai_email | Duplicate skipped: <CAJ12SBEBJvzfh-pD0=EFdMATDT+0uh3mSKaBCDqb27Eyw8HJLQ@mail.gmail.com>
+2026-07-10 15:32:51,408 | INFO | ai_email | Duplicate skipped: <CAJ12SBGY4-YCU0iBek1d1LsL1y_vcSsnHKHVL3efgJz0z5uBoQ@mail.gmail.com>
+2026-07-10 15:32:51,808 | INFO | ai_email | Duplicate skipped: <CAJ12SBEiScmoigTwC6us=LO7uorKRngef_dpuzO9hv--4PjzCg@mail.gmail.com>
+2026-07-10 15:32:52,289 | INFO | ai_email | Duplicate skipped: <CAJ12SBHbNtpaQaYv5hx9NEj_=OG1zM7GJoUwYLnymzY2Sb7Q3w@mail.gmail.com>
+2026-07-10 15:32:52,609 | INFO | ai_email | Duplicate skipped: <CAJ12SBGX8NmwOFKvv-xXpg7NKK3jreAg+ATyoUqB9sLGyeYfKw@mail.gmail.com>
+2026-07-10 15:32:52,918 | INFO | ai_email | Duplicate skipped: <CAJ12SBGCWC4R30n9xDRF+cC_o4N6OE2EsugRyR+9j5OvbBwWUA@mail.gmail.com>
+2026-07-10 15:32:53,369 | INFO | ai_email | Duplicate skipped: <CAJ12SBFNKpALfHPGHzPmQw+g8+qYcjg7TEok_sfQR5PhmOHrVQ@mail.gmail.com>
+2026-07-10 15:32:53,709 | INFO | ai_email | Duplicate skipped: <CAJ12SBF3M2VbZp2mmyT6--ejpVq8AeePRj24cfF2w44RS=_MAQ@mail.gmail.com>
+2026-07-10 15:32:54,049 | INFO | ai_email | Duplicate skipped: <CAJ12SBG=nMaLQn3mjvn0O31vEiEOBC0146q7RHv1j=xTuDY-xw@mail.gmail.com>
+2026-07-10 15:32:54,528 | INFO | ai_email | Duplicate skipped: <CAJ12SBFj3mH2j15DJP3G4ShHSLUh9Q9gNSOMzMV+rpEYyxWzuQ@mail.gmail.com>
+2026-07-10 15:32:54,888 | INFO | ai_email | Duplicate skipped: <CAJ12SBFWPHdXy1v111Ug7LJXyhRufQL5fNiuFt_orWNmUT0RRA@mail.gmail.com>
+2026-07-10 15:32:55,201 | INFO | ai_email | Duplicate skipped: <CAJ12SBFesyYjAq5nndnqxa3Z69nmR4mQv7Wbae3mCGie9JrUYA@mail.gmail.com>
+2026-07-10 15:32:55,698 | INFO | ai_email | Duplicate skipped: <CAJ12SBGU3utcZ=ZhO6QabMJtZ2uJntt8cd+tF3gTcxgS6L-gxQ@mail.gmail.com>
+2026-07-10 15:32:56,007 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-10 15:32:56,432 | INFO | ai_email | Duplicate skipped: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com>
+2026-07-10 15:32:56,818 | INFO | ai_email | Duplicate skipped: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com>
+2026-07-10 15:32:57,297 | INFO | ai_email | Duplicate skipped: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com>
+2026-07-10 15:32:57,728 | INFO | ai_email | Duplicate skipped: <CAJ12SBFu9heqajTWznTwMR0bfikTc9L3Aqn_5aY-rzaGN6TP_w@mail.gmail.com>
+2026-07-10 15:32:58,079 | INFO | ai_email | Duplicate skipped: <CAJ12SBGsRBbD5cPkr8E-n_QffLxRD1He0i1HPh=tWHH_F9oGxQ@mail.gmail.com>
+2026-07-10 15:32:58,079 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=0, Skipped=20
+2026-07-10 15:34:50,886 | INFO | googleapiclient.discovery_cache | file_cache is only supported with oauth2client<4.0.0
+2026-07-10 15:34:53,494 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:34:55,810 | INFO | ai_email | Duplicate skipped: <CAJ12SBEBJvzfh-pD0=EFdMATDT+0uh3mSKaBCDqb27Eyw8HJLQ@mail.gmail.com>
+2026-07-10 15:34:56,110 | INFO | ai_email | Duplicate skipped: <CAJ12SBGY4-YCU0iBek1d1LsL1y_vcSsnHKHVL3efgJz0z5uBoQ@mail.gmail.com>
+2026-07-10 15:34:56,419 | INFO | ai_email | Duplicate skipped: <CAJ12SBEiScmoigTwC6us=LO7uorKRngef_dpuzO9hv--4PjzCg@mail.gmail.com>
+2026-07-10 15:34:56,729 | INFO | ai_email | Duplicate skipped: <CAJ12SBHbNtpaQaYv5hx9NEj_=OG1zM7GJoUwYLnymzY2Sb7Q3w@mail.gmail.com>
+2026-07-10 15:34:57,049 | INFO | ai_email | Duplicate skipped: <CAJ12SBGX8NmwOFKvv-xXpg7NKK3jreAg+ATyoUqB9sLGyeYfKw@mail.gmail.com>
+2026-07-10 15:34:57,359 | INFO | ai_email | Duplicate skipped: <CAJ12SBGCWC4R30n9xDRF+cC_o4N6OE2EsugRyR+9j5OvbBwWUA@mail.gmail.com>
+2026-07-10 15:34:57,699 | INFO | ai_email | Duplicate skipped: <CAJ12SBFNKpALfHPGHzPmQw+g8+qYcjg7TEok_sfQR5PhmOHrVQ@mail.gmail.com>
+2026-07-10 15:34:58,009 | INFO | ai_email | Duplicate skipped: <CAJ12SBF3M2VbZp2mmyT6--ejpVq8AeePRj24cfF2w44RS=_MAQ@mail.gmail.com>
+2026-07-10 15:34:58,319 | INFO | ai_email | Duplicate skipped: <CAJ12SBG=nMaLQn3mjvn0O31vEiEOBC0146q7RHv1j=xTuDY-xw@mail.gmail.com>
+2026-07-10 15:34:58,621 | INFO | ai_email | Duplicate skipped: <CAJ12SBFj3mH2j15DJP3G4ShHSLUh9Q9gNSOMzMV+rpEYyxWzuQ@mail.gmail.com>
+2026-07-10 15:34:58,920 | INFO | ai_email | Duplicate skipped: <CAJ12SBFWPHdXy1v111Ug7LJXyhRufQL5fNiuFt_orWNmUT0RRA@mail.gmail.com>
+2026-07-10 15:34:59,219 | INFO | ai_email | Duplicate skipped: <CAJ12SBFesyYjAq5nndnqxa3Z69nmR4mQv7Wbae3mCGie9JrUYA@mail.gmail.com>
+2026-07-10 15:34:59,519 | INFO | ai_email | Duplicate skipped: <CAJ12SBGU3utcZ=ZhO6QabMJtZ2uJntt8cd+tF3gTcxgS6L-gxQ@mail.gmail.com>
+2026-07-10 15:34:59,829 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-10 15:35:00,140 | INFO | ai_email | Duplicate skipped: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com>
+2026-07-10 15:35:00,449 | INFO | ai_email | Duplicate skipped: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com>
+2026-07-10 15:35:00,749 | INFO | ai_email | Duplicate skipped: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com>
+2026-07-10 15:35:01,049 | INFO | ai_email | Duplicate skipped: <CAJ12SBFu9heqajTWznTwMR0bfikTc9L3Aqn_5aY-rzaGN6TP_w@mail.gmail.com>
+2026-07-10 15:35:01,359 | INFO | ai_email | Duplicate skipped: <CAJ12SBGsRBbD5cPkr8E-n_QffLxRD1He0i1HPh=tWHH_F9oGxQ@mail.gmail.com>
+2026-07-10 15:35:01,661 | INFO | ai_email | Thread linked: <CAJ12SBF9eiWEQ-AEQtFH_CEXSBz0JtRjP9Y3VPo3BA0PAzb5Lw@mail.gmail.com> -> <CALFiiLb6+mf7OKOUVLE=OatMbkFNYJQ6dmnhTjq4KCk-uzBnZw@mail.gmail.com>
+2026-07-10 15:35:01,683 | INFO | ai_email | Imported: <CAJ12SBF9eiWEQ-AEQtFH_CEXSBz0JtRjP9Y3VPo3BA0PAzb5Lw@mail.gmail.com>
+2026-07-10 15:35:01,979 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=1, Skipped=19
+2026-07-10 15:36:33,829 | INFO | ai_email | Checking sent mail for shopsat19@gmail.com
+2026-07-10 15:36:36,844 | INFO | ai_email | Duplicate skipped: <CAJ12SBGY4-YCU0iBek1d1LsL1y_vcSsnHKHVL3efgJz0z5uBoQ@mail.gmail.com>
+2026-07-10 15:36:37,132 | INFO | ai_email | Duplicate skipped: <CAJ12SBEiScmoigTwC6us=LO7uorKRngef_dpuzO9hv--4PjzCg@mail.gmail.com>
+2026-07-10 15:36:37,424 | INFO | ai_email | Duplicate skipped: <CAJ12SBHbNtpaQaYv5hx9NEj_=OG1zM7GJoUwYLnymzY2Sb7Q3w@mail.gmail.com>
+2026-07-10 15:36:37,743 | INFO | ai_email | Duplicate skipped: <CAJ12SBGX8NmwOFKvv-xXpg7NKK3jreAg+ATyoUqB9sLGyeYfKw@mail.gmail.com>
+2026-07-10 15:36:38,082 | INFO | ai_email | Duplicate skipped: <CAJ12SBGCWC4R30n9xDRF+cC_o4N6OE2EsugRyR+9j5OvbBwWUA@mail.gmail.com>
+2026-07-10 15:36:38,380 | INFO | ai_email | Duplicate skipped: <CAJ12SBFNKpALfHPGHzPmQw+g8+qYcjg7TEok_sfQR5PhmOHrVQ@mail.gmail.com>
+2026-07-10 15:36:38,733 | INFO | ai_email | Duplicate skipped: <CAJ12SBF3M2VbZp2mmyT6--ejpVq8AeePRj24cfF2w44RS=_MAQ@mail.gmail.com>
+2026-07-10 15:36:39,103 | INFO | ai_email | Duplicate skipped: <CAJ12SBG=nMaLQn3mjvn0O31vEiEOBC0146q7RHv1j=xTuDY-xw@mail.gmail.com>
+2026-07-10 15:36:39,391 | INFO | ai_email | Duplicate skipped: <CAJ12SBFj3mH2j15DJP3G4ShHSLUh9Q9gNSOMzMV+rpEYyxWzuQ@mail.gmail.com>
+2026-07-10 15:36:39,951 | INFO | ai_email | Duplicate skipped: <CAJ12SBFWPHdXy1v111Ug7LJXyhRufQL5fNiuFt_orWNmUT0RRA@mail.gmail.com>
+2026-07-10 15:36:40,462 | INFO | ai_email | Duplicate skipped: <CAJ12SBFesyYjAq5nndnqxa3Z69nmR4mQv7Wbae3mCGie9JrUYA@mail.gmail.com>
+2026-07-10 15:36:40,841 | INFO | ai_email | Duplicate skipped: <CAJ12SBGU3utcZ=ZhO6QabMJtZ2uJntt8cd+tF3gTcxgS6L-gxQ@mail.gmail.com>
+2026-07-10 15:36:41,201 | INFO | ai_email | Duplicate skipped: <CAJ12SBFh4KUtVs-QzQGQV0-A9MJtJ-iudf26kR2o-wkisiiBPw@mail.gmail.com>
+2026-07-10 15:36:41,571 | INFO | ai_email | Duplicate skipped: <CAJ12SBH4rFL8==5BCuarJmHkGWwM6aKoCthQst8kLD_De-ZbLA@mail.gmail.com>
+2026-07-10 15:36:42,001 | INFO | ai_email | Duplicate skipped: <CAJ12SBHSc7K+nTPFUSoDZm91nWGC+BfwuzUwzYV56C3rnXhWAw@mail.gmail.com>
+2026-07-10 15:36:42,431 | INFO | ai_email | Duplicate skipped: <CAJ12SBEO=dHU_rDbUJJ+=-uAT6pwV1vj498JFgryhp2OdR4kxQ@mail.gmail.com>
+2026-07-10 15:36:43,031 | INFO | ai_email | Duplicate skipped: <CAJ12SBFu9heqajTWznTwMR0bfikTc9L3Aqn_5aY-rzaGN6TP_w@mail.gmail.com>
+2026-07-10 15:36:43,420 | INFO | ai_email | Duplicate skipped: <CAJ12SBGsRBbD5cPkr8E-n_QffLxRD1He0i1HPh=tWHH_F9oGxQ@mail.gmail.com>
+2026-07-10 15:36:43,967 | INFO | ai_email | Duplicate skipped: <CAJ12SBF9eiWEQ-AEQtFH_CEXSBz0JtRjP9Y3VPo3BA0PAzb5Lw@mail.gmail.com>
+2026-07-10 15:36:44,382 | INFO | ai_email | Thread linked: <CAJ12SBHXdQnbSZfOrmiXtJaZcvRZ07qJzmgpWmgFmLmrhHuQhw@mail.gmail.com> -> <CALFiiLb6+mf7OKOUVLE=OatMbkFNYJQ6dmnhTjq4KCk-uzBnZw@mail.gmail.com>
+2026-07-10 15:36:44,392 | INFO | ai_email | Imported: <CAJ12SBHXdQnbSZfOrmiXtJaZcvRZ07qJzmgpWmgFmLmrhHuQhw@mail.gmail.com>
+2026-07-10 15:36:44,886 | INFO | ai_email | shopsat19@gmail.com sync complete. Imported=1, Skipped=19

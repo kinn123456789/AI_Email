@@ -1,14 +1,13 @@
 import os
 import email
-
-
 import imaplib
-
 from email.utils import parseaddr
 from email.header import decode_header, make_header
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 
+# Project modules
+from logger import logger
 from database import (
     db_pool,
     save_email,
@@ -16,12 +15,10 @@ from database import (
     get_message_by_message_id,
 )
 
-# Configuration
 load_dotenv()
 
-
 EMAIL_ACCOUNTS = [
-    {"email": os.getenv("EMAIL_4"), "token": "token_sat.json", "source": "satshop19@gmail.com"},
+    {"email": os.getenv("EMAIL_4"), "token": "token_sat.json", "source": "shopsat19@gmail.com"},
 ]
 
 def oauth_login(email_address, token_file):
@@ -41,103 +38,71 @@ def oauth_login(email_address, token_file):
 
 def main():
     for account in EMAIL_ACCOUNTS:
-        if not account.get("email") or not account.get("token"):
-            continue
-
-        print(f"\n--- Checking {account['source']} ---")
+        logger.info(f"Checking sent mail for {account['source']}")
         mail = None
-        
         try:
             mail = oauth_login(account["email"], account["token"])
+            status, _ = mail.select('"[Gmail]/Sent Mail"')
+            if status != "OK":
+                logger.error(f"Could not open Sent Mail for {account['source']}")
+                continue
+
+            status, search_data = mail.search(None, "ALL")
             
+            if status != "OK": continue
 
-                # =====================================================
-            # SYNC SENT MAIL (Human replies sent from Gmail)
-            # =====================================================
+            
+            message_ids = search_data[0].split()[-20:]
+            imported, skipped = 0, 0
 
-            mail.select('"[Gmail]/Sent Mail"')
-
-            status, messages = mail.search(None, "ALL")
-
-            if status == "OK":
-
-                sent_ids = messages[0].split()[-20:]
-
-                print(f"Unread sent emails: {len(sent_ids)}")
-
-                for sent_id in sent_ids:
-
+            for sent_id in message_ids:
+                try:
                     status, msg_data = mail.fetch(sent_id, "(RFC822)")
-
-                    if status != "OK":
-                        continue
+                    if status != "OK": continue
 
                     msg = email.message_from_bytes(msg_data[0][1])
-
-                    message_id = msg.get("Message-ID")
+                    message_id = " ".join((msg.get("Message-ID") or "").split())
 
                     if not message_id or email_exists(message_id):
+                        skipped += 1
+                        logger.info(f"Duplicate skipped: {message_id}")
                         continue
 
-                    subject = str(make_header(decode_header(msg.get("Subject", ""))))
+                    # Normalization & Threading
+                    in_reply_to = " ".join((msg.get("In-Reply-To") or "").split())
+                    references = " ".join((msg.get("References") or "").split())
+                    
+                    thread_id, parent = message_id, None
+                    if in_reply_to:
+                        parent = get_message_by_message_id(in_reply_to)
+                    
+                    if not parent and references:
+                        for ref in reversed(references.split()):
+                            parent = get_message_by_message_id(ref)
+                            if parent: break
+                    
+                    if parent:
+                        thread_id = parent["thread_id"]
+                        logger.info(f"Thread linked: {message_id} -> {thread_id}")
+                    else:
+                        logger.info(f"New thread: {message_id}")
 
-                    body = ""
-                    html_body = ""
-
+                    # Body Extraction
+                    body, html_body = "", ""
                     for part in msg.walk():
-
-                        if part.get_filename():
-                            continue
-
-                        if part.get_content_type() == "text/plain":
-
-                            payload = part.get_payload(decode=True)
-
-                            if payload:
-                                body += payload.decode(errors="ignore")
-
-                        elif part.get_content_type() == "text/html":
-
-                            payload = part.get_payload(decode=True)
-
-                            if payload:
-                                html_body += payload.decode(errors="ignore")
+                        if part.get_filename(): continue
+                        content_type = part.get_content_type()
+                        payload = part.get_payload(decode=True)
+                        if not payload: continue
+                        if content_type == "text/plain": body += payload.decode(errors="ignore")
+                        elif content_type == "text/html": html_body += payload.decode(errors="ignore")
 
                     if not body.strip() and html_body:
-                        body = BeautifulSoup(
-                            html_body,
-                            "html.parser"
-                        ).get_text(separator=" ", strip=True)
-
-                    sender_email = parseaddr(msg.get("From", ""))[1]
-
-                    in_reply_to = msg.get("In-Reply-To")
-
-                    thread_id = message_id
-
-                    if in_reply_to:
-
-                        parent = get_message_by_message_id(in_reply_to)
-
-                        if not parent:
-
-                            references = msg.get("References")
-
-                            if references:
-
-                                for ref in references.split():
-
-                                    parent = get_message_by_message_id(ref)
-
-                                    if parent:
-                                        break
-
-                        if parent:
-                            thread_id = parent["thread_id"]
+                        body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
 
                     save_email(
-                        sender=sender_email,
-                        subject=subject,
+                        sender=parseaddr(msg.get("From", ""))[1],
+                        subject=str(make_header(decode_header(msg.get("Subject", "")))),
                         body=body,
                         category="Human Reply",
                         priority="Low",
@@ -149,25 +114,25 @@ def main():
                         source=account["source"],
                         status="Replied",
                         requires_review=False,
-                        reply_type="gmail_manual"
+                        reply_type="gmail_manual",
+                        references_header=references
                     )
-
-                    print(f"Imported sent email: {subject}")
-
+                    imported += 1
+                    logger.info(f"Imported: {message_id}")
                     mail.store(sent_id, '+FLAGS', '\\Seen')
 
-        except Exception as e:
-            print(f"Failed to process {account['source']}: {e}")
+                except Exception:
+                    logger.exception(f"Failed processing sent email {sent_id}")
+                    continue
+
+            logger.info(f"{account['source']} sync complete. Imported={imported}, Skipped={skipped}")
+
+        except Exception:
+            logger.exception(f"Failed to process {account['source']}")
         finally:
             if mail:
-                try:
-                    mail.logout()
-                except:
-                    pass
-
-
-
+                try: mail.logout()
+                except Exception: pass
 
 if __name__ == "__main__":
     main()
-    db_pool.closeall()

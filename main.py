@@ -180,29 +180,38 @@ async def send_reply(
         to_email=original_email["sender"],
         subject=original_email["subject"],   # send_email() adds "Re:" automatically
         body=reply_body,
-        thread_id=original_email["thread_id"],
-        original_msg_id=original_email["message_id"]
+       
+        original_msg_id=original_email["message_id"],
+        previous_references=original_email.get("references_header")
     )
     mailbox=original_email["mailbox"]
 
     if sent_result:
+        
+        import time
+        time.sleep(2)
 
-        save_email(
-            sender=source,
-            subject=original_email["subject"],
-            body=reply_body,
-            category=original_email["category"],
-            priority=original_email["priority"],
-            ai_summary="Manual reply",
-            ai_draft_reply=reply_body,
-            message_id=sent_result["message_id"],
-            thread_id=original_email["thread_id"],
-            in_reply_to=original_email["message_id"],
-            source=source,
-            status="Replied",
-            reply_type="human",
-            mailbox=mailbox
-        )
+        import sync_sent_gmail
+        sync_sent_gmail.main()
+
+        #save_email(
+          #  sender=source,
+           # subject=original_email["subject"],
+           # body=reply_body,
+          #  category=original_email["category"],
+          #  priority=original_email["priority"],
+          #  ai_summary="Manual reply",
+          #  ai_draft_reply=reply_body,
+          #  message_id=sent_result["message_id"],
+          #  thread_id=original_email["thread_id"], 
+          #  in_reply_to=original_email["message_id"],
+          #  source=source,
+          #  status="Replied",
+          #  reply_type="human",
+          #  mailbox=mailbox,
+          #  references_header=original_email.get("references_header")
+
+       # )
 
         update_final_reply(email_id, reply_body)
         update_reply_type(email_id, "human")
@@ -211,6 +220,8 @@ async def send_reply(
         set_first_reply_time(email_id)
 
         print(f"✅ Email {email_id} sent and saved successfully.")
+
+        
 
         return RedirectResponse(
             url=f"/email/{email_id}?sent=true",

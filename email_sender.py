@@ -1,60 +1,73 @@
+import traceback
 import base64
-from email.mime.text import MIMEText
-from email.utils import make_msgid
+from email.message import EmailMessage
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 
-SCOPES = ["https://mail.google.com/"]
-
-def send_email(from_email, token_file, to_email, subject, body,
-               thread_id=None, original_msg_id=None):
+def send_email(from_email, token_file, to_email, subject, body, thread_id=None, original_msg_id=None, previous_references=None):
+    """
+    Sends an email using the Gmail API, maintaining thread continuity.
+    """
     try:
-        # Credential Setup
-        creds = Credentials.from_authorized_user_file(token_file, SCOPES)
+        # Load credentials
+        creds = Credentials.from_authorized_user_file(token_file, ["https://mail.google.com/"])
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
-            with open(token_file, "w") as token:
-                token.write(creds.to_json())
-
+        
         service = build("gmail", "v1", credentials=creds)
 
-        # Message Creation
-        message = MIMEText(body, "plain", "utf-8")
-        message["To"] = to_email
-        message["From"] = from_email
+        # Create message
+        msg = EmailMessage()
+        msg.set_content(body)
+        msg["Subject"] = subject
+        msg["From"] = from_email
+        msg["To"] = to_email
 
-        if not subject.lower().startswith("re:"):
-            message["Subject"] = f"Re: {subject}"
-        else:
-            message["Subject"] = subject
-
-        # Generate and set RFC Message-ID
-        generated_msg_id = make_msgid()
-        message["Message-ID"] = generated_msg_id
-
+        # Threading Headers
+       
         if original_msg_id:
-            message["In-Reply-To"] = original_msg_id
-            message["References"] = original_msg_id
+            msg["In-Reply-To"] = original_msg_id
+            
+        # Construct References: combine old references with the parent ID
+        if previous_references and original_msg_id:
+            msg["References"] = f"{previous_references} {original_msg_id}".strip()
+        elif original_msg_id:
+            msg["References"] = original_msg_id
 
-        # Encode and Send
-        raw_message = base64.urlsafe_b64encode(message.as_bytes()).decode("utf-8")
-        payload = {"raw": raw_message}
-
-        # Handle Gmail Threading
-        #if thread_id and not thread_id.startswith("<"):
-         #   payload["threadId"] = thread_id
-
-        response = service.users().messages().send(userId="me", body=payload).execute()
-
-        print(f"✅ Email sent successfully. Gmail ID: {response['id']}")
+        # Encode and send
+        raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode("utf-8")
+        message = {"raw": raw_message}
         
-        # Return both IDs for database storage
-        return {
-            "gmail_id": response["id"],
-            "message_id": generated_msg_id
+       
+
+        print("=" * 80)
+        print("Sending email...")
+        print("FROM:", from_email)
+        print("TO:", to_email)
+        print("SUBJECT:", subject)
+        print("In-Reply-To:", msg.get("In-Reply-To"))
+        print("References:", msg.get("References"))
+        print("=" * 80)
+
+
+        message = {
+                "raw": raw_message
         }
+        sent_msg = service.users().messages().send(
+            userId="me",
+            body=message
+        ).execute()
+
+        print("Gmail Response:", sent_msg)
+
+        return {
+            "gmail_id": sent_msg["id"],
+            "thread_id": sent_msg.get("threadId"),
+            "message_id": sent_msg["id"]
+}
 
     except Exception as e:
-        print(f"❌ Send Email Error: {e}")
+        traceback.print_exc()
+        print("SEND ERROR:", e)
         return None

@@ -21,7 +21,6 @@ def get_connection():
     return db_pool.getconn()
 
 # --- HELPER PATTERN: Every function now uses try/finally ---
-
 def save_email(
     sender,
     subject,
@@ -41,39 +40,31 @@ def save_email(
     ai_confidence=None,
     knowledge_url=None,
     reply_type=None,
-    mailbox="inbox"
+    mailbox="inbox",
+    references_header=None  # Ensure this is added here
 ):
     conn = get_connection()
     cursor = conn.cursor()
     try:
+        # Added 'references_header' to the column list and the %s placeholder
         cursor.execute("""
             INSERT INTO messages(
-    sender,
-    subject,
-    body,
-    category,
-    priority,
-    ai_summary,
-    ai_draft_reply,
-    message_id,
-    thread_id,
-    in_reply_to,
-    source,
-    contact_name,
-    phone,
-    status,
-    requires_review,
-    ai_confidence,
-    knowledge_url,
-    reply_type,
-    mailbox
-)
-VALUES (
-    %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,
-    %s,%s,%s,%s,%s,%s,%s,%s,%s
-)
-RETURNING id
-        """, (sender, subject, body, category, priority, ai_summary, ai_draft_reply, message_id, thread_id, in_reply_to, source, contact_name, phone, status, requires_review, ai_confidence,knowledge_url,reply_type,mailbox))
+                sender, subject, body, category, priority, ai_summary, 
+                ai_draft_reply, message_id, thread_id, in_reply_to, source, 
+                contact_name, phone, status, requires_review, ai_confidence, 
+                knowledge_url, reply_type, mailbox, references_header
+            )
+            VALUES (
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+            )
+            RETURNING id
+        """, (
+            sender, subject, body, category, priority, ai_summary, 
+            ai_draft_reply, message_id, thread_id, in_reply_to, source, 
+            contact_name, phone, status, requires_review, ai_confidence, 
+            knowledge_url, reply_type, mailbox, references_header 
+        ))
         result = cursor.fetchone()
         conn.commit()
         return result[0] if result else None
@@ -765,23 +756,33 @@ def get_email_thread(thread_id):
 
 from psycopg2.extras import RealDictCursor
 
+
+
 def get_message_by_message_id(message_id):
+
+    if not message_id:
+        return None
+
+    message_id = " ".join(message_id.split()).strip()
+
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    try:
-        cursor.execute("""
-            SELECT *
-            FROM messages
-            WHERE message_id = %s
-            LIMIT 1
-        """, (message_id,))
+    cursor.execute(
+        """
+        SELECT *
+        FROM messages
+        WHERE message_id = %s
+        """,
+        (message_id,)
+    )
 
-        return cursor.fetchone()
+    row = cursor.fetchone()
 
-    finally:
-        cursor.close()
-        db_pool.putconn(conn)
+    cursor.close()
+    conn.close()
+
+    return row
 
 def get_support_emails():
 

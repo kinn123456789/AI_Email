@@ -70,11 +70,18 @@
         </div>
 
         <div class="mb-6">
-            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1">📝 AI Quick Summary</h2>
-            <div class="bg-amber-50/40 border border-amber-100 p-5 mt-2 rounded-2xl text-stone-600 text-sm leading-relaxed break-words">
-                {% if email.ai_summary %}{{ email.ai_summary }}{% else %}<span class="italic text-stone-400">No AI summary available.</span>{% endif %}
-            </div>
-        </div>
+    <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1">📝 AI Quick Summary</h2>
+    
+    <div class="bg-amber-50/40 border border-amber-100 p-5 mt-2 rounded-2xl text-stone-600 text-sm leading-relaxed break-words">
+        {% if email.ai_summary and email.ai_summary != "Error" %}
+            {{ email.ai_summary }}
+        {% elif email.ai_summary == "Error" %}
+            <span class="text-rose-600 italic">⚠️ The AI encountered an error while processing this email. Please review manually.</span>
+        {% else %}
+            <span class="italic text-stone-400">No AI summary available.</span>
+        {% endif %}
+    </div>
+</div>
 
         {% if email.knowledge_url %}
         <div class="mb-6 p-4 bg-purple-50/50 border border-purple-100 rounded-2xl flex items-center justify-between">
@@ -165,3 +172,4 @@
     {% endif %}
 </body>
 </html>
+
