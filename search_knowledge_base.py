@@ -4,7 +4,7 @@ from embedding_service import generate_embedding
 
 def search_knowledge_base(query, limit=5):
 
-    
+    print("USING KNOWLEDGE SEARCH FILE #2")
     print("Generating knowledge search embedding...")
 
     query_embedding = generate_embedding(query)
@@ -46,7 +46,8 @@ def search_knowledge_base(query, limit=5):
         results = []
 
         for row in rows:
-
+            if row[7] < 0.70:
+                continue
             results.append({
                 "title": row[0],
                 "section": row[1],

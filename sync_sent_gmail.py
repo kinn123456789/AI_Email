@@ -5,7 +5,7 @@ from email.utils import parseaddr
 from email.header import decode_header, make_header
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
-
+from emails_cleaner import clean_email_body
 # Project modules
 from logger import logger
 from database import (
@@ -87,6 +87,10 @@ def main():
                     else:
                         logger.info(f"New thread: {message_id}")
 
+
+                    ai_summary = "Reply sent"
+                    reply_type = "human"
+                    
                     # Body Extraction
                     body, html_body = "", ""
                     for part in msg.walk():
@@ -99,6 +103,9 @@ def main():
 
                     if not body.strip() and html_body:
                         body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
+
+                    # Remove quoted reply history
+                    body = clean_email_body(body)
 
                     save_email(
                         sender=parseaddr(msg.get("From", ""))[1],

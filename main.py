@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from ai_classifier import ai_triage
-from database import db_pool
+from database import db_pool,get_latest_thread_ai
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
@@ -33,8 +33,8 @@ from database import (
     get_conversation,
     get_conversation_messages,
     get_contact_forms,
-    update_final_reply, update_reply_type,get_email_thread,get_thread,
-    get_support_emails,
+    update_final_reply, update_reply_type,get_email_thread,get_thread,get_latest_ai_summary,
+    get_support_emails
 )
 templates = Jinja2Templates(directory="templates")
 
@@ -87,9 +87,10 @@ def conversation_detail(
 def emails():
 
     return get_emails()
+
 @app.get("/email/{email_id}")
-@app.get("/email/{email_id}")
-@app.get("/email/{email_id}")
+
+
 def view_email(request: Request, email_id: int):
 
     email_data = get_email_by_id(email_id)
@@ -100,8 +101,32 @@ def view_email(request: Request, email_id: int):
 
     thread_id = email_data.get("thread_id")
     print("THREAD:", thread_id)
+    # -------------------------------------------------
+    # Show latest AI summary & draft for the thread
+    # -------------------------------------------------
+
+    if thread_id:
+
+        latest_ai = get_latest_thread_ai(thread_id)
+
+        if latest_ai:
+
+            email_data["ai_summary"] = latest_ai["ai_summary"]
+            email_data["ai_draft_reply"] = latest_ai["ai_draft_reply"]
+
+            # Optional (recommended)
+            email_data["category"] = latest_ai["category"]
+            email_data["priority"] = latest_ai["priority"]
+            email_data["ai_confidence"] = latest_ai["ai_confidence"]
+            email_data["requires_review"] = latest_ai["requires_review"]
+
+    #latest_summary = get_latest_ai_summary(thread_id)
+
+    #if latest_summary:
+      #  email_data["ai_summary"] = latest_summary
 
     conversation = get_thread(thread_id) if thread_id else []
+    school_email = email_data["source"]
 
     print("Thread:", thread_id)
     print("CONVERSATION:")
@@ -113,7 +138,9 @@ def view_email(request: Request, email_id: int):
         {
             "request": request,
             "email": email_data,
-            "conversation": conversation
+            "conversation": conversation,
+            "school_email": school_email
+            
         }
     )
 
@@ -187,12 +214,23 @@ async def send_reply(
     mailbox=original_email["mailbox"]
 
     if sent_result:
-        
+
+        update_final_reply(email_id, reply_body)
+        update_reply_type(email_id, "human")
+        update_status(email_id, "Replied")
+        set_resolved_time(email_id)
+        set_first_reply_time(email_id)
+
         import time
         time.sleep(2)
 
         import sync_sent_gmail
         sync_sent_gmail.main()
+
+        return RedirectResponse(
+            url=f"/email/{email_id}?sent=true",
+            status_code=303
+        )
 
         #save_email(
           #  sender=source,
@@ -213,27 +251,27 @@ async def send_reply(
 
        # )
 
-        update_final_reply(email_id, reply_body)
-        update_reply_type(email_id, "human")
-        update_status(email_id, "Replied")
-        set_resolved_time(email_id)
-        set_first_reply_time(email_id)
+        #update_final_reply(email_id, reply_body)
+        #update_reply_type(email_id, "human")
+        #update_status(email_id, "Replied")
+       # set_resolved_time(email_id)
+       # set_first_reply_time(email_id)
 
-        print(f"✅ Email {email_id} sent and saved successfully.")
+       # print(f"✅ Email {email_id} sent and saved successfully.")
 
         
 
-        return RedirectResponse(
-            url=f"/email/{email_id}?sent=true",
-            status_code=303
-        )
+       # return RedirectResponse(
+        #    url=f"/email/{email_id}?sent=true",
+        #    status_code=303
+       # )
 
-    print(f"❌ Email sending failed for {email_id}")
+    #print(f"❌ Email sending failed for {email_id}")
 
-    return RedirectResponse(
-        url=f"/email/{email_id}?error=true",
-        status_code=303
-    )
+   # return RedirectResponse(
+    #    url=f"/email/{email_id}?error=true",
+    #    status_code=303
+   # )
 
    
 @app.get("/dashboard")

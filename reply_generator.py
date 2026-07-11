@@ -1,190 +1,194 @@
 import os
+
 from dotenv import load_dotenv
 from openai import OpenAI
+
+import time
+
+from ai_logger import save_ai_log
+
+from prompt_builder import (
+    SYSTEM_PROMPT,
+    build_user_prompt,
+)
 
 load_dotenv()
 
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
+    base_url="https://openrouter.ai/api/v1",
 )
 
 
 def generate_reply(
+    gmail_message_id,
     subject,
     body,
     category,
     priority,
     thread_history,
     similar_emails,
-    knowledge=None
+    knowledge=None,
 ):
     """
-    Generates a professional, friendly response to an incoming email
-    by referencing conversation history and past approved email styles.
+    Generates an AI draft reply using:
+    - Current email
+    - Conversation history
+    - Coral Academy Knowledge Base
+    - Historical emails (style only)
     """
-    examples = ""
-
-    # Safely build historical examples, supporting both dictionary and list/tuple candidates
-    for i, email in enumerate(similar_emails, 1):
-        if isinstance(email, dict):
-            email_subject = email.get("subject", "N/A")
-            email_body = (email.get("body") or "")[:1000]
-        elif isinstance(email, (list, tuple)) and len(email) >= 4:
-            # Fallback if similar_emails is passed as raw DB rows (e.g., [id, role, subject, body, ...])
-            email_subject = email[2]
-            email_body = (email[3] or "")[:1000]
-        else:
-            continue
-
-        examples += f"""
-Example {i}
-
-Subject:
-{email_subject}
-
-Body:
-{email_body}
-
-----------------------------------------
-"""
-
-    knowledge_text = ""
-    if knowledge:
-        for i, item in enumerate(knowledge, 1):
-            knowledge_text += f"""
-Knowledge {i}
-
-Title:
-{item['title']}
-
-Content:
-{item['content']}
-
-URL:
-{item['url']}
-
-----------------------------------------
-"""
-
-    prompt = f"""
-You are replying on behalf of Coral Academy.
-Your goal is to draft replies for parents, students, teachers, and prospective families.
-Only draft replies when a human staff member would normally reply.
-
-Do not reply to automated notifications, receipts, newsletters, invoices, monitoring alerts, deployment alerts, or marketing emails.
-Your reply should sound as if it was written by a school staff member.
-Write a professional, friendly, and concise reply.
-Follow the school's previous writing style shown in the historical examples.
-Do not invent facts. If information is missing, politely ask for clarification.
-Return only the email reply.
-Do not include explanations, notes, markdown, or quotation marks.
-
-Incoming Email
-
-Category:
-{category}
-
-Priority:
-{priority}
-
-Subject:
-{subject}
-
-Body:
-{body[:5000]}
-
-Conversation History:
-{thread_history}
-
-Relevant Historical Email Examples:
-{examples if examples else "No historical examples found."}
-
-Relevant Help Center Information:
-{knowledge_text if knowledge_text else "No relevant Help Center information found."}
-
-
-
-
-Instructions:
-1. Write a professional, friendly, and concise reply.
-2. Use the conversation history and historical examples only as guidance.
-3. Always answer the current incoming email directly.
-4. Do not invent school policies, dates, prices, or promises.
-5. If vital information is missing, politely ask for clarification.
-6. If the email requires human approval or additional internal lookup, state that politely.
-7. Use the historical emails only as style/tone guides—do not copy their wording verbatim.
-8. Do not assume context or facts from historical examples apply to this new email.
-9. If the current email's details conflict with a historical example, always trust the current email.
-10. Do not mention or refer to the historical examples in your reply.
-11. Return only the body of the email.
-12. Do not include a subject line, markdown, explanations, notes, or quotation marks.
-
-## Help Center Instructions:
-
-If the Help Center contains information that answers the user's question:
-
-- Base your reply directly on that information.
-- Do not invent policies or procedures.
-- Include only the single most relevant Help Center URL.
-- If multiple Help Center articles are relevant, use the most relevant one only.
-
-Never promise to perform an action on behalf of Coral Academy unless the Help Center explicitly states that staff perform that action.
-
-Do not say things like:
-- "I can pause it for you."
-- "I have updated your account."
-- "We have processed your refund."
-
-Instead, explain the process described in the Help Center and direct the user to the appropriate steps.
-
-If no Help Center information is relevant, ignore the Help Center information completely and answer using:
-- the current incoming email,
-- the conversation history, and
-- the historical email examples (for writing style only).
-
-If the Help Center fully answers the user's question, prefer the Help Center information over historical email examples.
-
-Use historical email examples only to match Coral Academy's writing style and tone.
-
-If you include a Help Center URL, end the email with exactly this format:
-
-For more information:
-<Help Center URL>
-
-Do not include a Help Center URL unless you used Help Center information in your reply.
-
-Do not invent menu names, navigation paths, button names, or website steps.
-Only mention navigation or instructions that appear in the Help Center information provided.
-
-Priority of information:
-
-1. Current incoming email
-2. Help Center information (facts and policies)
-3. Conversation history
-4. Historical email examples (style and tone only)
-
-If these sources conflict, always follow the higher-priority source.
-"""
-
 
     try:
+        print("\nKNOWLEDGE OBJECT BEFORE PROMPT")
+        print("LEN AFTER SEARCH:", len(knowledge))
+
+        for i, k in enumerate(knowledge, 1):
+            print(i, k["title"], "|", k["section"], "|", id(k))
+        
+            user_prompt = build_user_prompt(
+            subject=subject,
+            body=body,
+            category=category,
+            priority=priority,
+            thread_history=thread_history,
+            knowledge=knowledge or [],
+            similar_emails=similar_emails or [],
+        )
+
+        print("\n" + "=" * 80)
+        print("FINAL PROMPT SENT TO GPT")
+        print("=" * 80)
+
+        print("\nCURRENT SUBJECT:")
+        print(subject)
+
+        print("\nCURRENT BODY:")
+        print(body)
+
+        print("\nKNOWLEDGE RETRIEVED:")
+        for i, k in enumerate(knowledge or [], 1):
+            print(
+                i,
+                k.get("title"),
+                "|",
+                k.get("section"),
+                "|",
+                round(k.get("similarity", 0), 3),
+            )
+
+        print("\nHISTORICAL EMAILS RETRIEVED:")
+        for e in (similar_emails or []):
+            if isinstance(e, dict):
+                print("-", e.get("subject"))
+            else:
+                print("-", e[2])
+
+        print("\nFULL PROMPT:\n")
+        print(user_prompt)
+
+        print("=" * 80)
+
+        start_time = time.time()
+
+
+        with open("last_prompt.txt", "w", encoding="utf-8") as f:
+            f.write(user_prompt)
+        
         response = client.chat.completions.create(
             model="gpt-5-nano",
             temperature=0.3,
             messages=[
                 {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT,
+                },
+                {
                     "role": "user",
-                    "content": prompt
-                }
-            ]
+                    "content": user_prompt,
+                },
+            ],
         )
+
+        elapsed_ms = int((time.time() - start_time) * 1000)
+
         reply = response.choices[0].message.content.strip()
+
+        print("=" * 80)
+        print("GPT GENERATED REPLY")
+        print(reply)
+        print("=" * 80)
+
+        usage = response.usage
+
+        knowledge_log = []
+
+        for item in knowledge or []:
+
+            knowledge_log.append({
+                "source": item.get("source"),
+                "title": item.get("title"),
+                "similarity": item.get("similarity"),
+            })
+
+        historical_log = []
+
+        for email in similar_emails or []:
+
+            if isinstance(email, dict):
+
+                historical_log.append({
+                    "id": email.get("id"),
+                    "subject": email.get("subject"),
+                })
+
+            else:
+
+                historical_log.append({
+                    "id": email[0],
+                    "subject": email[2],
+                })
+
+        save_ai_log(
+            gmail_message_id=gmail_message_id,   
+            model="gpt-5-nano",
+            category=category,
+            priority=priority,
+            reply_type="automatic",
+            requires_review=False,
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            total_tokens=usage.total_tokens,
+            response_time_ms=elapsed_ms,
+            knowledge_used=knowledge_log,
+            historical_examples=historical_log,
+            thread_history_length=len(thread_history or ""),
+            ai_reply=reply,
+        )
+
         if reply == "NO_REPLY":
             return ""
 
         return reply
 
     except Exception as e:
+
+        save_ai_log(
+            gmail_message_id=gmail_message_id,
+            model="gpt-5-nano",
+            category=category,
+            priority=priority,
+            reply_type="automatic",
+            requires_review=True,
+            prompt_tokens=0,
+            completion_tokens=0,
+            total_tokens=0,
+            response_time_ms=0,
+            knowledge_used=[],
+            historical_examples=[],
+            thread_history_length=0,
+            ai_reply="",
+            error=str(e),
+        )
+
         print("Reply Generator Error:", e)
         return ""

@@ -1,29 +1,30 @@
-import os
-
-from dotenv import load_dotenv
-from openai import OpenAI
-
-from database import get_connection
-
-
-load_dotenv()
-
-client = OpenAI(
-    api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
-)
+from database import get_connection, db_pool
+from embedding_service import generate_embedding
 
 
 def search_knowledge_base(subject, body, limit=5):
+    """
+    Searches the unified Coral Academy Knowledge Base.
 
-    print("Generating knowledge query embedding...")
+    Sources may include:
+    - Help Center
+    - Classes
+    - Future knowledge sources
 
-    response = client.embeddings.create(
-        model="text-embedding-3-small",
-        input=f"Subject: {subject}\n\nBody:\n{body}"
-    )
+    Returns the most relevant unique results.
+    """
 
-    query_embedding = response.data[0].embedding
+    query = f"""
+Subject:
+{subject}
+
+Body:
+{body}
+""".strip()
+    print("USING KNOWLEDGE SEARCH FILE #1")
+    print("Generating Knowledge Base query embedding...")
+
+    query_embedding = generate_embedding(query)
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -33,14 +34,21 @@ def search_knowledge_base(subject, body, limit=5):
         cursor.execute(
             """
             SELECT
-                id,
                 article_title,
+                section_title,
                 category,
                 content,
                 url,
-                embedding <=> %s::vector AS distance
+                source,
+                source_id,
+                1 - (embedding <=> %s::vector) AS similarity
+
             FROM knowledge_base
+
+            WHERE embedding IS NOT NULL
+
             ORDER BY embedding <=> %s::vector
+
             LIMIT %s
             """,
             (
@@ -53,33 +61,63 @@ def search_knowledge_base(subject, body, limit=5):
         rows = cursor.fetchall()
 
         results = []
-        seen_urls = set()
+        #seen_urls = set()
+        seen = set()
+
 
         for row in rows:
+            print(
+                row[0],
+                row[1],
+                row[7]
+            )
+
+    
+            similarity = row[7]
+
+            print(
+                f"{row[0]} | {row[1]} | similarity={row[7]:.3f}"
+            )
+
+          
 
             url = row[4]
 
-            if url in seen_urls:
+            #if url in seen_urls:
+             #   continue
+
+            #seen_urls.add(url)
+
+            key = (
+                row[5],   # source
+                row[6],   # source_id
+                row[1]    # section
+            )  # article_title + section_title
+
+            if key in seen:
                 continue
 
-            seen_urls.add(url)
+            seen.add(key)
 
-            results.append({
-                "id": row[0],
-                "title": row[1],
-                "category": row[2],
-                "content": row[3],
-                "url": url,
-                "distance": row[5]
-            })
+            print("USING KNOWLEDGE SEARCH FILE #1")
+            results.append(
+                {
+                    "title": row[0],
+                    "section": row[1] or "",
+                    "category": row[2] or "",
+                    "content": row[3] or "",
+                    "url": row[4] or "",
+                    "source": row[5] or "",
+                    "source_id": row[6] or "",
+                    "similarity": similarity,
+                }
+            )
 
-            if len(results) == limit:
+            if len(results) >= limit:
                 break
 
         return results
 
-        
     finally:
-
         cursor.close()
-        conn.close()
+        db_pool.putconn(conn)

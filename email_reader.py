@@ -5,6 +5,7 @@ import time
 import imaplib
 import traceback
 
+
 from email.utils import parseaddr
 from email.header import decode_header
 from bs4 import BeautifulSoup
@@ -38,6 +39,21 @@ if not os.path.exists(ATTACHMENT_DIR):
 
 EMAIL_ACCOUNTS = [
     {"email": os.getenv("EMAIL_4"), "token": "token_sat.json", "source": "shopsat19@gmail.com"},
+    {
+        "email": os.getenv("EMAIL_SUPPORT"),
+        "token": "token_support.json",
+        "source": "support@coralacademy.com",
+    },
+    {
+        "email": os.getenv("EMAIL_LUCY"),
+        "token": "token_lucy.json",
+        "source": "lucy@coralacademy.com",
+    },
+    {
+        "email": os.getenv("EMAIL_ENGINEERING"),
+        "token": "token_engineering.json",
+        "source": "engineering@coralacademy.com",
+    },
 ]
 
 def oauth_login(email_address, token_file):
@@ -116,6 +132,8 @@ def main():
                 if not body.strip() and html_body:
                     body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
                 
+                body = clean_email_body(body)
+
                 in_reply_to = " ".join((msg.get("In-Reply-To") or "").split())
 
                 print("IN-REPLY-TO :", in_reply_to)
@@ -154,7 +172,12 @@ def main():
                     history = get_thread(thread_id) if in_reply_to else []
                     history_text = "\n".join([f"{m['sender']}:\n{m['body'] or ''}\n{'-'*40}" for m in history])
                     clean_body = clean_email_body(body)
+                    
+                    print("SUBJECT:", subject)
+                    print("BODY:", repr(body))
+
                     result = ai_triage(subject, clean_body, history=history_text, images=image_data_list)
+                    
                     print("=" * 80)
                     print("AI RESULT")
                     print(result)
@@ -170,11 +193,58 @@ def main():
                             subject,
                             clean_body
                     )
-                    draft_reply = generate_reply(subject=subject, body=clean_body, category=result["category"],
-                        priority=result["priority"], thread_history=history_text,similar_emails=similar_emails)
+
+                    reranked = rerank_emails(
+                        subject,
+                        clean_body,
+                        similar_emails
+                    )
 
 
-                    print("ABOUT TO SAVE EMAIL")
+                    print("=" * 80)
+                    print("RERANKED EMAILS")
+                    print(reranked)
+                    print("=" * 80)
+                    
+                    knowledge = search_knowledge_base(
+                        subject,
+                        clean_body
+                    )
+
+                    print("LEN AFTER SEARCH:", len(knowledge))
+
+                    for i, k in enumerate(knowledge, 1):
+                        print(i, k["title"], "|", k["section"], "|", id(k))
+
+                    print("=" * 80)
+                    print("KNOWLEDGE RESULTS")
+                    for k in knowledge:
+                        print(k["title"])
+                        print(k["url"])
+                        print(k["similarity"])
+                        print("=" * 80)
+                    selected_ids = {
+                        item["id"]
+                        for item in reranked.get("selected", [])
+                    }
+
+                    similar_emails = [
+                        email
+                        for email in similar_emails
+                        if email[0] in selected_ids
+                    ]
+
+
+                    print("=" * 80)
+                    print("FINAL HISTORICAL EMAILS")
+                    for e in similar_emails:
+                        print(e[0], e[2])   # id, subject
+                    print("=" * 80)
+                    draft_reply = generate_reply( message_id, subject=subject, body=clean_body, category=result["category"],
+                        priority=result["priority"], thread_history=history_text,similar_emails=similar_emails,knowledge=knowledge)
+
+
+                    print("ABOUT TO SAVE EMAIL")   
                     print("Thread :", thread_id)
                     print("Mailbox:", mailbox)
                     print("Status :", status)
@@ -182,7 +252,7 @@ def main():
                     db_email_id = save_email(
                         sender_email, subject, body, result["category"], result["priority"],
                         result["summary"], draft_reply, message_id, thread_id, in_reply_to,
-                        account["source"], status=status, requires_review=requires_review,
+                        account["source"], status=status, requires_review=requires_review,ai_confidence=result["confidence"],
                         reply_type=reply_type, mailbox=mailbox, references_header=references_header
                     )
 
@@ -219,7 +289,26 @@ def main():
         finally:
             if mail:
                 mail.logout()
-    print("Syncing sent mails...")
-    sync_sent_mail()
+  
+        print("=" * 60)
+        print("ABOUT TO START SENT MAIL SYNC")
+        print("=" * 60)
+
+        import time
+        time.sleep(2)
+
+        try:
+            sync_sent_mail()
+            print("=" * 60)
+            print("SENT MAIL SYNC FINISHED")
+            print("=" * 60)
+        except Exception as e:
+            print("=" * 60)
+            print("SENT MAIL SYNC FAILED")
+            print(e)
+        import traceback
+        traceback.print_exc()
+        print("=" * 60)
+
 if __name__ == "__main__":
     main()

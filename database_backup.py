@@ -437,7 +437,7 @@ def get_thread(thread_id):
         SELECT sender,
                subject,
                body,
-               created_at
+               created_at,reply_type,source
         FROM messages
         WHERE thread_id = %s
         ORDER BY created_at
