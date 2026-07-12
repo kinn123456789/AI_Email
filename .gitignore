@@ -14,4 +14,5 @@ token*.json
 *.pyc
 
 logs/
-*.log
+*.logbackup.sql
+backup.sql
