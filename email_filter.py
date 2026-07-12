@@ -11,7 +11,48 @@ HEADERS = {}
 SUBJECTS = {}
 BODIES = {}
 
+AUTOMATED_SENDERS = {
+    "no-reply@accounts.google.com",
+    "noreply@accounts.google.com",
+    "no-reply@github.com",
+    "notifications@github.com",
+    "noreply@razorpay.com",
+    "notifications@github.com",
+    "noreply@razorpay.com",
+    "welcome@supabase.com",
+    "info@retool.com",
+    "no-reply@zoom.us",
+    "no-reply@slack.com",
+}
 
+AUTOMATED_DOMAINS = {
+    "shopify.com",
+    "github.com",
+    "supabase.com",
+    "razorpay.com",
+    "retool.com",
+    "zoom.us",
+    "slack.com",
+}
+
+AUTOMATED_SUBJECTS = {
+    "security alert",
+    "verification code",
+    "verification email",
+    "password reset",
+    "new device",
+    "payment failed",
+    "payment received",
+    "invoice",
+    "receipt",
+    "export of your products",
+    "your products are ready",
+    "welcome to",
+    "confirm your email",
+    "email verification",
+    "login code",
+    "sign in code",
+}
 
 def refresh_rules():
 
@@ -103,6 +144,18 @@ def is_automated_email(msg):
     sender = parseaddr(
         msg.get("From", "")
     )[1].lower()
+    # --------------------
+    # Built-in Automated Senders
+    # --------------------
+
+    if sender in AUTOMATED_SENDERS:
+
+        return (
+            True,
+            "Notification",
+            "Known automated sender",
+            "support"
+        )
 
     if sender in SENDERS:
 
@@ -136,6 +189,22 @@ def is_automated_email(msg):
 
         domain = sender.split("@")[1]
 
+        # --------------------
+        # Built-in Automated Domains
+        # --------------------
+
+        if (
+            domain in AUTOMATED_DOMAINS
+            or any(domain.endswith("." + d) for d in AUTOMATED_DOMAINS)
+        ):
+
+            return (
+                True,
+                "Notification",
+                "Known automated domain",
+                "support"
+            )
+
         for blocked_domain, rule in DOMAINS.items():
 
             if (
@@ -159,6 +228,21 @@ def is_automated_email(msg):
         "Subject",
         ""
     ).lower()
+
+    # --------------------
+    # Built-in Automated Subjects
+    # --------------------
+
+    for keyword in AUTOMATED_SUBJECTS:
+
+        if keyword in subject:
+
+            return (
+                True,
+                "Notification",
+                f"Known automated subject: {keyword}",
+                "support"
+            )
 
     for pattern, rule in SUBJECTS.items():
 

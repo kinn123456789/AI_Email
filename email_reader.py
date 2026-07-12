@@ -38,22 +38,26 @@ if not os.path.exists(ATTACHMENT_DIR):
     os.makedirs(ATTACHMENT_DIR)
 
 EMAIL_ACCOUNTS = [
-    {"email": os.getenv("EMAIL_4"), "token": "token_sat.json", "source": "shopsat19@gmail.com"},
     {
-        "email": os.getenv("EMAIL_SUPPORT"),
+        "email": os.getenv("EMAIL_1"),
         "token": "token_support.json",
         "source": "support@coralacademy.com",
     },
     {
-        "email": os.getenv("EMAIL_LUCY"),
+        "email": os.getenv("EMAIL_2"),
         "token": "token_lucy.json",
         "source": "lucy@coralacademy.com",
     },
     {
-        "email": os.getenv("EMAIL_ENGINEERING"),
+        "email": os.getenv("EMAIL_3"),
         "token": "token_engineering.json",
         "source": "engineering@coralacademy.com",
     },
+    {
+        "email": os.getenv("EMAIL_4"),
+        "token": "token_sat.json",
+        "source": "shopsat19@gmail.com",
+    }
 ]
 
 def oauth_login(email_address, token_file):
@@ -87,7 +91,7 @@ def main():
                 continue
 
             # EXACT ORIGINAL LIMITING LOGIC RESTORED
-            mail_ids = messages[0].split()[:1]
+            mail_ids = messages[0].split()
 
             for email_id in mail_ids:
                 status, msg_data = mail.fetch(email_id, "(RFC822)")
@@ -275,7 +279,7 @@ def main():
                     
                     mail.store(email_id, '+FLAGS', '\\Seen')
                 except Exception as e:
-                    import traceback
+                    
 
                     print()
                     print("=" * 80)
@@ -306,7 +310,7 @@ def main():
             print("=" * 60)
             print("SENT MAIL SYNC FAILED")
             print(e)
-        import traceback
+        
         traceback.print_exc()
         print("=" * 60)
 
