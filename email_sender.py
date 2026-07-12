@@ -29,9 +29,11 @@ def send_email(from_email, token_file, to_email, subject, body, thread_id=None, 
         if creds.expired and creds.refresh_token:
             creds.refresh(Request())
             
-            with open(token_path, "w") as token:
-                token.write(creds.to_json())
-                
+            # Save refreshed token only when running locally
+            if not token_path.startswith("/etc/secrets"):
+                with open(token_path, "w") as token:
+                    token.write(creds.to_json())
+
         service = build("gmail", "v1", credentials=creds)
 
         # Create message

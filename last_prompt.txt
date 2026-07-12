@@ -8,10 +8,10 @@ Priority:
 Low
 
 Subject:
-hjjhgj
+hi
 
 Body:
-hggkj
+hi
 
 ==================================================
 
@@ -30,7 +30,7 @@ Source:
 class
 
 Similarity:
-0.26774356296773
+0.313596505893296
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -72,29 +72,30 @@ Source:
 class
 
 Similarity:
-0.259904356838816
+0.300287367830765
 
 Title:
-Geology & Earth Science Explorers
+Scratch Coding Lab: Build With Scratch
 
 Section:
-Parent Summary
+Prerequisites
 
 Category:
-science
+lifeskills
 
 Content:
-Class: Geology & Earth Science Explorers
+Class: Scratch Coding Lab: Build With Scratch
 
-Subject: science
+Subject: lifeskills
 
-Section: Parent Summary
+Section: Prerequisites
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+• {'title': 'Basic familiarity with using a computer (mouse, keyboard, and web browser)'}
+• {'link': 'https://scratch.mit.edu/', 'title': 'A free Scratch account (at scratch.mit.edu) is recommended'}
 
 Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
 
 IMPORTANT
 
@@ -114,49 +115,7 @@ Source:
 class
 
 Similarity:
-0.255457359585493
-
-Title:
-Geology & Earth Science Explorers
-
-Section:
-Learner Summary
-
-Category:
-science
-
-Content:
-Class: Geology & Earth Science Explorers
-
-Subject: science
-
-Section: Learner Summary
-
-Content:
-Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
-
-Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 4
-
-Source:
-class
-
-Similarity:
-0.254711829361838
+0.2882363181949
 
 Title:
 Around the Globe with Mr. Clark
@@ -193,16 +152,58 @@ Do not continue discussing previous issues unless the customer explicitly asks a
 ----------------------------------------
 
 
+Knowledge Item 4
+
+Source:
+class
+
+Similarity:
+0.273523057873761
+
+Title:
+Geology & Earth Science Explorers
+
+Section:
+Learner Summary
+
+Category:
+science
+
+Content:
+Class: Geology & Earth Science Explorers
+
+Subject: science
+
+Section: Learner Summary
+
+Content:
+Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+
+Reference URL:
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
 Knowledge Item 5
 
 Source:
 class
 
 Similarity:
-0.252064771915662
+0.271589605395937
 
 Title:
-Astronomy 101: Learn About Space
+Geology & Earth Science Explorers
 
 Section:
 Parent Summary
@@ -211,17 +212,17 @@ Category:
 science
 
 Content:
-Class: Astronomy 101: Learn About Space
+Class: Geology & Earth Science Explorers
 
 Subject: science
 
 Section: Parent Summary
 
 Content:
-In this exciting space class, learners will explore the science behind our universe: from comets & constellations to galaxies and gravity, all while building real scientific thinking skills that help them understand how the cosmos works.
+Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
 
 Reference URL:
-https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
 
 IMPORTANT
 
@@ -249,36 +250,44 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Re: Cancelation
+Re: Collaboration Introduction
 
 Body:
-Good email
+Hello
+On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
 
-On Tue, 2 Dec, 2025, 13:34 Coral Academy, <support@coralacademy.com> wrote:
-
-> Hello Candice!
+> Hi Ülkü,
 >
-> Thank you so much for reaching out — and for signing your child up with
-> us. I’m really glad you let us know.
+> That’s great news. We are excited to move forward with the collaboration
+> at the $100 rate.
 >
-> Just to reassure you right away: *your card will never be charged
-> automatically*.
+> To discuss the next steps and details further, please book a call at a
+> time that works best for you using this link:
+> https://calendly.com/lucy-coralacademy/30min
 >
-> The *2 free classes you enrolled for are completely free*, with no hidden
-> charges or automatic upgrades. The only way a payment would ever occur is
-> if you manually choose to start a subscription yourself — otherwise, *nothing
-> is billed*.
+> I look forward to speaking with you soon.
+>
+> Warm regards,
+> Lucy
 >
 >
-> *However, we'd also love to understand what’s prompting the cancellation
-> request.*
-> If it’s the *timing*, we’re more than happy to accommodate and find a
-> slot that works better for your family’s schedule. Many parents adjust
-> timings in the first week, and we always try our best to work around what’s
-> convenient for you.
+> On Fri, Mar 13, 2026 at 9:50 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+> wrote:
 >
-> If there’s anything else that didn’t feel like a good fit, I’d truly
-> apprec
+>> Thank you very much, I accept your $100 offer. We can discuss the details.
+>>
+>>
+>> On Fri, Mar 13, 2026 at 5:07 PM Coral Academy <lucy@coralacademy.com>
+>> wrote:
+>>
+>>> Hi Ülkü,
+>>>
+>>> Thank you for your response and for your willingness to support our new
+>>> business.
+>>>
+>>> While we appreciate the offer of $200, we unfortunately do not have the
+>>> budget to accommodate this right now as an early-stage startup. We will
+>>> keep you
 
 ----------------------------------------
 
@@ -286,47 +295,12 @@ On Tue, 2 Dec, 2025, 13:34 Coral Academy, <support@coralacademy.com> wrote:
 Example 2
 
 Subject:
-Re: Thank You
+
 
 Body:
-Hello.
-That works great. Thank you!
+  Hi, I was looking into your business and wanted to check who would be the
+right person to speak with
 
-
-  *
-Jessica
-
-Sincerely,
-Jessica Miller
-
-National Virtual Teacher Certified
-Marketing/Business 5-12
-Middle Grades Math
-Middle Grades Reading
-PE and Health K-12
-
-ColorandChat
-Teen Finance
-
-Visit my Amazon Shop
-________________________________
-From: Coral Academy <support@coralacademy.com>
-Sent: Tuesday, July 8, 2025 5:06:54 PM
-To: Jessica Miller <jessicamiller2512@hotmail.com>
-Subject: Re: Thank You
-
-Hello Jessica,
-
-We'd like to inform you that we have received confirmation from our learners for the trial class on Monday, July 14th, at 3 PM EST. We hope this time works well for you.
-
-We are looking forward to your confirmation. We will share the meeting details with you shortly.
-
-Best,
-Coral Academy
-
-On Mon, Jul 7, 2025 at 7:17 PM Jessica Miller <jessicamiller2512@hotmail.com<mailto:jessicamiller2512@hotmail.com>> wrote:
-Hello,
-Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or, Wedne
 
 ----------------------------------------
 
@@ -334,45 +308,45 @@ Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or
 Example 3
 
 Subject:
-Enrollment Confirmed for 'Unlock Your Social Skills: Confidence,
- Communication and Friendship'
+Re: Love what you're doing—let’s collaborate?
 
 Body:
-The next session is on Thu Jul 24, 10:00 AM. See everything Harnidh need to prepare!
+Hello!
 
-Hi Support,
+May I know more about your company?
 
-Woohoo! *You have successfully enrolled* Harnidh in *Unlock Your Social Skills: Confidence, Communication and Friendship*.
+Thank you.
 
-Here is the summary of your enrollment:
-Parent Name: prabhjit Singh
-Parent Email: prabhjitlife@gmail.com
+On Tue, Aug 5, 2025 at 8:26 PM Coral Academy <lucy@coralacademy.com> wrote:
 
-Unlock Your Social Skills: Confidence, Communication and Friendship
-Teacher Aaron
+> Hi,
+>
+> I hope you’ve been doing well! I wanted to follow up to see if you had a
+> chance to review my earlier emails. We’re still very eager to connect and
+> explore potential ways we could collaborate.
+>
+> It would be great to hear your thoughts whenever you get a chance.
+>
+> Best regards,
+> Lucy
+>
+> On Thu, Jul 3, 2025 at 10:26 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi,
+>>
+>> Hope you're doing well! Just wanted to check in—did you get a chance to
+>> see our previous emails? We’d love to connect and explore how we can work
+>> together.
+>>
+>> Looking forward to hearing your thoughts!
+>>
+>> Best,
+>> Lucy
+>>
+>>
+>>
 
-Thursdays, 10:00 AM - 10:50 AM, Pacific Standard Time
-
-Harnidh 
-Enrollment Type: coral_unlimited
- enrolled
-
-  
-
-The next session is on Thu Jul 24, 10:00 AM—don’t miss it!
-
-
-
-
-
-Happy Learning!
-*Team Coral Academy*
-P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
-
-This message was sent to your email at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1W
 
 ----------------------------------------
 
@@ -414,6 +388,8 @@ use it as the factual source.
 If not,
 
 do not invent information.
+
+
 
 --------------------------------------------------
 

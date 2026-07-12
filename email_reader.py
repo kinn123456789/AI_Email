@@ -77,11 +77,17 @@ def oauth_login(email_address, token_file):
         ["https://mail.google.com/"]
     )
 
+    print("Using token:", token_path)
+    print("Token expires:", creds.expiry)
+    print("Has refresh token:", bool(creds.refresh_token))
+
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
 
-        with open(token_path, "w") as token:
-            token.write(creds.to_json())
+        # Save refreshed token only when running locally
+        if not token_path.startswith("/etc/secrets"):
+            with open(token_path, "w") as token:
+                token.write(creds.to_json())
 
     
     auth_string = f"user={email_address}\1auth=Bearer {creds.token}\1\1"

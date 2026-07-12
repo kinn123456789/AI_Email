@@ -32,7 +32,7 @@ def oauth_login(email_address, token_file):
     # Local fallback
     if not os.path.exists(token_path):
         token_path = token_file
-        
+
     creds = Credentials.from_authorized_user_file(
         token_path,
         ["https://mail.google.com/"]
@@ -43,8 +43,10 @@ def oauth_login(email_address, token_file):
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
 
-        with open(token_path, "w") as token:
-            token.write(creds.to_json())
+        # Save refreshed token only when running locally
+        if not token_path.startswith("/etc/secrets"):
+            with open(token_path, "w") as token:
+                token.write(creds.to_json())
 
   
     auth_string = f"user={email_address}\1auth=Bearer {creds.token}\1\1"
