@@ -1,10 +1,20 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-
+from email_reader import main as email_reader
 from refresh_knowledge_base import refresh_knowledge_base
 from refresh_classes import refresh_classes
 
+import traceback
+
+def run_email_reader():
+    try:
+        email_reader()
+    except Exception:
+        traceback.print_exc()
+
 scheduler = BackgroundScheduler()
+
+
 
 # Refresh Help Center
 scheduler.add_job(
@@ -14,7 +24,11 @@ scheduler.add_job(
     replace_existing=True,
     max_instances=1
 )
-
+scheduler.add_job(
+    email_reader,
+    "interval",
+    minutes=5
+)
 # Refresh Classes
 scheduler.add_job(
     refresh_classes,
