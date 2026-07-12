@@ -338,9 +338,10 @@ def main():
         except Exception as e:
             print("=" * 60)
             print("SENT MAIL SYNC FAILED")
+            traceback.print_exc()
             print(e)
         
-        traceback.print_exc()
+        
         print("=" * 60)
 
 if __name__ == "__main__":
