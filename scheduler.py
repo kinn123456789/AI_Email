@@ -6,11 +6,21 @@ from refresh_classes import refresh_classes
 
 import traceback
 
+import datetime
+
 def run_email_reader():
+    print("=" * 80)
+    print(f"EMAIL READER STARTED: {datetime.datetime.now()}")
+    print("=" * 80)
+
     try:
         email_reader()
+        print("EMAIL READER COMPLETED SUCCESSFULLY")
     except Exception:
+        print("EMAIL READER FAILED")
         traceback.print_exc()
+
+    print("=" * 80)
 
 scheduler = BackgroundScheduler()
 
@@ -24,11 +34,17 @@ scheduler.add_job(
     replace_existing=True,
     max_instances=1
 )
+
+#runs email_reader
 scheduler.add_job(
-    email_reader,
+    run_email_reader,
     "interval",
-    minutes=5
+    minutes=5,
+    id="email_reader",
+    replace_existing=True,
+    max_instances=1
 )
+
 # Refresh Classes
 scheduler.add_job(
     refresh_classes,
