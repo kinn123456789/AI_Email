@@ -38,6 +38,7 @@ if not os.path.exists(ATTACHMENT_DIR):
     os.makedirs(ATTACHMENT_DIR)
 
 EMAIL_ACCOUNTS = [
+    
     {
         "email": os.getenv("EMAIL_1"),
         "token": "token_support.json",
@@ -77,9 +78,12 @@ def oauth_login(email_address, token_file):
         ["https://mail.google.com/"]
     )
 
+    print("=" * 60)
     print("Using token:", token_path)
+    print("Email:", email_address)
     print("Token expires:", creds.expiry)
     print("Has refresh token:", bool(creds.refresh_token))
+    print("=" * 60)
 
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
@@ -97,6 +101,11 @@ def oauth_login(email_address, token_file):
 
 def main():
     for account in EMAIL_ACCOUNTS:
+
+        print("=" * 60)
+        print("Checking:", account["source"])
+        print("Token:", account["token"])
+        print("=" * 60)
         if not account.get("email") or not account.get("token"):
             continue
 

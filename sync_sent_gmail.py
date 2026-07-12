@@ -18,9 +18,27 @@ from database import (
 load_dotenv()
 
 EMAIL_ACCOUNTS = [
-    {"email": os.getenv("EMAIL_4"), "token": "token_sat.json", "source": "shopsat19@gmail.com"},
+    {
+        "email": os.getenv("EMAIL_1"),
+        "token": "token_support.json",
+        "source": "support@coralacademy.com",
+    },
+    {
+        "email": os.getenv("EMAIL_2"),
+        "token": "token_lucy.json",
+        "source": "lucy@coralacademy.com",
+    },
+    {
+        "email": os.getenv("EMAIL_3"),
+        "token": "token_engineering.json",
+        "source": "engineering@coralacademy.com",
+    },
+    {
+        "email": os.getenv("EMAIL_4"),
+        "token": "token_sat.json",
+        "source": "shopsat19@gmail.com",
+    },
 ]
-
 import os
 
 def oauth_login(email_address, token_file):
