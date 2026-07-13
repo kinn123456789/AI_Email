@@ -323,26 +323,25 @@ def main():
             if mail:
                 mail.logout()
   
+    print("=" * 60)
+    print("ABOUT TO START SENT MAIL SYNC")
+    print("=" * 60)
+
+    time.sleep(2)
+
+    try:
+        sync_sent_mail()
         print("=" * 60)
-        print("ABOUT TO START SENT MAIL SYNC")
+        print("SENT MAIL SYNC FINISHED")
         print("=" * 60)
 
-        import time
-        time.sleep(2)
-
-        try:
-            sync_sent_mail()
-            print("=" * 60)
-            print("SENT MAIL SYNC FINISHED")
-            print("=" * 60)
-        except Exception as e:
-            print("=" * 60)
-            print("SENT MAIL SYNC FAILED")
-            traceback.print_exc()
-            print(e)
-        
-        
+    except Exception as e:
         print("=" * 60)
+        print("SENT MAIL SYNC FAILED")
+        traceback.print_exc()
+        print(e)
+
+    print("=" * 60)
 
 if __name__ == "__main__":
     main()
