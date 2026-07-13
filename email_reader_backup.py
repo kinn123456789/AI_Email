@@ -23,7 +23,7 @@ mail.login(EMAIL, APP_PASSWORD)
 
 mail.select("inbox")
 
-status, messages = mail.search(None, "UNSEEN")
+status, messages = mail.search(None, "ALL")
 
 #from dotenv import load_dotenv
 #import os
