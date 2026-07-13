@@ -25,6 +25,7 @@ mail.select("inbox")
 
 status, messages = mail.search(None, "ALL")
 
+
 #from dotenv import load_dotenv
 #import os
 
@@ -40,7 +41,7 @@ print("STATUS:", status)
 print("RAW MESSAGES:", messages)
 
 
-mail_ids = messages[0].split()
+mail_ids = messages[0].split()[-50:]
 
 print(mail_ids)
 
