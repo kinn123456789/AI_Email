@@ -41,14 +41,6 @@ AUTOMATED_SUBJECTS = {
     "verification email",
     "password reset",
     "new device",
-    "payment failed",
-    "payment received",
-    "invoice",
-    "receipt",
-    "export of your products",
-    "your products are ready",
-    "welcome to",
-    "confirm your email",
     "email verification",
     "login code",
     "sign in code",
@@ -148,6 +140,11 @@ def is_automated_email(msg):
     # Built-in Automated Senders
     # --------------------
 
+    # If this is a reply from a sender that is NOT a known automated sender,
+    # let AI decide instead of filtering it as a notification.
+
+    
+
     if sender in AUTOMATED_SENDERS:
 
         return (
@@ -219,30 +216,32 @@ def is_automated_email(msg):
                     rule["reason"] or f"Blocked domain: {domain}",
                     "support"
                 )
-
+    if msg.get("In-Reply-To") or msg.get("References"):
+        return False, "", "", "inbox"
     # --------------------
     # Subject Rules
     # --------------------
 
-    subject = msg.get(
-        "Subject",
-        ""
-    ).lower()
+    subject = msg.get("Subject", "").lower()
+
+    # If this is a reply/forward, don't classify based on subject keywords
+    if subject.startswith(("re:", "fw:", "fwd:")):
+        pass
+    else:
+        for keyword in AUTOMATED_SUBJECTS:
+
+            if keyword in subject:
+
+                return (
+                    True,
+                    "Notification",
+                    f"Known automated subject: {keyword}",
+                    "support"
+                )
 
     # --------------------
     # Built-in Automated Subjects
     # --------------------
-
-    for keyword in AUTOMATED_SUBJECTS:
-
-        if keyword in subject:
-
-            return (
-                True,
-                "Notification",
-                f"Known automated subject: {keyword}",
-                "support"
-            )
 
     for pattern, rule in SUBJECTS.items():
 
@@ -309,3 +308,4 @@ def is_automated_email(msg):
             )
 
     return False, "", "", "inbox"
+    
