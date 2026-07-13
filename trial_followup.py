@@ -5,7 +5,7 @@ from supabase_client import supabase
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 
-scheduled_at = datetime.now() + timedelta(minutes=1)
+
 
 from database import (
     
@@ -13,11 +13,6 @@ from database import (
     
     db_pool
 )
-
-
-from supabase_client import supabase
-
-
 
 def get_trial_followup_candidates():
 
@@ -424,6 +419,7 @@ def save_followup_email_log(
     subject,
     email_body,
     gmail_message_id,
+    scheduled_at=None,
     status="sent"
 ):
 
@@ -816,8 +812,10 @@ def get_due_followups():
         cursor.close()
         db_pool.putconn(conn)
 
-from datetime import datetime, timedelta
 
+
+
+#scheduled_at = datetime.now() + timedelta(days=7)
 def update_followup_schedule(email_id, scheduled_at):
     conn = get_connection()
     cursor = conn.cursor()

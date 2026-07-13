@@ -517,7 +517,7 @@ def send_followup(email_id: int):
 
         update_followup_schedule(
             email_id=email_id,
-            scheduled_at=datetime.now() + timedelta(minutes=1)
+             scheduled_at=datetime.now() + timedelta(days=3)
         )
 
     elif email["email_number"] == 2:
