@@ -97,6 +97,11 @@
     <h2 class="text-2xl font-semibold text-[#0F5D7A] mb-2">
         Trial Follow-ups
     </h2>
+    {% if due_followups|length > 0 %}
+<div class="bg-red-100 border border-red-300 rounded-xl p-3 mt-4">
+    🔔 {{ due_followups|length }} Trial Follow-up{{ 's' if due_followups|length > 1 else '' }} Due
+</div>
+{% endif %}
     <p class="text-stone-600 mb-6">
         Automated follow-up emails
     </p>

@@ -8,10 +8,10 @@ Priority:
 Low
 
 Subject:
-hi
+Re: We hope TFTEST_Learner_1_263859 enjoyed the free trial!
 
 Body:
-hi
+adsfasdf
 
 ==================================================
 
@@ -30,29 +30,29 @@ Source:
 class
 
 Similarity:
-0.313596505893296
+0.342978254844533
 
 Title:
-Scratch Coding Lab: Build With Scratch
+Around the Globe with Mr. Clark
 
 Section:
-Resources
+Learner Summary
 
 Category:
 lifeskills
 
 Content:
-Class: Scratch Coding Lab: Build With Scratch
+Class: Around the Globe with Mr. Clark
 
 Subject: lifeskills
 
-Section: Resources
+Section: Learner Summary
 
 Content:
-• {'link': 'https://scratch.mit.edu/', 'title': 'Free Scratch Software'}
+Explore the world from your screen! In this online class for kids, learners travel using VR, polls, & activities to explore cultural landmarks, history, and natural wonders. Learn geography and have fun with this virtual travel experience!
 
 Reference URL:
-https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
 
 IMPORTANT
 
@@ -72,30 +72,29 @@ Source:
 class
 
 Similarity:
-0.300287367830765
+0.339160203792788
 
 Title:
-Scratch Coding Lab: Build With Scratch
+Into the Wild: Young Zoologists Club
 
 Section:
-Prerequisites
+Learner Summary
 
 Category:
-lifeskills
+science
 
 Content:
-Class: Scratch Coding Lab: Build With Scratch
+Class: Into the Wild: Young Zoologists Club
 
-Subject: lifeskills
+Subject: science
 
-Section: Prerequisites
+Section: Learner Summary
 
 Content:
-• {'title': 'Basic familiarity with using a computer (mouse, keyboard, and web browser)'}
-• {'link': 'https://scratch.mit.edu/', 'title': 'A free Scratch account (at scratch.mit.edu) is recommended'}
+Each week, learners will explore the world of herpetology in this online science class, meeting animals like Scaly the Corn Snake, Slimy the Tiger Salamander, & Lizzie the Leopard Gecko, while diving into a world of reptiles and amphibians.
 
 Reference URL:
-https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
+https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc
 
 IMPORTANT
 
@@ -115,7 +114,49 @@ Source:
 class
 
 Similarity:
-0.2882363181949
+0.338121717198387
+
+Title:
+Geology & Earth Science Explorers
+
+Section:
+Learner Summary
+
+Category:
+science
+
+Content:
+Class: Geology & Earth Science Explorers
+
+Subject: science
+
+Section: Learner Summary
+
+Content:
+Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+
+Reference URL:
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 4
+
+Source:
+class
+
+Similarity:
+0.331562758580929
 
 Title:
 Around the Globe with Mr. Clark
@@ -152,58 +193,16 @@ Do not continue discussing previous issues unless the customer explicitly asks a
 ----------------------------------------
 
 
-Knowledge Item 4
-
-Source:
-class
-
-Similarity:
-0.273523057873761
-
-Title:
-Geology & Earth Science Explorers
-
-Section:
-Learner Summary
-
-Category:
-science
-
-Content:
-Class: Geology & Earth Science Explorers
-
-Subject: science
-
-Section: Learner Summary
-
-Content:
-Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
-
-Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
 Knowledge Item 5
 
 Source:
 class
 
 Similarity:
-0.271589605395937
+0.328864218700222
 
 Title:
-Geology & Earth Science Explorers
+Into the Wild: Young Zoologists Club
 
 Section:
 Parent Summary
@@ -212,17 +211,17 @@ Category:
 science
 
 Content:
-Class: Geology & Earth Science Explorers
+Class: Into the Wild: Young Zoologists Club
 
 Subject: science
 
 Section: Parent Summary
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+Each week, learners will explore the world of herpetology in this online science class, meeting animals like Scaly the Corn Snake, Slimy the Tiger Salamander, & Lizzie the Leopard Gecko, while diving into a world of reptiles and amphibians.
 
 Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc
 
 IMPORTANT
 
@@ -250,44 +249,40 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Re: Collaboration Introduction
+Your 2 Free Trials Really Are Free — Here's How������
 
 Body:
-Hello
-On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
+*Hey Coral!*
 
-> Hi Ülkü,
->
-> That’s great news. We are excited to move forward with the collaboration
-> at the $100 rate.
->
-> To discuss the next steps and details further, please book a call at a
-> time that works best for you using this link:
-> https://calendly.com/lucy-coralacademy/30min
->
-> I look forward to speaking with you soon.
->
-> Warm regards,
-> Lucy
->
->
-> On Fri, Mar 13, 2026 at 9:50 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
-> wrote:
->
->> Thank you very much, I accept your $100 offer. We can discuss the details.
->>
->>
->> On Fri, Mar 13, 2026 at 5:07 PM Coral Academy <lucy@coralacademy.com>
->> wrote:
->>
->>> Hi Ülkü,
->>>
->>> Thank you for your response and for your willingness to support our new
->>> business.
->>>
->>> While we appreciate the offer of $200, we unfortunately do not have the
->>> budget to accommodate this right now as an early-stage startup. We will
->>> keep you
+We’re so glad to see you liked our *Into the Wild Science class* and showed 
+interest in enrolling your learner. 
+
+We also noticed you hesitated at the card step — totally understandable, *and 
+you’re not alone.*
+
+*Just a quick clarification to make things easier:*
+
+
+   - Your first 2 trial classes are *completely free*.
+   - We only collect card details to *comply with COPPA child-safety rules*.
+   - You *won’t be charged unless you manually choose to upgrade* after the 
+   free trials.
+
+*You stay in full control at all times — no automatic charges.*
+
+We hope that this had made the decision easier for you to enroll your 
+learner for a great learning experience with Coral Academy
+
+You can jump back in and enroll your learner here: *Enroll For Free 
+<https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc>*
+
+Warmly,
+--
+Lucy,
+Founding Team,
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d> 
+<http
 
 ----------------------------------------
 
@@ -295,12 +290,33 @@ On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
 Example 2
 
 Subject:
-
+Re: You tried free trial classes at Coral Academy — what’s next?
 
 Body:
-  Hi, I was looking into your business and wanted to check who would be the
-right person to speak with
+Hi
 
+I missed most days of the trial class. So sorry!
+
+I was able to attend two classes on Friday:
+- Mini MBA
+- Around the World
+
+Thanks
+Ro
+
+On Sat, May 2, 2026 at 2:25 PM Coral Academy <support@coralacademy.com>
+wrote:
+
+> Unlock a variety of topics: From Science to Entrepreneurship 🚀
+> ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
 
 ----------------------------------------
 
@@ -308,45 +324,42 @@ right person to speak with
 Example 3
 
 Subject:
-Re: Love what you're doing—let’s collaborate?
+Re: Missed your free class? No worries—here’s another chance 🌟
 
 Body:
-Hello!
+Thank you for confirming.  What's the "book by" date for my 2nd free trial
+class?  We're on holiday vacation, so I'm trying to find time to utilize it
+if need be.
 
-May I know more about your company?
+Royce
 
-Thank you.
+Independens Philosophous
 
-On Tue, Aug 5, 2025 at 8:26 PM Coral Academy <lucy@coralacademy.com> wrote:
+On Wed, Dec 24, 2025, 9:08 PM Coral Academy <support@coralacademy.com>
+wrote:
 
-> Hi,
+> Hi Royce,
 >
-> I hope you’ve been doing well! I wanted to follow up to see if you had a
-> chance to review my earlier emails. We’re still very eager to connect and
-> explore potential ways we could collaborate.
+> Thanks so much for checking in!
 >
-> It would be great to hear your thoughts whenever you get a chance.
+> You’re absolutely right — the next session for this course is on *1/9*.
+> The message you received earlier was an automated email, so please feel
+> free to ignore that one.
 >
-> Best regards,
-> Lucy
+> We also wanted to reassure you that your *free trial has not been used up*,
+> and your learner is still *successfully enrolled* for the upcoming
+> session.
 >
-> On Thu, Jul 3, 2025 at 10:26 PM Coral Academy <lucy@coralacademy.com>
-> wrote:
+> We’re really glad to have you with us, and we’re looking forward to seeing
+> Nio in class on the 9th 😊
 >
->> Hi,
->>
->> Hope you're doing well! Just wanted to check in—did you get a chance to
->> see our previous emails? We’d love to connect and explore how we can work
->> together.
->>
->> Looking forward to hearing your thoughts!
->>
->> Best,
->> Lucy
->>
->>
->>
-
+> If you have any other questions or need help with anything at all, just
+> let us know — we’re always happy to help.
+>
+> Warmly,
+> Coral Academy
+>
+> On Thu, Dec 25, 2025 at 12:05 AM Royce Henry <r.
 
 ----------------------------------------
 

@@ -3,7 +3,9 @@ from dateutil.parser import isoparse
 from datetime import datetime, timezone, timedelta
 from supabase_client import supabase
 from psycopg2.extras import RealDictCursor
+from datetime import datetime, timedelta
 
+scheduled_at = datetime.now() + timedelta(minutes=1)
 
 from database import (
     
@@ -259,6 +261,11 @@ def create_followup(
     conn = get_connection()
     cursor = conn.cursor()
 
+    print("Creating campaign for:", learner_id)
+
+    cursor.execute("SELECT current_database();")
+    print("Database:", cursor.fetchone()[0])
+
     try:
         cursor.execute("""
             INSERT INTO trial_followup_campaigns
@@ -280,6 +287,8 @@ def create_followup(
             free_trial_pass_id,
             trial_expiry_at
         ))
+
+        print("Rows inserted:", cursor.rowcount)
 
         conn.commit()
         
@@ -435,9 +444,10 @@ def save_followup_email_log(
                 subject,
                 email_body,
                 gmail_message_id,
-                status
+                status,
+                scheduled_at
             )
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (
             learner_id,
             learner_name,
@@ -448,7 +458,8 @@ def save_followup_email_log(
             subject,
             email_body,
             gmail_message_id,
-            status
+            status,
+            scheduled_at
         ))
 
         conn.commit()
@@ -655,6 +666,175 @@ def get_completed_campaigns():
             )
 
         return campaigns
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def update_followup_email_log(email_id, gmail_message_id, status):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_email_logs
+            SET
+                gmail_message_id = %s,
+                status = %s,
+                sent_at = NOW()
+            WHERE id = %s
+        """, (
+            gmail_message_id,
+            status,
+            email_id
+        ))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def update_followup_reply(
+    email_id,
+    ai_reply,
+    manual_reply,
+    gmail_message_id,
+    status
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            UPDATE trial_followup_email_logs
+            SET
+                ai_reply = %s,
+                manual_reply = %s,
+                reply_gmail_message_id = %s,
+                reply_status = %s,
+                reply_sent_at = NOW()
+            WHERE id = %s
+        """,(
+            ai_reply,
+            manual_reply,
+            gmail_message_id,
+            status,
+            email_id
+        ))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def save_followup_reply(
+    email_log_id,
+    subject,
+    body,
+    gmail_message_id,
+    gmail_thread_id=None,
+    sender="staff",
+    status="sent"
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute("""
+            INSERT INTO trial_followup_replies
+            (
+                email_log_id,
+                sender,
+                subject,
+                body,
+                gmail_message_id,
+                gmail_thread_id,
+                status,
+                sent_at
+            )
+            VALUES
+            (%s,%s,%s,%s,%s,%s,%s,NOW())
+        """,
+        (
+            email_log_id,
+            sender,
+            subject,
+            body,
+            gmail_message_id,
+            gmail_thread_id,
+            status
+        ))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def get_followup_replies(email_log_id):
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+
+        cursor.execute("""
+            SELECT *
+            FROM trial_followup_replies
+            WHERE email_log_id=%s
+            ORDER BY created_at
+        """,(email_log_id,))
+
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def get_due_followups():
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT *
+            FROM trial_followup_email_logs
+            WHERE status='pending'
+            AND scheduled_at <= NOW()
+            ORDER BY scheduled_at
+        """)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+from datetime import datetime, timedelta
+
+def update_followup_schedule(email_id, scheduled_at):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_email_logs
+            SET
+                status = 'pending',
+                scheduled_at = %s
+            WHERE id = %s
+        """, (
+            scheduled_at,
+            email_id
+        ))
+
+        conn.commit()
 
     finally:
         cursor.close()

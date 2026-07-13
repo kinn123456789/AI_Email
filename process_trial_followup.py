@@ -50,16 +50,19 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
 
     print(f"Sending Email {email_number} to: {parent_email}")
 
-    # Send email
-    gmail_message_id = send_email(
-        parent_email,
-        subject,
-        body
-    )
+    # Send email through AI
+    #gmail_message_id = send_email(
+     #   parent_email,
+      #  subject,
+     #   body
+    #)
     
-    if not gmail_message_id:
-        print(f"✗ Email {email_number} sending failed")
-        return False
+    #if not gmail_message_id:
+     #   print(f"✗ Email {email_number} sending failed")
+     #   return False
+    print("Saving AI draft for review...")
+
+    gmail_message_id = None
 
     save_followup_email_log(
         learner_id=learner_id,
@@ -70,8 +73,10 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
         recipient_email=parent_email,
         subject=subject,
         email_body=body,
-        gmail_message_id=gmail_message_id,
-        status="sent"
+        #gmail_message_id=gmail_message_id,
+        #status="sent"
+        gmail_message_id=None,
+        status="draft"
     )
 
 
@@ -81,13 +86,13 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
     print(f"✓ Email {email_number} sent successfully")
 
     # Update database
-    if email_number == 1:
-        update_followup_email1_sent(learner_id)
-    elif email_number == 2:
-        update_followup_email2_sent(learner_id)
-    elif email_number == 3:
-        update_followup_email3_sent(learner_id)
-        complete_followup_campaign(learner_id)
+    #if email_number == 1:
+     #   update_followup_email1_sent(learner_id)
+    #elif email_number == 2:
+    #    update_followup_email2_sent(learner_id)
+    #elif email_number == 3:
+     #   update_followup_email3_sent(learner_id)
+     #   complete_followup_campaign(learner_id)
 
    
     return True
@@ -121,6 +126,10 @@ def process_trial_followups():
                 trial_expiry_at = trial_expiry_at.replace(tzinfo=timezone.utc)
 
             followup = followup_history.get(learner_id)
+
+            print("=" * 60)
+            print("Learner:", learner_id)
+            print("Followup:", followup)
 
             # Initialize tracking if missing
             if not followup:

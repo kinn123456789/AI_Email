@@ -12,11 +12,22 @@ from trial_followup import (
     get_followup_email,
     complete_followup_campaign,
     get_completed_campaign_count,
-    get_completed_campaigns
+    get_completed_campaigns,
+    update_followup_email_log,
+    update_followup_email_log,
+    update_followup_email1_sent,
+    update_followup_email2_sent,
+    update_followup_email3_sent,
+    complete_followup_campaign,
+    save_followup_reply,
+    get_followup_replies,
+    get_due_followups,
+    update_followup_schedule
     
     
 )
-
+from followup_email import send_email as followup_send_email
+from datetime import datetime, timedelta
 import scheduler
 import os
 from database import (
@@ -54,10 +65,12 @@ app.mount(
 
 @app.get("/")
 def home(request: Request):
-
+    due_followups = get_due_followups() 
     return templates.TemplateResponse(
         "home.html",
-        {"request": request}
+        {"request": request,
+        "due_followups": due_followups
+        }
     )
 
 
@@ -388,13 +401,15 @@ def trial_followups(request: Request):
 
     rows = get_followup_email_logs()
     completed_campaigns = get_completed_campaign_count()
-
+    
+    due_followups = get_due_followups() 
     return templates.TemplateResponse(
         "trial_followup.html",
         {
             "request": request,
             "rows": rows,
-            "completed_campaigns": completed_campaigns
+            "completed_campaigns": completed_campaigns,
+            "due_followups": due_followups 
         }
     )
 @app.get("/trial-followup/email/{email_id}")
@@ -405,12 +420,18 @@ def view_followup_email(
 
     email = get_followup_email(email_id)
 
+    replies = get_followup_replies(email_id)
+
+  
+
     return templates.TemplateResponse(
         "trial_followup_emaildetail.html",
         {
             "request": request,
-            "email": email
+            "email": email,
+            "replies": replies
         }
+       
     )
 @app.get("/trial-followup/completed")
 def completed_campaigns(request: Request):
@@ -459,4 +480,100 @@ def notification_mailbox(request: Request):
             "emails": rows
         }
     )
-##db_pool.closeall()
+
+@app.get("/trial-followup/send/{email_id}")
+def send_followup(email_id: int):
+
+    email = get_followup_email(email_id)
+
+    if not email:
+        return {"success": False, "message": "Email not found"}
+
+    if email["status"].lower() == "sent":
+        return {
+            "success": False,
+            "message": "Email already sent."
+        }
+
+    gmail_message_id = send_email(
+        email["recipient_email"],
+        email["subject"],
+        email["email_body"]
+    )
+
+    if not gmail_message_id:
+        return {"success": False}
+
+    update_followup_email_log(
+        email_id=email_id,
+        gmail_message_id=gmail_message_id,
+        status="sent"
+    )
+
+    
+
+    if email["email_number"] == 1:
+        update_followup_email1_sent(email["learner_id"])
+
+        update_followup_schedule(
+            email_id=email_id,
+            scheduled_at=datetime.now() + timedelta(minutes=1)
+        )
+
+    elif email["email_number"] == 2:
+        update_followup_email2_sent(email["learner_id"])
+
+        update_followup_schedule(
+            email_id=email_id,
+            scheduled_at=datetime.now() + timedelta(days=7)
+        )
+
+    elif email["email_number"] == 3:
+        update_followup_email3_sent(email["learner_id"])
+        complete_followup_campaign(email["learner_id"])
+
+
+
+@app.post("/trial-followup/reply/{email_id}")
+
+def reply_again(
+    email_id: int,
+    subject: str = Form(...),
+    body: str = Form(...)
+):
+
+    print("Reply route called")
+
+    email = get_followup_email(email_id)
+    print(email)
+
+    gmail_message_id =  followup_send_email(
+        email["recipient_email"],
+        subject,
+        body
+    )
+
+    print("Gmail ID:", gmail_message_id)
+
+    if not gmail_message_id:
+        print("Email failed")
+        return {"success": False}
+
+    save_followup_reply(
+        email_log_id=email_id,
+        subject=subject,
+        body=body,
+        gmail_message_id=gmail_message_id
+    )
+
+ 
+
+    print("Saved reply")
+
+    return RedirectResponse(
+        url=f"/trial-followup/email/{email_id}?reply=sent",
+        status_code=303
+    )    
+
+
+
