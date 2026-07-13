@@ -39,7 +39,7 @@
 
                 <tr class="text-left text-stone-700">
                     
-                    <th class="px-6 py-4">📧</th>
+                    
                     <th class="px-6 py-4">Subject</th>
                     <th class="px-6 py-4">Source</th>
                     <th class="px-6 py-4">Sender</th>
@@ -57,10 +57,7 @@
 
                 <tr onclick="window.location='/email/{{ email.id }}'" class="border-t hover:bg-stone-50 cursor-pointer transition">
 
-                    <td class="px-6 py-4">
-                        {{ loop.index }}
-                        
-                    </td>
+                  
 
                     <td class="px-6 py-4 font-medium">
                         {{ email.subject }}
