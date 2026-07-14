@@ -72,7 +72,7 @@ def oauth_login(email_address, token_file):
         token_path,
         ["https://mail.google.com/"]
     )
-
+    
     print("=" * 60)
     print("Using token:", token_path)
     print("Email:", email_address)
@@ -94,8 +94,13 @@ def oauth_login(email_address, token_file):
     mail.authenticate("XOAUTH2", lambda x: auth_string.encode())
     return mail
 
-def main():
+def main(target_email=None):
     for account in EMAIL_ACCOUNTS:
+        if (
+            target_email
+            and account["email"] != target_email
+        ):
+            continue
         
         print("=" * 60)
         print("Checking:", account["source"])

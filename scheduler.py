@@ -10,13 +10,13 @@ import datetime
 
 
 
-def run_email_reader():
+def run_email_reader(email_address=None):
     print("=" * 80)
     print(f"EMAIL READER STARTED: {datetime.datetime.now()}")
     print("=" * 80)
 
     try:
-        email_reader()
+        email_reader(email_address)
         print("EMAIL READER COMPLETED SUCCESSFULLY")
     except Exception:
         print("EMAIL READER FAILED")

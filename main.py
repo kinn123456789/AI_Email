@@ -37,7 +37,7 @@ from emails_cleaner import clean_email_body
 
 from process_email import process_email
 
-
+from scheduler import run_email_reader
 
 from fastapi import Request
 import json
@@ -592,132 +592,17 @@ async def gmail_webhook(request: Request):
 
     body = await request.json()
 
-    print("=" * 80)
-    print("RAW PUBSUB")
-    print(json.dumps(body, indent=2))
-
-    # Decode Pub/Sub payload
     encoded = body["message"]["data"]
     decoded = base64.b64decode(encoded).decode("utf-8")
     data = json.loads(decoded)
 
     email_address = data["emailAddress"]
-    history_id = str(data["historyId"])
 
+    print("=" * 80)
+    print("WEBHOOK")
     print("Mailbox:", email_address)
-    print("History ID:", history_id)
+    print("=" * 80)
 
-    # Select token
-    if email_address == "support@coralacademy.com":
-        token_file = "token_support.json"
-
-    elif email_address == "lucy@coralacademy.com":
-        token_file = "token_lucy.json"
-
-    elif email_address == "engineering@coralacademy.com":
-        token_file = "token_engineering.json"
-
-    elif email_address == "shopsat19@gmail.com":
-        token_file = "token_sat.json"
-
-    else:
-        print("Unknown mailbox:", email_address)
-        return {"success": True}
-
-    print("Token:", token_file)
-
-    # Read last processed history
-    last_history = get_last_history_id(
-        email_address
-    )
-
-    print("Last History:", last_history)
-
-    # First notification
-    if last_history is None:
-
-        print("Initializing history for", email_address)
-
-        update_last_history_id(
-            email_address,
-            history_id
-        )
-
-        return {"success": True}
-
-    page_token = None
-    processed_ok = True
-
-    while True:
-
-        history = get_gmail_history(
-            token_file=token_file,
-            history_id=last_history,
-            page_token=page_token
-        )
-
-        print(history)
-
-        if not history.get("history"):
-            break
-
-        # Process THIS page
-        for record in history["history"]:
-
-            for item in record.get("messagesAdded", []):
-
-                message_info = item["message"]
-
-                labels = message_info.get("labelIds", [])
-
-                if "DRAFT" in labels:
-                    print("Skipping draft")
-                    continue
-
-                gmail_message_id = message_info["id"]
-
-                print("=" * 80)
-                print("MESSAGE:", gmail_message_id)
-                print("=" * 80)
-
-                try:
-
-                    msg = get_message(
-                        token_file,
-                        gmail_message_id
-                    )
-
-                    if msg is None:
-                        continue
-
-                    process_email(
-                        msg,
-                        {
-                            "email": email_address,
-                            "source": email_address,
-                            "token": token_file
-                        }
-                    )
-
-                except Exception as e:
-
-                    processed_ok = False
-
-                    print(f"Failed to process {gmail_message_id}")
-                    print(e)
-
-        page_token = history.get("nextPageToken")
-
-        if not page_token:
-            break
-
-    # Update checkpoint once, after ALL pages are processed
-    if processed_ok:
-
-        print("=" * 80)
-        print("CHECKPOINT:", history["historyId"])
-        print("=" * 80)
-
-        
+    run_email_reader(email_address)
 
     return {"success": True}
