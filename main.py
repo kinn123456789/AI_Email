@@ -32,7 +32,7 @@ from gmail_history import get_gmail_history
 import scheduler
 import os
 from gmail_message import get_message
-from gmail_parser import parse_email
+
 from emails_cleaner import clean_email_body
 
 from process_email import process_email
