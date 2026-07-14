@@ -7,7 +7,7 @@ from googleapiclient.discovery import build
 SCOPES = ["https://mail.google.com/"]
 
 
-def get_gmail_history(token_file, history_id):
+def get_gmail_history(token_file, history_id, page_token=None):
 
     token_path = os.path.join("/etc/secrets", token_file)
 
@@ -23,7 +23,6 @@ def get_gmail_history(token_file, history_id):
     if creds.expired and creds.refresh_token:
         creds.refresh(Request())
 
-        # Save refreshed token locally only
         if not token_path.startswith("/etc/secrets"):
             with open(token_path, "w") as f:
                 f.write(creds.to_json())
@@ -34,9 +33,16 @@ def get_gmail_history(token_file, history_id):
         credentials=creds
     )
 
+    kwargs = {
+        "userId": "me",
+        "startHistoryId": history_id
+    }
+
+    if page_token:
+        kwargs["pageToken"] = page_token
+
     result = service.users().history().list(
-        userId="me",
-        startHistoryId=history_id
+        **kwargs
     ).execute()
 
     print("=" * 80)

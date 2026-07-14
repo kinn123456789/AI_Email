@@ -8,10 +8,10 @@ Priority:
 Low
 
 Subject:
-coral unlimited
+hello
 
 Body:
-info about coral unlimited
+hello
 
 ==================================================
 
@@ -27,40 +27,205 @@ Relevant Coral Academy Knowledge
 Knowledge Item 1
 
 Source:
-help_center
+class
 
 Similarity:
-0.688710951289486
+0.322270910454071
 
 Title:
-Coral Unlimited: Weekly Subscription Plan
+Scratch Coding Lab: Build With Scratch
 
 Section:
-
+Resources
 
 Category:
-Subscription
+lifeskills
 
 Content:
-Last Updated Date: December 1, 2025
-What is Coral Unlimited Subscription?
-Coral Unlimited is a limited-time subscription plan on Coral Academy that gives learners unlimited access to live virtual classes for just $40 per week per learner . Once subscribed, your learner can attend as many classes as they want without any additional per-class charges.
-How to Use Coral Unlimited
-Visit the Coral Academy website and sign in to your account.
-Browse classes and select the ones you want to enroll in.
-Enroll in multiple classes based on seat availability.
-If a class is full, join the waitlist — active subscribers are automatically enrolled when seats open.
-Payment & Renewal
-Charges are processed to your chosen payment method.
-The subscription renews automatically at the end of each billing cycle (every 7 days).
-Weekly charges occur on the same day as your initial payment. For example, if you pay on a Monday, you'll be charged every Monday.
-Activation Details
-Your subscription activates immediately upon payment and renews automatically every 7 days.
-Pausing Your Subscription
-You can temporarily pause your subscription for travel, exams, vacations, or schedule breaks.
+Class: Scratch Coding Lab: Build With Scratch
+
+Subject: lifeskills
+
+Section: Resources
+
+Content:
+• {'link': 'https://scratch.mit.edu/', 'title': 'Free Scratch Software'}
 
 Reference URL:
-https://www.coralacademy.com/help/subscription-payments/coral-unlimited
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 2
+
+Source:
+class
+
+Similarity:
+0.31963165817506
+
+Title:
+Scratch Coding Lab: Build With Scratch
+
+Section:
+Prerequisites
+
+Category:
+lifeskills
+
+Content:
+Class: Scratch Coding Lab: Build With Scratch
+
+Subject: lifeskills
+
+Section: Prerequisites
+
+Content:
+• {'title': 'Basic familiarity with using a computer (mouse, keyboard, and web browser)'}
+• {'link': 'https://scratch.mit.edu/', 'title': 'A free Scratch account (at scratch.mit.edu) is recommended'}
+
+Reference URL:
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 3
+
+Source:
+class
+
+Similarity:
+0.305417054311822
+
+Title:
+Around the Globe with Mr. Clark
+
+Section:
+Prerequisites
+
+Category:
+lifeskills
+
+Content:
+Class: Around the Globe with Mr. Clark
+
+Subject: lifeskills
+
+Section: Prerequisites
+
+Content:
+• {'title': 'We use Nearpod for interactive learning. Access it via the app or web browser.'}
+• {'title': 'Make sure YouTube isn’t blocked to watch videos in Nearpod during class.'}
+
+Reference URL:
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 4
+
+Source:
+class
+
+Similarity:
+0.284706958771903
+
+Title:
+Geology & Earth Science Explorers
+
+Section:
+Learner Summary
+
+Category:
+science
+
+Content:
+Class: Geology & Earth Science Explorers
+
+Subject: science
+
+Section: Learner Summary
+
+Content:
+Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+
+Reference URL:
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 5
+
+Source:
+class
+
+Similarity:
+0.280266743820951
+
+Title:
+Geology & Earth Science Explorers
+
+Section:
+Learning Goals
+
+Category:
+science
+
+Content:
+Class: Geology & Earth Science Explorers
+
+Subject: science
+
+Section: Learning Goals
+
+Content:
+• Explore geology, volcanology, paleontology, and more in exciting weekly themes that build a foundation in earth history and core science concepts.
+• Engage in simple science activities and science experiments to explore environmental effects and reinforce different learning styles.
+
+• Share collections and join guided discussions to explore planet earth, geo rocks, crystals, dinosaurs, and more—bringing fun science facts to life!
+
+Reference URL:
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
 
 IMPORTANT
 
@@ -88,37 +253,13 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Continue the Learning Journey with Coral Unlimited
+Hello
 
 Body:
-Dear Anne,
-
-I’m so happy to hear that you and Monroe enjoyed the Free Trial Week 
-with us! It has truly been a pleasure having them in our classes.
-
-As the trial week will be coming to an end soon, I wanted to check in and 
-see if you would like me to go ahead and enroll your learner in our Coral 
-Unlimited plan. With Coral Unlimited, they can continue exploring and 
-enjoying our live interactive classes without interruption.
-
-The subscription is $40 per month, and you’ll be charged accordingly once 
-the enrollment is confirmed.
-
-*If you’d like me to take care of the enrollment for you, simply reply YES, 
-and I’ll handle everything on your behalf.*
-
-Looking forward to continuing this learning journey together!
-
-Warm regards,
-Lucy
-Coral Academy
 
 
+I want to make enquire 
 
-[image: Mailsuite] Email tracked with Mailsuite  ·  Opt out 
-<https://##mt_unsubscribe_link##>
-28/02/26, 01:07:24 
-Remove
 
 ----------------------------------------
 
@@ -126,38 +267,877 @@ Remove
 Example 2
 
 Subject:
-Unlock Unlimited Learning with Coral Academy
+Test
 
 Body:
-Hey *Eunice*!
+Hi
 
-I’m Atharv from the Coral Academy marketing team — noticed you signed up
-but haven’t tried a class yet, so I wanted to personally help you get
-started :)
 
-You still have 2 free trial passes to explore any of our live, small-group
-classes for ages 8-13 [image: ✨]
+----------------------------------------
 
-No commitments. No payments. Just learning that clicks.
 
-Here are two popular picks which Noelle might love!
+Example 3
 
-   -
+Subject:
+Test
 
-   Code & Create: Build with Roblox
-   <https://www.coralacademy.com/class/codewithroblox-8d3c97ce-42bb-4040-b8ae-bff07b51db90?referrer_id=a7c838ad-847e-42ca-bed6-19fe11b4d2bb>
-—
-   Kids design their own 3D worlds while learning real coding concepts.
-   -
+Body:
+Hi
 
-   Mini Business Series
-   <https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3?referrer_id=a7c838ad-847e-42ca-bed6-19fe11b4d2bb>
-—
-   A “kid-friendly MBA” where they uncover how Disney, LEGO & MrBeast built
-   empires.
 
-[image: 👉] Explore Classes & Use Your Free Passes
-<https://w
+----------------------------------------
+
+
+Example 4
+
+Subject:
+Re: Collaboration Introduction
+
+Body:
+Hello
+On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
+
+> Hi Ülkü,
+>
+> That’s great news. We are excited to move forward with the collaboration
+> at the $100 rate.
+>
+> To discuss the next steps and details further, please book a call at a
+> time that works best for you using this link:
+> https://calendly.com/lucy-coralacademy/30min
+>
+> I look forward to speaking with you soon.
+>
+> Warm regards,
+> Lucy
+>
+>
+> On Fri, Mar 13, 2026 at 9:50 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+> wrote:
+>
+>> Thank you very much, I accept your $100 offer. We can discuss the details.
+>>
+>>
+>> On Fri, Mar 13, 2026 at 5:07 PM Coral Academy <lucy@coralacademy.com>
+>> wrote:
+>>
+>>> Hi Ülkü,
+>>>
+>>> Thank you for your response and for your willingness to support our new
+>>> business.
+>>>
+>>> While we appreciate the offer of $200, we unfortunately do not have the
+>>> budget to accommodate this right now as an early-stage startup. We will
+>>> keep you
+
+----------------------------------------
+
+
+Example 5
+
+Subject:
+Test
+
+Body:
+test
+
+
+----------------------------------------
+
+
+Example 6
+
+Subject:
+Re: Collaboration Introduction
+
+Body:
+Hello dear
+
+On Tue, Feb 24, 2026 at 1:47 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+wrote:
+
+> Thank you for your response.
+>
+> I have children who are seven and ten years old, darling.
+>
+>
+> On Tue, Feb 24, 2026 at 1:33 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi Ülkü,
+>>
+>> Thank you for your response.
+>>
+>> To help us devise a plan for our collaboration, could you please let us
+>> know the ages of your three children? Our platform primarily caters to
+>> children aged 8–13, though we can also accommodate children who are 7 years
+>> old.
+>>
+>> Knowing their ages will help us determine the best way to move forward.
+>>
+>> Warm regards,\
+>> Lucy
+>>
+>>
+>> On Tue, Feb 24, 2026 at 1:21 AM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+>> wrote:
+>>
+>>> Hello
+>>> On Sun, Feb 22, 2026 at 5:32 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+>>> wrote:
+>>>
+>>>>
+>>>>
+>>>> On Tue, Feb 17, 2026 at 11:21 AM Coral Academy <lucy@coralacademy.com>
+>>>> wrote:
+>>>>
+
+
+----------------------------------------
+
+
+Example 7
+
+Subject:
+Re: Collaboration Introduction
+
+Body:
+Hello dear
+
+On Thu, Feb 26, 2026 at 2:19 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+wrote:
+
+> I understand, dear. I am a child development doctor, and I consider this
+> title important. I would like to ask you to increase the budget a little
+> more.
+>
+> On Thu, Feb 26, 2026 at 1:39 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi Ülkü,
+>>
+>> To clarify my previous message, the $100 offer is for a sponsored video
+>> post.
+>>
+>> Please let us know if you would be open to moving forward with these
+>> terms for our pilot project.
+>>
+>> Warm regards,
+>>
+>> Lucy
+>>
+>>
+>> On Thu, Feb 26, 2026 at 4:08 PM Coral Academy <lucy@coralacademy.com>
+>> wrote:
+>>
+>>> Hi Ülkü,
+>>>
+>>> Thank you for sharing those details with us. It’s great to know your
+>>> children are within our target age range.
+>>>
+>>> We are very interested in exploring a collaboration with you. As we are
+>>> currently an early-stage startup, we are working with a strict budget for
+>>> our 
+
+----------------------------------------
+
+
+Example 8
+
+Subject:
+Fwd: Thank you for your call
+
+Body:
+---------- Forwarded message ---------
+From: <cfoote@theoldschoolhouse.com>
+Date: Fri, Dec 5, 2025 at 5:03 AM
+Subject: Thank you for your call
+To: <aditya@coralacademy.com>
+
+
+Hello, Aditya,
+
+It was so nice meeting with you — thank you again for taking the time to
+chat!
+
+*Here are the answers to your questions.*
+
+We are unable to do a collaboration. I will be sure and contact you if this
+changes.
+
+Our eblast readers and digital magazine readers are predominantly adults,
+not children. Our readers are homeschooling a broad range of ages, with all
+age groups represented strongly, including the ages 8-13.
+
+For states--Only 56% of our subscribers (29120 people) have elected to
+share their state with us. Of those who we know their states, the ten top
+highest represented states for our eblast sends are:
+
+
+Texas 2678
+California 2014
+North Carolina 1599
+Florida 1442
+Tennessee 1419
+Georgia 1183
+Virginia 1150
+Ohio 977
+Pennsylvania 968
+Illinois 939
+
+For the digi
+
+----------------------------------------
+
+
+Example 9
+
+Subject:
+Re: Thank You
+
+Body:
+Hello.
+That works great. Thank you!
+
+
+  *
+Jessica
+
+Sincerely,
+Jessica Miller
+
+National Virtual Teacher Certified
+Marketing/Business 5-12
+Middle Grades Math
+Middle Grades Reading
+PE and Health K-12
+
+ColorandChat
+Teen Finance
+
+Visit my Amazon Shop
+________________________________
+From: Coral Academy <support@coralacademy.com>
+Sent: Tuesday, July 8, 2025 5:06:54 PM
+To: Jessica Miller <jessicamiller2512@hotmail.com>
+Subject: Re: Thank You
+
+Hello Jessica,
+
+We'd like to inform you that we have received confirmation from our learners for the trial class on Monday, July 14th, at 3 PM EST. We hope this time works well for you.
+
+We are looking forward to your confirmation. We will share the meeting details with you shortly.
+
+Best,
+Coral Academy
+
+On Mon, Jul 7, 2025 at 7:17 PM Jessica Miller <jessicamiller2512@hotmail.com<mailto:jessicamiller2512@hotmail.com>> wrote:
+Hello,
+Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or, Wedne
+
+----------------------------------------
+
+
+Example 10
+
+Subject:
+Re: Collaboration Introduction
+
+Body:
+Hello
+On Sun, Feb 22, 2026 at 5:32 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+wrote:
+
+>
+>
+> On Tue, Feb 17, 2026 at 11:21 AM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi Ülkü,
+>>
+>> Thank you for reaching out and sharing your profile. We appreciate you
+>> taking the time to connect.
+>>
+>> To help us strategize the best path forward for a collaboration, we would
+>> appreciate it if you could share a few more details:
+>>
+>>
+>>    1. Media Kit
+>>    2. Could you provide a gender split for your audience?
+>>    3. Could you share a more granular audience demographic breakdown
+>>    (e.g., specific states within the U.S.)?
+>>    4. Would it be possible to share screenshots of analytics or
+>>    engagement numbers from the last 30–60 days, such as shares, views, average
+>>    reach, as provided by Instagram?
+>>    5. We are primarily looking for organic-sounding content, and we
+>>    believe the collaboration would be more credible if the recommending
+>>   
+
+----------------------------------------
+
+
+Example 11
+
+Subject:
+Re: Collaboration Introduction
+
+Body:
+Hello
+
+On Wed, Mar 4, 2026 at 11:26 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+wrote:
+
+> Thank you so much for your reply. You're starting a new business and I'd
+> love to support you. If it's convenient for you, I can provide a budget of
+> $200.
+>
+>
+> On Wed, Mar 4, 2026 at 10:22 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi Ülkü,
+>>
+>> Thank you for your patience while I consulted with my team.
+>>
+>> As we are currently an early-stage startup, we are operating with a very
+>> limited budget for this pilot project. Could you let us know what specific
+>> figure you have in mind for the sponsored video post? We would like to see
+>> if there is a middle ground that works for both of us.
+>>
+>> Warm regards,
+>> Lucy
+>>
+>>
+>> On Tue, Mar 3, 2026 at 10:33 AM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+>> wrote:
+>>
+>>> Okay darling, I'll wait. Please reply as soon as possible so we can
+>>> begin.
+>>>
+>>>
+>>> On Tue, Mar 3, 2026 at 4:48 AM Coral Academy <l
+
+----------------------------------------
+
+
+Example 12
+
+Subject:
+Verify your identity
+
+Body:
+
+
+  
+  
+    Verify your identity
+  
+
+  
+    
+      
+        
+          
+            
+              
+                
+                  
+                     ( http://url1719.openphone.com/ls/click?upn=u001.DMYlBxmJ9Qt4HlM62HU1YjoUDRpFcQHE-2BmueQa7UiFWu59s-2FNdVcLiEV3TN6jJUWc6MtHuKtIZq3VrWM3P7T0Q-3D-3Dn-vK_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw3-2FZQBsepyWu52CXF1P3ia8DaEFrefuMZhRJ-2FeAjSHvhUk-2F4xTv41Y3rfFy6Y4j3cfIzuwSe9etKdYUrHYsKBLnouTIwxHQhKjlucJAqAqYlAXU2jt80Cr7Sk-2Fc-2BhUXQY3GBCST4riSjfaa1BpnhqgEPb55QHT5EH60vuchcL0CkDA-3D-3D ) 
+                    
+                  
+                
+              
+            
+            
+              
+                
+                  
+                    
+                      
+                        
+                          
+                            
+                          
+                        
+                      
+                    
+                    
+                      Verify
+
+----------------------------------------
+
+
+Example 13
+
+Subject:
+New Contact Form Enquiry 
+
+Body:
+New Contact Form Submission Name: a Email: aa@a.com Phone: +11222112211 Message: 21wqeqwsdqwdswaa Submitted at: 2026-06-09T14:40:05.677Z User ID: Guest
+
+----------------------------------------
+
+
+Example 14
+
+Subject:
+New Contact Form Enquiry 
+
+Body:
+New Contact Form Submission Name: a Email: a Phone: +19999999999 Message: jkjkkl Submitted at: 2026-06-09T14:51:04.952Z User ID: Guest
+
+----------------------------------------
+
+
+Example 15
+
+Subject:
+New Contact Form Enquiry 
+
+Body:
+New Contact Form Submission Name: a Email: a@m Phone: +11212121212 Message: assas Submitted at: 2026-06-09T14:39:07.596Z User ID: Guest
+
+----------------------------------------
+
+
+Example 16
+
+Subject:
+Re: Unable to Join Class
+
+Body:
+Thank you so much!
+
+On Sun, Feb 1, 2026 at 1:16 AM Coral Academy <support@coralacademy.com>
+wrote:
+
+> Hi Chang,
+>
+> Thank you for your response.
+>
+> *Please find the recording link for the Wednesday Finance 101 session
+> below:*
+>
+>
+> *CLICK HERE TO VIEW RECORDING
+> <https://drive.google.com/file/d/1d6x2-PvzgkXIsOKtHPM8SADdBLQPeLOk/view?usp=sharing>Alternate
+> link to view the recording: **CLICK HERE*
+> <https://www.awesomescreenshot.com/video/48953395?key=e521df9246427e67fdc4fd878cd2e1e9>
+>
+> I have also attached the class materials for your reference. We look
+> forward to seeing you in the regular Wednesday slot next week.
+>
+> Please let me know if you have any other questions.
+>
+> Best,
+> Lucy
+> Coral Academy
+>
+>
+> On Sat, Jan 31, 2026 at 12:08 AM Chang Liu <cc7liu@gmail.com> wrote:
+>
+>> Hi Lucy,
+>>
+>> Thanks for sorting this out and for the refund!
+>>
+>> We're unable to attend the class today. It would be great if you could
+>> send the recording o
+
+----------------------------------------
+
+
+Example 17
+
+Subject:
+Welcome to the Coral Family!
+
+Body:
+Hey There!
+
+Welcome to Coral Academy — we’re so excited to have you here!
+
+
+*We’d love to know how you first found us.*
+Was it a Facebook ad, a flyer, a Facebook group - or something else?
+
+It helps us connect with more curious young learners just like yours.
+
+Just *hit reply* to let us know —it won’t take more than a minute!
+
+Looking forward to your response!
+
+Thanks,
+------------------------------------
+
+
+*Atharv PatilBusiness Associate*
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+
+
+----------------------------------------
+
+
+Example 18
+
+Subject:
+Coral Support, A new conversation [ID - 24] has been assigned to you.
+
+Body:
+Hi Coral Support, Time to save the world. A new conversation has been assigned to you Henna Hello Click here to get cracking. This email was sent by Chatwoot .
+
+----------------------------------------
+
+
+Example 19
+
+Subject:
+Re: Love what you're doing—let’s collaborate?
+
+Body:
+Hello!
+
+May I know more about your company?
+
+Thank you.
+
+On Tue, Aug 5, 2025 at 8:26 PM Coral Academy <lucy@coralacademy.com> wrote:
+
+> Hi,
+>
+> I hope you’ve been doing well! I wanted to follow up to see if you had a
+> chance to review my earlier emails. We’re still very eager to connect and
+> explore potential ways we could collaborate.
+>
+> It would be great to hear your thoughts whenever you get a chance.
+>
+> Best regards,
+> Lucy
+>
+> On Thu, Jul 3, 2025 at 10:26 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi,
+>>
+>> Hope you're doing well! Just wanted to check in—did you get a chance to
+>> see our previous emails? We’d love to connect and explore how we can work
+>> together.
+>>
+>> Looking forward to hearing your thoughts!
+>>
+>> Best,
+>> Lucy
+>>
+>>
+>>
+
+
+----------------------------------------
+
+
+Example 20
+
+Subject:
+New Contact Form Enquiry — sai sruthin
+
+Body:
+NEW CONTACT FORM SUBMISSION
+
+Name: sai sruthin
+
+Email: saisruthinreddykondma@gmail.com
+
+Phone: +16758745889
+
+Message: hi eshwar
+
+Submitted at: 2026-06-15T18:55:16.380Z
+
+User ID: Guest
+
+----------------------------------------
+
+
+Example 21
+
+Subject:
+Re: Coral Academy x Simply Sepi
+
+Body:
+Thank you and look forward to hearing from you.
+
+Best,
+Sepideh
+
+SIMPLY SEPI
+Sepideh Haftgoli
+Producer, Director, Social Media Strategist/Influencer
+sepi@simplysepi.com
++1 323 632 2556
+
+
+￼
+
+> On Jan 15, 2026, at 12:24 AM, Coral Academy <lucy@coralacademy.com> wrote:
+> 
+> Hi Sepi,
+> 
+> Thank you for your response.
+> 
+> We will review the details you provided and get back to you shortly.
+> 
+> Best,
+> 
+> Lucy
+> 
+> 
+> 
+> On Wed, Jan 14, 2026 at 1:39 AM Sepideh Haftgoli <sepi@simplysepi.com <mailto:sepi@simplysepi.com>> wrote:
+>> Hi Lucy,
+>> 
+>> Unfortunately the time it takes me to properly do a reel any justice I couldn’t do for $100. It takes too much effort, if I want to do something properly for a brand. For $200 I can do a photo post that lives on my feed if you are interested, but a reel I cannot go any lower than $325 and that’s simply for my time to create something worthwhile. I draft a script and then share it with you for approval and/or edits, base
+
+----------------------------------------
+
+
+Example 22
+
+Subject:
+New Contact Form Enquiry 
+
+Body:
+New Contact Form Submission Name: a Email: a@m.com Phone: +18888888888 Message: iuoiuo Submitted at: 2026-06-09T14:49:21.356Z User ID: Guest
+
+----------------------------------------
+
+
+Example 23
+
+Subject:
+
+
+Body:
+  Hi, I was looking into your business and wanted to check who would be the
+right person to speak with
+
+
+----------------------------------------
+
+
+Example 24
+
+Subject:
+Re: For Miss Amalia,
+
+Body:
+Thank you for this, I really appreciate it!
+
+On Thu, 30 Oct 2025, 23:43 Coral Academy, <support@coralacademy.com> wrote:
+
+> Hi Jen,
+>
+> Ofcourse, we will pass this along! Thanks so much for letting us know.
+>
+> Tim & Wren have been with us since the very beginning and we'd love to do
+> anything we could to support their learning journeys.
+>
+> We will forward this to Amalia & let you know once she fills them out.
+>
+> Please feel free to let us know if there's anything else we can help with.
+>
+> Hope you have a great weekend!
+>
+> Best,
+> Coral Academy
+>
+> On Thu, 30 Oct, 2025, 06:39 Jen Cuthbert, <jenjcuthbert@gmail.com> wrote:
+>
+>> Hello,
+>>
+>> Can you please email this to Miss Amalia, she has very kindly agreed (if
+>> Coral Academy says it's ok) to fill in these forms regarding an assessment
+>> for ADHD for Wren.   Miss Amalia is the teacher that the Wren sees most
+>> often, so it makes sense to have her input for this.
+>>
+>> The forms are attached to this 
+
+----------------------------------------
+
+
+Example 25
+
+Subject:
+Re: Your First Coral Academy Class – Quick Guide & Best of Luck!
+
+Body:
+Thanks so much - watching your video now - and paused it to make my welcome
+message/sheet for everyone.  i'll look more into all of this after i do
+that + respond more soon- thank you
+
+On Fri, Sep 5, 2025 at 12:14 PM Coral Academy <support@coralacademy.com>
+wrote:
+
+> Hi Kelly,
+>
+> We’re so excited for your class in a couple of hours — you’ve got this! To
+> make things super smooth, we’ve included a short video walkthrough that
+> shows the key buttons and where everything lives in your teacher dashboard.
+>
+> *Link to the video recording*:
+> https://www.awesomescreenshot.com/video/43911295?key=5c0a9fc04becd013cff51b2bf132a26c
+>
+> Here’s a quick, detailed guide for today:
+> Before class (5–10 minutes)
+>
+>    -
+>
+>    *Log in* and open your *Teacher Dashboard*.
+>    -
+>
+>    Go to* the Classroom *page of a particular class.
+>    -
+>
+>    Run a quick *mic/camera check* using the on-screen device test.
+>    -
+>
+>    Open any *slides or links* you plan to share s
+
+----------------------------------------
+
+
+Example 26
+
+Subject:
+Welcome to the Coral Family!
+
+Body:
+Hi Teresa,
+
+Welcome to Coral Academy — we’re so excited to have you here!
+
+
+*We’d love to know how you first found us.*
+Was it a Facebook ad, a flyer, a Facebook group - or something else?
+
+It helps us connect with more curious young learners just like yours.
+
+Just *hit reply* to let us know —it won’t take more than a minute!
+
+*P.S.* Don’t forget - Your child’s *2 FREE trial classes* are still waiting.
+
+Looking forward to your response!
+
+Thanks,
+------------------------------------
+Atharv Patil
+Business Associate
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+
+
+----------------------------------------
+
+
+Example 27
+
+Subject:
+Welcome to the Coral Family!
+
+Body:
+Hi Sue,
+
+Welcome to Coral Academy — we’re so excited to have you here!
+
+
+*We’d love to know how you first found us.*
+Was it a Facebook ad, a flyer, a Facebook group - or something else?
+
+It helps us connect with more curious young learners just like yours.
+
+Just *hit reply* to let us know —it won’t take more than a minute!
+
+*P.S.* Don’t forget - Your child’s *2 FREE trial classes* are still waiting.
+
+Looking forward to your response!
+
+Thanks,
+------------------------------------
+Atharv Patil
+Business Associate
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+
+
+----------------------------------------
+
+
+Example 28
+
+Subject:
+Welcome to the Coral Family!
+
+Body:
+Hi Sue,
+
+Welcome to Coral Academy — we’re so excited to have you here!
+
+
+*We’d love to know how you first found us.*
+Was it a Facebook ad, a flyer, a Facebook group - or something else?
+
+It helps us connect with more curious young learners just like yours.
+
+Just *hit reply* to let us know —it won’t take more than a minute!
+
+*P.S.* Don’t forget - Your child’s *2 FREE trial classes* are still waiting.
+
+Looking forward to your response!
+
+Thanks,
+------------------------------------
+
+*Atharv PatilBusiness Associate*
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+
+
+----------------------------------------
+
+
+Example 29
+
+Subject:
+Please remove me from the emails
+
+Body:
+Hello, please remove me from the emails being sent. Thank you.
+
+
+----------------------------------------
+
+
+Example 30
+
+Subject:
+Checking in 
+
+Body:
+Hello,
+
+I'm just checking in to see if you have any class needs we can fill.
+
+Please let me know at your earliest convenience.
+
+Thank you so much.
+
+We can't wait to finally work with you!
+
+Get Outlook for iOS<https://aka.ms/o0ukef>
+
 
 ----------------------------------------
 

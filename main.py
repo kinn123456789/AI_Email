@@ -645,64 +645,79 @@ async def gmail_webhook(request: Request):
 
         return {"success": True}
 
-    # Get Gmail history
-    history = get_gmail_history(
-        token_file=token_file,
-        history_id=last_history
-    )
+    page_token = None
+    processed_ok = True
 
-    print(history)
+    while True:
 
-    # No new history
-    if not history.get("history"):
-
-        update_last_history_id(
-            email_address,
-            history["historyId"]
+        history = get_gmail_history(
+            token_file=token_file,
+            history_id=last_history,
+            page_token=page_token
         )
 
-        return {"success": True}
-    
-    processed_ok = True
-    # Process new messages
-    for record in history["history"]:
+        print(history)
 
-        for item in record.get("messagesAdded", []):
+        if not history.get("history"):
+            break
 
-            gmail_message_id = item["message"]["id"]
+        # Process THIS page
+        for record in history["history"]:
 
-            print("=" * 80)
-            print("MESSAGE:", gmail_message_id)
-            print("=" * 80)
+            for item in record.get("messagesAdded", []):
 
+                message_info = item["message"]
 
-            
-            try:
+                labels = message_info.get("labelIds", [])
 
-                msg = get_message(
-                    token_file,
-                    gmail_message_id
-                )
+                if "DRAFT" in labels:
+                    print("Skipping draft")
+                    continue
 
-                process_email(
-                    msg,
-                    {
-                        "email": email_address,
-                        "source": email_address,
-                        "token": token_file
-                    }
-                )
+                gmail_message_id = message_info["id"]
 
-            except Exception as e:
-                processed_ok = False
-                print(f"Failed to process {gmail_message_id}")
-                print(e)
+                print("=" * 80)
+                print("MESSAGE:", gmail_message_id)
+                print("=" * 80)
+
+                try:
+
+                    msg = get_message(
+                        token_file,
+                        gmail_message_id
+                    )
+
+                    if msg is None:
+                        continue
+
+                    process_email(
+                        msg,
+                        {
+                            "email": email_address,
+                            "source": email_address,
+                            "token": token_file
+                        }
+                    )
+
+                except Exception as e:
+
+                    processed_ok = False
+
+                    print(f"Failed to process {gmail_message_id}")
+                    print(e)
+
+        page_token = history.get("nextPageToken")
+
+        if not page_token:
+            break
+
+    # Update checkpoint once, after ALL pages are processed
     if processed_ok:
 
         print("=" * 80)
         print("CHECKPOINT:", history["historyId"])
         print("=" * 80)
-        # Save latest history
+
         update_last_history_id(
             email_address,
             history["historyId"]
