@@ -28,6 +28,7 @@ from trial_followup import (
 )
 from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
+from gmail_history import get_gmail_history
 import scheduler
 import os
 
@@ -580,16 +581,49 @@ def reply_again(
         status_code=303
     )    
 
-
-
 @app.post("/gmail/webhook")
 async def gmail_webhook(request: Request):
 
     body = await request.json()
 
     print("=" * 80)
-    print("GMAIL WEBHOOK")
+    print("RAW PUBSUB")
     print(json.dumps(body, indent=2))
-    print("=" * 80)
 
+    # Decode Pub/Sub message
+    encoded = body["message"]["data"]
+    decoded = base64.b64decode(encoded).decode("utf-8")
+
+    data = json.loads(decoded)
+
+    email_address = data["emailAddress"]
+    history_id = data["historyId"]
+
+    print("Mailbox:", email_address)
+    print("History ID:", history_id)
+
+    # Choose token based on mailbox  <-- ADD IT HERE
+    if email_address == "support@coralacademy.com":
+        token_file = "token_support.json"
+
+    elif email_address == "lucy@coralacademy.com":
+        token_file = "token_lucy.json"
+
+    elif email_address == "engineering@coralacademy.com":
+        token_file = "token_engineering.json"
+
+    elif email_address == "shopsat19@gmail.com":
+        token_file = "token_sat.json"
+
+    else:
+        print("Unknown mailbox:", email_address)
+        return {"success": True}
+
+    print("Token:", token_file)
+
+    history = get_gmail_history(
+        token_file=token_file,
+        history_id=history_id
+    )
+    print(history)
     return {"success": True}

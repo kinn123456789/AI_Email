@@ -5,42 +5,13 @@ Category:
 General
 
 Priority:
-High
+Low
 
 Subject:
-Reminder: Upcoming Session Ending for Geology & Earth Science
- Explorers
+hello
 
 Body:
-Sessions for the class - Geology & Earth Science Explorers are about to end next week!!
-
-
-
-Dear Support Team,
-
-
-This is a friendly reminder that the session for the class Geology & Earth Science Explorers [Tuesdays, 1:00 PM - 1:50 PM] is scheduled to end soon. The session will conclude on 21-07-2026.
-Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
-
-Session Details:
- * Class Name : Geology & Earth Science Explorers
- * Teacher Name : Amalia
- * Session End Date: : 21-07-2026
- * Session Time : Eastern Standard Time
-
-
-
-Login https://www.teacher.coralacademy.com/sign-in
-
-Best regards,
-Team Coral Academy 
-
-
-This message was sent to at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser https://www.coralacademy.com | Email Preferences https://www.coralacademy.com?show_modal=email_preference_center&id=
-We care about your privacy. Read our Privacy Policy https://www.help.coralacademy.com/legal/privacy and Terms of Service https://www.help.coralacademy.com/legal/terms to find out more.
+hello
 
 ==================================================
 
@@ -59,67 +30,29 @@ Source:
 class
 
 Similarity:
-0.664677449146131
+0.322270910454071
 
 Title:
-Geology & Earth Science Explorers
+Scratch Coding Lab: Build With Scratch
 
 Section:
-Description
+Resources
 
 Category:
-science
+lifeskills
 
 Content:
-Class: Geology & Earth Science Explorers
+Class: Scratch Coding Lab: Build With Scratch
 
-Subject: science
+Subject: lifeskills
 
-Section: Description
+Section: Resources
 
 Content:
-Learners will explore a different theme each week: from rocks and crystals to fossils, volcanoes, dinosaurs, and landforms.
-
-Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring items such as fossils, geodes, or rock art to share. At-home science experiments and creative art projects will be provided to extend the learning experience beyond the classroom.
-
-We even touch on exciting aspects like the Earth's history and how carnivores and herbivores have evolved through time, concepts that are often overlooked in a typical science class.
-
-If you're eager to learn geology online, our virtual classes make exploring science easy from anywhere. 
-
-Please find below the week-on-week schedule & the topic of focus for the next couple of weeks:
-Slot 1 - Costa Rican Geology: MONDAY CLASS
-WORLD BIOMES
-April 6- Deserts 
-April 13- Grasslands and Savannas
-April 20-Tropical Rainforests
-April 27- Deciduous Forests
-May 4- Taiga (Boreal Forests)
-May 11- The Tundra
-May 18- Mountains
-May 25- Freshwater (Rivers, Ponds, Wetlands)
-
-Slot 1 -TUESDAY CLASS
-March 31- The Rock Cycle- Igneous Investigations
-April 7- The Rock Cycle- Sedimentary Stories
-April 14- The Rock Cycle- Metamorphic Magic
-April 21- Crystallography
-April 28- Mineralogy Testing
-May 5- Geodes and Agates
-May 12- Types of Fossils
-May 19- Paleontology and the Geologic Timescale
-May 26- Archeology- Arrowheads and Artifacts
-June 2- Architecture of Ancient Civilizations
-June 9- NO CLASS
-June 16- The Layers of the Earth
-June 23- NO CLASS
-June 30- Submarine Volcanoes
-July 7- Hydrothermal Features
-July 14-August 11- NO CLASS, SUMMER BREAK
-
-This virtual class by Coral Academy is perfect for families seeking science enrichment or a class on planet Earth. This topic is a top pick among our Coral classes; delivering engaging life science concepts through expertly crafted online learning sessions grounded in real-world learning.
+• {'link': 'https://scratch.mit.edu/', 'title': 'Free Scratch Software'}
 
 Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
 
 IMPORTANT
 
@@ -139,41 +72,30 @@ Source:
 class
 
 Similarity:
-0.564565924255481
+0.31963165817506
 
 Title:
-Astronomy 101: Learn About Space
+Scratch Coding Lab: Build With Scratch
 
 Section:
-Description
+Prerequisites
 
 Category:
-science
+lifeskills
 
 Content:
-Class: Astronomy 101: Learn About Space
+Class: Scratch Coding Lab: Build With Scratch
 
-Subject: science
+Subject: lifeskills
 
-Section: Description
+Section: Prerequisites
 
 Content:
-Get ready for an exciting journey through space as we explore the universe, our solar system, and Earth's Moon. This class is designed to spark curiosity and wonder as learners discover the mysteries of astronomy, from comets and black holes to planets and moon craters.
-
-Sessions will include fun discussions, interactive activities, and creative projects to make learning hands-on and engaging. Every astronomy class begins with introductions and group sharing — learners are welcome to bring space-related items, drawings, or stories to share with their peers.
-
-Please find the week-on-week schedule below for the next few weeks:
-April 8: Artemis II- Lunar Flyby, Splashdown, & Future Missions
-April 15: Rocket Science- How do Rockets Work?
-April 22: Space Navigation- How do Spacecraft Know Where to Go?
-April 29: Living in Space- The Challenge of Microgravity
-May 6: The Kennedy Space Center and Mission Control (Houston)
-May 13: Space Programs in Ten Countries Around the World
-
-This virtual class by Coral Academy is one of the most engaging astronomy classes online, perfect for kids to learn about space and explore through fun, interactive online learning.
+• {'title': 'Basic familiarity with using a computer (mouse, keyboard, and web browser)'}
+• {'link': 'https://scratch.mit.edu/', 'title': 'A free Scratch account (at scratch.mit.edu) is recommended'}
 
 Reference URL:
-https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
 
 IMPORTANT
 
@@ -193,7 +115,50 @@ Source:
 class
 
 Similarity:
-0.554661807745121
+0.305417054311822
+
+Title:
+Around the Globe with Mr. Clark
+
+Section:
+Prerequisites
+
+Category:
+lifeskills
+
+Content:
+Class: Around the Globe with Mr. Clark
+
+Subject: lifeskills
+
+Section: Prerequisites
+
+Content:
+• {'title': 'We use Nearpod for interactive learning. Access it via the app or web browser.'}
+• {'title': 'Make sure YouTube isn’t blocked to watch videos in Nearpod during class.'}
+
+Reference URL:
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 4
+
+Source:
+class
+
+Similarity:
+0.284706958771903
 
 Title:
 Geology & Earth Science Explorers
@@ -229,19 +194,19 @@ Do not continue discussing previous issues unless the customer explicitly asks a
 ----------------------------------------
 
 
-Knowledge Item 4
+Knowledge Item 5
 
 Source:
 class
 
 Similarity:
-0.552664823519566
+0.280266743820951
 
 Title:
 Geology & Earth Science Explorers
 
 Section:
-Parent Summary
+Learning Goals
 
 Category:
 science
@@ -251,63 +216,16 @@ Class: Geology & Earth Science Explorers
 
 Subject: science
 
-Section: Parent Summary
+Section: Learning Goals
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+• Explore geology, volcanology, paleontology, and more in exciting weekly themes that build a foundation in earth history and core science concepts.
+• Engage in simple science activities and science experiments to explore environmental effects and reinforce different learning styles.
+
+• Share collections and join guided discussions to explore planet earth, geo rocks, crystals, dinosaurs, and more—bringing fun science facts to life!
 
 Reference URL:
 https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 5
-
-Source:
-help_center
-
-Similarity:
-0.548906049877435
-
-Title:
-Class Cancellation & Rescheduling
-
-Section:
-
-
-Category:
-Teaching
-
-Content:
-Last Updated Date: July 31, 2025
-At Coral Academy, we understand that sometimes schedules can change. Our policy aims to support instructors with flexibility while maintaining a consistent online learning experience for our learners.
-Managing Class Cancellations
-Rescheduling of a Class
-Within your first 6 months, any cancelled classes must be rescheduled. Our platform team will assist with coordination.
-Rescheduling builds your credibility as an instructor and minimizes disruption for learners.
-Let Us Know in Advance
-Please provide at least 48 hours' notice when possible.
-For emergencies, contact us immediately.
-Frequency of Class Cancellations
-Keep cancellations minimal and ensure they have valid reasons.
-Our platform will reach out if frequent cancellations are observed.
-Procedure for Rescheduling
-Email teachers@coralacademy.com with the reason for cancellation.
-Our coordination team will identify a suitable rescheduled time.
-Post an announcement with the reason to enrolled parents.
-
-Reference URL:
-https://www.coralacademy.com/help/teaching/class-cancellation-rescheduling
 
 IMPORTANT
 
@@ -335,25 +253,32 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Reminder: Upcoming Session Ending for Geology Adventures: Discover
- Earth's Deep Secrets
+Welcome to the Coral Family!
 
 Body:
-Sessions for the class - Geology Adventures: Discover Earth's Deep Secrets are about to end next week!!
+Hey There!
 
-*D* *ear Support Team,*
+Welcome to Coral Academy — we’re so excited to have you here!
 
-This is a friendly reminder that the session for the class *Geology Adventures: Discover Earth's Deep Secrets* *[Tuesdays, 4:00 PM - 4:50 PM]* is scheduled to end soon. The session will conclude on *02-12-2025*.
-Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-*Session Details:*
+*We’d love to know how you first found us.*
+Was it a Facebook ad, a flyer, a Facebook group - or something else?
 
-* *Class Name : Geology Adventures: Discover Earth's Deep Secrets*
-* *Teacher Name : Teacher Amalia*
-* *Session End Date: : 02-12-2025*
-* *Session Time: Eastern Standard Time*
+It helps us connect with more curious young learners just like yours.
 
-Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDVMWVX9eoQ8LxOLpvd2UN60Bg2-2F0b1fCvLUlcDIKxKsnzoqDEs3O94Yo-2FKhz7fiYQ-3D-3Drnmi_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-
+Just *hit reply* to let us know —it won’t take more than a minute!
+
+Looking forward to your response!
+
+Thanks,
+------------------------------------
+
+
+*Atharv PatilBusiness Associate*
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+
 
 ----------------------------------------
 
@@ -361,64 +286,33 @@ Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDV
 Example 2
 
 Subject:
-Reminder: Upcoming Session Ending for Entrepreneurship 101: A Mini
- MBA Series
+Welcome to the Coral Family!
 
 Body:
-Sessions for the class - Entrepreneurship 101: A Mini MBA Series are about to end next week!!
+Hi Teresa,
+
+Welcome to Coral Academy — we’re so excited to have you here!
 
 
+*We’d love to know how you first found us.*
+Was it a Facebook ad, a flyer, a Facebook group - or something else?
 
-Dear Support Team,
+It helps us connect with more curious young learners just like yours.
 
+Just *hit reply* to let us know —it won’t take more than a minute!
 
-This is a friendly reminder that the session for the class Entrepreneurship 101: A Mini MBA Series [Saturdays, 6:00 PM - 6:50 PM] is scheduled to end soon. The session will conclude on 04-07-2026.
-Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
+*P.S.* Don’t forget - Your child’s *2 FREE trial classes* are still waiting.
 
-Session Details:
- * Class Name : Entrepreneurship 101: A Mini MBA Series
- * Teacher Name : Aaron
- * Session End Date: : 04-07-2026
- * Session Time : Eastern Standard Time
+Looking forward to your response!
 
+Thanks,
+------------------------------------
+Atharv Patil
+Business Associate
 
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
 
-Login https://www.teacher.coralacademy.com/sign-in
-
-Best regards,
-Team Coral Academy 
-
-
-This message was sent to at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser https://www.coralacademy.com | Email Preferences https://www.coralacademy.com?show_modal=
-
-----------------------------------------
-
-
-Example 3
-
-Subject:
-Reminder: Upcoming Session Ending for Geology Adventures: Discover
- Earth's Deep Secrets
-
-Body:
-Sessions for the class - Geology Adventures: Discover Earth's Deep Secrets are about to end next week!!
-
-*D* *ear Support Team,*
-
-This is a friendly reminder that the session for the class *Geology Adventures: Discover Earth's Deep Secrets* *[Mondays, 7:00 PM - 7:50 PM]* is scheduled to end soon. The session will conclude on *11-08-2025*.
-Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
-
-*Session Details:*
-
-* *Class Name : Geology Adventures: Discover Earth's Deep Secrets*
-* *Teacher Name : Teacher Amalia*
-* *Session End Date: : 11-08-2025*
-* *Session Time: Eastern Standard Time*
-
-Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDVMWVX9eoQ8LxOLpvd2UN60Bg2-2F0b1fCvLUlcDIKxKsnzoqDEs3O94Yo-2FKhz7fiYQ-3D-3DJ9f5_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-2
 
 ----------------------------------------
 
