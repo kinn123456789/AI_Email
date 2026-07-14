@@ -2,16 +2,17 @@
 CURRENT EMAIL
 
 Category:
-General
+Teacher
 
 Priority:
-Low
+High
 
 Subject:
-Re: We hope TFTEST_Learner_1_263859 enjoyed the free trial!
+Class on Tuesday
 
 Body:
-adsfasdf
+I will be unable to teach class on Tuesday afternoon this week. Sorry for
+the inconvenience.
 
 ==================================================
 
@@ -30,29 +31,43 @@ Source:
 class
 
 Similarity:
-0.342978254844533
+0.433450631329687
 
 Title:
-Around the Globe with Mr. Clark
+Logic & Critical Thinking: Master Reasoning and Fallacies
 
 Section:
-Learner Summary
+Description
 
 Category:
 lifeskills
 
 Content:
-Class: Around the Globe with Mr. Clark
+Class: Logic & Critical Thinking: Master Reasoning and Fallacies
 
 Subject: lifeskills
 
-Section: Learner Summary
+Section: Description
 
 Content:
-Explore the world from your screen! In this online class for kids, learners travel using VR, polls, & activities to explore cultural landmarks, history, and natural wonders. Learn geography and have fun with this virtual travel experience!
+In this weekly class, learners will develop essential skills to construct well-structured arguments using active listening and logical reasoning. More importantly, they will learn to identify flawed reasoning in the constant flow of information encountered daily.
+
+Through interactive scenarios and engaging tasks, learners will exercise their minds, hone logical reasoning skills, and thoughtfully consider opposing viewpoints.
+
+Learners will enhance their critical thinking abilities, communicate effectively, and navigate complex discussions with clarity and precision.
+
+Please find the detailed week-on-week schedule of the class below for the next few weeks. The topic listed for each week is the logical concept we will focus on, where learners will explore different types of reasoning, biases, logical fallacies, and how they impact our thinking.
+
+April 27: Post Hoc (False Cause)
+May 4: Fallacy of Division & Composition
+May 11: Chronological Snobbery
+May 18: Generalizations
+May 25: Appeal to Ignorance
+
+This interactive class by Coral Academy aims to strengthen the ability of logical thinking and reasoning skills in young learners through classical education, helping them build persuasive arguments and sharpen their overall critical thinking.
 
 Reference URL:
-https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+https://www.coralacademy.com/class/logic-master3a-identify-flawed-reasoning-and-fallacies-36516ea7-bf0c-4455-94ec-ca36db3ec6ae
 
 IMPORTANT
 
@@ -69,32 +84,40 @@ Do not continue discussing previous issues unless the customer explicitly asks a
 Knowledge Item 2
 
 Source:
-class
+help_center
 
 Similarity:
-0.339160203792788
+0.415533098070494
 
 Title:
-Into the Wild: Young Zoologists Club
+Class Cancellation & Rescheduling
 
 Section:
-Learner Summary
+
 
 Category:
-science
+Teaching
 
 Content:
-Class: Into the Wild: Young Zoologists Club
-
-Subject: science
-
-Section: Learner Summary
-
-Content:
-Each week, learners will explore the world of herpetology in this online science class, meeting animals like Scaly the Corn Snake, Slimy the Tiger Salamander, & Lizzie the Leopard Gecko, while diving into a world of reptiles and amphibians.
+Last Updated Date: July 31, 2025
+At Coral Academy, we understand that sometimes schedules can change. Our policy aims to support instructors with flexibility while maintaining a consistent online learning experience for our learners.
+Managing Class Cancellations
+Rescheduling of a Class
+Within your first 6 months, any cancelled classes must be rescheduled. Our platform team will assist with coordination.
+Rescheduling builds your credibility as an instructor and minimizes disruption for learners.
+Let Us Know in Advance
+Please provide at least 48 hours' notice when possible.
+For emergencies, contact us immediately.
+Frequency of Class Cancellations
+Keep cancellations minimal and ensure they have valid reasons.
+Our platform will reach out if frequent cancellations are observed.
+Procedure for Rescheduling
+Email teachers@coralacademy.com with the reason for cancellation.
+Our coordination team will identify a suitable rescheduled time.
+Post an announcement with the reason to enrolled parents.
 
 Reference URL:
-https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc
+https://www.coralacademy.com/help/teaching/class-cancellation-rescheduling
 
 IMPORTANT
 
@@ -114,13 +137,13 @@ Source:
 class
 
 Similarity:
-0.338121717198387
+0.414041738627719
 
 Title:
 Geology & Earth Science Explorers
 
 Section:
-Learner Summary
+Description
 
 Category:
 science
@@ -130,10 +153,48 @@ Class: Geology & Earth Science Explorers
 
 Subject: science
 
-Section: Learner Summary
+Section: Description
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+Learners will explore a different theme each week: from rocks and crystals to fossils, volcanoes, dinosaurs, and landforms.
+
+Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring items such as fossils, geodes, or rock art to share. At-home science experiments and creative art projects will be provided to extend the learning experience beyond the classroom.
+
+We even touch on exciting aspects like the Earth's history and how carnivores and herbivores have evolved through time, concepts that are often overlooked in a typical science class.
+
+If you're eager to learn geology online, our virtual classes make exploring science easy from anywhere. 
+
+Please find below the week-on-week schedule & the topic of focus for the next couple of weeks:
+Slot 1 - Costa Rican Geology: MONDAY CLASS
+WORLD BIOMES
+April 6- Deserts 
+April 13- Grasslands and Savannas
+April 20-Tropical Rainforests
+April 27- Deciduous Forests
+May 4- Taiga (Boreal Forests)
+May 11- The Tundra
+May 18- Mountains
+May 25- Freshwater (Rivers, Ponds, Wetlands)
+
+Slot 1 -TUESDAY CLASS
+March 31- The Rock Cycle- Igneous Investigations
+April 7- The Rock Cycle- Sedimentary Stories
+April 14- The Rock Cycle- Metamorphic Magic
+April 21- Crystallography
+April 28- Mineralogy Testing
+May 5- Geodes and Agates
+May 12- Types of Fossils
+May 19- Paleontology and the Geologic Timescale
+May 26- Archeology- Arrowheads and Artifacts
+June 2- Architecture of Ancient Civilizations
+June 9- NO CLASS
+June 16- The Layers of the Earth
+June 23- NO CLASS
+June 30- Submarine Volcanoes
+July 7- Hydrothermal Features
+July 14-August 11- NO CLASS, SUMMER BREAK
+
+This virtual class by Coral Academy is perfect for families seeking science enrichment or a class on planet Earth. This topic is a top pick among our Coral classes; delivering engaging life science concepts through expertly crafted online learning sessions grounded in real-world learning.
 
 Reference URL:
 https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
@@ -156,30 +217,89 @@ Source:
 class
 
 Similarity:
-0.331562758580929
+0.395891899611704
 
 Title:
-Around the Globe with Mr. Clark
+Into the Wild: Young Zoologists Club
 
 Section:
-Prerequisites
+Description
 
 Category:
-lifeskills
+science
 
 Content:
-Class: Around the Globe with Mr. Clark
+Class: Into the Wild: Young Zoologists Club
 
-Subject: lifeskills
+Subject: science
 
-Section: Prerequisites
+Section: Description
 
 Content:
-• {'title': 'We use Nearpod for interactive learning. Access it via the app or web browser.'}
-• {'title': 'Make sure YouTube isn’t blocked to watch videos in Nearpod during class.'}
+Live science classes featuring real animals like Scaly the Corn Snake, Slimy the Tiger Salamander, & Lizzie the Leopard Gecko. Learn from a teacher who's explored wildlife across nearly every continent: bringing real stories, field research, & stunning nature photography into each class
+
+Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring their observations, along with pictures of snakes, pictures of lizards, and any stories about reptiles and amphibians. At-home activities will be provided to further explore how to spot these creatures in the neighborhood.
+
+We’ll discover what salamanders and frogs have in common with snakes, lizards, turtles, and crocodiles, highlighting the differences between reptiles and amphibians. 
+
+Photos and videos will highlight exciting species from around the world, including unique reptiles and different types of amphibians.
+
+Learners can share their own herpetology stories, while Ms. Amalia might share her adventures from the Komodo Dragon Islands, Borneo, Malaysia, and Madagascar!
+
+For reference, please find the week-on-week schedule of the class for the next few weeks below:
+
+Slot 1 - Mondays
+March 30- Snakes: Constrictors
+April 6- Venomous Snakes
+April 13- Lizards
+April 20- Komodo Dragons
+April 27- Crocodilians
+May 4- Turtles and Tortoises
+May 11- Sea Turtles
+May 18- Sea Snakes and Marine Iguanas
+May 25- NO CLASS
+June 1- The Tuatara
+June 8- North American Frogs
+June 15- Poison Dart Frogs
+June 22- Salamanders
+June 29- Axolotl and Aquatic Salamanders
+July 6- Unusual Reptiles and Amphibians of the World
+
+Slot 2: Tuesdays
+March 31- Snakes: Constrictors
+April 7- Venomous Snakes
+April 14- Lizards
+April 21- Komodo Dragons
+April 28- Crocodilians
+May 5- Turtles and Tortoises
+May 12- The Tuatara
+May 19- Marine Reptiles
+May 26- Unusual Reptiles of the World
+June 2- North American Frogs
+June 9- Soil Salamanders
+June 16- The Axolotl and Aquatic Salamanders
+June 23- NO CLASS
+June 29- Unusual Amphibians of the World
+July 7-August 11- NO CLASS, SUMMER BREAK
+
+Slot 3: Thursdays
+
+SQUAMATA
+About 90% of all reptiles are squamates! Out of approximately 11,500 species of reptiles in the world, about 10,500 of those are in the squamata order that includes lizards, snakes, and amphisbaenians (worm lizards). Our upcoming schedule will focus in on specific groups of these amazingly diverse animals!
+
+April 2: Colubrids & Constrictors
+April 9: Vipers & Cobras
+April 16: Underground and Water Snakes
+April 23: Geckos, Skinks, & Whiptails
+April 30: Iguanas, Anoles, & Agamas
+May 7: Chameleons, Monitors, & Horned Lizards
+May 14: Legless Lizards & Amphisbaenians
+
+ 
+This virtual class by Coral Academy offers a unique online learning experience for kids ages 8-13 to learn about reptiles and amphibians through experiences involving live animals and interesting facts.
 
 Reference URL:
-https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc
 
 IMPORTANT
 
@@ -199,29 +319,47 @@ Source:
 class
 
 Similarity:
-0.328864218700222
+0.381021425766487
 
 Title:
-Into the Wild: Young Zoologists Club
+History Investigators Club
 
 Section:
-Parent Summary
+Description
 
 Category:
-science
+lifeskills
 
 Content:
-Class: Into the Wild: Young Zoologists Club
+Class: History Investigators Club
 
-Subject: science
+Subject: lifeskills
 
-Section: Parent Summary
+Section: Description
 
 Content:
-Each week, learners will explore the world of herpetology in this online science class, meeting animals like Scaly the Corn Snake, Slimy the Tiger Salamander, & Lizzie the Leopard Gecko, while diving into a world of reptiles and amphibians.
+Learners will gather for campfire-style storytelling filled with rich historical details, tension builders, and suspense—because sometimes, truth is stranger (and spookier) than fiction. With Coral Academy, this isn’t your average history class. Together, we’ll explore bizarre, creepy, and unusual historical mysteries that challenge what you thought you knew about the past.
+
+Through pictures, video clips, compelling evidence, and engaging discussions, learners will dive into captivating stories, unravel intriguing theories, and uncover the truth behind some of history’s strangest mysteries. Each week brings a new mind-boggling tale that invites critical thinking, encourages detective-like investigation, and sparks curiosity.
+For example, mysteries might include lost children found wandering, speaking an unknown language, and—most shockingly—why they appeared green. 
+
+With every session, students sharpen their reasoning skills by analyzing clues and exploring wild theories, making world history come alive in a way that’s as thrilling as it is educational.
+
+Please find below the weekly schedule for the next few weeks, with a new mystery explored in each session:
+
+May 3 – May 9 — The Ghost Army of World War II: The Artists Who Defeated the Enemy With Inflatable Tanks and Clever Illusions
+May 10 – May 16 — Spies of the Civil War: The Women Who Risked Everything to Deliver Secret Messages?
+May 17 – May 23 — Alexander Selkirk: The Real Robinson Crusoe
+May 24 – May 30 — Cicada 3301
+May 31 – June 6 — Feral Children — kids raised by animals, verified historical cases
+June 7 – June 13 — Dumb Ways to Die: The Potato Tragedies (A funny, fascinating look at the many times potatoes have accidentally caused chaos.)
+June 14 – June 20 — Gartic Phone — GAME DAY for All Classes!
+Summer Break — Classes resume September 2026
+
+This virtual class by Coral Academy is perfect for learners of ages 8-13, eager to explore history topics through interactive storytelling and investigations, offering a compelling history class online.
 
 Reference URL:
-https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc
+https://www.coralacademy.com/class/historyclubbynicole-8c5e20c0-0884-4890-ba36-7470cc6dbcc8
 
 IMPORTANT
 
@@ -249,40 +387,12 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Your 2 Free Trials Really Are Free — Here's How������
+Unavailable for class today
 
 Body:
-*Hey Coral!*
+I am attending a funeral today and will be unavailable to teach. I
+apologize for the inconvenience.
 
-We’re so glad to see you liked our *Into the Wild Science class* and showed 
-interest in enrolling your learner. 
-
-We also noticed you hesitated at the card step — totally understandable, *and 
-you’re not alone.*
-
-*Just a quick clarification to make things easier:*
-
-
-   - Your first 2 trial classes are *completely free*.
-   - We only collect card details to *comply with COPPA child-safety rules*.
-   - You *won’t be charged unless you manually choose to upgrade* after the 
-   free trials.
-
-*You stay in full control at all times — no automatic charges.*
-
-We hope that this had made the decision easier for you to enroll your 
-learner for a great learning experience with Coral Academy
-
-You can jump back in and enroll your learner here: *Enroll For Free 
-<https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc>*
-
-Warmly,
---
-Lucy,
-Founding Team,
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d> 
-<http
 
 ----------------------------------------
 
@@ -290,33 +400,38 @@ Founding Team,
 Example 2
 
 Subject:
-Re: You tried free trial classes at Coral Academy — what’s next?
+Re: not available for class today
 
 Body:
-Hi
+I’m sorry, my daughter is suddenly sick and inconsolable and even though o
+have a friend here to watch her, I cannot teach class.
 
-I missed most days of the trial class. So sorry!
+Amalia Celeste Fernand
+Online Educator with Outschool
+<https://outschool.com/teachers/Amalia-Celeste-Fernand?usid=3Kl7x9wr&signup=true&authTrigger=follow_teacher&follow=true&utm_campaign=share_leader_link>
+Executive Director
+Nature Explorers International
+<https://www.facebook.com/Nature-Explorers-International-191640260888907/>
+www.amaliaexplores.com
+P.O. Box 435, Benzonia Mi, 49616
+(231) 871-0276
 
-I was able to attend two classes on Friday:
-- Mini MBA
-- Around the World
+Author of:
+*Michigan Wildlife: A Coloring Field Guide
+<https://www.amazon.com/dp/069299601X/ref=cm_sw_em_r_mt_dp_U_erA3Cb2R97X4A>*
+*Ohio Wildlife: A Coloring Field Guide
+<https://www.amazon.com/dp/1733992308/ref=cm_sw_em_r_mt_dp_U_VvA3CbBDCJT3W>*
 
-Thanks
-Ro
 
-On Sat, May 2, 2026 at 2:25 PM Coral Academy <support@coralacademy.com>
+
+
+On Wed, Feb 11, 2026 at 6:26 AM Coral Academy <support@coralacademy.com>
 wrote:
 
-> Unlock a variety of topics: From Science to Entrepreneurship 🚀
-> ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
-> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
->   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
-> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
->   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
-> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
->   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
-> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
->   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> Hi Amalia,
+>
+> Got it. We will add the classes back to the schedule and inform the
+> students immediatel
 
 ----------------------------------------
 
@@ -324,42 +439,26 @@ wrote:
 Example 3
 
 Subject:
-Re: Missed your free class? No worries—here’s another chance 🌟
+Re: Class is tomorrow: Mini Business Series
 
 Body:
-Thank you for confirming.  What's the "book by" date for my 2nd free trial
-class?  We're on holiday vacation, so I'm trying to find time to utilize it
-if need be.
+Hello,
+I am so sorry, but we have a last minute conflict with tomorrow’s class. Can we postpone a week?
+Thank you!
+Best,
+Rachel
 
-Royce
-
-Independens Philosophous
-
-On Wed, Dec 24, 2025, 9:08 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> Hi Royce,
->
-> Thanks so much for checking in!
->
-> You’re absolutely right — the next session for this course is on *1/9*.
-> The message you received earlier was an automated email, so please feel
-> free to ignore that one.
->
-> We also wanted to reassure you that your *free trial has not been used up*,
-> and your learner is still *successfully enrolled* for the upcoming
-> session.
->
-> We’re really glad to have you with us, and we’re looking forward to seeing
-> Nio in class on the 9th 😊
->
-> If you have any other questions or need help with anything at all, just
-> let us know — we’re always happy to help.
->
-> Warmly,
-> Coral Academy
->
-> On Thu, Dec 25, 2025 at 12:05 AM Royce Henry <r.
+> On Feb 12, 2026, at 1:30 PM, Coral Academy <support@coralacademy.com> wrote:
+> 
+> 
+> Hi Rachel,
+> 
+> Just a quick reminder—R has a class tomorrow! Please review the steps below.
+> 	Mini Business Series
+>  Teacher Aaron
+> Fridays, 1:30 PM - 2:20 PM, Eastern Standard Time
+>  R		Enrolled
+> Enter Classroom <http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1WowlDpvfup5lBQJBTRkkCAzFbYhKUQB7Gp-2FNe515pPBK8C4-2B6-2Fw1MAx8doKp7dFsV9O-2BsVEKTRgXdyGD711iQvNFHmNUn_0gCPP-2ByuvZYsQDR1FOmdJ8nFp2cqsKP5qA7eo0VoNoVh-2BmOUliB6T2S-2FNMxyQOsw9Hp9dNO0KGSruwHVVXNO7XKaoyzKijjv2bB0z-2FIEusYxNco6TDoix0q-2FFp4m1-2FJX6iP1h3jVb1JEzd60vRVxB2KjbuXIJD-2FcL2kpjet5GzfjL3cKWEEPqbVfH2WMViminoz4afmNV0xTPnq8N2WbxBvpuYBuA9gZjLY0TA-2BwgFqvuodxX5nBFejWHP2cPoCfkknBiKXb3McZWZNb3DgNC0yJN5gUHQkECvNY4b6cVqQTR1lI6p-2B8RFV55j9wHZD8-2B9E9g8SJgTp4NN
 
 ----------------------------------------
 
