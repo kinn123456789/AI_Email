@@ -2,17 +2,45 @@
 CURRENT EMAIL
 
 Category:
-Teacher
+General
 
 Priority:
 High
 
 Subject:
-Class on Tuesday
+Reminder: Upcoming Session Ending for Geology & Earth Science
+ Explorers
 
 Body:
-I will be unable to teach class on Tuesday afternoon this week. Sorry for
-the inconvenience.
+Sessions for the class - Geology & Earth Science Explorers are about to end next week!!
+
+
+
+Dear Support Team,
+
+
+This is a friendly reminder that the session for the class Geology & Earth Science Explorers [Tuesdays, 1:00 PM - 1:50 PM] is scheduled to end soon. The session will conclude on 21-07-2026.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
+
+Session Details:
+ * Class Name : Geology & Earth Science Explorers
+ * Teacher Name : Amalia
+ * Session End Date: : 21-07-2026
+ * Session Time : Eastern Standard Time
+
+
+
+Login https://www.teacher.coralacademy.com/sign-in
+
+Best regards,
+Team Coral Academy 
+
+
+This message was sent to at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser https://www.coralacademy.com | Email Preferences https://www.coralacademy.com?show_modal=email_preference_center&id=
+We care about your privacy. Read our Privacy Policy https://www.help.coralacademy.com/legal/privacy and Terms of Service https://www.help.coralacademy.com/legal/terms to find out more.
 
 ==================================================
 
@@ -31,113 +59,7 @@ Source:
 class
 
 Similarity:
-0.433450631329687
-
-Title:
-Logic & Critical Thinking: Master Reasoning and Fallacies
-
-Section:
-Description
-
-Category:
-lifeskills
-
-Content:
-Class: Logic & Critical Thinking: Master Reasoning and Fallacies
-
-Subject: lifeskills
-
-Section: Description
-
-Content:
-In this weekly class, learners will develop essential skills to construct well-structured arguments using active listening and logical reasoning. More importantly, they will learn to identify flawed reasoning in the constant flow of information encountered daily.
-
-Through interactive scenarios and engaging tasks, learners will exercise their minds, hone logical reasoning skills, and thoughtfully consider opposing viewpoints.
-
-Learners will enhance their critical thinking abilities, communicate effectively, and navigate complex discussions with clarity and precision.
-
-Please find the detailed week-on-week schedule of the class below for the next few weeks. The topic listed for each week is the logical concept we will focus on, where learners will explore different types of reasoning, biases, logical fallacies, and how they impact our thinking.
-
-April 27: Post Hoc (False Cause)
-May 4: Fallacy of Division & Composition
-May 11: Chronological Snobbery
-May 18: Generalizations
-May 25: Appeal to Ignorance
-
-This interactive class by Coral Academy aims to strengthen the ability of logical thinking and reasoning skills in young learners through classical education, helping them build persuasive arguments and sharpen their overall critical thinking.
-
-Reference URL:
-https://www.coralacademy.com/class/logic-master3a-identify-flawed-reasoning-and-fallacies-36516ea7-bf0c-4455-94ec-ca36db3ec6ae
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 2
-
-Source:
-help_center
-
-Similarity:
-0.415533098070494
-
-Title:
-Class Cancellation & Rescheduling
-
-Section:
-
-
-Category:
-Teaching
-
-Content:
-Last Updated Date: July 31, 2025
-At Coral Academy, we understand that sometimes schedules can change. Our policy aims to support instructors with flexibility while maintaining a consistent online learning experience for our learners.
-Managing Class Cancellations
-Rescheduling of a Class
-Within your first 6 months, any cancelled classes must be rescheduled. Our platform team will assist with coordination.
-Rescheduling builds your credibility as an instructor and minimizes disruption for learners.
-Let Us Know in Advance
-Please provide at least 48 hours' notice when possible.
-For emergencies, contact us immediately.
-Frequency of Class Cancellations
-Keep cancellations minimal and ensure they have valid reasons.
-Our platform will reach out if frequent cancellations are observed.
-Procedure for Rescheduling
-Email teachers@coralacademy.com with the reason for cancellation.
-Our coordination team will identify a suitable rescheduled time.
-Post an announcement with the reason to enrolled parents.
-
-Reference URL:
-https://www.coralacademy.com/help/teaching/class-cancellation-rescheduling
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 3
-
-Source:
-class
-
-Similarity:
-0.414041738627719
+0.664677449146131
 
 Title:
 Geology & Earth Science Explorers
@@ -211,16 +133,16 @@ Do not continue discussing previous issues unless the customer explicitly asks a
 ----------------------------------------
 
 
-Knowledge Item 4
+Knowledge Item 2
 
 Source:
 class
 
 Similarity:
-0.395891899611704
+0.564565924255481
 
 Title:
-Into the Wild: Young Zoologists Club
+Astronomy 101: Learn About Space
 
 Section:
 Description
@@ -229,77 +151,113 @@ Category:
 science
 
 Content:
-Class: Into the Wild: Young Zoologists Club
+Class: Astronomy 101: Learn About Space
 
 Subject: science
 
 Section: Description
 
 Content:
-Live science classes featuring real animals like Scaly the Corn Snake, Slimy the Tiger Salamander, & Lizzie the Leopard Gecko. Learn from a teacher who's explored wildlife across nearly every continent: bringing real stories, field research, & stunning nature photography into each class
+Get ready for an exciting journey through space as we explore the universe, our solar system, and Earth's Moon. This class is designed to spark curiosity and wonder as learners discover the mysteries of astronomy, from comets and black holes to planets and moon craters.
 
-Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring their observations, along with pictures of snakes, pictures of lizards, and any stories about reptiles and amphibians. At-home activities will be provided to further explore how to spot these creatures in the neighborhood.
+Sessions will include fun discussions, interactive activities, and creative projects to make learning hands-on and engaging. Every astronomy class begins with introductions and group sharing — learners are welcome to bring space-related items, drawings, or stories to share with their peers.
 
-We’ll discover what salamanders and frogs have in common with snakes, lizards, turtles, and crocodiles, highlighting the differences between reptiles and amphibians. 
+Please find the week-on-week schedule below for the next few weeks:
+April 8: Artemis II- Lunar Flyby, Splashdown, & Future Missions
+April 15: Rocket Science- How do Rockets Work?
+April 22: Space Navigation- How do Spacecraft Know Where to Go?
+April 29: Living in Space- The Challenge of Microgravity
+May 6: The Kennedy Space Center and Mission Control (Houston)
+May 13: Space Programs in Ten Countries Around the World
 
-Photos and videos will highlight exciting species from around the world, including unique reptiles and different types of amphibians.
-
-Learners can share their own herpetology stories, while Ms. Amalia might share her adventures from the Komodo Dragon Islands, Borneo, Malaysia, and Madagascar!
-
-For reference, please find the week-on-week schedule of the class for the next few weeks below:
-
-Slot 1 - Mondays
-March 30- Snakes: Constrictors
-April 6- Venomous Snakes
-April 13- Lizards
-April 20- Komodo Dragons
-April 27- Crocodilians
-May 4- Turtles and Tortoises
-May 11- Sea Turtles
-May 18- Sea Snakes and Marine Iguanas
-May 25- NO CLASS
-June 1- The Tuatara
-June 8- North American Frogs
-June 15- Poison Dart Frogs
-June 22- Salamanders
-June 29- Axolotl and Aquatic Salamanders
-July 6- Unusual Reptiles and Amphibians of the World
-
-Slot 2: Tuesdays
-March 31- Snakes: Constrictors
-April 7- Venomous Snakes
-April 14- Lizards
-April 21- Komodo Dragons
-April 28- Crocodilians
-May 5- Turtles and Tortoises
-May 12- The Tuatara
-May 19- Marine Reptiles
-May 26- Unusual Reptiles of the World
-June 2- North American Frogs
-June 9- Soil Salamanders
-June 16- The Axolotl and Aquatic Salamanders
-June 23- NO CLASS
-June 29- Unusual Amphibians of the World
-July 7-August 11- NO CLASS, SUMMER BREAK
-
-Slot 3: Thursdays
-
-SQUAMATA
-About 90% of all reptiles are squamates! Out of approximately 11,500 species of reptiles in the world, about 10,500 of those are in the squamata order that includes lizards, snakes, and amphisbaenians (worm lizards). Our upcoming schedule will focus in on specific groups of these amazingly diverse animals!
-
-April 2: Colubrids & Constrictors
-April 9: Vipers & Cobras
-April 16: Underground and Water Snakes
-April 23: Geckos, Skinks, & Whiptails
-April 30: Iguanas, Anoles, & Agamas
-May 7: Chameleons, Monitors, & Horned Lizards
-May 14: Legless Lizards & Amphisbaenians
-
- 
-This virtual class by Coral Academy offers a unique online learning experience for kids ages 8-13 to learn about reptiles and amphibians through experiences involving live animals and interesting facts.
+This virtual class by Coral Academy is one of the most engaging astronomy classes online, perfect for kids to learn about space and explore through fun, interactive online learning.
 
 Reference URL:
-https://www.coralacademy.com/class/scalesandslime-d8a4adf3-941f-4944-b278-378544601ecc
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 3
+
+Source:
+class
+
+Similarity:
+0.554661807745121
+
+Title:
+Geology & Earth Science Explorers
+
+Section:
+Learner Summary
+
+Category:
+science
+
+Content:
+Class: Geology & Earth Science Explorers
+
+Subject: science
+
+Section: Learner Summary
+
+Content:
+Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+
+Reference URL:
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 4
+
+Source:
+class
+
+Similarity:
+0.552664823519566
+
+Title:
+Geology & Earth Science Explorers
+
+Section:
+Parent Summary
+
+Category:
+science
+
+Content:
+Class: Geology & Earth Science Explorers
+
+Subject: science
+
+Section: Parent Summary
+
+Content:
+Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+
+Reference URL:
+https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
 
 IMPORTANT
 
@@ -316,50 +274,40 @@ Do not continue discussing previous issues unless the customer explicitly asks a
 Knowledge Item 5
 
 Source:
-class
+help_center
 
 Similarity:
-0.381021425766487
+0.548906049877435
 
 Title:
-History Investigators Club
+Class Cancellation & Rescheduling
 
 Section:
-Description
+
 
 Category:
-lifeskills
+Teaching
 
 Content:
-Class: History Investigators Club
-
-Subject: lifeskills
-
-Section: Description
-
-Content:
-Learners will gather for campfire-style storytelling filled with rich historical details, tension builders, and suspense—because sometimes, truth is stranger (and spookier) than fiction. With Coral Academy, this isn’t your average history class. Together, we’ll explore bizarre, creepy, and unusual historical mysteries that challenge what you thought you knew about the past.
-
-Through pictures, video clips, compelling evidence, and engaging discussions, learners will dive into captivating stories, unravel intriguing theories, and uncover the truth behind some of history’s strangest mysteries. Each week brings a new mind-boggling tale that invites critical thinking, encourages detective-like investigation, and sparks curiosity.
-For example, mysteries might include lost children found wandering, speaking an unknown language, and—most shockingly—why they appeared green. 
-
-With every session, students sharpen their reasoning skills by analyzing clues and exploring wild theories, making world history come alive in a way that’s as thrilling as it is educational.
-
-Please find below the weekly schedule for the next few weeks, with a new mystery explored in each session:
-
-May 3 – May 9 — The Ghost Army of World War II: The Artists Who Defeated the Enemy With Inflatable Tanks and Clever Illusions
-May 10 – May 16 — Spies of the Civil War: The Women Who Risked Everything to Deliver Secret Messages?
-May 17 – May 23 — Alexander Selkirk: The Real Robinson Crusoe
-May 24 – May 30 — Cicada 3301
-May 31 – June 6 — Feral Children — kids raised by animals, verified historical cases
-June 7 – June 13 — Dumb Ways to Die: The Potato Tragedies (A funny, fascinating look at the many times potatoes have accidentally caused chaos.)
-June 14 – June 20 — Gartic Phone — GAME DAY for All Classes!
-Summer Break — Classes resume September 2026
-
-This virtual class by Coral Academy is perfect for learners of ages 8-13, eager to explore history topics through interactive storytelling and investigations, offering a compelling history class online.
+Last Updated Date: July 31, 2025
+At Coral Academy, we understand that sometimes schedules can change. Our policy aims to support instructors with flexibility while maintaining a consistent online learning experience for our learners.
+Managing Class Cancellations
+Rescheduling of a Class
+Within your first 6 months, any cancelled classes must be rescheduled. Our platform team will assist with coordination.
+Rescheduling builds your credibility as an instructor and minimizes disruption for learners.
+Let Us Know in Advance
+Please provide at least 48 hours' notice when possible.
+For emergencies, contact us immediately.
+Frequency of Class Cancellations
+Keep cancellations minimal and ensure they have valid reasons.
+Our platform will reach out if frequent cancellations are observed.
+Procedure for Rescheduling
+Email teachers@coralacademy.com with the reason for cancellation.
+Our coordination team will identify a suitable rescheduled time.
+Post an announcement with the reason to enrolled parents.
 
 Reference URL:
-https://www.coralacademy.com/class/historyclubbynicole-8c5e20c0-0884-4890-ba36-7470cc6dbcc8
+https://www.coralacademy.com/help/teaching/class-cancellation-rescheduling
 
 IMPORTANT
 
@@ -387,12 +335,25 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Unavailable for class today
+Reminder: Upcoming Session Ending for Geology Adventures: Discover
+ Earth's Deep Secrets
 
 Body:
-I am attending a funeral today and will be unavailable to teach. I
-apologize for the inconvenience.
+Sessions for the class - Geology Adventures: Discover Earth's Deep Secrets are about to end next week!!
 
+*D* *ear Support Team,*
+
+This is a friendly reminder that the session for the class *Geology Adventures: Discover Earth's Deep Secrets* *[Tuesdays, 4:00 PM - 4:50 PM]* is scheduled to end soon. The session will conclude on *02-12-2025*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
+
+*Session Details:*
+
+* *Class Name : Geology Adventures: Discover Earth's Deep Secrets*
+* *Teacher Name : Teacher Amalia*
+* *Session End Date: : 02-12-2025*
+* *Session Time: Eastern Standard Time*
+
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDVMWVX9eoQ8LxOLpvd2UN60Bg2-2F0b1fCvLUlcDIKxKsnzoqDEs3O94Yo-2FKhz7fiYQ-3D-3Drnmi_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-
 
 ----------------------------------------
 
@@ -400,38 +361,38 @@ apologize for the inconvenience.
 Example 2
 
 Subject:
-Re: not available for class today
+Reminder: Upcoming Session Ending for Entrepreneurship 101: A Mini
+ MBA Series
 
 Body:
-I’m sorry, my daughter is suddenly sick and inconsolable and even though o
-have a friend here to watch her, I cannot teach class.
-
-Amalia Celeste Fernand
-Online Educator with Outschool
-<https://outschool.com/teachers/Amalia-Celeste-Fernand?usid=3Kl7x9wr&signup=true&authTrigger=follow_teacher&follow=true&utm_campaign=share_leader_link>
-Executive Director
-Nature Explorers International
-<https://www.facebook.com/Nature-Explorers-International-191640260888907/>
-www.amaliaexplores.com
-P.O. Box 435, Benzonia Mi, 49616
-(231) 871-0276
-
-Author of:
-*Michigan Wildlife: A Coloring Field Guide
-<https://www.amazon.com/dp/069299601X/ref=cm_sw_em_r_mt_dp_U_erA3Cb2R97X4A>*
-*Ohio Wildlife: A Coloring Field Guide
-<https://www.amazon.com/dp/1733992308/ref=cm_sw_em_r_mt_dp_U_VvA3CbBDCJT3W>*
+Sessions for the class - Entrepreneurship 101: A Mini MBA Series are about to end next week!!
 
 
 
+Dear Support Team,
 
-On Wed, Feb 11, 2026 at 6:26 AM Coral Academy <support@coralacademy.com>
-wrote:
 
-> Hi Amalia,
->
-> Got it. We will add the classes back to the schedule and inform the
-> students immediatel
+This is a friendly reminder that the session for the class Entrepreneurship 101: A Mini MBA Series [Saturdays, 6:00 PM - 6:50 PM] is scheduled to end soon. The session will conclude on 04-07-2026.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
+
+Session Details:
+ * Class Name : Entrepreneurship 101: A Mini MBA Series
+ * Teacher Name : Aaron
+ * Session End Date: : 04-07-2026
+ * Session Time : Eastern Standard Time
+
+
+
+Login https://www.teacher.coralacademy.com/sign-in
+
+Best regards,
+Team Coral Academy 
+
+
+This message was sent to at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser https://www.coralacademy.com | Email Preferences https://www.coralacademy.com?show_modal=
 
 ----------------------------------------
 
@@ -439,26 +400,25 @@ wrote:
 Example 3
 
 Subject:
-Re: Class is tomorrow: Mini Business Series
+Reminder: Upcoming Session Ending for Geology Adventures: Discover
+ Earth's Deep Secrets
 
 Body:
-Hello,
-I am so sorry, but we have a last minute conflict with tomorrow’s class. Can we postpone a week?
-Thank you!
-Best,
-Rachel
+Sessions for the class - Geology Adventures: Discover Earth's Deep Secrets are about to end next week!!
 
-> On Feb 12, 2026, at 1:30 PM, Coral Academy <support@coralacademy.com> wrote:
-> 
-> 
-> Hi Rachel,
-> 
-> Just a quick reminder—R has a class tomorrow! Please review the steps below.
-> 	Mini Business Series
->  Teacher Aaron
-> Fridays, 1:30 PM - 2:20 PM, Eastern Standard Time
->  R		Enrolled
-> Enter Classroom <http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1WowlDpvfup5lBQJBTRkkCAzFbYhKUQB7Gp-2FNe515pPBK8C4-2B6-2Fw1MAx8doKp7dFsV9O-2BsVEKTRgXdyGD711iQvNFHmNUn_0gCPP-2ByuvZYsQDR1FOmdJ8nFp2cqsKP5qA7eo0VoNoVh-2BmOUliB6T2S-2FNMxyQOsw9Hp9dNO0KGSruwHVVXNO7XKaoyzKijjv2bB0z-2FIEusYxNco6TDoix0q-2FFp4m1-2FJX6iP1h3jVb1JEzd60vRVxB2KjbuXIJD-2FcL2kpjet5GzfjL3cKWEEPqbVfH2WMViminoz4afmNV0xTPnq8N2WbxBvpuYBuA9gZjLY0TA-2BwgFqvuodxX5nBFejWHP2cPoCfkknBiKXb3McZWZNb3DgNC0yJN5gUHQkECvNY4b6cVqQTR1lI6p-2B8RFV55j9wHZD8-2B9E9g8SJgTp4NN
+*D* *ear Support Team,*
+
+This is a friendly reminder that the session for the class *Geology Adventures: Discover Earth's Deep Secrets* *[Mondays, 7:00 PM - 7:50 PM]* is scheduled to end soon. The session will conclude on *11-08-2025*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
+
+*Session Details:*
+
+* *Class Name : Geology Adventures: Discover Earth's Deep Secrets*
+* *Teacher Name : Teacher Amalia*
+* *Session End Date: : 11-08-2025*
+* *Session Time: Eastern Standard Time*
+
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDVMWVX9eoQ8LxOLpvd2UN60Bg2-2F0b1fCvLUlcDIKxKsnzoqDEs3O94Yo-2FKhz7fiYQ-3D-3DJ9f5_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-2
 
 ----------------------------------------
 

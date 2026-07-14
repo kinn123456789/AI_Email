@@ -106,7 +106,7 @@ except Exception as e:
 
 def is_automated_email(msg):
 
-    # refresh_rules()
+    refresh_rules()
     # Auto-generated email
     auto_submitted = msg.get("Auto-Submitted", "").lower()
     if auto_submitted and auto_submitted != "no":

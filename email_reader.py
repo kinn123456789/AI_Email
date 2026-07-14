@@ -327,7 +327,7 @@ def main():
     print("ABOUT TO START SENT MAIL SYNC")
     print("=" * 60)
 
-    time.sleep(2)
+    #time.sleep(2)
 
     try:
         sync_sent_mail()

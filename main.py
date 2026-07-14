@@ -30,6 +30,11 @@ from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
 import scheduler
 import os
+
+
+from fastapi import Request
+import json
+import base64
 from database import (
     get_emails,
     get_category_counts,
@@ -577,3 +582,14 @@ def reply_again(
 
 
 
+@app.post("/gmail/webhook")
+async def gmail_webhook(request: Request):
+
+    body = await request.json()
+
+    print("=" * 80)
+    print("GMAIL WEBHOOK")
+    print(json.dumps(body, indent=2))
+    print("=" * 80)
+
+    return {"success": True}
