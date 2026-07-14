@@ -31,6 +31,7 @@ from datetime import datetime, timedelta
 from gmail_history import get_gmail_history
 import scheduler
 import os
+from gmail_message import get_message
 
 
 from fastapi import Request
@@ -626,5 +627,35 @@ async def gmail_webhook(request: Request):
         history_id=history_id
     )
     print(history)
+
+
     
+    if not history.get("history"):
+        return {"success": True}
+
+    for record in history["history"]:
+
+        for item in record.get("messagesAdded", []):
+
+            gmail_message_id = item["message"]["id"]
+
+            print("MESSAGE:", gmail_message_id)
+
+            try:
+                message = get_message(
+                    token_file,
+                    gmail_message_id
+                )
+                if not message:
+                    continue
+
+                print("=" * 80)
+                print("MESSAGE ID:", message["id"])
+                print("THREAD ID:", message["threadId"])
+                print("SNIPPET:", message.get("snippet"))
+                print("=" * 80)
+
+            except Exception as e:
+                print(f"Failed to fetch {gmail_message_id}: {e}")
+
     return {"success": True}

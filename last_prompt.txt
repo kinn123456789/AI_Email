@@ -8,10 +8,10 @@ Priority:
 Low
 
 Subject:
-hello
+hi
 
 Body:
-hello
+hi
 
 ==================================================
 
@@ -30,7 +30,7 @@ Source:
 class
 
 Similarity:
-0.322270910454071
+0.313596505893296
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -72,7 +72,7 @@ Source:
 class
 
 Similarity:
-0.31963165817506
+0.300287367830765
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -115,7 +115,7 @@ Source:
 class
 
 Similarity:
-0.305417054311822
+0.2882363181949
 
 Title:
 Around the Globe with Mr. Clark
@@ -158,7 +158,7 @@ Source:
 class
 
 Similarity:
-0.284706958771903
+0.273523057873761
 
 Title:
 Geology & Earth Science Explorers
@@ -200,13 +200,13 @@ Source:
 class
 
 Similarity:
-0.280266743820951
+0.271589605395937
 
 Title:
 Geology & Earth Science Explorers
 
 Section:
-Learning Goals
+Parent Summary
 
 Category:
 science
@@ -216,13 +216,10 @@ Class: Geology & Earth Science Explorers
 
 Subject: science
 
-Section: Learning Goals
+Section: Parent Summary
 
 Content:
-• Explore geology, volcanology, paleontology, and more in exciting weekly themes that build a foundation in earth history and core science concepts.
-• Engage in simple science activities and science experiments to explore environmental effects and reinforce different learning styles.
-
-• Share collections and join guided discussions to explore planet earth, geo rocks, crystals, dinosaurs, and more—bringing fun science facts to life!
+Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
 
 Reference URL:
 https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
@@ -253,32 +250,44 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Welcome to the Coral Family!
+Re: Collaboration Introduction
 
 Body:
-Hey There!
+Hello
+On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
 
-Welcome to Coral Academy — we’re so excited to have you here!
-
-
-*We’d love to know how you first found us.*
-Was it a Facebook ad, a flyer, a Facebook group - or something else?
-
-It helps us connect with more curious young learners just like yours.
-
-Just *hit reply* to let us know —it won’t take more than a minute!
-
-Looking forward to your response!
-
-Thanks,
-------------------------------------
-
-
-*Atharv PatilBusiness Associate*
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
+> Hi Ülkü,
+>
+> That’s great news. We are excited to move forward with the collaboration
+> at the $100 rate.
+>
+> To discuss the next steps and details further, please book a call at a
+> time that works best for you using this link:
+> https://calendly.com/lucy-coralacademy/30min
+>
+> I look forward to speaking with you soon.
+>
+> Warm regards,
+> Lucy
+>
+>
+> On Fri, Mar 13, 2026 at 9:50 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+> wrote:
+>
+>> Thank you very much, I accept your $100 offer. We can discuss the details.
+>>
+>>
+>> On Fri, Mar 13, 2026 at 5:07 PM Coral Academy <lucy@coralacademy.com>
+>> wrote:
+>>
+>>> Hi Ülkü,
+>>>
+>>> Thank you for your response and for your willingness to support our new
+>>> business.
+>>>
+>>> While we appreciate the offer of $200, we unfortunately do not have the
+>>> budget to accommodate this right now as an early-stage startup. We will
+>>> keep you
 
 ----------------------------------------
 
@@ -286,32 +295,92 @@ Thanks,
 Example 2
 
 Subject:
-Welcome to the Coral Family!
+Fwd: Thank you for your call
 
 Body:
-Hi Teresa,
+---------- Forwarded message ---------
+From: <cfoote@theoldschoolhouse.com>
+Date: Fri, Dec 5, 2025 at 5:03 AM
+Subject: Thank you for your call
+To: <aditya@coralacademy.com>
 
-Welcome to Coral Academy — we’re so excited to have you here!
+
+Hello, Aditya,
+
+It was so nice meeting with you — thank you again for taking the time to
+chat!
+
+*Here are the answers to your questions.*
+
+We are unable to do a collaboration. I will be sure and contact you if this
+changes.
+
+Our eblast readers and digital magazine readers are predominantly adults,
+not children. Our readers are homeschooling a broad range of ages, with all
+age groups represented strongly, including the ages 8-13.
+
+For states--Only 56% of our subscribers (29120 people) have elected to
+share their state with us. Of those who we know their states, the ten top
+highest represented states for our eblast sends are:
 
 
-*We’d love to know how you first found us.*
-Was it a Facebook ad, a flyer, a Facebook group - or something else?
+Texas 2678
+California 2014
+North Carolina 1599
+Florida 1442
+Tennessee 1419
+Georgia 1183
+Virginia 1150
+Ohio 977
+Pennsylvania 968
+Illinois 939
 
-It helps us connect with more curious young learners just like yours.
+For the digi
 
-Just *hit reply* to let us know —it won’t take more than a minute!
+----------------------------------------
 
-*P.S.* Don’t forget - Your child’s *2 FREE trial classes* are still waiting.
 
-Looking forward to your response!
+Example 3
 
-Thanks,
-------------------------------------
-Atharv Patil
-Business Associate
+Subject:
+Re: Love what you're doing—let’s collaborate?
 
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+Body:
+Hello!
+
+May I know more about your company?
+
+Thank you.
+
+On Tue, Aug 5, 2025 at 8:26 PM Coral Academy <lucy@coralacademy.com> wrote:
+
+> Hi,
+>
+> I hope you’ve been doing well! I wanted to follow up to see if you had a
+> chance to review my earlier emails. We’re still very eager to connect and
+> explore potential ways we could collaborate.
+>
+> It would be great to hear your thoughts whenever you get a chance.
+>
+> Best regards,
+> Lucy
+>
+> On Thu, Jul 3, 2025 at 10:26 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi,
+>>
+>> Hope you're doing well! Just wanted to check in—did you get a chance to
+>> see our previous emails? We’d love to connect and explore how we can work
+>> together.
+>>
+>> Looking forward to hearing your thoughts!
+>>
+>> Best,
+>> Lucy
+>>
+>>
+>>
 
 
 ----------------------------------------
