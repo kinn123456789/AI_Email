@@ -13,10 +13,7 @@ BODIES = {}
 
 AUTOMATED_SENDERS = {
     "no-reply@accounts.google.com",
-    "noreply@accounts.google.com",
     "no-reply@github.com",
-    "notifications@github.com",
-    "noreply@razorpay.com",
     "notifications@github.com",
     "noreply@razorpay.com",
     "welcome@supabase.com",
@@ -45,7 +42,20 @@ AUTOMATED_SUBJECTS = {
     "login code",
     "sign in code",
 }
-
+AUTOMATED_LOCAL_PARTS = {
+    "noreply",
+    "no-reply",
+    "donotreply",
+    "do-not-reply",
+    "notifications",
+    "notification",
+    "updates",
+    "alerts",
+    "mailer",
+    "system",
+    "newsletter",
+    
+}
 def refresh_rules():
 
     global SENDERS
@@ -84,23 +94,98 @@ def refresh_rules():
 try:
     refresh_rules()
     print(
-    f"Loaded "
-    f"{len(SENDERS)} senders, "
-    f"{len(DOMAINS)} domains, "
-    f"{len(HEADERS)} headers, "
-    f"{len(SUBJECTS)} subjects, "
-    f"{len(BODIES)} bodies"
-)
+        f"Loaded "
+        f"{len(SENDERS)} senders, "
+        f"{len(DOMAINS)} domains, "
+        f"{len(HEADERS)} headers, "
+        f"{len(SUBJECTS)} subjects, "
+        f"{len(BODIES)} bodies"
+    )
 except Exception as e:
     print("Failed to load email filter rules:", e)
 
 def is_automated_email(msg):
 
-    refresh_rules()
+    # refresh_rules()
+    # Auto-generated email
+    auto_submitted = msg.get("Auto-Submitted", "").lower()
+    if auto_submitted and auto_submitted != "no":
+        return (
+            True,
+            "Notification",
+            f"Auto-Submitted={auto_submitted}",
+            "support"
+        )
 
+    # Mailing list
+    if msg.get("List-Id"):
+        return (
+            True,
+            "Notification",
+            "Mailing List",
+            "support"
+        )
+
+    # Has unsubscribe header (newsletter/marketing)
+    if msg.get("List-Unsubscribe"):
+        return (
+            True,
+            "Notification",
+            "List-Unsubscribe header",
+            "support"
+        )
+
+    # Auto response suppression
+    if msg.get("X-Auto-Response-Suppress"):
+        return (
+            True,
+            "Notification",
+            "Auto Response Suppress",
+            "support"
+        )
     # --------------------
     # Header Rules
     # --------------------
+    # --------------------
+    # Sender Rules
+    # --------------------
+
+    # --------------------
+    # Extract sender details
+    # --------------------
+    sender = parseaddr(msg.get("From", ""))[1].lower()
+
+    local_part = ""
+    domain = ""
+
+    if "@" in sender:
+        local_part, domain = sender.split("@", 1)
+
+    # --------------------
+    # Reply Detection
+    # --------------------
+    is_reply = bool(
+        msg.get("In-Reply-To") or
+        msg.get("References")
+    )
+
+    if is_reply:
+
+        is_known_automated = (
+            sender in AUTOMATED_SENDERS or
+            domain in AUTOMATED_DOMAINS or
+            any(domain.endswith("." + d) for d in AUTOMATED_DOMAINS)
+        )
+
+        if not is_known_automated:
+            return (
+                False,
+                "",
+                "",
+                "inbox"
+            )
+
+
 
     for header_name, rule in HEADERS.items():
 
@@ -128,22 +213,25 @@ def is_automated_email(msg):
                 rule["reason"] or f"Header: {header_name}",
                 "support"
             )
-
     # --------------------
-    # Sender Rules
+    # Automated Local Part
     # --------------------
+    if local_part in AUTOMATED_LOCAL_PARTS:
+        return (
+            True,
+            "Notification",
+            f"Automated sender ({local_part})",
+            "support"
+        )
 
-    sender = parseaddr(
-        msg.get("From", "")
-    )[1].lower()
+    
+
     # --------------------
     # Built-in Automated Senders
     # --------------------
 
     # If this is a reply from a sender that is NOT a known automated sender,
     # let AI decide instead of filtering it as a notification.
-
-    
 
     if sender in AUTOMATED_SENDERS:
 
@@ -176,15 +264,13 @@ def is_automated_email(msg):
     if sender.endswith("@linkedin.com"):
         return True, "Social Media", "LinkedIn notification", "support"
 
-    #if sender.endswith("@mailchimp.com"):
-       # return True, "Marketing", "Mailchimp notification"
+    # if sender.endswith("@mailchimp.com"):
+        # return True, "Marketing", "Mailchimp notification"
     # --------------------
     # Domain Rules
     # --------------------
 
-    if "@" in sender:
-
-        domain = sender.split("@")[1]
+    if domain:
 
         # --------------------
         # Built-in Automated Domains
@@ -216,8 +302,7 @@ def is_automated_email(msg):
                     rule["reason"] or f"Blocked domain: {domain}",
                     "support"
                 )
-    if msg.get("In-Reply-To") or msg.get("References"):
-        return False, "", "", "inbox"
+
     # --------------------
     # Subject Rules
     # --------------------
@@ -248,10 +333,10 @@ def is_automated_email(msg):
         if re.search(pattern, subject):
 
             return (
-                    True,
-                    rule["category"],
-                    rule["reason"] or f"Subject matched '{pattern}'",
-                    "support"
+                True,
+                rule["category"],
+                rule["reason"] or f"Subject matched '{pattern}'",
+                "support"
             )
 
     # --------------------
@@ -301,11 +386,11 @@ def is_automated_email(msg):
         if re.search(pattern, body):
 
             return (
-                    True,
-                    rule["category"],
-                    rule["reason"] or f"Body matched '{pattern}'",
-                    "support"
+                True,
+                rule["category"],
+                rule["reason"] or f"Body matched '{pattern}'",
+                "support"
             )
 
     return False, "", "", "inbox"
-    
+

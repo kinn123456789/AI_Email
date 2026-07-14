@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,44 +7,44 @@
     <title>AI Inbox Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-stone-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
+<body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
 
     <h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">✨ AI Unified Inbox</h1>
 
-    <!-- Metrics Cards -->
+    <!-- Metrics Cards: Updated to Cyan/Sky Palette -->
     <div class="grid grid-cols-5 gap-6 mb-8">
-        <div class="bg-blue/70  backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-blue-100/50 transition hover:scale-[1.02]">
+        <div class="bg-cyan-100/30 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
             <h3 class="text-gray-500 text-sm font-medium">Avg First Response</h3>
             <p class="text-3xl font-bold text-purple-600 mt-1">{{ avg_response }}</p>
         </div>
-        <div class="bg-blue/70 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
+        <div class="bg-cyan-100/30 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
             <h3 class="text-gray-500 text-sm font-medium">Avg Resolution</h3>
             <p class="text-3xl font-bold text-indigo-600 mt-1">{{ avg_resolution }}</p>
         </div>
-        <div class="bg-blue/70 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
+        <div class="bg-cyan-100/30 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
             <h3 class="text-gray-500 text-sm font-medium">Total Messages</h3>
             <p class="text-3xl font-bold text-gray-900 mt-1">{{ emails|length }}</p>
         </div>
-        <div class="bg-blue/70 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
+        <div class="bg-cyan-100/30 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
             <h3 class="text-gray-500 text-sm font-medium">Auto Replies</h3>
-            <p class="text-3xl font-bold text-green-600 mt-1">{{ auto_reply_count }}</p>
+            <p class="text-3xl font-bold text-cyan-600 mt-1">{{ auto_reply_count }}</p>
         </div>
-        <div class="bg-blue/lg backdrop-blur-sm p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
+        <div class="bg-cyan-100/30 backdrop-blur-lg p-6 rounded-3xl shadow-lg border border-white/50 transition hover:scale-[1.02]">
             <h3 class="text-gray-500 text-sm font-medium">Needs Review</h3>
             <p class="text-3xl font-bold text-red-600 mt-1">{{ needs_review_count }}</p>
         </div>
     </div>
 
-    <a href="/notifications" class="bg-blue-70/30 backdrop-lg rounded-3xl shadow-lg p-6 hover:shadow-xl transition block mb-8 border border-blue-100/50 hover:bg-blue-50/80">
+    <a href="/notifications" class="bg-cyan-100/30 backdrop-blur-lg rounded-3xl shadow-lg p-6 hover:shadow-xl transition block mb-8 border border-white/50 hover:bg-cyan-100/40">
         <div class="text-3xl mb-2">🔔</div>
         <div class="text-lg font-bold">Notifications, Security codes etc</div>
         <div class="text-stone-500">View automated emails →</div>
     </a>
 
-    <!-- Table -->
-    <div class="bg-blue-30 backdrop-blur-lg rounded-3xl shadow-2xl overflow-x-auto w-full border border-blue-100/50">
+    <!-- Table: Updated to Cyan/Sky Palette -->
+    <div class="bg-cyan-100/30 backdrop-blur-lg rounded-3xl shadow-2xl overflow-x-auto w-full border border-white/50">
         <table class="w-full table-fixed border-collapse min-w-[1100px]">
-            <thead class="bg-black/5 border-b border-gray-200 text-gray-600 text-sm font-medium">
+            <thead class="bg-white/5 border-b border-cyan-200 text-gray-600 text-sm font-medium">
                 <tr>
                     <th class="w-16 p-4 text-left">📧</th>
                     <th class="w-72 p-4 text-left">Subject</th>
@@ -58,9 +59,9 @@
                     <th class="w-32 p-4 text-center">Actions</th>
                 </tr>
             </thead>
-            <tbody class="text-sm text-gray-700 divide-y divide-gray-100">
+            <tbody class="text-sm text-gray-700 divide-y divide-cyan-100">
                 {% for email in emails %}
-                <tr class="hover:bg-white/80 transition-colors">
+                <tr class="hover:bg-cyan-50/80 transition-colors">
                     <td class="p-4 text-gray-500">{{ loop.index }}</td>
                     <td class="p-4 truncate">
                         <div class="truncate font-medium text-gray-900" title="{{ email.subject }}">{{ email.subject }}</div>
@@ -69,66 +70,53 @@
                     
                     <td class="p-4">
                         {% if email.source == "support@coralacademy.com" %}
-                            <span class="bg-blue-100/80 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">📧 Support</span>
+                            <span class="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold">📧 Support</span>
                         {% elif email.source == "lucy@coralacademy.com" %}
-                            <span class="bg-pink-100/80 text-pink-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">👩 Lucy</span>
-                        {% elif email.source == "engineering@coralacademy.com" %}
-                            <span class="bg-indigo-100/80 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">⚙️ Engineering</span>
+                            <span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-semibold">👩 Lucy</span>
                         {% else %}
-                            <span class="bg-gray-100/80 text-gray-600 px-3 py-1 rounded-full text-xs backdrop-blur-sm">Other</span>
+                            <span class="bg-gray-100 text-gray-600 px-3 py-1 rounded-full text-xs">Other</span>
                         {% endif %}
                     </td>
 
                     <td class="p-4">
-                        {% set cat_colors = {
-                            "Admissions": "bg-pink-100/80 text-pink-700", 
-                            "Support": "bg-blue-100/80 text-blue-700", 
-                            "Billing": "bg-amber-100/80 text-amber-700", 
-                            "Urgent": "bg-red-100/80 text-red-700", 
-                            "General": "bg-gray-100/80 text-gray-700", 
-                            "Technical": "bg-indigo-100/80 text-indigo-700", 
-                            "Teacher Portal": "bg-emerald-100/80 text-emerald-700", 
-                            "Contact Form": "bg-cyan-100/80 text-cyan-700"
-                        } %}
-                        <span class="px-3 py-1 rounded-lg text-xs font-medium {{ cat_colors.get(email.category, 'bg-gray-100/80 text-gray-600') }} backdrop-blur-sm">
-                            {{ email.category }}
-                        </span>
+                        {% set cat_colors = {"Admissions": "bg-pink-100 text-pink-700", "Support": "bg-cyan-100 text-cyan-700", "Billing": "bg-amber-100 text-amber-700", "Urgent": "bg-red-100 text-red-700", "General": "bg-gray-100 text-gray-700", "Technical": "bg-indigo-100 text-indigo-700", "Teacher Portal": "bg-emerald-100 text-emerald-700", "Contact Form": "bg-cyan-100 text-cyan-700"} %}
+                        <span class="px-3 py-1 rounded text-xs font-medium {{ cat_colors.get(email.category, 'bg-gray-100 text-gray-600') }}">{{ email.category }}</span>
                     </td>
 
                     <td class="p-4 font-bold">
                         {% if email.priority == "Urgent" %}<span class="text-red-600">Urgent</span>
                         {% elif email.priority == "High" %}<span class="text-orange-600">High</span>
                         {% elif email.priority == "Medium" %}<span class="text-yellow-600">Medium</span>
-                        {% elif email.priority == "Low" %}<span class="text-green-600">Low</span>
-                        {% else %}<span class="text-gray-400">—</span>{% endif %}
+                        {% elif email.priority == "Low" %}<span class="text-cyan-600">Low</span>
+                        {% else %}<span class="text-gray-500">—</span>{% endif %}
                     </td>
 
-                    <td class="p-4 font-bold {% if email.ai_confidence and email.ai_confidence >= 70 %}text-green-600{% else %}text-red-600{% endif %}">
+                    <td class="p-4 font-bold {% if email.ai_confidence and email.ai_confidence >= 70 %}text-cyan-700{% else %}text-red-600{% endif %}">
                         {{ email.ai_confidence }}%
                     </td>
 
                     <td class="p-4">
                         {% if email.status == "Needs Review" %}
-                            <span class="bg-yellow-100/80 text-yellow-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">🟠 Needs Review</span>
+                            <span class="bg-yellow-100/50 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold border border-yellow-200">Needs Review</span>
                         {% elif email.status == "Replied" %}
-                            <span class="bg-green-100/80 text-green-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">🟢 Replied</span>
+                            <span class="bg-cyan-100/50 text-cyan-800 px-3 py-1 rounded-full text-xs font-semibold border border-cyan-200">Replied</span>
                         {% else %}{{ email.status }}{% endif %}
                     </td>
 
                     <td class="p-4">
                         {% if email.handled_by == "AI" %}
-                            <span class="bg-purple-100/80 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">🤖 AI</span>
+                            <span class="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold">🤖 AI</span>
                         {% elif email.handled_by == "Human" %}
-                            <span class="bg-blue-100/80 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-sm">👤 Human</span>
+                            <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold">👤 Human</span>
                         {% else %}
-                            <span class="bg-yellow-50/80 text-yellow-700 px-3 py-1 rounded-full text-xs backdrop-blur-sm">Pending</span>
+                            <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-xs">Pending</span>
                         {% endif %}
                     </td>
 
                     <td class="p-4 text-gray-500 text-xs">{{ email.created_at }}</td>
                     
                     <td class="p-4 text-center">
-                        <a href="/email/{{ email.id }}" class="bg-gray-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-black transition">
+                        <a href="/email/{{ email.id }}" class="bg-cyan-800 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-black transition">
                             {% if email.status == "Needs Review" %}Review{% else %}View{% endif %}
                         </a>
                     </td>
@@ -136,9 +124,10 @@
                 {% endfor %}
             </tbody>
         </table>
-        <div class="bg-blue-900/5 px-6 py-3 text-xs font-bold text-blue-800 uppercase tracking-widest">
+        <div class="bg-cyan-50 border-t px-6 py-3 text-xs font-bold text-gray-500 uppercase tracking-widest">
             Showing {{ emails|length }} emails
         </div>
     </div>
 </body>
 </html>
+
