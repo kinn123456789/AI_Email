@@ -29,7 +29,7 @@ from trial_followup import (
 from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
 from gmail_history import get_gmail_history
-import scheduler
+
 import os
 from gmail_message import get_message
 
@@ -718,9 +718,6 @@ async def gmail_webhook(request: Request):
         print("CHECKPOINT:", history["historyId"])
         print("=" * 80)
 
-        update_last_history_id(
-            email_address,
-            history["historyId"]
-        )
+        
 
     return {"success": True}
