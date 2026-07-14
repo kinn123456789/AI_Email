@@ -164,17 +164,17 @@ def main(target_email=None):
     print("ABOUT TO START SENT MAIL SYNC")
     print("=" * 60)
 
-    try:
-        sync_sent_mail()
+   # try:
+       # sync_sent_mail()
 
-        print("=" * 60)
-        print("SENT MAIL SYNC FINISHED")
-        print("=" * 60)
+        #print("=" * 60)
+       # print("SENT MAIL SYNC FINISHED")
+       # print("=" * 60)
 
-    except Exception:
-        print("=" * 60)
-        print("SENT MAIL SYNC FAILED")
-        traceback.print_exc()
+    #except Exception:
+       # print("=" * 60)
+       # print("SENT MAIL SYNC FAILED")
+       # traceback.print_exc()
 
     print("=" * 60)
 
