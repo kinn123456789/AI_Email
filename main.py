@@ -626,4 +626,5 @@ async def gmail_webhook(request: Request):
         history_id=history_id
     )
     print(history)
+    
     return {"success": True}
