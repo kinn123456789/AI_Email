@@ -1,18 +1,24 @@
 import re
 
 def clean_email_body(body: str) -> str:
-    """
-    Removes quoted email history from Gmail, Outlook and similar clients.
-    """
 
     if not body:
         return ""
 
+    patterns = [
+        r"\nOn .* wrote:",
+        r"\nFrom:",
+        r"\nSent:",
+        r"\nTo:",
+        r"\nSubject:",
+        r"\n-----Original Message-----",
+        r"\n________________________________",
+        r"\n--- Forwarded message ---",
+        r"\nBegin forwarded message:"
+    ]
+
     body = re.split(
-        r"\nOn .* wrote:"
-        r"|\nFrom:"
-        r"|\n-----Original Message-----"
-        r"|\n________________________________",
+        "|".join(patterns),
         body,
         flags=re.IGNORECASE
     )[0]

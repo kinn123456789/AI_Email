@@ -757,7 +757,6 @@ def get_email_thread(thread_id):
 from psycopg2.extras import RealDictCursor
 
 
-
 def get_message_by_message_id(message_id):
 
     if not message_id:
@@ -768,21 +767,22 @@ def get_message_by_message_id(message_id):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
-    cursor.execute(
-        """
-        SELECT *
-        FROM messages
-        WHERE message_id = %s
-        """,
-        (message_id,)
-    )
+    try:
 
-    row = cursor.fetchone()
+        cursor.execute(
+            """
+            SELECT *
+            FROM messages
+            WHERE message_id = %s
+            """,
+            (message_id,)
+        )
 
-    cursor.close()
-    db_pool.putconn(conn)
+        return cursor.fetchone()
 
-    return row
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
 
 def get_support_emails():
 
@@ -825,30 +825,31 @@ def get_support_emails():
 
 from psycopg2.extras import RealDictCursor
 
-def get_latest_ai_summary(thread_id):
+def get_latest_thread_ai(thread_id):
+
     conn = get_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
-        cursor.execute("""
-            SELECT ai_summary
+
+        cur.execute("""
+            SELECT
+                ai_summary,
+                ai_draft_reply,
+                category,
+                priority,
+                ai_confidence,
+                requires_review
             FROM messages
             WHERE thread_id = %s
-              AND reply_type <> 'gmail_manual'
-              AND ai_summary IS NOT NULL
             ORDER BY created_at DESC
             LIMIT 1
         """, (thread_id,))
 
-        row = cursor.fetchone()
-
-        if row:
-            return row["ai_summary"]
-
-        return None
+        return cur.fetchone()
 
     finally:
-        cursor.close()
+        cur.close()
         db_pool.putconn(conn)
 
 def get_latest_thread_ai(thread_id):
@@ -882,50 +883,43 @@ def get_last_history_id(email_address):
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute(
-        """
-        SELECT history_id
-        FROM gmail_watch_state
-        WHERE email_address = %s
-        """,
-        (email_address,)
-    )
+    try:
+        cur.execute("""
+            SELECT history_id
+            FROM gmail_watch_state
+            WHERE email_address = %s
+        """, (email_address,))
 
-    row = cur.fetchone()
+        row = cur.fetchone()
 
-    cur.close()
-    conn.close()
+        if row:
+            return row[0]
 
-    if row:
-        return row[0]
+        return None
 
-    return None
+    finally:
+        cur.close()
+        db_pool.putconn(conn)
 
 def update_last_history_id(email_address, history_id):
 
     conn = get_connection()
     cur = conn.cursor()
 
-    cur.execute(
-        """
-        INSERT INTO gmail_watch_state
-        (
-            email_address,
-            history_id
-        )
-        VALUES (%s, %s)
+    try:
+        cur.execute("""
+            INSERT INTO gmail_watch_state (
+                email_address,
+                history_id
+            )
+            VALUES (%s, %s)
+            ON CONFLICT (email_address)
+            DO UPDATE
+            SET history_id = EXCLUDED.history_id
+        """, (email_address, history_id))
 
-        ON CONFLICT (email_address)
-        DO UPDATE
-        SET history_id = EXCLUDED.history_id
-        """,
-        (
-            email_address,
-            history_id
-        )
-    )
+        conn.commit()
 
-    conn.commit()
-
-    cur.close()
-    conn.close()
+    finally:
+        cur.close()
+        db_pool.putconn(conn)

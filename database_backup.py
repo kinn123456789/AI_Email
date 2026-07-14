@@ -107,7 +107,15 @@ def get_emails():
     cursor.execute("""
         SELECT id, sender, subject, category, status
         FROM messages
-        ORDER BY id DESC
+        ORDER BY
+            CASE priority
+                WHEN 'Urgent' THEN 1
+                WHEN 'High' THEN 2
+                WHEN 'Medium' THEN 3
+                WHEN 'Low' THEN 4
+                ELSE 5
+            END,
+            id DESC;
     """)
     rows = cursor.fetchall()
 

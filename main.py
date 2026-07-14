@@ -32,6 +32,8 @@ from gmail_history import get_gmail_history
 import scheduler
 import os
 from gmail_message import get_message
+from gmail_parser import parse_email
+from emails_cleaner import clean_email_body
 
 
 from fastapi import Request
@@ -667,8 +669,23 @@ async def gmail_webhook(request: Request):
                     token_file,
                     gmail_message_id
                 )
+
+                parsed = parse_email(message)
+
+                print(parsed)
+
+
                 if not message:
                     continue
+
+                email = parse_email(message)
+                email["body"] = clean_email_body(
+                    email["body"]
+                )
+
+                print("=" * 80)
+                print(email)
+                print("=" * 80)
 
                 print("=" * 80)
                 print("MESSAGE ID:", message["id"])
