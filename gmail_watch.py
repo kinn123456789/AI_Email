@@ -45,5 +45,20 @@ def register_watch(token_file):
     print(f"Watch registered for: {profile['emailAddress']}")
     print(result)
     print("=" * 70)
-
     return result
+
+def renew_all_gmail_watches():
+
+    tokens = [
+        "token_support.json",
+        "token_lucy.json",
+        "token_engineering.json",
+        "token_sat.json"
+    ]
+
+    for token in tokens:
+        try:
+            register_watch(token)
+        except Exception as e:
+            print(f"Failed to renew {token}: {e}")
+    
