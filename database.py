@@ -825,6 +825,32 @@ def get_support_emails():
 
 from psycopg2.extras import RealDictCursor
 
+def get_latest_ai_summary(thread_id):
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT ai_summary
+            FROM messages
+            WHERE thread_id = %s
+              AND reply_type <> 'gmail_manual'
+              AND ai_summary IS NOT NULL
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (thread_id,))
+
+        row = cursor.fetchone()
+
+        if row:
+            return row["ai_summary"]
+
+        return None
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
 def get_latest_thread_ai(thread_id):
 
     conn = get_connection()
@@ -851,32 +877,6 @@ def get_latest_thread_ai(thread_id):
     finally:
         cur.close()
         db_pool.putconn(conn)
-
-def get_latest_thread_ai(thread_id):
-
-    conn = get_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-
-    cur.execute("""
-        SELECT
-            ai_summary,
-            ai_draft_reply,
-            category,
-            priority,
-            ai_confidence,
-            requires_review
-        FROM messages
-        WHERE thread_id = %s
-        ORDER BY created_at DESC
-        LIMIT 1
-    """, (thread_id,))
-
-    row = cur.fetchone()
-
-    cur.close()
-    db_pool.putconn(conn)
-
-    return row
 
 def get_last_history_id(email_address):
 
