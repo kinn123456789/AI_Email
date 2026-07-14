@@ -36,7 +36,7 @@ from gmail_parser import parse_email
 from emails_cleaner import clean_email_body
 
 from process_email import process_email
-from gmail_parser import gmail_message_to_email
+
 
 
 from fastapi import Request
@@ -596,19 +596,18 @@ async def gmail_webhook(request: Request):
     print("RAW PUBSUB")
     print(json.dumps(body, indent=2))
 
-    # Decode Pub/Sub message
+    # Decode Pub/Sub payload
     encoded = body["message"]["data"]
     decoded = base64.b64decode(encoded).decode("utf-8")
-
     data = json.loads(decoded)
 
     email_address = data["emailAddress"]
-    history_id = data["historyId"]
+    history_id = str(data["historyId"])
 
     print("Mailbox:", email_address)
     print("History ID:", history_id)
 
-    # Choose token based on mailbox  <-- ADD IT HERE
+    # Select token
     if email_address == "support@coralacademy.com":
         token_file = "token_support.json"
 
@@ -627,13 +626,14 @@ async def gmail_webhook(request: Request):
 
     print("Token:", token_file)
 
+    # Read last processed history
     last_history = get_last_history_id(
         email_address
     )
 
     print("Last History:", last_history)
 
-    
+    # First notification
     if last_history is None:
 
         print("Initializing history for", email_address)
@@ -644,7 +644,8 @@ async def gmail_webhook(request: Request):
         )
 
         return {"success": True}
-    
+
+    # Get Gmail history
     history = get_gmail_history(
         token_file=token_file,
         history_id=last_history
@@ -652,80 +653,59 @@ async def gmail_webhook(request: Request):
 
     print(history)
 
-    
+    # No new history
     if not history.get("history"):
-        update_last_history_id(
-        email_address,
-        history_id
-    )
 
+        update_last_history_id(
+            email_address,
+            history["historyId"]
+        )
+
+        return {"success": True}
+    
+    processed_ok = True
+    # Process new messages
     for record in history["history"]:
 
         for item in record.get("messagesAdded", []):
 
             gmail_message_id = item["message"]["id"]
 
+            print("=" * 80)
             print("MESSAGE:", gmail_message_id)
+            print("=" * 80)
 
+
+            
             try:
-                message = get_message(
+
+                msg = get_message(
                     token_file,
                     gmail_message_id
                 )
 
                 process_email(
-                    msg=msg,
-                    account={
+                    msg,
+                    {
                         "email": email_address,
                         "source": email_address,
                         "token": token_file
                     }
                 )
 
-                msg = gmail_message_to_email(message)
-
-                process_email(
-                    msg=msg,
-                    account={
-                        "source": email_address,
-                        "token": token_file,
-                        "email": email_address
-                    }
-                )
-
-                parsed = parse_email(message)
-
-                print(parsed)
-
-
-                if not message:
-                    continue
-
-                labels = message.get("labelIds", [])
-
-                if "DRAFT" in labels:
-                    print("Skipping draft")
-                    continue
-
-                email = parse_email(message)
-                email["body"] = clean_email_body(
-                    email["body"]
-                )
-
-                print("=" * 80)
-                print(email)
-                print("=" * 80)
-
-                print("=" * 80)
-                print("MESSAGE ID:", message["id"])
-                print("THREAD ID:", message["threadId"])
-                print("SNIPPET:", message.get("snippet"))
-                print("=" * 80)
-
             except Exception as e:
-                print(f"Failed to fetch {gmail_message_id}: {e}")
-    update_last_history_id(
-        email_address,
-        history_id
-    )
+                processed_ok = False
+                print(f"Failed to process {gmail_message_id}")
+                print(e)
+    if processed_ok:
+
+        print("=" * 80)
+        print("CHECKPOINT:", history["historyId"])
+        print("=" * 80)
+        # Save latest history
+        update_last_history_id(
+            email_address,
+            history["historyId"]
+        )
+
     return {"success": True}
