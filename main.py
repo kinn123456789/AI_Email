@@ -35,6 +35,9 @@ from gmail_message import get_message
 from gmail_parser import parse_email
 from emails_cleaner import clean_email_body
 
+from process_email import process_email
+from gmail_parser import gmail_message_to_email
+
 
 from fastapi import Request
 import json
@@ -670,12 +673,38 @@ async def gmail_webhook(request: Request):
                     gmail_message_id
                 )
 
+                process_email(
+                    msg=msg,
+                    account={
+                        "email": email_address,
+                        "source": email_address,
+                        "token": token_file
+                    }
+                )
+
+                msg = gmail_message_to_email(message)
+
+                process_email(
+                    msg=msg,
+                    account={
+                        "source": email_address,
+                        "token": token_file,
+                        "email": email_address
+                    }
+                )
+
                 parsed = parse_email(message)
 
                 print(parsed)
 
 
                 if not message:
+                    continue
+
+                labels = message.get("labelIds", [])
+
+                if "DRAFT" in labels:
+                    print("Skipping draft")
                     continue
 
                 email = parse_email(message)

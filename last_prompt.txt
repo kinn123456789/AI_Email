@@ -2,20 +2,16 @@
 CURRENT EMAIL
 
 Category:
-Teacher
+General
 
 Priority:
-Medium
+Low
 
 Subject:
-Re: Finance 101 Teacher Opportunity at Coral Academy
+coral unlimited
 
 Body:
-Hi thanks for reaching out. Of course I already teach for you :)
-
-I do already teach for you. I do know about student finance and believe strongly in students having income, savings, and investments. However, I suspect my husband Les Pauling would be a better fit for this class.
-
--Nicole
+info about coral unlimited
 
 ==================================================
 
@@ -34,290 +30,37 @@ Source:
 help_center
 
 Similarity:
-0.488198474439242
+0.688710951289486
 
 Title:
-Teacher Referral Policy: Coral Academy
+Coral Unlimited: Weekly Subscription Plan
 
 Section:
 
 
 Category:
-Teaching
+Subscription
 
 Content:
-Last Updated Date: July 31, 2025
-Our referral program rewards current instructors for identifying qualified candidates to join Coral Academy's community of online educators.
-How It Works
-Share your unique referral code with prospective teachers and ask them to include it during signup on our application form .
-Process Steps
-Share your unique referral code with a teacher candidate.
-If they pass the screening, an introductory call is scheduled.
-You earn $40 when the call is completed.
-If the call is successful, a trial class is scheduled.
-You earn an additional $60 when the referred teacher completes their first class.
-Payment Details
-Initial call shortlist: $40
-First class completion: $60 additional
-Payment method: Cash, paid via Stripe
-Timeline: Payments are processed within 15 days
-Your Referral Code Format
-Your referral code is your full name written in all capital letters without spaces.
-Teacher Requirements
-Full-time US residency required.
-Identity verification and criminal background check mandatory.
-Classes must maintain secular, objective standards.
-Strong English proficiency in both speaking and writing.
-Important Restrictions
+Last Updated Date: December 1, 2025
+What is Coral Unlimited Subscription?
+Coral Unlimited is a limited-time subscription plan on Coral Academy that gives learners unlimited access to live virtual classes for just $40 per week per learner . Once subscribed, your learner can attend as many classes as they want without any additional per-class charges.
+How to Use Coral Unlimited
+Visit the Coral Academy website and sign in to your account.
+Browse classes and select the ones you want to enroll in.
+Enroll in multiple classes based on seat availability.
+If a class is full, join the waitlist — active subscribers are automatically enrolled when seats open.
+Payment & Renewal
+Charges are processed to your chosen payment method.
+The subscription renews automatically at the end of each billing cycle (every 7 days).
+Weekly charges occur on the same day as your initial payment. For example, if you pay on a Monday, you'll be charged every Monday.
+Activation Details
+Your subscription activates immediately upon payment and renews automatically every 7 days.
+Pausing Your Subscription
+You can temporarily pause your subscription for travel, exams, vacations, or schedule breaks.
 
 Reference URL:
-https://www.coralacademy.com/help/teaching/teacher-referral-policy
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 2
-
-Source:
-class
-
-Similarity:
-0.426021565007432
-
-Title:
-Entrepreneurship 101: A Mini MBA Series
-
-Section:
-Description
-
-Category:
-lifeskills
-
-Content:
-Class: Entrepreneurship 101: A Mini MBA Series
-
-Subject: lifeskills
-
-Section: Description
-
-Content:
-In this hands-on online business class with real-world case studies, learners will explore the origin stories of well-known companies and discover how small ideas can grow into global successes. Each week, the class will explore entrepreneurship, innovation, and basic business concepts in a fun and engaging way.
-
-Through interactive discussions, warm-up trivia, and creative activities, students will dive into real-world business principles. They'll also have the chance to apply their online learning by designing new products and participating in quizzes that reinforce key concepts.
-
-This class encourages curiosity, fosters creativity, and helps students think like young entrepreneurs, empowering kids to learn and explore business ideas.
-
-Whether your child is curious about entrepreneurship or eager to turn creative ideas into reality, this online business class at Coral Academy is the perfect opportunity to make their ideas come alive!
-
-Please find the weekly schedule below for the next few weeks:
-
-The topic listed for each week is the company we will focus on, where we will discuss their growth, business strategies, financials, and products/services.
-
-June 4 - June 5: Discord
-Explore how Discord grew from a gaming chat app into a major online community platform used by millions.
-
-June 11 - June 12: Prime
-Learn how Prime became a viral drink brand through influencer marketing, celebrity founders, and strong social media buzz.
-
-June 18 - June 19: Crocs
-Discover how Crocs turned a quirky shoe into a global fashion trend through comfort, collaborations, and brand reinvention.
-
-June 25 - June 26: Fidgets — Pop-Its, NeeDohs & Squishmallows
-Explore how simple sensory toys became massive trends through kid demand, collectibility, social media, and smart product design.
-
-Reference URL:
-https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 3
-
-Source:
-class
-
-Similarity:
-0.41861146869136
-
-Title:
-Geology & Earth Science Explorers
-
-Section:
-Description
-
-Category:
-science
-
-Content:
-Class: Geology & Earth Science Explorers
-
-Subject: science
-
-Section: Description
-
-Content:
-Learners will explore a different theme each week: from rocks and crystals to fossils, volcanoes, dinosaurs, and landforms.
-
-Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring items such as fossils, geodes, or rock art to share. At-home science experiments and creative art projects will be provided to extend the learning experience beyond the classroom.
-
-We even touch on exciting aspects like the Earth's history and how carnivores and herbivores have evolved through time, concepts that are often overlooked in a typical science class.
-
-If you're eager to learn geology online, our virtual classes make exploring science easy from anywhere. 
-
-Please find below the week-on-week schedule & the topic of focus for the next couple of weeks:
-Slot 1 - Costa Rican Geology: MONDAY CLASS
-WORLD BIOMES
-April 6- Deserts 
-April 13- Grasslands and Savannas
-April 20-Tropical Rainforests
-April 27- Deciduous Forests
-May 4- Taiga (Boreal Forests)
-May 11- The Tundra
-May 18- Mountains
-May 25- Freshwater (Rivers, Ponds, Wetlands)
-
-Slot 1 -TUESDAY CLASS
-March 31- The Rock Cycle- Igneous Investigations
-April 7- The Rock Cycle- Sedimentary Stories
-April 14- The Rock Cycle- Metamorphic Magic
-April 21- Crystallography
-April 28- Mineralogy Testing
-May 5- Geodes and Agates
-May 12- Types of Fossils
-May 19- Paleontology and the Geologic Timescale
-May 26- Archeology- Arrowheads and Artifacts
-June 2- Architecture of Ancient Civilizations
-June 9- NO CLASS
-June 16- The Layers of the Earth
-June 23- NO CLASS
-June 30- Submarine Volcanoes
-July 7- Hydrothermal Features
-July 14-August 11- NO CLASS, SUMMER BREAK
-
-This virtual class by Coral Academy is perfect for families seeking science enrichment or a class on planet Earth. This topic is a top pick among our Coral classes; delivering engaging life science concepts through expertly crafted online learning sessions grounded in real-world learning.
-
-Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 4
-
-Source:
-class
-
-Similarity:
-0.398948007723513
-
-Title:
-History Investigators Club
-
-Section:
-Description
-
-Category:
-lifeskills
-
-Content:
-Class: History Investigators Club
-
-Subject: lifeskills
-
-Section: Description
-
-Content:
-Learners will gather for campfire-style storytelling filled with rich historical details, tension builders, and suspense—because sometimes, truth is stranger (and spookier) than fiction. With Coral Academy, this isn’t your average history class. Together, we’ll explore bizarre, creepy, and unusual historical mysteries that challenge what you thought you knew about the past.
-
-Through pictures, video clips, compelling evidence, and engaging discussions, learners will dive into captivating stories, unravel intriguing theories, and uncover the truth behind some of history’s strangest mysteries. Each week brings a new mind-boggling tale that invites critical thinking, encourages detective-like investigation, and sparks curiosity.
-For example, mysteries might include lost children found wandering, speaking an unknown language, and—most shockingly—why they appeared green. 
-
-With every session, students sharpen their reasoning skills by analyzing clues and exploring wild theories, making world history come alive in a way that’s as thrilling as it is educational.
-
-Please find below the weekly schedule for the next few weeks, with a new mystery explored in each session:
-
-May 3 – May 9 — The Ghost Army of World War II: The Artists Who Defeated the Enemy With Inflatable Tanks and Clever Illusions
-May 10 – May 16 — Spies of the Civil War: The Women Who Risked Everything to Deliver Secret Messages?
-May 17 – May 23 — Alexander Selkirk: The Real Robinson Crusoe
-May 24 – May 30 — Cicada 3301
-May 31 – June 6 — Feral Children — kids raised by animals, verified historical cases
-June 7 – June 13 — Dumb Ways to Die: The Potato Tragedies (A funny, fascinating look at the many times potatoes have accidentally caused chaos.)
-June 14 – June 20 — Gartic Phone — GAME DAY for All Classes!
-Summer Break — Classes resume September 2026
-
-This virtual class by Coral Academy is perfect for learners of ages 8-13, eager to explore history topics through interactive storytelling and investigations, offering a compelling history class online.
-
-Reference URL:
-https://www.coralacademy.com/class/historyclubbynicole-8c5e20c0-0884-4890-ba36-7470cc6dbcc8
-
-IMPORTANT
-
-The CURRENT EMAIL below is the only email you should answer.
-
-Conversation History is provided only for context.
-
-If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
-
-Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
-
-Knowledge Item 5
-
-Source:
-class
-
-Similarity:
-0.392571171521072
-
-Title:
-Entrepreneurship 101: A Mini MBA Series
-
-Section:
-Parent Summary
-
-Category:
-lifeskills
-
-Content:
-Class: Entrepreneurship 101: A Mini MBA Series
-
-Subject: lifeskills
-
-Section: Parent Summary
-
-Content:
-Each week, learners explore a successful brand in our online business class, uncovering what made it thrive. Through fun activities, they dive into branding, marketing, & finance—boosting real-world learning & entrepreneurial skills.
-
-Reference URL:
-https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3
+https://www.coralacademy.com/help/subscription-payments/coral-unlimited
 
 IMPORTANT
 
@@ -345,44 +88,37 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Re: Exciting Opportunity to Teach Financial Literacy with Coral
- Academy in UAE!
+Continue the Learning Journey with Coral Unlimited
 
 Body:
-Hello.
+Dear Anne,
 
-In the past, I have applied, met with you, and provided a trial lesson to live students. However, I did not hear back.  Is this something that I need to reapply for, or is this something that you are offering based on my past performance? Thank you so much.
+I’m so happy to hear that you and Monroe enjoyed the Free Trial Week 
+with us! It has truly been a pleasure having them in our classes.
+
+As the trial week will be coming to an end soon, I wanted to check in and 
+see if you would like me to go ahead and enroll your learner in our Coral 
+Unlimited plan. With Coral Unlimited, they can continue exploring and 
+enjoying our live interactive classes without interruption.
+
+The subscription is $40 per month, and you’ll be charged accordingly once 
+the enrollment is confirmed.
+
+*If you’d like me to take care of the enrollment for you, simply reply YES, 
+and I’ll handle everything on your behalf.*
+
+Looking forward to continuing this learning journey together!
+
+Warm regards,
+Lucy
+Coral Academy
 
 
 
-
-[cid:f289fb65-c217-4cf2-a4aa-2cfb65cc178a]
-
-
-[cid:e91eb5b7-acb5-4807-be87-47638a6e7d59]
-
-
-Jessica Miller
-
-
-
-National Virtual Teacher Certified
-
-Marketing/Business 5-12
-
-Middle Grades Math
-
-Middle Grades Reading
-
-PE and Health K-12
-
-www.colorandchat.com<http://www.colorandchat.com/>
-www.financiallyresponsibleteens.com<http://www.financiallyresponsibleteens.com/>
-See my Outschool Classes Here<https://outschool.com/teachers/TeacherJessica?signup=true&usid=bvYBygLU>
-Amazon Influencer Page<https://www.amazon.com/shop/financiallyresponsibleteens?ref_=cm_sw_r_cp_ud_aipsfshop_1ZTH6GMKBHP7QGQ3X5F8>
-________________________________
-From: Lucy from Coral Academy <lucy@coralacademy.com>
-Sent: Saturda
+[image: Mailsuite] Email tracked with Mailsuite  ·  Opt out 
+<https://##mt_unsubscribe_link##>
+28/02/26, 01:07:24 
+Remove
 
 ----------------------------------------
 
@@ -390,78 +126,38 @@ Sent: Saturda
 Example 2
 
 Subject:
-Re: Welcome to Coral Academy, Nathalie M – Let the Learning Begin
+Unlock Unlimited Learning with Coral Academy
 
 Body:
-Finance 101
+Hey *Eunice*!
 
-On Fri, Dec 5, 2025 at 21:58 Coral Academy <support@coralacademy.com> wrote:
+I’m Atharv from the Coral Academy marketing team — noticed you signed up
+but haven’t tried a class yet, so I wanted to personally help you get
+started :)
 
-> Hi Nathalie,
->
-> Thanks so much for letting us know!
->
-> Please let us know what class you'd like to try out for Fridays and we
-> will set that up for you.
->
-> Best,
-> Coral Academy
->
-> On Sat, 6 Dec, 2025, 05:34 Nathalie M, <nathalie.meth@gmail.com> wrote:
->
->> Hi!  I sent an email about starting a class that happens now on Fridays.
->> I realize it’s too late for that now but hoping to hear back.
->>
->> Thank you!
->>
->> On Fri, Dec 5, 2025 at 13:10 Coral Academy <support@coralacademy.com>
->> wrote:
->>
->>> Try any 2 classes for free
->>> Hi Nathalie M,
->>>
->>> Welcome to Coral Academy! We’re so excited to have you here.
->>>
->>> As a little thank-you for trusting us with your child’s learning
->>> journey, we’ve added two free trial passes to your account. You can try any
->>> two classes of your choice for free — no strings attached. Try now to
->>> see the magic of l
+You still have 2 free trial passes to explore any of our live, small-group
+classes for ages 8-13 [image: ✨]
 
-----------------------------------------
+No commitments. No payments. Just learning that clicks.
 
+Here are two popular picks which Noelle might love!
 
-Example 3
+   -
 
-Subject:
-Re: Exciting Opportunity to Teach Financial Literacy with Coral
- Academy in UAE!
+   Code & Create: Build with Roblox
+   <https://www.coralacademy.com/class/codewithroblox-8d3c97ce-42bb-4040-b8ae-bff07b51db90?referrer_id=a7c838ad-847e-42ca-bed6-19fe11b4d2bb>
+—
+   Kids design their own 3D worlds while learning real coding concepts.
+   -
 
-Body:
-Ok.
+   Mini Business Series
+   <https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3?referrer_id=a7c838ad-847e-42ca-bed6-19fe11b4d2bb>
+—
+   A “kid-friendly MBA” where they uncover how Disney, LEGO & MrBeast built
+   empires.
 
-Thank you so much for letting me know.
-
-I completed that process with you when I met with you live about 6 months ago for an interview.
-
-Additionally, I provided an unpaid free lesson, in Financial Literacy, to students of yours and didn't hear back from you after that. I think for right now this is not a good fit for me.
-
-I wish you luck finding the perfect candidate. Have a great week!
-
-
-  *
-Jessica
-
-Sent from my Verizon, Samsung Galaxy smartphone
-Get Outlook for Android<https://aka.ms/AAb9ysg>
-________________________________
-From: Lucy from Coral Academy <lucy@coralacademy.com>
-Sent: Tuesday, March 17, 2026 6:48:25 AM
-To: Jessicamiller <jessicamiller2512@hotmail.com>
-Subject: Exciting Opportunity to Teach Financial Literacy with Coral Academy in UAE!
-
-Dear Jessica,
-
-I just wanted to follow up on my previous email regarding the opportunity to teach Finance 101<https://coralacademy-dot-yamm-track.appspot.com/2HgHHefkd0M7SIk0K4ek06h0khZQJQSFvxKyHjVNUbA-kQG
+[image: 👉] Explore Classes & Use Your Free Passes
+<https://w
 
 ----------------------------------------
 

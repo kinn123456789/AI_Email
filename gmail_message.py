@@ -1,4 +1,6 @@
 import os
+import base64
+import email
 
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -28,10 +30,18 @@ def get_message(token_file, message_id):
         credentials=creds
     )
 
-    message = service.users().messages().get(
+    response = service.users().messages().get(
         userId="me",
         id=message_id,
-        format="full"
+        format="raw"          # <-- CHANGED
     ).execute()
 
-    return message
+    raw = response["raw"]
+
+    raw += "=" * (-len(raw) % 4)
+
+    msg = email.message_from_bytes(
+        base64.urlsafe_b64decode(raw)
+    )
+
+    return msg
