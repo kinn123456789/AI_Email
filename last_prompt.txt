@@ -11,7 +11,7 @@ Subject:
 hi
 
 Body:
-hi
+hello
 
 ==================================================
 
@@ -30,7 +30,7 @@ Source:
 class
 
 Similarity:
-0.313596505893296
+0.310056431911046
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -72,7 +72,7 @@ Source:
 class
 
 Similarity:
-0.300287367830765
+0.297914381391051
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -115,7 +115,7 @@ Source:
 class
 
 Similarity:
-0.2882363181949
+0.276170672728446
 
 Title:
 Around the Globe with Mr. Clark
@@ -158,7 +158,7 @@ Source:
 class
 
 Similarity:
-0.273523057873761
+0.267884259977784
 
 Title:
 Geology & Earth Science Explorers
@@ -200,7 +200,7 @@ Source:
 class
 
 Similarity:
-0.271589605395937
+0.264072449978448
 
 Title:
 Geology & Earth Science Explorers
@@ -295,47 +295,36 @@ On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
 Example 2
 
 Subject:
-Fwd: Thank you for your call
+Re: Cancelation
 
 Body:
----------- Forwarded message ---------
-From: <cfoote@theoldschoolhouse.com>
-Date: Fri, Dec 5, 2025 at 5:03 AM
-Subject: Thank you for your call
-To: <aditya@coralacademy.com>
+Good email
 
+On Tue, 2 Dec, 2025, 13:34 Coral Academy, <support@coralacademy.com> wrote:
 
-Hello, Aditya,
-
-It was so nice meeting with you — thank you again for taking the time to
-chat!
-
-*Here are the answers to your questions.*
-
-We are unable to do a collaboration. I will be sure and contact you if this
-changes.
-
-Our eblast readers and digital magazine readers are predominantly adults,
-not children. Our readers are homeschooling a broad range of ages, with all
-age groups represented strongly, including the ages 8-13.
-
-For states--Only 56% of our subscribers (29120 people) have elected to
-share their state with us. Of those who we know their states, the ten top
-highest represented states for our eblast sends are:
-
-
-Texas 2678
-California 2014
-North Carolina 1599
-Florida 1442
-Tennessee 1419
-Georgia 1183
-Virginia 1150
-Ohio 977
-Pennsylvania 968
-Illinois 939
-
-For the digi
+> Hello Candice!
+>
+> Thank you so much for reaching out — and for signing your child up with
+> us. I’m really glad you let us know.
+>
+> Just to reassure you right away: *your card will never be charged
+> automatically*.
+>
+> The *2 free classes you enrolled for are completely free*, with no hidden
+> charges or automatic upgrades. The only way a payment would ever occur is
+> if you manually choose to start a subscription yourself — otherwise, *nothing
+> is billed*.
+>
+>
+> *However, we'd also love to understand what’s prompting the cancellation
+> request.*
+> If it’s the *timing*, we’re more than happy to accommodate and find a
+> slot that works better for your family’s schedule. Many parents adjust
+> timings in the first week, and we always try our best to work around what’s
+> convenient for you.
+>
+> If there’s anything else that didn’t feel like a good fit, I’d truly
+> apprec
 
 ----------------------------------------
 

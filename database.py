@@ -876,3 +876,56 @@ def get_latest_thread_ai(thread_id):
     db_pool.putconn(conn)
 
     return row
+
+def get_last_history_id(email_address):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        SELECT history_id
+        FROM gmail_watch_state
+        WHERE email_address = %s
+        """,
+        (email_address,)
+    )
+
+    row = cur.fetchone()
+
+    cur.close()
+    conn.close()
+
+    if row:
+        return row[0]
+
+    return None
+
+def update_last_history_id(email_address, history_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        """
+        INSERT INTO gmail_watch_state
+        (
+            email_address,
+            history_id
+        )
+        VALUES (%s, %s)
+
+        ON CONFLICT (email_address)
+        DO UPDATE
+        SET history_id = EXCLUDED.history_id
+        """,
+        (
+            email_address,
+            history_id
+        )
+    )
+
+    conn.commit()
+
+    cur.close()
+    conn.close()

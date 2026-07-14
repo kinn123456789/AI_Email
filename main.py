@@ -4,7 +4,7 @@ from database import db_pool,get_latest_thread_ai
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
-from database import get_teacher_messages
+from database import get_teacher_messages,get_last_history_id,update_last_history_id
 from fastapi import Form
 from trial_followup import (
     get_trial_followup_dashboard,
@@ -622,16 +622,37 @@ async def gmail_webhook(request: Request):
 
     print("Token:", token_file)
 
+    last_history = get_last_history_id(
+        email_address
+    )
+
+    print("Last History:", last_history)
+
+    
+    if last_history is None:
+
+        print("Initializing history for", email_address)
+
+        update_last_history_id(
+            email_address,
+            history_id
+        )
+
+        return {"success": True}
+    
     history = get_gmail_history(
         token_file=token_file,
-        history_id=history_id
+        history_id=last_history
     )
-    print(history)
 
+    print(history)
 
     
     if not history.get("history"):
-        return {"success": True}
+        update_last_history_id(
+        email_address,
+        history_id
+    )
 
     for record in history["history"]:
 
@@ -657,5 +678,8 @@ async def gmail_webhook(request: Request):
 
             except Exception as e:
                 print(f"Failed to fetch {gmail_message_id}: {e}")
-
+    update_last_history_id(
+        email_address,
+        history_id
+    )
     return {"success": True}
