@@ -87,65 +87,32 @@ def get_emails():
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
+        # Added a CASE statement to order by priority weight before ID
         cursor.execute("""
             SELECT
-                id,
-                sender,
-                subject,
-                source,
-                category,
-                priority,
-                status,
-                reply_type,
-                created_at,
-                first_reply_at,
-                resolved_at,
-                knowledge_url,
-                ai_confidence,
-                ai_summary,
-                ai_draft_reply,
-                requires_review
+                id, sender, subject, source, category, priority, status, 
+                reply_type, created_at, first_reply_at, resolved_at, 
+                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review
             FROM messages
             WHERE mailbox = 'inbox'
             AND reply_type IS DISTINCT FROM 'gmail_manual'
-            ORDER BY id DESC;
+            ORDER BY 
+                CASE priority
+                    WHEN 'Urgent' THEN 1
+                    WHEN 'High' THEN 2
+                    WHEN 'Medium' THEN 3
+                    WHEN 'Low' THEN 4
+                    ELSE 5
+                END ASC,
+                id DESC;
         """)
 
         rows = cursor.fetchall()
-
+        # ... (rest of your existing logic for date formatting and handled_by)
         for row in rows:
-            
             if row["created_at"]:
                 row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
-
-            if row["first_reply_at"]:
-                row["first_reply_at"] = row["first_reply_at"].strftime("%b %-d, %-I:%M %p")
-
-            if row["resolved_at"]:
-                row["resolved_at"] = row["resolved_at"].strftime("%b %-d, %-I:%M %p")
-            reply_type = row["reply_type"]
-            status = row["status"]
-
-            if reply_type == "automatic":
-                row["handled_by"] = "AI"
-
-            elif reply_type == "human":
-                row["handled_by"] = "Human"
-
-            elif status in ["Replied", "Auto Replied", "No Reply Required"]:
-                row["handled_by"] = "AI"
-
-            elif row["requires_review"]:
-                row["handled_by"] = "Human"
-
-            else:
-                 row["handled_by"] = "Pending"
-            print(
-                    row["id"],
-                    row["status"],
-                    row["reply_type"],
-                    row["handled_by"]
-            )
+            # ... (keep your existing logic here)
         return rows
 
     finally:

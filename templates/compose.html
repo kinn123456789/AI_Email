@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose Email</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body
+class="min-h-screen bg-stone-50 p-8"
+style="background-image:url('/static/background.png');background-size:cover;background-position:center;">
+
+<div class="max-w-5xl mx-auto bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-8">
+
+    <!-- Header -->
+
+    <div class="flex justify-between items-center mb-8">
+
+        <div>
+
+            <h1 class="text-3xl font-bold text-stone-800">
+                ✉️ Compose Email
+            </h1>
+
+            <p class="text-stone-500 mt-2">
+                Create and send a new email.
+            </p>
+
+        </div>
+
+        <a
+            href="/dashboard"
+            class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900">
+
+            ← Dashboard
+
+        </a>
+
+    </div>
+    {% if request.query_params.get("sent") %}
+    <div
+        id="mail-sent"
+        class="mb-6 bg-green-50 border border-green-200 text-green-700 rounded-2xl p-4 flex items-center gap-3">
+
+        <span class="text-xl">✅</span>
+
+        <div>
+            <div class="font-semibold">
+                Mail sent successfully.
+            </div>
+
+            <div class="text-sm">
+                Your email has been delivered successfully.
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <form
+        action="/compose"
+        method="POST"
+        class="space-y-6">
+
+        <!-- From -->
+
+        <div>
+
+            <label class="block font-semibold text-stone-700 mb-2">
+
+                From
+
+            </label>
+
+            <select
+                name="from_account"
+                class="w-full rounded-xl border border-stone-300 px-4 py-3">
+
+                <option value="support">
+                    support@coralacademy.com
+                </option>
+
+                <option value="lucy">
+                    lucy@coralacademy.com
+                </option>
+
+                <option value="engineering">
+                    engineering@coralacademy.com
+                </option>
+
+                <option value="sat">
+                    shopsat19@gmail.com
+                </option>
+
+            </select>
+
+        </div>
+
+
+        <!-- To -->
+
+        <div>
+
+            <label class="block font-semibold text-stone-700 mb-2">
+
+                To
+
+            </label>
+
+            <input
+                type="email"
+                name="to_email"
+                required
+                placeholder="parent@gmail.com"
+                class="w-full rounded-xl border border-stone-300 px-4 py-3">
+
+        </div>
+
+
+        <!-- Subject -->
+
+        <div>
+
+            <label class="block font-semibold text-stone-700 mb-2">
+
+                Subject
+
+            </label>
+
+            <input
+                type="text"
+                name="subject"
+                required
+                class="w-full rounded-xl border border-stone-300 px-4 py-3">
+
+        </div>
+
+
+        <!-- Body -->
+
+        <div>
+
+            <label class="block font-semibold text-stone-700 mb-2">
+
+                Message
+
+            </label>
+
+            <textarea
+                name="body"
+                rows="14"
+                required
+                class="w-full rounded-2xl border border-stone-300 p-4 resize-none"></textarea>
+
+        </div>
+
+
+        <!-- Buttons -->
+
+        <div class="flex justify-end gap-3">
+
+            <a
+                href="/dashboard"
+                class="bg-white border border-stone-300 px-6 py-3 rounded-xl">
+
+                Cancel
+
+            </a>
+
+
+            <button
+                type="submit"
+                class="bg-cyan-700 hover:bg-cyan-800 text-white px-8 py-3 rounded-xl font-semibold">
+
+                ✉️ Send Email
+
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+<script>
+window.addEventListener("load", function () {
+
+    const badge = document.getElementById("mail-sent");
+
+    if (badge) {
+        badge.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+});
+</script>
+</body>
+</html>

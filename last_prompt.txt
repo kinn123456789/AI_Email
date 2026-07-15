@@ -8,10 +8,10 @@ Priority:
 Low
 
 Subject:
-
+hi
 
 Body:
-
+hi
 
 ==================================================
 
@@ -30,7 +30,7 @@ Source:
 class
 
 Similarity:
-0.318287899406206
+0.313596505893296
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -72,7 +72,7 @@ Source:
 class
 
 Similarity:
-0.314095417715142
+0.300287367830765
 
 Title:
 Scratch Coding Lab: Build With Scratch
@@ -115,7 +115,7 @@ Source:
 class
 
 Similarity:
-0.31158064422037
+0.2882363181949
 
 Title:
 Around the Globe with Mr. Clark
@@ -158,13 +158,13 @@ Source:
 class
 
 Similarity:
-0.289818804679331
+0.273523057873761
 
 Title:
 Geology & Earth Science Explorers
 
 Section:
-Parent Summary
+Learner Summary
 
 Category:
 science
@@ -174,10 +174,10 @@ Class: Geology & Earth Science Explorers
 
 Subject: science
 
-Section: Parent Summary
+Section: Learner Summary
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
 
 Reference URL:
 https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
@@ -200,13 +200,13 @@ Source:
 class
 
 Similarity:
-0.28631841872363
+0.271589605395937
 
 Title:
 Geology & Earth Science Explorers
 
 Section:
-Learner Summary
+Parent Summary
 
 Category:
 science
@@ -216,10 +216,10 @@ Class: Geology & Earth Science Explorers
 
 Subject: science
 
-Section: Learner Summary
+Section: Parent Summary
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
 
 Reference URL:
 https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
@@ -274,58 +274,6 @@ Hi
 Example 3
 
 Subject:
-Test
-
-Body:
-test
-
-
-----------------------------------------
-
-
-Example 4
-
-Subject:
-Re: For Miss Amalia,
-
-Body:
-Thank you for this, I really appreciate it!
-
-On Thu, 30 Oct 2025, 23:43 Coral Academy, <support@coralacademy.com> wrote:
-
-> Hi Jen,
->
-> Ofcourse, we will pass this along! Thanks so much for letting us know.
->
-> Tim & Wren have been with us since the very beginning and we'd love to do
-> anything we could to support their learning journeys.
->
-> We will forward this to Amalia & let you know once she fills them out.
->
-> Please feel free to let us know if there's anything else we can help with.
->
-> Hope you have a great weekend!
->
-> Best,
-> Coral Academy
->
-> On Thu, 30 Oct, 2025, 06:39 Jen Cuthbert, <jenjcuthbert@gmail.com> wrote:
->
->> Hello,
->>
->> Can you please email this to Miss Amalia, she has very kindly agreed (if
->> Coral Academy says it's ok) to fill in these forms regarding an assessment
->> for ADHD for Wren.   Miss Amalia is the teacher that the Wren sees most
->> often, so it makes sense to have her input for this.
->>
->> The forms are attached to this 
-
-----------------------------------------
-
-
-Example 5
-
-Subject:
 Hello
 
 Body:
@@ -337,61 +285,19 @@ I want to make enquire
 ----------------------------------------
 
 
-Example 6
+Example 4
 
 Subject:
-Accepted: FL Demo Class
+Test
 
 Body:
+test
 
 
 ----------------------------------------
 
 
-Example 7
-
-Subject:
-
-
-Body:
-  Hi, I was looking into your business and wanted to check who would be the
-right person to speak with
-
-
-----------------------------------------
-
-
-Example 8
-
-Subject:
-Records Request 
-
-Body:
-
-
-From: Scan Scan <scan@mpsd.k12.or.us>
-Sent: Monday, March 16, 2026 10:47 AM
-To: Toni Sackett <TSackett@mpsd.k12.or.us>
-Subject: Your scan (Scan to My Email)
-
-
-
-
-----------------------------------------
-
-
-Example 9
-
-Subject:
-collab video
-
-Body:
-
-
-----------------------------------------
-
-
-Example 10
+Example 5
 
 Subject:
 Re: Collaboration Introduction
@@ -436,7 +342,7 @@ On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
 ----------------------------------------
 
 
-Example 11
+Example 6
 
 Subject:
 Fwd: Thank you for your call
@@ -484,37 +390,55 @@ For the digi
 ----------------------------------------
 
 
-Example 12
+Example 7
 
 Subject:
-Re: Why Allowance Matters More Than You Think?
+Re: Thank You
 
 Body:
-UNSUBSCRIBE!!!
+Hello.
+That works great. Thank you!
 
 
+  *
+Jessica
 
-On Thu, Mar 5, 2026 at 1:18 AM Lucy from Coral Academy <
-lucy@coralacademy.com> wrote:
+Sincerely,
+Jessica Miller
 
-> *Most money habits don’t begin when your child gets their first job. *They
-> have to begin much earlier with small decisions they make when they first
-> receive money as an allowance. We recently put together a *deep dive into
-> how allowance systems shape children’s financial habits,* and a few
-> things became very clear while writing it.
->
-> *Read Insights Here
-> <https://coralacademy-dot-yamm-track.appspot.com/2MsEhmpDdGyMVHLGt8K5JqXI87mEY2OGFMGrOuzbWcOffiBO9nAEEvVGHVs9IZ0MHcj1foFqNRrCKUZbWSisJla4WV7VRiBQsQesrjtyDJpR-dqD7FZRGVzJN3JMdzWyG5qeVKK_5hjTi6cq0WrBvtBiXUeztPPKCKtwRSPCaFEYeoykCB1TxshhWHjw53-6pAJ1FezjAuc4JbHbS8F8XcdSSbsYmDptaylP9hwl035NTfxf2O0hqNKvq-YUSnHAZbmDPgfLbckLO1Nbi9jCux8DOsp7SFjUtP2aHzfvy_Ko6n3flIIg>*
->
-> Here are a few insights parents often find surprising:
->
-> *1. Allowance teaches that money is limited*
-> When kids control their own spendin
+National Virtual Teacher Certified
+Marketing/Business 5-12
+Middle Grades Math
+Middle Grades Reading
+PE and Health K-12
+
+ColorandChat
+Teen Finance
+
+Visit my Amazon Shop
+________________________________
+From: Coral Academy <support@coralacademy.com>
+Sent: Tuesday, July 8, 2025 5:06:54 PM
+To: Jessica Miller <jessicamiller2512@hotmail.com>
+Subject: Re: Thank You
+
+Hello Jessica,
+
+We'd like to inform you that we have received confirmation from our learners for the trial class on Monday, July 14th, at 3 PM EST. We hope this time works well for you.
+
+We are looking forward to your confirmation. We will share the meeting details with you shortly.
+
+Best,
+Coral Academy
+
+On Mon, Jul 7, 2025 at 7:17 PM Jessica Miller <jessicamiller2512@hotmail.com<mailto:jessicamiller2512@hotmail.com>> wrote:
+Hello,
+Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or, Wedne
 
 ----------------------------------------
 
 
-Example 13
+Example 8
 
 Subject:
 Verify your identity
@@ -561,167 +485,61 @@ Body:
 ----------------------------------------
 
 
-Example 14
+Example 9
 
 Subject:
-Enrollment Confirmed for 'How the Human Body Works'
+Re: One quick question before we stop emailing
 
 Body:
-The next session is on Tue Aug 12, 8:30 PM. See everything TechSupport &amp; TechSupport2 need to prepare!
-
-Hi Support,
-
-Woohoo! *You have successfully enrolled* TechSupport &amp; TechSupport2 in *How the Human Body Works*.
-
-Here is the summary of your enrollment:
-Parent Name: testingwithAtharv
-Parent Email: li40d1ntau@qzueos.com
-
-How the Human Body Works
-Teacher Courtney
-
-Tuesdays, 8:30 PM - 9:20 PM, India Standard Time
-
-TechSupport 
-Enrollment Type: coral_unlimited
- enrolled
+Yes 
 
 
+Sent from Yahoo Mail for iPhone
+
+
+On Friday, April 24, 2026, 11:07 AM, Coral Academy <support@coralacademy.com> wrote:
 
  
-TechSupport2 
-Enrollment Type: coral_unlimited
- enrolled
-
-  
-
-The next session is on Tue Aug 12, 8:30 PM—don’t miss it!
-
-
-
-
-
-Happy Learning!
-*Team Coral Academy*
-P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
-
-This message was sent to your email at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnq
+One quick question before we stop emailing#yiv4224412887 img{}#yiv4224412887 table, #yiv4224412887 td{}#yiv4224412887 .yiv4224412887mceStandardButton, #yiv4224412887 .yiv4224412887mceStandardButton td, #yiv4224412887 .yiv4224412887mceStandardButton td a{}#yiv4224412887 p, #yiv4224412887 a, #yiv4224412887 li, #yiv4224412887 td, #yiv4224412887 blockquote{}#yiv4224412887 p, #yiv4224412887 a, #yiv4224412887 li, #yiv4224412887 td, #yiv4224412887 body, #yiv4224412887 table, #yiv4224412887 blockquote{}#yiv4224412887 .yiv4224412887mcnPreviewText{display:none!important;}#yiv4224412887 .yiv4224412887bodyCell{margin:0 auto;padding:0;width:100%;}#yiv4224412887 .yiv4224412887ExternalClass, #yiv4224412887 .yiv4224412887ExternalClass p, #yiv4224412887 .yiv4224412887ExternalClass td, #yiv4224412887 .yiv4224412887ExternalClass div, #yiv4224412887 .yiv4224412887Extern
 
 ----------------------------------------
 
 
-Example 15
+Example 10
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+New Contact Form Enquiry 
 
 Body:
-4
-
-On Mon, 18 May 2026, 22:48 Coral Academy, <support@coralacademy.com> wrote:
-
-> We hope you enjoyed this session!
-> Hey parent!
->
-> Thanks for joining today’s class, Logic & Critical Thinking: Master
-> Reasoning and Fallacies ! We’d love to hear what you thought — it’ll only
-> take a few seconds, but it really helps us get better!
-> *1. ☹️ : Bad* *2. 😐 : Average* *3. 🙂 : *Good *4. 😃 : *Great
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :) We appreciate
-> you!
->
-> Happy Learning!
-> Team Coral Academy
-> This message was sent to your email at your request.
-> Coral Learning Academy LLC
-> 1111B S Governers Ave STE 26485, DE 19904
-> View in Browser | Email Preferences
-> <http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwPs7IO4fXU7hYIY-2FBD0NRZqH6797hScqzxYrnZDiuVW5Q-2FJFP-2FTrEsl-2B4RnhdJzNn
+New Contact Form Submission Name: a Email: aa@a.com Phone: +11222112211 Message: 21wqeqwsdqwdswaa Submitted at: 2026-06-09T14:40:05.677Z User ID: Guest
 
 ----------------------------------------
 
 
-Example 16
+Example 11
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+New Contact Form Enquiry — sai sruthin
 
 Body:
-4
+NEW CONTACT FORM SUBMISSION
 
-On Fri, Feb 6, 2026, 5:09 PM Coral Academy <support@coralacademy.com> wrote:
+Name: sai sruthin
 
-> Hey there!
->
-> Thanks for joining today’s class, Finance 101: A Practical Playbook for
-> Mastering Money ! February 6 2026 4PM PST We’d love to hear what you
-> thought — it’ll only take a few seconds, but it really helps us get better!
-> 😊
->
->
-> *1. ☹️: Bad*
-> *2. 😐: Average*
-> *3. 🙂: Good**4. 😀: Great*
->
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :)
->
-> We appreciate you!
-> Team Coral Academy 💖
->
->
->
->
->
->
-> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
-> <https://#%23mt_unsubscribe_link%23%23>
-> 20/01/26, 13:17:49
-> Remove
->
->
+Email: saisruthinreddykondma@gmail.com
 
+Phone: +16758745889
+
+Message: hi eshwar
+
+Submitted at: 2026-06-15T18:55:16.380Z
+
+User ID: Guest
 
 ----------------------------------------
 
 
-Example 17
-
-Subject:
-Enrollment Withdrawn for 'How the Human Body Works'
-
-Body:
-Moon has been withdrawn.
-
-Hi Support,
-
-We’re writing to confirm that Moon has been successfully withdrawn from "How the Human Body Works."
-
-Here are the details of the parent whose learner(s) have withdrawn from the class:
-Parent Name: Jackson
-Parent Email: taigerdad@gmail.com
-
-
-
-
-
-Happy Learning!
-*Team Coral Academy*
-P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
-
-This message was sent to your email at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ8PL9rNnoHVjdA-3D-3DUK9u_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-2BLy4OQHWTgkKgMqHOGIm8f0wzfHa-2BprecaE-2FkmUnvXJpv3JWBKPHLuYO9RaId-2FbkMuyfO
-
-----------------------------------------
-
-
-Example 18
+Example 12
 
 Subject:
 Re: Cancelation
@@ -758,28 +576,79 @@ On Tue, 2 Dec, 2025, 13:34 Coral Academy, <support@coralacademy.com> wrote:
 ----------------------------------------
 
 
+Example 13
+
+Subject:
+Re: 
+
+Body:
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+
+----------------------------------------
+
+
+Example 14
+
+Subject:
+Re: 
+
+Body:
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+
+----------------------------------------
+
+
+Example 15
+
+Subject:
+Re: 
+
+Body:
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+
+----------------------------------------
+
+
+Example 16
+
+Subject:
+Re: 
+
+Body:
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+
+----------------------------------------
+
+
+Example 17
+
+Subject:
+Re: 
+
+Body:
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+
+----------------------------------------
+
+
+Example 18
+
+Subject:
+Re: 
+
+Body:
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+
+----------------------------------------
+
+
 Example 19
 
 Subject:
-Reminder: Upcoming Session Ending for Leadership Camp: Building
- Skills for Life
+New Contact Form Enquiry 
 
 Body:
-Sessions for the class - Leadership Camp: Building Skills for Life are about to end next week!!
-
-*D* *ear Support Team,*
-
-This is a friendly reminder that the session for the class *Leadership Camp: Building Skills for Life* *[Wednesdays, 1:00 PM - 1:50 PM]* is scheduled to end soon. The session will conclude on *30-07-2025*.
-Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
-
-*Session Details:*
-
-* *Class Name : Leadership Camp: Building Skills for Life*
-* *Teacher Name : Teacher Aaron*
-* *Session End Date: : 30-07-2025*
-* *Session Time: Eastern Standard Time*
-
-Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDVMWVX9eoQ8LxOLpvd2UN60Bg2-2F0b1fCvLUlcDIKxKsnzoqDEs3O94Yo-2FKhz7fiYQ-3D-3DNGN-_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-2BLy4PB3p8gfA4lRqz1VxcR
+New Contact Form Submission Name: a Email: a Phone: +19999999999 Message: jkjkkl Submitted at: 2026-06-09T14:51:04.952Z User ID: Guest
 
 ----------------------------------------
 
@@ -787,43 +656,12 @@ Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDV
 Example 20
 
 Subject:
-Enrollment Confirmed for 'How the Human Body Works'
+
 
 Body:
-The next session is on Tue Jul 8, 8:00 AM. See everything Atharv need to prepare!
+  Hi, I was looking into your business and wanted to check who would be the
+right person to speak with
 
-Hi Support,
-
-Woohoo! *You have successfully enrolled* Atharv in *How the Human Body Works*.
-
-Here is the summary of your enrollment:
-Parent Name: Atharv
-Parent Email: debrupa.c@gmail.com
-
-How the Human Body Works
-Teacher Courtney
-
-Tuesdays, 8:00 AM - 8:50 AM, Pacific Standard Time
-
-Atharv
-enrolled
-
-  
-
-The next session is on Tue Jul 8, 8:00 AM—don’t miss it!
-
-
-
-
-
-Happy Learning!
-*Team Coral Academy*
-P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
-
-This message was sent to your email at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ8PL9rNnoHVjdA-3D-3D6DF0_wmc-2BV
 
 ----------------------------------------
 
@@ -831,34 +669,10 @@ View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/cli
 Example 21
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+New Contact Form Enquiry 
 
 Body:
-2
-On Mon, Jun 29, 2026 at 5:04 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> We hope you enjoyed this session!
-> Hey parent!
->
-> Thanks for joining today’s class, Geology & Earth Science Explorers ! We’d
-> love to hear what you thought — it’ll only take a few seconds, but it
-> really helps us get better!
-> *1. ☹️ : Bad* *2. 😐 : Average* *3. 🙂 : *Good *4. 😃 : *Great
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :) We appreciate
-> you!
->
-> Happy Learning!
-> Team Coral Academy
-> This message was sent to at your request.
-> Coral Learning Academy LLC
-> 1111B S Governers Ave STE 26485, DE 19904
-> View in Browser <https://www.coralacademy.com> | Email Preferences
-> <https://www.coralacademy.com?show_modal=email_preference_center&id=>
-> We care about your privacy. Read our Privacy Policy
-> <https://www.help.coralacademy.com/legal/privacy> and Terms of Service
-> <https://www.h
+New Contact Form Submission Name: a Email: a@m Phone: +11212121212 Message: assas Submitted at: 2026-06-09T14:39:07.596Z User ID: Guest
 
 ----------------------------------------
 
@@ -866,23 +680,50 @@ wrote:
 Example 22
 
 Subject:
-Re: Unlock new opportunities with SMS
+Re: Collaboration Introduction
 
 Body:
-Hi Coral,
+Hello dear
 
-Your emails are crushing it, but what if your customers could hear that
-ping of excitement right in their pocket?
+On Tue, Feb 24, 2026 at 1:47 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+wrote:
 
-Using SMS with Mailchimp, you can:
+> Thank you for your response.
+>
+> I have children who are seven and ten years old, darling.
+>
+>
+> On Tue, Feb 24, 2026 at 1:33 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi Ülkü,
+>>
+>> Thank you for your response.
+>>
+>> To help us devise a plan for our collaboration, could you please let us
+>> know the ages of your three children? Our platform primarily caters to
+>> children aged 8–13, though we can also accommodate children who are 7 years
+>> old.
+>>
+>> Knowing their ages will help us determine the best way to move forward.
+>>
+>> Warm regards,\
+>> Lucy
+>>
+>>
+>> On Tue, Feb 24, 2026 at 1:21 AM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+>> wrote:
+>>
+>>> Hello
+>>> On Sun, Feb 22, 2026 at 5:32 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
+>>> wrote:
+>>>
+>>>>
+>>>>
+>>>> On Tue, Feb 17, 2026 at 11:21 AM Coral Academy <lucy@coralacademy.com>
+>>>> wrote:
+>>>>
 
-   - Reach your audience instantly
-   - Boost engagement
-   - Drive sales faster than ever
-
-Why stop at the inbox when you can double the impact with SMS? Let's make
-marketing magic - one text at a time. Get started with SMS
-<https://apiq-apiv1-c01.apiq.sfdc-lywfpd.svc.sfdcfc.net/r?target=699cbe1a9ae9a1291ce6d8bb&t=V2_eyJwX2l2IjoiMks2Uzd2R0ErNlJuTnFMMXBDOVkwUVx1MDAzZFx1MDAzZCIsInBfZW5jcnlwdGVkX2RhdGEiOiI1RGtkZ0dzLzAyQTRyS0VyeDVFWTQwbGI2a053RnZieHJYWlNNajFxMWNvXHUwMDNkIiwicF9vcmQiOiIxIiwicF9pZCI6IjQifXx7InBfaXYiOiJnUkN2d2VvbmwreEE0ZGh4Y3Y1MDBRXHUwMDNkXHUwMDNkIiwicF9lbmNyeXB0ZWRfZGF0YSI6ImxUbmlnNWUyL1dCZzdiVGVuMmFoYVdmZzk4VVVXaWg4WWdCbUw0cUpsVlVUSWZwU0RPV25mTHl1dCt2OWV3MDQwbEdYZTMrbndRMFVKaU9qNW5ycEVRXHUwMDNkXHUwMDNkIiwicF9vcmQiOiIxIiwicF9pZCI6IjE1NDM4MyJ9&url=https%3A%2F%2Fmailchimp.com%2Fsolutions%2Fsms-marketing-
 
 ----------------------------------------
 
@@ -890,38 +731,10 @@ marketing magic - one text at a time. Get started with SMS
 Example 23
 
 Subject:
-Re: To keep $40
+New Contact Form Enquiry 
 
 Body:
-On Tue, Apr 14, 2026 at 10:08 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> Hi Kevin,
->
-> Thanks so much for getting these done — really appreciate it! 😊 Great to
-> hear about the Trustpilot review and socials.
->
->    - *Trustpilot review:* We’re not able to see it on our end yet — could
->    you please check if it got posted? If possible, sharing a quick screenshot
->    would really help so we can follow up with the Trustpilot team.
->    - *Socials:* Could you let us know the handle you used to follow us?
->    - *Video testimonial:* Sounds great! Would you be able to send it over
->    by Monday? Also please dont worry at all about editing — we’ll take care of
->    that.
->    - *Parent groups:* We’ll share a few Facebook groups you can post in
->    shortly.
->
-> Thanks again for all the support — means a lot!
->
-> Warmly,
-> Team Coral Academy
->
-> On Wed, Apr 15, 2026 at 9:33 AM Kevin Lee <taigerdad@gmail.com> wrote:
->
->>
->>    -
->>
->>    *Trustpilot Re
+New Contact Form Submission Name: a Email: a@m.com Phone: +18888888888 Message: iuoiuo Submitted at: 2026-06-09T14:49:21.356Z User ID: Guest
 
 ----------------------------------------
 
@@ -929,40 +742,39 @@ wrote:
 Example 24
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+Re: For Miss Amalia,
 
 Body:
-3
+Thank you for this, I really appreciate it!
 
-On Fri, Jan 16, 2026, 9:54 AM Coral Academy <support@coralacademy.com>
-wrote:
+On Thu, 30 Oct 2025, 23:43 Coral Academy, <support@coralacademy.com> wrote:
 
-> Hey there!
+> Hi Jen,
 >
-> Thanks for joining today’s class, History Investigators Club! We’d love to
-> hear what you thought — it’ll only take a few seconds, but it really helps
-> us get better! 😊
+> Ofcourse, we will pass this along! Thanks so much for letting us know.
 >
+> Tim & Wren have been with us since the very beginning and we'd love to do
+> anything we could to support their learning journeys.
 >
+> We will forward this to Amalia & let you know once she fills them out.
 >
+> Please feel free to let us know if there's anything else we can help with.
 >
-> *1. 😀: Great2. 🙂: Good3. 😐: Average4. ☹️: Bad*
+> Hope you have a great weekend!
 >
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :)
+> Best,
+> Coral Academy
 >
-> We appreciate you!
-> Team Coral Academy 💖
+> On Thu, 30 Oct, 2025, 06:39 Jen Cuthbert, <jenjcuthbert@gmail.com> wrote:
 >
->
->
-> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
-> <https://#%23mt_unsubscribe_link%23%23>
-> 16/01/26, 20:41:24
-> Remove
->
->
-
+>> Hello,
+>>
+>> Can you please email this to Miss Amalia, she has very kindly agreed (if
+>> Coral Academy says it's ok) to fill in these forms regarding an assessment
+>> for ADHD for Wren.   Miss Amalia is the teacher that the Wren sees most
+>> often, so it makes sense to have her input for this.
+>>
+>> The forms are attached to this 
 
 ----------------------------------------
 
@@ -970,32 +782,45 @@ wrote:
 Example 25
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+Re: Collaboration Introduction
 
 Body:
-4
+Hello dear
 
-On Tue, Apr 7, 2026 at 12:18 PM Coral Academy <support@coralacademy.com>
+On Thu, Feb 26, 2026 at 2:19 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
 wrote:
 
-> We hope you enjoyed this session!
-> Hey parent!
+> I understand, dear. I am a child development doctor, and I consider this
+> title important. I would like to ask you to increase the budget a little
+> more.
 >
-> Thanks for joining today’s class, Into the Wild: Exploring Reptiles and
-> Amphibians ! We’d love to hear what you thought — it’ll only take a few
-> seconds, but it really helps us get better!
-> *1. ☹️ : Bad* *2. 😐 : Average* *3. 🙂 : *Good *4. 😃 : *Great
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :) We appreciate
-> you!
+> On Thu, Feb 26, 2026 at 1:39 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
 >
-> Happy Learning!
-> Team Coral Academy
-> This message was sent to your email at your request.
-> Coral Learning Academy LLC
-> 1111B S Governers Ave STE 26485, DE 19904
-> View in Browser | Email Preferences
-> <http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwCW8LzajRix-2BeFELT4zrQQbTC7gkaZQX6ZY1IJWbeJaElhRolBRjKPUkaF7jeWK32A-3D-3DM0G
+>> Hi Ülkü,
+>>
+>> To clarify my previous message, the $100 offer is for a sponsored video
+>> post.
+>>
+>> Please let us know if you would be open to moving forward with these
+>> terms for our pilot project.
+>>
+>> Warm regards,
+>>
+>> Lucy
+>>
+>>
+>> On Thu, Feb 26, 2026 at 4:08 PM Coral Academy <lucy@coralacademy.com>
+>> wrote:
+>>
+>>> Hi Ülkü,
+>>>
+>>> Thank you for sharing those details with us. It’s great to know your
+>>> children are within our target age range.
+>>>
+>>> We are very interested in exploring a collaboration with you. As we are
+>>> currently an early-stage startup, we are working with a strict budget for
+>>> our 
 
 ----------------------------------------
 
@@ -1003,43 +828,40 @@ wrote:
 Example 26
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+Re: Weekly Class Update – March 31 & April 1
 
 Body:
-3
+♥️
 
-On Wed, Jan 28, 2026 at 7:56 PM Coral Academy <support@coralacademy.com>
+Anika Arora reacted via Gmail
+<https://www.google.com/gmail/about/?utm_source=gmail-in-product&utm_medium=et&utm_campaign=emojireactionemail#app>
+
+On Wed, Apr 8, 2026 at 8:16 PM Hannah Knecht <hannahjoyknecht@gmail.com>
 wrote:
 
-> Hey there!
+> Perfect - I will let you know by Sunday if I have any questions.  =)
 >
-> Thanks for joining today’s class, Finance 101: A Practical Playbook for
-> Mastering Money! We’d love to hear what you thought — it’ll only take a few
-> seconds, but it really helps us get better! 😊
+> On Apr 8, 2026, at 10:42 AM, Anika Arora <anika@coralacademy.com> wrote:
 >
+> Hi Hannah,
 >
-> *1. ☹️: Bad*
-> *2. 😐: Average*
-> *3. 🙂: Good**4. 😀: Great*
+> It’s great to have you back!
 >
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :)
+> Regarding our meeting on Monday, April 13, we can touch base if you have
+> any concerns with the Topic 7 slides once you've had a chance to work on
+> them. Otherwise, feel free to skip the meeting, as we are currently working
+> on Topic 8.
 >
-> We appreciate you!
-> Team Coral Academy 💖
+> Just let me know what works best for you.
 >
+> Best regards,
 >
->
->
->
->
-> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
-> <https://#%23mt_unsubscribe_link%23%23>
-> 20/01/26, 13:17:49
-> Remove
+> Anika Arora
+> <https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+> <https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
 >
 >
-
+> On Wed, Apr 8, 2026 at 8:09 PM Hannah Knecht <hannahjoykn
 
 ----------------------------------------
 
@@ -1047,40 +869,10 @@ wrote:
 Example 27
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+Re: Thurs Kawaii
 
 Body:
-4
-
-On Tue, Jan 20, 2026 at 12:51 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> Hey there!
->
-> Thanks for joining today’s class, Into the Wild: Exploring Reptiles and
-> Amphibians! We’d love to hear what you thought — it’ll only take a few
-> seconds, but it really helps us get better! 😊
->
->
->
->
-> *1. 😀: Great2. 🙂: Good3. 😐: Average4. ☹️: Bad*
->
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :)
->
-> We appreciate you!
-> Team Coral Academy 💖
->
->
->
-> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
-> <https://#%23mt_unsubscribe_link%23%23>
-> 16/01/26, 20:41:24
-> Remove
->
->
-
+Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 
 ----------------------------------------
 
@@ -1088,31 +880,41 @@ wrote:
 Example 28
 
 Subject:
-Enrollment Withdrawn for 'How the Human Body Works'
+Re: Coral Academy x Simply Sepi
 
 Body:
-Jackson has been withdrawn.
+Thank you and look forward to hearing from you.
 
-Hi Support,
+Best,
+Sepideh
 
-We’re writing to confirm that Jackson has been successfully withdrawn from "How the Human Body Works."
-
-Here are the details of the parent whose learner(s) have withdrawn from the class:
-Parent Name: Courtney Jagoda
-Parent Email: jagodango@gmail.com
-
-
-
+SIMPLY SEPI
+Sepideh Haftgoli
+Producer, Director, Social Media Strategist/Influencer
+sepi@simplysepi.com
++1 323 632 2556
 
 
-Happy Learning!
-*Team Coral Academy*
-P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+￼
 
-This message was sent to your email at your request.
-Coral Learning Academy LLC
-1111B S Governers Ave STE 26485, DE 19904
-View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ8PL9rNnoHVjdA-3D-3DbgOz_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-2BLy4OQHWTgkKgMqHOGIm8f0wzfHa-2BprecaE-2FkmUnvXJpv3JWBKPHLuYO9
+> On Jan 15, 2026, at 12:24 AM, Coral Academy <lucy@coralacademy.com> wrote:
+> 
+> Hi Sepi,
+> 
+> Thank you for your response.
+> 
+> We will review the details you provided and get back to you shortly.
+> 
+> Best,
+> 
+> Lucy
+> 
+> 
+> 
+> On Wed, Jan 14, 2026 at 1:39 AM Sepideh Haftgoli <sepi@simplysepi.com <mailto:sepi@simplysepi.com>> wrote:
+>> Hi Lucy,
+>> 
+>> Unfortunately the time it takes me to properly do a reel any justice I couldn’t do for $100. It takes too much effort, if I want to do something properly for a brand. For $200 I can do a photo post that lives on my feed if you are interested, but a reel I cannot go any lower than $325 and that’s simply for my time to create something worthwhile. I draft a script and then share it with you for approval and/or edits, base
 
 ----------------------------------------
 
@@ -1120,33 +922,10 @@ View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/cli
 Example 29
 
 Subject:
-Re: Quick Feedback – It Takes 2 Seconds! ✨
+collab video
 
 Body:
-4
 
-
-On Thu, Apr 30, 2026 at 9:01 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> We hope you enjoyed this session!
-> Hey parent!
->
-> Thanks for joining today’s class, Into the Wild: Young Zoologists Club !
-> We’d love to hear what you thought — it’ll only take a few seconds, but it
-> really helps us get better!
-> *1. ☹️ : Bad* *2. 😐 : Average* *3. 🙂 : *Good *4. 😃 : *Great
-> Simply *reply with a number (1-4) based on your experience*. Feel free to
-> share any additional thoughts/feedback you have as well :) We appreciate
-> you!
->
-> Happy Learning!
-> Team Coral Academy
-> This message was sent to your email at your request.
-> Coral Learning Academy LLC
-> 1111B S Governers Ave STE 26485, DE 19904
-> View in Browser | Email Preferences
-> <http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwPyA3wxEnjbVMIk8Vt8v4oxXG3Nnouk49pMoq9T-2BZ8-2BdnFFWsobQljRpoXNv16-2BqVQ-3D-3DQaSV_mmV2
 
 ----------------------------------------
 
@@ -1154,47 +933,45 @@ wrote:
 Example 30
 
 Subject:
-Re: Thank You
+Re: Love what you're doing—let’s collaborate?
 
 Body:
-Hello.
-That works great. Thank you!
+Hello!
 
+May I know more about your company?
 
-  *
-Jessica
+Thank you.
 
-Sincerely,
-Jessica Miller
+On Tue, Aug 5, 2025 at 8:26 PM Coral Academy <lucy@coralacademy.com> wrote:
 
-National Virtual Teacher Certified
-Marketing/Business 5-12
-Middle Grades Math
-Middle Grades Reading
-PE and Health K-12
+> Hi,
+>
+> I hope you’ve been doing well! I wanted to follow up to see if you had a
+> chance to review my earlier emails. We’re still very eager to connect and
+> explore potential ways we could collaborate.
+>
+> It would be great to hear your thoughts whenever you get a chance.
+>
+> Best regards,
+> Lucy
+>
+> On Thu, Jul 3, 2025 at 10:26 PM Coral Academy <lucy@coralacademy.com>
+> wrote:
+>
+>> Hi,
+>>
+>> Hope you're doing well! Just wanted to check in—did you get a chance to
+>> see our previous emails? We’d love to connect and explore how we can work
+>> together.
+>>
+>> Looking forward to hearing your thoughts!
+>>
+>> Best,
+>> Lucy
+>>
+>>
+>>
 
-ColorandChat
-Teen Finance
-
-Visit my Amazon Shop
-________________________________
-From: Coral Academy <support@coralacademy.com>
-Sent: Tuesday, July 8, 2025 5:06:54 PM
-To: Jessica Miller <jessicamiller2512@hotmail.com>
-Subject: Re: Thank You
-
-Hello Jessica,
-
-We'd like to inform you that we have received confirmation from our learners for the trial class on Monday, July 14th, at 3 PM EST. We hope this time works well for you.
-
-We are looking forward to your confirmation. We will share the meeting details with you shortly.
-
-Best,
-Coral Academy
-
-On Mon, Jul 7, 2025 at 7:17 PM Jessica Miller <jessicamiller2512@hotmail.com<mailto:jessicamiller2512@hotmail.com>> wrote:
-Hello,
-Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or, Wedne
 
 ----------------------------------------
 

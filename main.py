@@ -26,6 +26,7 @@ from trial_followup import (
     
     
 )
+from compose_email_sender import send_new_email
 from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
 from gmail_history import get_gmail_history
@@ -626,5 +627,83 @@ def sync_sent(email_id: int):
 
     return RedirectResponse(
         url=f"/email/{email_id}?synced=1",
+        status_code=303
+    )
+
+@app.get("/compose")
+def compose(request: Request):
+
+    return templates.TemplateResponse(
+        "compose.html",
+        {
+            "request": request
+        }
+    )
+
+from fastapi import Form, Request
+from fastapi.responses import RedirectResponse
+import time
+import sync_sent_gmail
+
+
+@app.post("/compose")
+async def compose_email(
+
+    request: Request,
+
+    from_account: str = Form(...),
+
+    to_email: str = Form(...),
+
+    subject: str = Form(...),
+
+    body: str = Form(...)
+
+):
+
+    if from_account == "support":
+
+        from_email = os.getenv("EMAIL_1")
+        token_file = "token_support.json"
+
+    elif from_account == "lucy":
+
+        from_email = os.getenv("EMAIL_2")
+        token_file = "token_lucy.json"
+
+    elif from_account == "engineering":
+
+        from_email = os.getenv("EMAIL_3")
+        token_file = "token_engineering.json"
+
+    else:
+
+        from_email = os.getenv("EMAIL_4")
+        token_file = "token_sat.json"
+
+    result = send_new_email(
+
+        from_email=from_email,
+        token_file=token_file,
+        to_email=to_email,
+        subject=subject,
+        body=body
+
+    )
+
+    if result:
+
+        #import time
+        #time.sleep(2)
+
+        #import sync_sent_gmail
+        #sync_sent_gmail.main()
+
+        return RedirectResponse(
+            "/compose?sent=true",
+            status_code=303
+        )
+    return RedirectResponse(
+        "/compose",
         status_code=303
     )

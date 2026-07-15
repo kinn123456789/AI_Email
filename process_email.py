@@ -12,6 +12,7 @@ from vector_search import search_similar_emails
 from rag_reranker import rerank_emails
 from knowledge_search import search_knowledge_base
 from reply_generator import generate_reply
+from slack_notifications import send_slack_notification
 
 from database import (
     email_exists,
@@ -251,3 +252,11 @@ def process_email(msg, account):
     )
 
     print("Processed:", message_id)
+    send_slack_notification(
+        title="New Email Received",
+        sender=sender_email,
+        subject=subject,
+        priority=result["priority"],
+        category=result["category"],
+        link=f"https://ai-email-2.onrender.com/email/{email_id}"
+    )
