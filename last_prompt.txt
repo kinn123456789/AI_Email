@@ -2,16 +2,17 @@
 CURRENT EMAIL
 
 Category:
-General
+Admissions
 
 Priority:
 Low
 
 Subject:
-hi
+Accepted: Class At Jul 15, 8:00 PM EDT: "Astronomy 101: Learn About
+ Space" by Coral Academy.
 
 Body:
-hi
+
 
 ==================================================
 
@@ -30,29 +31,41 @@ Source:
 class
 
 Similarity:
-0.313596505893296
+0.706970900872534
 
 Title:
-Scratch Coding Lab: Build With Scratch
+Astronomy 101: Learn About Space
 
 Section:
-Resources
+Description
 
 Category:
-lifeskills
+science
 
 Content:
-Class: Scratch Coding Lab: Build With Scratch
+Class: Astronomy 101: Learn About Space
 
-Subject: lifeskills
+Subject: science
 
-Section: Resources
+Section: Description
 
 Content:
-• {'link': 'https://scratch.mit.edu/', 'title': 'Free Scratch Software'}
+Get ready for an exciting journey through space as we explore the universe, our solar system, and Earth's Moon. This class is designed to spark curiosity and wonder as learners discover the mysteries of astronomy, from comets and black holes to planets and moon craters.
+
+Sessions will include fun discussions, interactive activities, and creative projects to make learning hands-on and engaging. Every astronomy class begins with introductions and group sharing — learners are welcome to bring space-related items, drawings, or stories to share with their peers.
+
+Please find the week-on-week schedule below for the next few weeks:
+April 8: Artemis II- Lunar Flyby, Splashdown, & Future Missions
+April 15: Rocket Science- How do Rockets Work?
+April 22: Space Navigation- How do Spacecraft Know Where to Go?
+April 29: Living in Space- The Challenge of Microgravity
+May 6: The Kennedy Space Center and Mission Control (Houston)
+May 13: Space Programs in Ten Countries Around the World
+
+This virtual class by Coral Academy is one of the most engaging astronomy classes online, perfect for kids to learn about space and explore through fun, interactive online learning.
 
 Reference URL:
-https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
 
 IMPORTANT
 
@@ -72,30 +85,29 @@ Source:
 class
 
 Similarity:
-0.300287367830765
+0.647016052326778
 
 Title:
-Scratch Coding Lab: Build With Scratch
+Astronomy 101: Learn About Space
 
 Section:
-Prerequisites
+Learner Summary
 
 Category:
-lifeskills
+science
 
 Content:
-Class: Scratch Coding Lab: Build With Scratch
+Class: Astronomy 101: Learn About Space
 
-Subject: lifeskills
+Subject: science
 
-Section: Prerequisites
+Section: Learner Summary
 
 Content:
-• {'title': 'Basic familiarity with using a computer (mouse, keyboard, and web browser)'}
-• {'link': 'https://scratch.mit.edu/', 'title': 'A free Scratch account (at scratch.mit.edu) is recommended'}
+In this exciting space class, learners will explore the science behind our universe: from comets & constellations to galaxies and gravity, all while building real scientific thinking skills that help them understand how the cosmos works.
 
 Reference URL:
-https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
 
 IMPORTANT
 
@@ -115,30 +127,29 @@ Source:
 class
 
 Similarity:
-0.2882363181949
+0.643501390303594
 
 Title:
-Around the Globe with Mr. Clark
+Astronomy 101: Learn About Space
 
 Section:
-Prerequisites
+Parent Summary
 
 Category:
-lifeskills
+science
 
 Content:
-Class: Around the Globe with Mr. Clark
+Class: Astronomy 101: Learn About Space
 
-Subject: lifeskills
+Subject: science
 
-Section: Prerequisites
+Section: Parent Summary
 
 Content:
-• {'title': 'We use Nearpod for interactive learning. Access it via the app or web browser.'}
-• {'title': 'Make sure YouTube isn’t blocked to watch videos in Nearpod during class.'}
+In this exciting space class, learners will explore the science behind our universe: from comets & constellations to galaxies and gravity, all while building real scientific thinking skills that help them understand how the cosmos works.
 
 Reference URL:
-https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
 
 IMPORTANT
 
@@ -158,29 +169,31 @@ Source:
 class
 
 Similarity:
-0.273523057873761
+0.590061261468136
 
 Title:
-Geology & Earth Science Explorers
+Astronomy 101: Learn About Space
 
 Section:
-Learner Summary
+Learning Goals
 
 Category:
 science
 
 Content:
-Class: Geology & Earth Science Explorers
+Class: Astronomy 101: Learn About Space
 
 Subject: science
 
-Section: Learner Summary
+Section: Learning Goals
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+• Understand the different phases of the moon and learn fun facts about the moon rocks and craters.
+• Learn how scientists explore the universe — from constellations and eclipses to black holes and galaxies.
+• Discover the tools and missions that make space exploration possible, including telescopes, rovers, and space stations.
 
 Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
 
 IMPORTANT
 
@@ -200,13 +213,13 @@ Source:
 class
 
 Similarity:
-0.271589605395937
+0.540318274753983
 
 Title:
 Geology & Earth Science Explorers
 
 Section:
-Parent Summary
+Description
 
 Category:
 science
@@ -216,10 +229,48 @@ Class: Geology & Earth Science Explorers
 
 Subject: science
 
-Section: Parent Summary
+Section: Description
 
 Content:
-Each week, learners explore new themes in geology & earth science. They will share rock collections, join discussions, and enjoy science experiments and art activities, blending the excitement of a science class with hands-on exploration.
+Learners will explore a different theme each week: from rocks and crystals to fossils, volcanoes, dinosaurs, and landforms.
+
+Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring items such as fossils, geodes, or rock art to share. At-home science experiments and creative art projects will be provided to extend the learning experience beyond the classroom.
+
+We even touch on exciting aspects like the Earth's history and how carnivores and herbivores have evolved through time, concepts that are often overlooked in a typical science class.
+
+If you're eager to learn geology online, our virtual classes make exploring science easy from anywhere. 
+
+Please find below the week-on-week schedule & the topic of focus for the next couple of weeks:
+Slot 1 - Costa Rican Geology: MONDAY CLASS
+WORLD BIOMES
+April 6- Deserts 
+April 13- Grasslands and Savannas
+April 20-Tropical Rainforests
+April 27- Deciduous Forests
+May 4- Taiga (Boreal Forests)
+May 11- The Tundra
+May 18- Mountains
+May 25- Freshwater (Rivers, Ponds, Wetlands)
+
+Slot 1 -TUESDAY CLASS
+March 31- The Rock Cycle- Igneous Investigations
+April 7- The Rock Cycle- Sedimentary Stories
+April 14- The Rock Cycle- Metamorphic Magic
+April 21- Crystallography
+April 28- Mineralogy Testing
+May 5- Geodes and Agates
+May 12- Types of Fossils
+May 19- Paleontology and the Geologic Timescale
+May 26- Archeology- Arrowheads and Artifacts
+June 2- Architecture of Ancient Civilizations
+June 9- NO CLASS
+June 16- The Layers of the Earth
+June 23- NO CLASS
+June 30- Submarine Volcanoes
+July 7- Hydrothermal Features
+July 14-August 11- NO CLASS, SUMMER BREAK
+
+This virtual class by Coral Academy is perfect for families seeking science enrichment or a class on planet Earth. This topic is a top pick among our Coral classes; delivering engaging life science concepts through expertly crafted online learning sessions grounded in real-world learning.
 
 Reference URL:
 https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
@@ -250,11 +301,44 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Test
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hi
+The next session is on Wed Jan 7, 8:00 PM. See everything  need to prepare!
 
+Hi Support,
+
+Woohoo! *You have successfully enrolled*  in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Test
+Parent Email: test@popop.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ8P
 
 ----------------------------------------
 
@@ -262,11 +346,44 @@ Hi
 Example 2
 
 Subject:
-Test
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hi
+The next session is on Wed Jan 7, 8:00 PM. See everything  need to prepare!
 
+Hi Support,
+
+Woohoo! *You have successfully enrolled*  in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: TEST
+Parent Email: oipo@op.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ8PL9r
 
 ----------------------------------------
 
@@ -274,13 +391,35 @@ Hi
 Example 3
 
 Subject:
-Hello
+Waitlist Confirmation for 'Astronomy 101: Learn About Space'
 
 Body:
+Shawn Graves is on the waitlist! We will let you know if more seats open up.
+
+Hi Support,
+
+Woohoo! Shawn Graves has successfully joined the waitlist!
+
+Here is the summary of their enrollment:
+Parent Name: Andrea
+Parent Email: gravespr@myyahoo.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Shawn Graves
+waitlisted
+
+  
 
 
-I want to make enquire 
 
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
 
 ----------------------------------------
 
@@ -288,11 +427,51 @@ I want to make enquire
 Example 4
 
 Subject:
-Test
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-test
+The next session is on Wed Jan 7, 8:00 PM. See everything undefined &amp; undefined need to prepare!
 
+Hi Support,
+
+Woohoo! *You have successfully enrolled* undefined &amp; undefined in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Ashlee Lizak
+Parent Email: ablockhart85@yahoo.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+
+
+ 
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mit
 
 ----------------------------------------
 
@@ -300,44 +479,44 @@ test
 Example 5
 
 Subject:
-Re: Collaboration Introduction
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hello
-On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
+The next session is on Wed Jan 7, 8:00 PM. See everything  need to prepare!
 
-> Hi Ülkü,
->
-> That’s great news. We are excited to move forward with the collaboration
-> at the $100 rate.
->
-> To discuss the next steps and details further, please book a call at a
-> time that works best for you using this link:
-> https://calendly.com/lucy-coralacademy/30min
->
-> I look forward to speaking with you soon.
->
-> Warm regards,
-> Lucy
->
->
-> On Fri, Mar 13, 2026 at 9:50 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
-> wrote:
->
->> Thank you very much, I accept your $100 offer. We can discuss the details.
->>
->>
->> On Fri, Mar 13, 2026 at 5:07 PM Coral Academy <lucy@coralacademy.com>
->> wrote:
->>
->>> Hi Ülkü,
->>>
->>> Thank you for your response and for your willingness to support our new
->>> business.
->>>
->>> While we appreciate the offer of $200, we unfortunately do not have the
->>> budget to accommodate this right now as an early-stage startup. We will
->>> keep you
+Hi Support,
+
+Woohoo! *You have successfully enrolled*  in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Matt Crawford
+Parent Email: mattcrawford500@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2
 
 ----------------------------------------
 
@@ -345,47 +524,44 @@ On Mon, Mar 16, 2026 at 5:13 PM Coral Academy <lucy@coralacademy.com> wrote:
 Example 6
 
 Subject:
-Fwd: Thank you for your call
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
----------- Forwarded message ---------
-From: <cfoote@theoldschoolhouse.com>
-Date: Fri, Dec 5, 2025 at 5:03 AM
-Subject: Thank you for your call
-To: <aditya@coralacademy.com>
+The next session is on Tue Aug 5, 6:00 PM. See everything Aadvika need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Aadvika in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: usha A
+Parent Email: ushaarmugam@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Tuesdays, 6:00 PM - 6:50 PM, Eastern Standard Time
+
+Aadvika 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Tue Aug 5, 6:00 PM—don’t miss it!
 
 
-Hello, Aditya,
-
-It was so nice meeting with you — thank you again for taking the time to
-chat!
-
-*Here are the answers to your questions.*
-
-We are unable to do a collaboration. I will be sure and contact you if this
-changes.
-
-Our eblast readers and digital magazine readers are predominantly adults,
-not children. Our readers are homeschooling a broad range of ages, with all
-age groups represented strongly, including the ages 8-13.
-
-For states--Only 56% of our subscribers (29120 people) have elected to
-share their state with us. Of those who we know their states, the ten top
-highest represented states for our eblast sends are:
 
 
-Texas 2678
-California 2014
-North Carolina 1599
-Florida 1442
-Tennessee 1419
-Georgia 1183
-Virginia 1150
-Ohio 977
-Pennsylvania 968
-Illinois 939
 
-For the digi
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-
 
 ----------------------------------------
 
@@ -393,47 +569,44 @@ For the digi
 Example 7
 
 Subject:
-Re: Thank You
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hello.
-That works great. Thank you!
+The next session is on Thu Dec 11, 6:30 AM. See everything coralsupport need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* coralsupport in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Yokesh
+Parent Email: yokesh.ssmy2210@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Thursdays, 5:30 AM - 6:20 AM, India Standard Time
+
+coralsupport 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Thu Dec 11, 6:30 AM—don’t miss it!
 
 
-  *
-Jessica
 
-Sincerely,
-Jessica Miller
 
-National Virtual Teacher Certified
-Marketing/Business 5-12
-Middle Grades Math
-Middle Grades Reading
-PE and Health K-12
 
-ColorandChat
-Teen Finance
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
 
-Visit my Amazon Shop
-________________________________
-From: Coral Academy <support@coralacademy.com>
-Sent: Tuesday, July 8, 2025 5:06:54 PM
-To: Jessica Miller <jessicamiller2512@hotmail.com>
-Subject: Re: Thank You
-
-Hello Jessica,
-
-We'd like to inform you that we have received confirmation from our learners for the trial class on Monday, July 14th, at 3 PM EST. We hope this time works well for you.
-
-We are looking forward to your confirmation. We will share the meeting details with you shortly.
-
-Best,
-Coral Academy
-
-On Mon, Jul 7, 2025 at 7:17 PM Jessica Miller <jessicamiller2512@hotmail.com<mailto:jessicamiller2512@hotmail.com>> wrote:
-Hello,
-Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or, Wedne
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXk
 
 ----------------------------------------
 
@@ -441,46 +614,44 @@ Thank you so much.  I am available this Wednesday from 11:30-2 (ending at 2). Or
 Example 8
 
 Subject:
-Verify your identity
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
+The next session is on Wed Jan 7, 8:00 PM. See everything  need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled*  in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Testt
+Parent Email: test@gagaga.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
 
 
-  
-  
-    Verify your identity
-  
 
-  
-    
-      
-        
-          
-            
-              
-                
-                  
-                     ( http://url1719.openphone.com/ls/click?upn=u001.DMYlBxmJ9Qt4HlM62HU1YjoUDRpFcQHE-2BmueQa7UiFWu59s-2FNdVcLiEV3TN6jJUWc6MtHuKtIZq3VrWM3P7T0Q-3D-3Dn-vK_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw3-2FZQBsepyWu52CXF1P3ia8DaEFrefuMZhRJ-2FeAjSHvhUk-2F4xTv41Y3rfFy6Y4j3cfIzuwSe9etKdYUrHYsKBLnouTIwxHQhKjlucJAqAqYlAXU2jt80Cr7Sk-2Fc-2BhUXQY3GBCST4riSjfaa1BpnhqgEPb55QHT5EH60vuchcL0CkDA-3D-3D ) 
-                    
-                  
-                
-              
-            
-            
-              
-                
-                  
-                    
-                      
-                        
-                          
-                            
-                          
-                        
-                      
-                    
-                    
-                      Verify
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ
 
 ----------------------------------------
 
@@ -488,19 +659,44 @@ Body:
 Example 9
 
 Subject:
-Re: One quick question before we stop emailing
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Yes 
+The next session is on Wed Jan 7, 8:00 PM. See everything  need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled*  in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Kimberly Carwyn
+Parent Email: blessedwithgrace@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
 
 
-Sent from Yahoo Mail for iPhone
 
 
-On Friday, April 24, 2026, 11:07 AM, Coral Academy <support@coralacademy.com> wrote:
 
- 
-One quick question before we stop emailing#yiv4224412887 img{}#yiv4224412887 table, #yiv4224412887 td{}#yiv4224412887 .yiv4224412887mceStandardButton, #yiv4224412887 .yiv4224412887mceStandardButton td, #yiv4224412887 .yiv4224412887mceStandardButton td a{}#yiv4224412887 p, #yiv4224412887 a, #yiv4224412887 li, #yiv4224412887 td, #yiv4224412887 blockquote{}#yiv4224412887 p, #yiv4224412887 a, #yiv4224412887 li, #yiv4224412887 td, #yiv4224412887 body, #yiv4224412887 table, #yiv4224412887 blockquote{}#yiv4224412887 .yiv4224412887mcnPreviewText{display:none!important;}#yiv4224412887 .yiv4224412887bodyCell{margin:0 auto;padding:0;width:100%;}#yiv4224412887 .yiv4224412887ExternalClass, #yiv4224412887 .yiv4224412887ExternalClass p, #yiv4224412887 .yiv4224412887ExternalClass td, #yiv4224412887 .yiv4224412887ExternalClass div, #yiv4224412887 .yiv4224412887Extern
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2
 
 ----------------------------------------
 
@@ -508,10 +704,44 @@ One quick question before we stop emailing#yiv4224412887 img{}#yiv4224412887 tab
 Example 10
 
 Subject:
-New Contact Form Enquiry 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-New Contact Form Submission Name: a Email: aa@a.com Phone: +11222112211 Message: 21wqeqwsdqwdswaa Submitted at: 2026-06-09T14:40:05.677Z User ID: Guest
+The next session is on Wed Jan 7, 8:00 PM. See everything  need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled*  in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Test
+Parent Email: test@hshsh.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Support 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MBR-2BJ8P
 
 ----------------------------------------
 
@@ -519,22 +749,44 @@ New Contact Form Submission Name: a Email: aa@a.com Phone: +11222112211 Message:
 Example 11
 
 Subject:
-New Contact Form Enquiry — sai sruthin
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-NEW CONTACT FORM SUBMISSION
+The next session is on Wed Nov 12, 8:00 PM. See everything CoralSupport need to prepare!
 
-Name: sai sruthin
+Hi Support,
 
-Email: saisruthinreddykondma@gmail.com
+Woohoo! *You have successfully enrolled* CoralSupport in *Astronomy 101: Learn About Space*.
 
-Phone: +16758745889
+Here is the summary of your enrollment:
+Parent Name: TESTER
+Parent Email: sbhokb8rn1@illubd.com
 
-Message: hi eshwar
+Astronomy 101: Learn About Space
+Teacher Amalia
 
-Submitted at: 2026-06-15T18:55:16.380Z
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
 
-User ID: Guest
+CoralSupport 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Nov 12, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF
 
 ----------------------------------------
 
@@ -542,36 +794,44 @@ User ID: Guest
 Example 12
 
 Subject:
-Re: Cancelation
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Good email
+The next session is on Wed Aug 20, 5:00 PM. See everything Atharv need to prepare!
 
-On Tue, 2 Dec, 2025, 13:34 Coral Academy, <support@coralacademy.com> wrote:
+Hi Support,
 
-> Hello Candice!
->
-> Thank you so much for reaching out — and for signing your child up with
-> us. I’m really glad you let us know.
->
-> Just to reassure you right away: *your card will never be charged
-> automatically*.
->
-> The *2 free classes you enrolled for are completely free*, with no hidden
-> charges or automatic upgrades. The only way a payment would ever occur is
-> if you manually choose to start a subscription yourself — otherwise, *nothing
-> is billed*.
->
->
-> *However, we'd also love to understand what’s prompting the cancellation
-> request.*
-> If it’s the *timing*, we’re more than happy to accommodate and find a
-> slot that works better for your family’s schedule. Many parents adjust
-> timings in the first week, and we always try our best to work around what’s
-> convenient for you.
->
-> If there’s anything else that didn’t feel like a good fit, I’d truly
-> apprec
+Woohoo! *You have successfully enrolled* Atharv in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Atharv
+Parent Email: debrupa.c@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 5:00 PM - 5:50 PM, Pacific Standard Time
+
+Atharv 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Aug 20, 5:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv
 
 ----------------------------------------
 
@@ -579,10 +839,44 @@ On Tue, 2 Dec, 2025, 13:34 Coral Academy, <support@coralacademy.com> wrote:
 Example 13
 
 Subject:
-Re: 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+The next session is on Wed Oct 8, 6:00 PM. See everything Orion need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Orion in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Kathleen
+Parent Email: kqts1@hotmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 6:00 PM - 6:50 PM, Mountain Daylight Time
+
+Orion 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Oct 8, 6:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-
 
 ----------------------------------------
 
@@ -590,10 +884,44 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 14
 
 Subject:
-Re: 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+The next session is on Wed Sep 10, 5:00 PM. See everything Harnidh need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Harnidh in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: prabhjit Singh
+Parent Email: prabhjitlife@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 5:00 PM - 5:50 PM, Pacific Standard Time
+
+Harnidh 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Sep 10, 5:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0
 
 ----------------------------------------
 
@@ -601,10 +929,44 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 15
 
 Subject:
-Re: 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+The next session is on Wed Jan 7, 8:00 PM. See everything Shawn Graves need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Shawn Graves in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Andrea
+Parent Email: gravespr@myyahoo.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Shawn Graves 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Jan 7, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3
 
 ----------------------------------------
 
@@ -612,10 +974,44 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 16
 
 Subject:
-Re: 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+The next session is on Thu Jan 15, 9:00 AM. See everything Moon need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Moon in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Jackson
+Parent Email: taigerdad@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Thursdays, 9:00 AM - 9:50 AM, Pacific Standard Time
+
+Moon 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Thu Jan 15, 9:00 AM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2F
 
 ----------------------------------------
 
@@ -623,10 +1019,44 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 17
 
 Subject:
-Re: 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+The next session is on Wed Aug 20, 5:00 PM. See everything Jacob need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Jacob in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Jennifer
+Parent Email: jennifersernholt@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 5:00 PM - 5:50 PM, Pacific Standard Time
+
+Jacob 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Aug 20, 5:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKn
 
 ----------------------------------------
 
@@ -634,10 +1064,35 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 18
 
 Subject:
-Re: 
+Waitlist Confirmation for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+Bentley is on the waitlist! We will let you know if more seats open up.
+
+Hi Support,
+
+Woohoo! Bentley has successfully joined the waitlist!
+
+Here is the summary of their enrollment:
+Parent Name: Trish jones
+Parent Email: tfunkhouser310@aol.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Tuesdays, 12:00 PM - 12:50 PM, Eastern Standard Time
+
+Bentley
+waitlisted
+
+  
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
 
 ----------------------------------------
 
@@ -645,10 +1100,44 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 19
 
 Subject:
-New Contact Form Enquiry 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-New Contact Form Submission Name: a Email: a Phone: +19999999999 Message: jkjkkl Submitted at: 2026-06-09T14:51:04.952Z User ID: Guest
+The next session is on Wed Aug 27, 7:00 PM. See everything Gabe need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Gabe in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Ashley settlemires 
+Parent Email: ashleysettlemires@hotmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 7:00 PM - 7:50 PM, Central Standard Time
+
+Gabe 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Aug 27, 7:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3
 
 ----------------------------------------
 
@@ -656,12 +1145,44 @@ New Contact Form Submission Name: a Email: a Phone: +19999999999 Message: jkjkkl
 Example 20
 
 Subject:
-
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-  Hi, I was looking into your business and wanted to check who would be the
-right person to speak with
+The next session is on Thu Dec 11, 10:30 PM. See everything meena need to prepare!
 
+Hi Support,
+
+Woohoo! *You have successfully enrolled* meena in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Meena Vallieswaran
+Parent Email: meenavallieswaran@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Thursdays, 10:30 PM - 11:20 PM, India Standard Time
+
+meena 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Thu Dec 11, 10:30 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e
 
 ----------------------------------------
 
@@ -669,10 +1190,44 @@ right person to speak with
 Example 21
 
 Subject:
-New Contact Form Enquiry 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-New Contact Form Submission Name: a Email: a@m Phone: +11212121212 Message: assas Submitted at: 2026-06-09T14:39:07.596Z User ID: Guest
+The next session is on Wed Sep 10, 5:00 PM. See everything Harnidh need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Harnidh in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: prabhjit Singh
+Parent Email: prabhjitlife@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 5:00 PM - 5:50 PM, Pacific Standard Time
+
+Harnidh 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Sep 10, 5:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0
 
 ----------------------------------------
 
@@ -680,50 +1235,44 @@ New Contact Form Submission Name: a Email: a@m Phone: +11212121212 Message: assa
 Example 22
 
 Subject:
-Re: Collaboration Introduction
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hello dear
+The next session is on Wed Dec 3, 8:00 PM. See everything Kellen need to prepare!
 
-On Tue, Feb 24, 2026 at 1:47 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
-wrote:
+Hi Support,
 
-> Thank you for your response.
->
-> I have children who are seven and ten years old, darling.
->
->
-> On Tue, Feb 24, 2026 at 1:33 PM Coral Academy <lucy@coralacademy.com>
-> wrote:
->
->> Hi Ülkü,
->>
->> Thank you for your response.
->>
->> To help us devise a plan for our collaboration, could you please let us
->> know the ages of your three children? Our platform primarily caters to
->> children aged 8–13, though we can also accommodate children who are 7 years
->> old.
->>
->> Knowing their ages will help us determine the best way to move forward.
->>
->> Warm regards,\
->> Lucy
->>
->>
->> On Tue, Feb 24, 2026 at 1:21 AM Ülkü Özyol <ulkukeldalozyol@gmail.com>
->> wrote:
->>
->>> Hello
->>> On Sun, Feb 22, 2026 at 5:32 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
->>> wrote:
->>>
->>>>
->>>>
->>>> On Tue, Feb 17, 2026 at 11:21 AM Coral Academy <lucy@coralacademy.com>
->>>> wrote:
->>>>
+Woohoo! *You have successfully enrolled* Kellen in *Astronomy 101: Learn About Space*.
 
+Here is the summary of your enrollment:
+Parent Name: Nicole
+Parent Email: elizabeth.nkr@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Kellen 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Dec 3, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F
 
 ----------------------------------------
 
@@ -731,10 +1280,44 @@ wrote:
 Example 23
 
 Subject:
-New Contact Form Enquiry 
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-New Contact Form Submission Name: a Email: a@m.com Phone: +18888888888 Message: iuoiuo Submitted at: 2026-06-09T14:49:21.356Z User ID: Guest
+The next session is on Wed Nov 19, 8:00 PM. See everything Sashmit need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Sashmit in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Sashmit
+Parent Email: official.shashwat.quiz@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Sashmit 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Wed Nov 19, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3
 
 ----------------------------------------
 
@@ -742,39 +1325,10 @@ New Contact Form Submission Name: a Email: a@m.com Phone: +18888888888 Message: 
 Example 24
 
 Subject:
-Re: For Miss Amalia,
+Re: Waitlist Confirmation for 'Astronomy 101: Learn About Space'
 
 Body:
-Thank you for this, I really appreciate it!
-
-On Thu, 30 Oct 2025, 23:43 Coral Academy, <support@coralacademy.com> wrote:
-
-> Hi Jen,
->
-> Ofcourse, we will pass this along! Thanks so much for letting us know.
->
-> Tim & Wren have been with us since the very beginning and we'd love to do
-> anything we could to support their learning journeys.
->
-> We will forward this to Amalia & let you know once she fills them out.
->
-> Please feel free to let us know if there's anything else we can help with.
->
-> Hope you have a great weekend!
->
-> Best,
-> Coral Academy
->
-> On Thu, 30 Oct, 2025, 06:39 Jen Cuthbert, <jenjcuthbert@gmail.com> wrote:
->
->> Hello,
->>
->> Can you please email this to Miss Amalia, she has very kindly agreed (if
->> Coral Academy says it's ok) to fill in these forms regarding an assessment
->> for ADHD for Wren.   Miss Amalia is the teacher that the Wren sees most
->> often, so it makes sense to have her input for this.
->>
->> The forms are attached to this 
+The Tuesday reptile was cancelled by the teacher but I was still charged. Please help. -Ginny Penn Sent from my iPad On Feb 3, 2026, at 10:03 AM, Coral Academy <support@coralacademy.com> wrote: ﻿ Jane is on the waitlist! We will let you know if more seats open up. Hi Ginny Penn, Woohoo! Jane has successfully joined the waitlist! Here is the summary of their enrollment: Astronomy 101: Learn About Space Teacher Amalia Tuesdays, 9:00 AM - 9:50 AM, Pacific Standard Time Jane waitlisted With an active subscription, your learner will be automatically enrolled when a seat becomes available. If your subscription isn’t active just yet, you'll be notified via email as soon as a seat opens up (seats are filled on a first-come, first-served basis) . Meanwhile, explore our other classes—your learner might find another one they love! Browse Classes Have questions? Reply anytime—we’re here for you. Happy Learning! Team Coral Academy P.S. Share the learning love! Tag us with #CoralAcademy on Instagram
 
 ----------------------------------------
 
@@ -782,45 +1336,44 @@ On Thu, 30 Oct 2025, 23:43 Coral Academy, <support@coralacademy.com> wrote:
 Example 25
 
 Subject:
-Re: Collaboration Introduction
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hello dear
+The next session is on Tue Aug 19, 5:00 PM. See everything Tristen need to prepare!
 
-On Thu, Feb 26, 2026 at 2:19 PM Ülkü Özyol <ulkukeldalozyol@gmail.com>
-wrote:
+Hi Support,
 
-> I understand, dear. I am a child development doctor, and I consider this
-> title important. I would like to ask you to increase the budget a little
-> more.
->
-> On Thu, Feb 26, 2026 at 1:39 PM Coral Academy <lucy@coralacademy.com>
-> wrote:
->
->> Hi Ülkü,
->>
->> To clarify my previous message, the $100 offer is for a sponsored video
->> post.
->>
->> Please let us know if you would be open to moving forward with these
->> terms for our pilot project.
->>
->> Warm regards,
->>
->> Lucy
->>
->>
->> On Thu, Feb 26, 2026 at 4:08 PM Coral Academy <lucy@coralacademy.com>
->> wrote:
->>
->>> Hi Ülkü,
->>>
->>> Thank you for sharing those details with us. It’s great to know your
->>> children are within our target age range.
->>>
->>> We are very interested in exploring a collaboration with you. As we are
->>> currently an early-stage startup, we are working with a strict budget for
->>> our 
+Woohoo! *You have successfully enrolled* Tristen in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Amanda 
+Parent Email: samwinos@yahoo.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Tuesdays, 5:00 PM - 5:50 PM, Central Standard Time
+
+Tristen 
+Enrollment Type: free_trial
+ enrolled
+
+  
+
+The next session is on Tue Aug 19, 5:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-
 
 ----------------------------------------
 
@@ -828,40 +1381,35 @@ wrote:
 Example 26
 
 Subject:
-Re: Weekly Class Update – March 31 & April 1
+Waitlist Confirmation for 'Astronomy 101: Learn About Space'
 
 Body:
-♥️
+Ethan is on the waitlist! We will let you know if more seats open up.
 
-Anika Arora reacted via Gmail
-<https://www.google.com/gmail/about/?utm_source=gmail-in-product&utm_medium=et&utm_campaign=emojireactionemail#app>
+Hi Support,
 
-On Wed, Apr 8, 2026 at 8:16 PM Hannah Knecht <hannahjoyknecht@gmail.com>
-wrote:
+Woohoo! Ethan has successfully joined the waitlist!
 
-> Perfect - I will let you know by Sunday if I have any questions.  =)
->
-> On Apr 8, 2026, at 10:42 AM, Anika Arora <anika@coralacademy.com> wrote:
->
-> Hi Hannah,
->
-> It’s great to have you back!
->
-> Regarding our meeting on Monday, April 13, we can touch base if you have
-> any concerns with the Topic 7 slides once you've had a chance to work on
-> them. Otherwise, feel free to skip the meeting, as we are currently working
-> on Topic 8.
->
-> Just let me know what works best for you.
->
-> Best regards,
->
-> Anika Arora
-> <https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-> <https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
->
->
-> On Wed, Apr 8, 2026 at 8:09 PM Hannah Knecht <hannahjoykn
+Here is the summary of their enrollment:
+Parent Name: Amber
+Parent Email: wilson.amber0627@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Tuesdays, 11:00 AM - 11:50 AM, Central Standard Time
+
+Ethan
+waitlisted
+
+  
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
 
 ----------------------------------------
 
@@ -869,10 +1417,44 @@ wrote:
 Example 27
 
 Subject:
-Re: Thurs Kawaii
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
+The next session is on Wed Sep 10, 7:00 PM. See everything Gabe need to prepare!
+
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Gabe in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Ashley settlemires 
+Parent Email: ashleysettlemires@hotmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 7:00 PM - 7:50 PM, Central Standard Time
+
+Gabe 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Sep 10, 7:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iX
 
 ----------------------------------------
 
@@ -880,41 +1462,44 @@ Reminder 📭 You've not received a reply yet. Snooze for 24H , 48H , or 72H
 Example 28
 
 Subject:
-Re: Coral Academy x Simply Sepi
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Thank you and look forward to hearing from you.
+The next session is on Wed Aug 20, 7:00 PM. See everything Arina need to prepare!
 
-Best,
-Sepideh
+Hi Support,
 
-SIMPLY SEPI
-Sepideh Haftgoli
-Producer, Director, Social Media Strategist/Influencer
-sepi@simplysepi.com
-+1 323 632 2556
+Woohoo! *You have successfully enrolled* Arina in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Tina
+Parent Email: jueyu540@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 7:00 PM - 7:50 PM, Peru Time
+
+Arina 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Aug 20, 7:00 PM—don’t miss it!
 
 
-￼
 
-> On Jan 15, 2026, at 12:24 AM, Coral Academy <lucy@coralacademy.com> wrote:
-> 
-> Hi Sepi,
-> 
-> Thank you for your response.
-> 
-> We will review the details you provided and get back to you shortly.
-> 
-> Best,
-> 
-> Lucy
-> 
-> 
-> 
-> On Wed, Jan 14, 2026 at 1:39 AM Sepideh Haftgoli <sepi@simplysepi.com <mailto:sepi@simplysepi.com>> wrote:
->> Hi Lucy,
->> 
->> Unfortunately the time it takes me to properly do a reel any justice I couldn’t do for $100. It takes too much effort, if I want to do something properly for a brand. For $200 I can do a photo post that lives on my feed if you are interested, but a reel I cannot go any lower than $325 and that’s simply for my time to create something worthwhile. I draft a script and then share it with you for approval and/or edits, base
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o-2FKnVIM6jv-2F-2FMDU9NwLIq8MB
 
 ----------------------------------------
 
@@ -922,10 +1507,44 @@ sepi@simplysepi.com
 Example 29
 
 Subject:
-collab video
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
+The next session is on Wed Nov 26, 8:00 PM. See everything Melina need to prepare!
 
+Hi Support,
+
+Woohoo! *You have successfully enrolled* Melina in *Astronomy 101: Learn About Space*.
+
+Here is the summary of your enrollment:
+Parent Name: Crismaily
+Parent Email: crismailymartinez@gmail.com
+
+Astronomy 101: Learn About Space
+Teacher Amalia
+
+Wednesdays, 8:00 PM - 8:50 PM, Eastern Standard Time
+
+Melina 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Nov 26, 8:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7PvQ5gCN99iXkF0e3o
 
 ----------------------------------------
 
@@ -933,45 +1552,44 @@ Body:
 Example 30
 
 Subject:
-Re: Love what you're doing—let’s collaborate?
+Enrollment Confirmed for 'Astronomy 101: Learn About Space'
 
 Body:
-Hello!
+The next session is on Wed Nov 26, 6:00 PM. See everything Alexandre need to prepare!
 
-May I know more about your company?
+Hi Support,
 
-Thank you.
+Woohoo! *You have successfully enrolled* Alexandre in *Astronomy 101: Learn About Space*.
 
-On Tue, Aug 5, 2025 at 8:26 PM Coral Academy <lucy@coralacademy.com> wrote:
+Here is the summary of your enrollment:
+Parent Name: Kathleen
+Parent Email: kathleencastonguay2000@hotmail.com
 
-> Hi,
->
-> I hope you’ve been doing well! I wanted to follow up to see if you had a
-> chance to review my earlier emails. We’re still very eager to connect and
-> explore potential ways we could collaborate.
->
-> It would be great to hear your thoughts whenever you get a chance.
->
-> Best regards,
-> Lucy
->
-> On Thu, Jul 3, 2025 at 10:26 PM Coral Academy <lucy@coralacademy.com>
-> wrote:
->
->> Hi,
->>
->> Hope you're doing well! Just wanted to check in—did you get a chance to
->> see our previous emails? We’d love to connect and explore how we can work
->> together.
->>
->> Looking forward to hearing your thoughts!
->>
->> Best,
->> Lucy
->>
->>
->>
+Astronomy 101: Learn About Space
+Teacher Amalia
 
+Wednesdays, 6:00 PM - 6:50 PM, Mountain Daylight Time
+
+Alexandre 
+Enrollment Type: coral_unlimited
+ enrolled
+
+  
+
+The next session is on Wed Nov 26, 6:00 PM—don’t miss it!
+
+
+
+
+
+Happy Learning!
+*Team Coral Academy*
+P.S. Share the learning love! Tag us with #CoralAcademy on Instagram or Facebook.
+
+This message was sent to your email at your request.
+Coral Learning Academy LLC
+1111B S Governers Ave STE 26485, DE 19904
+View in Browser (  ) | Email Preferences ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwBMdu9dDO7P
 
 ----------------------------------------
 

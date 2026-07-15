@@ -26,6 +26,8 @@ from trial_followup import (
     
     
 )
+from save_composed_email import save_composed_email
+from gmail_fetch import get_message
 from compose_email_sender import send_new_email
 from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
@@ -35,7 +37,7 @@ from fastapi.responses import RedirectResponse
 from sync_sent_gmail import main as sync_sent_emails
 
 import os
-from gmail_message import get_message
+
 
 from emails_cleaner import clean_email_body
 
@@ -690,7 +692,28 @@ async def compose_email(
         body=body
 
     )
+    if not result:
+        return RedirectResponse(
+            "/compose",
+            status_code=303
+        )
+    
 
+    msg = get_message(
+        token_file,
+        result["id"]
+    )
+    if msg:
+        save_composed_email(
+            msg,
+            from_email
+            
+        )
+        print(msg["Message-ID"])
+        print(msg["Subject"])
+        print(msg["From"])
+    
+    
     if result:
 
         #import time
@@ -707,3 +730,14 @@ async def compose_email(
         "/compose",
         status_code=303
     )
+
+@app.get("/resolve/{email_id}")
+def resolve_email(email_id: int):
+
+    update_status(email_id, "Resolved")
+
+    return RedirectResponse(
+        "/dashboard",
+        status_code=303
+    )
+

@@ -22,7 +22,8 @@ from database import (
     get_message_by_message_id,
     reopen_thread,
     get_thread,
-    log_event
+    log_event,
+    reopen_thread
 )
 
 
@@ -168,9 +169,9 @@ def process_email(msg, account):
         thread_id = message_id
 
     skip, category, reason, mailbox = is_automated_email(msg)
-
+    
     if skip:
-
+        
         save_email(
             sender=sender_email,
             subject=subject,
@@ -252,11 +253,11 @@ def process_email(msg, account):
     )
 
     print("Processed:", message_id)
-    send_slack_notification(
-        title="New Email Received",
-        sender=sender_email,
-        subject=subject,
-        priority=result["priority"],
-        category=result["category"],
-        link=f"https://ai-email-2.onrender.com/email/{email_id}"
-    )
+    #send_slack_notification(
+      #  title="New Email Received",
+      #  sender=sender_email,
+       # subject=subject,
+      #  priority=result["priority"],
+      #  category=result["category"],
+      #  link=f"https://ai-email-2.onrender.com/email/{email_id}"
+   # )

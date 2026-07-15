@@ -95,6 +95,7 @@ def get_emails():
                 knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review
             FROM messages
             WHERE mailbox = 'inbox'
+            AND status != 'Resolved'        
             AND reply_type IS DISTINCT FROM 'gmail_manual'
             ORDER BY 
                 CASE priority
@@ -381,15 +382,6 @@ def set_resolved_time(email_id):
         cursor.close()
         db_pool.putconn(conn)
 
-def reopen_thread(thread_id):
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("UPDATE messages SET status = 'Needs Review' WHERE thread_id = %s AND status = 'Resolved'", (thread_id,))
-        conn.commit()
-    finally:
-        cursor.close()
-        db_pool.putconn(conn)
 
 def set_sent_time(email_id):
     conn = get_connection()
@@ -889,4 +881,28 @@ def update_last_history_id(email_address, history_id):
 
     finally:
         cur.close()
+        db_pool.putconn(conn)
+
+
+def reopen_thread(thread_id):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            UPDATE messages
+            SET status = 'Needs Review'
+            WHERE thread_id = %s
+              AND status = 'Resolved'
+            """,
+            (thread_id,)
+        )
+
+        conn.commit()
+
+    finally:
+        cursor.close()
         db_pool.putconn(conn)

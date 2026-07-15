@@ -30,28 +30,14 @@ def get_message(token_file, message_id):
         credentials=creds
     )
 
-    try:
-        response = service.users().messages().get(
-            userId="me",
-            id=message_id,
-            format="raw"
-        ).execute()
-
-        if "raw" not in response:
-            return None
-
-    except Exception as e:
-        print(f"Failed to fetch Gmail message {message_id}: {e}")
-        return None
-    
-   
-
-    raw = response["raw"]
-
-    raw += "=" * (-len(raw) % 4)
+    response = service.users().messages().get(
+        userId="me",
+        id=message_id,
+        format="raw"
+    ).execute()
 
     msg = email.message_from_bytes(
-        base64.urlsafe_b64decode(raw)
+        base64.urlsafe_b64decode(response["raw"])
     )
 
     return msg
