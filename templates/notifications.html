@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,8 +8,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
-<body class="min-h-screen p-8 bg-stone-50"
-      style="background-image:url('/static/background.png');background-size:cover;background-position:center;">
+<body class="min-h-screen p-8 bg-cyan-50"
+      style="background: url('/static/background.png') center/cover no-repeat fixed;">
 
 <div class="max-w-7xl mx-auto">
 
@@ -31,11 +32,11 @@
 
     </div>
 
-    <div class="bg-white rounded-3xl shadow-xl overflow-hidden">
+    <div class="bg-cyan-100/30 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
 
         <table class="w-full">
 
-            <thead class="bg-stone-100">
+            <thead class="bg-white/50 border-b border-cyan-100">
 
                 <tr class="text-left text-stone-700">
                     
@@ -55,7 +56,7 @@
 
             {% for email in emails %}
 
-                <tr onclick="window.location='/email/{{ email.id }}'" class="border-t hover:bg-stone-50 cursor-pointer transition">
+                <tr onclick="window.location='/email/{{ email.id }}'" class="border-t border-cyan-100 hover:bg-white/40 cursor-pointer transition">
 
                   
 
@@ -65,7 +66,7 @@
 
 
                     <td class="px-6 py-4">
-                        <span class="bg-stone-100 text-stone-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        <span class="bg-cyan-100/50 text-stone-700 px-3 py-1 rounded-full text-xs font-semibold">
                             {{ email.source }}
                         </span>
                     </td>
@@ -78,7 +79,7 @@
                     
 
                     <td class="px-6 py-4">
-                        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+                        <span class="bg-blue-100/50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
                             {{ email.category }}
                         </span>
                     </td>
