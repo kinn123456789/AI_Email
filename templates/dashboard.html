@@ -78,7 +78,7 @@
                     
                     <td class="p-4">
                         {% if email.source == "support@coralacademy.com" %}
-                            <span class="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold">📧 Support</span>
+                            <span class="bg-cyan-100/80 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold">📧 Support</span>
                         {% elif email.source == "lucy@coralacademy.com" %}
                             <span class="bg-pink-100 text-pink-700 px-3 py-1 rounded-full text-xs font-semibold">👩 Lucy</span>
                         {% else %}
@@ -105,7 +105,7 @@
 
                     <td class="p-4">
                         {% if email.status == "Needs Review" %}
-                            <span class="bg-yellow-100/50 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold border border-yellow-200">
+                            <span class="bg-yellow-100/70 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold border border-yellow-200">
                                 Needs Review
                             </span>
                         {% elif email.status == "Replied" %}
@@ -127,7 +127,7 @@
                         {% if email.handled_by == "AI" %}
                             <span class="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-xs font-semibold">🤖 AI</span>
                         {% elif email.handled_by == "Human" %}
-                            <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold">👤 Human</span>
+                            <span class="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-xs font-semibold">👤 Manual Reply</span>
                         {% else %}
                             <span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-xs">Pending</span>
                         {% endif %}

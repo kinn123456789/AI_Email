@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,53 +10,39 @@
 </head>
 
 <body
-class="min-h-screen bg-stone-50 p-8"
-style="background-image:url('/static/background.png');background-size:cover;background-position:center;">
+class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" 
+style="background: url('/static/background.png') center/cover no-repeat fixed;">
 
-<div class="max-w-5xl mx-auto bg-white/90 backdrop-blur-md rounded-3xl shadow-xl p-8">
+<div class="max-w-5xl mx-auto bg-cyan-100/30 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/50">
 
     <!-- Header -->
-
     <div class="flex justify-between items-center mb-8">
-
         <div>
-
-            <h1 class="text-3xl font-bold text-stone-800">
+            <h1 class="text-3xl font-bold text-gray-900 tracking-tight">
                 ✉️ Compose Email
             </h1>
-
-            <p class="text-stone-500 mt-2">
+            <p class="text-stone-600 mt-2">
                 Create and send a new email.
             </p>
-
         </div>
 
         <a
             href="/dashboard"
-            class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900">
-
+            class="bg-cyan-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg border border-white/20">
             ← Dashboard
-
         </a>
-
     </div>
+
     {% if request.query_params.get("sent") %}
     <div
         id="mail-sent"
-        class="mb-6 bg-green-50 border border-green-200 text-green-700 rounded-2xl p-4 flex items-center gap-3">
-
+        class="mb-6 bg-green-100/50 backdrop-blur-md border border-green-200 text-green-800 rounded-2xl p-4 flex items-center gap-3">
         <span class="text-xl">✅</span>
-
         <div>
             <div class="font-semibold">
                 Mail sent successfully.
             </div>
-
-            <div class="text-sm">
-                Your email has been delivered successfully.
-            </div>
         </div>
-
     </div>
     {% endif %}
 
@@ -65,137 +52,95 @@ style="background-image:url('/static/background.png');background-size:cover;back
         class="space-y-6">
 
         <!-- From -->
-
-        <div>
-
-            <label class="block font-semibold text-stone-700 mb-2">
-
-                From
-
-            </label>
-
-            <select
-                name="from_account"
-                class="w-full rounded-xl border border-stone-300 px-4 py-3">
-
-                <option value="support">
-                    support@coralacademy.com
-                </option>
-
-                <option value="lucy">
-                    lucy@coralacademy.com
-                </option>
-
-                <option value="engineering">
-                    engineering@coralacademy.com
-                </option>
-
-                <option value="sat">
-                    shopsat19@gmail.com
-                </option>
-
-            </select>
-
+        <!-- From -->
+<div>
+    <label class="block font-semibold text-stone-700 mb-2">
+        From
+    </label>
+    <div class="relative">
+        <select
+            name="from_account"
+            class="w-full appearance-none rounded-xl border border-white/50 bg-white/60 px-4 py-3 outline-none transition-all focus:bg-white/90 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-400/20 shadow-inner">
+            <option value="support">support@coralacademy.com</option>
+            <option value="lucy">lucy@coralacademy.com</option>
+            <option value="engineering">engineering@coralacademy.com</option>
+            <option value="sat">shopsat19@gmail.com</option>
+        </select>
+        <!-- The custom cyan arrow -->
+        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-cyan-700">
+            <svg class="h-5 w-5 fill-current" viewBox="0 0 20 20">
+                <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+            </svg>
         </div>
-
+    </div>
+</div>
 
         <!-- To -->
-
         <div>
-
             <label class="block font-semibold text-stone-700 mb-2">
-
                 To
-
             </label>
-
             <input
                 type="email"
                 name="to_email"
                 required
                 placeholder="parent@gmail.com"
-                class="w-full rounded-xl border border-stone-300 px-4 py-3">
-
+                class="w-full rounded-xl border border-white/50 bg-white/50 px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none">
         </div>
 
-
         <!-- Subject -->
-
         <div>
-
             <label class="block font-semibold text-stone-700 mb-2">
-
                 Subject
-
             </label>
-
             <input
                 type="text"
                 name="subject"
                 required
-                class="w-full rounded-xl border border-stone-300 px-4 py-3">
-
+                class="w-full rounded-xl border border-white/50 bg-white/50 px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none">
         </div>
 
-
         <!-- Body -->
-
         <div>
-
             <label class="block font-semibold text-stone-700 mb-2">
-
                 Message
-
             </label>
-
             <textarea
                 name="body"
                 rows="14"
                 required
-                class="w-full rounded-2xl border border-stone-300 p-4 resize-none"></textarea>
-
+                class="w-full rounded-2xl border border-white/50 bg-white/50 p-4 resize-none focus:ring-2 focus:ring-cyan-500 outline-none"></textarea>
         </div>
 
-
         <!-- Buttons -->
-
         <div class="flex justify-end gap-3">
-
             <a
                 href="/dashboard"
-                class="bg-white border border-stone-300 px-6 py-3 rounded-xl">
-
+                class="bg-white/50 border border-white/50 px-6 py-3 rounded-xl font-bold text-stone-700 hover:bg-white/70 transition">
                 Cancel
-
             </a>
-
 
             <button
                 type="submit"
-                class="bg-cyan-700 hover:bg-cyan-800 text-white px-8 py-3 rounded-xl font-semibold">
-
+                class="bg-cyan-800 hover:bg-black text-white px-8 py-3 rounded-xl font-bold transition shadow-lg">
                 ✉️ Send Email
-
             </button>
-
         </div>
 
     </form>
-
 </div>
+
 <script>
 window.addEventListener("load", function () {
-
     const badge = document.getElementById("mail-sent");
-
     if (badge) {
         badge.scrollIntoView({
             behavior: "smooth",
             block: "center"
         });
     }
-
 });
 </script>
 </body>
 </html>
+
