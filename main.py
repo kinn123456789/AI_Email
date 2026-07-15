@@ -26,6 +26,8 @@ from trial_followup import (
     
     
 )
+
+from fastapi import BackgroundTasks
 from save_composed_email import save_composed_email
 from gmail_fetch import get_message
 from compose_email_sender import send_new_email
@@ -593,8 +595,12 @@ def reply_again(
         status_code=303
     )    
 
+
 @app.post("/gmail/webhook")
-async def gmail_webhook(request: Request):
+async def gmail_webhook(
+    request: Request,
+    background_tasks: BackgroundTasks
+):
 
     body = await request.json()
 
@@ -609,7 +615,10 @@ async def gmail_webhook(request: Request):
     print("Mailbox:", email_address)
     print("=" * 80)
 
-    run_email_reader(email_address)
+    background_tasks.add_task(
+        run_email_reader,
+        email_address
+    )
 
     return {"success": True}
 

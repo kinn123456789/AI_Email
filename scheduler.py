@@ -1,32 +1,120 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
+
 from email_reader import main as email_reader
 from refresh_knowledge_base import refresh_knowledge_base
 from refresh_classes import refresh_classes
 from gmail_watch import renew_all_gmail_watches
-import traceback
 from sync_sent_gmail import main as sync_sent_emails
 
-import datetime
+import threading
+import time
+
+# -------------------------------------------------
+# Locks & Queue
+# -------------------------------------------------
+
+reader_lock = threading.Lock()
+pending_lock = threading.Lock()
+
+pending_mailboxes = set()
 
 
+# -------------------------------------------------
+# Email Reader
+# -------------------------------------------------
 
 def run_email_reader(email_address=None):
-    print("=" * 80)
-    print(f"EMAIL READER STARTED: {datetime.datetime.now()}")
-    print("=" * 80)
+
+    global pending_mailboxes
+
+    # ---------------------------------------------
+    # Scheduler run (process ALL mailboxes)
+    # ---------------------------------------------
+    if email_address is None:
+
+        if not reader_lock.acquire(blocking=False):
+            print("Reader already running.")
+            return
+
+        try:
+
+            start = time.time()
+
+            print("=" * 80)
+            print("EMAIL READER STARTED (ALL)")
+            print("=" * 80)
+
+            email_reader()
+
+            print(
+                f"EMAIL READER TOOK "
+                f"{time.time() - start:.2f} seconds"
+            )
+
+        finally:
+
+            reader_lock.release()
+
+        return
+
+    # ---------------------------------------------
+    # Webhook run (single mailbox)
+    # ---------------------------------------------
+    if not reader_lock.acquire(blocking=False):
+
+        print(f"Reader busy. Queuing {email_address}")
+
+        with pending_lock:
+            pending_mailboxes.add(email_address)
+
+        return
 
     try:
-        email_reader(email_address)
-        print("EMAIL READER COMPLETED SUCCESSFULLY")
-    except Exception:
-        print("EMAIL READER FAILED")
-        traceback.print_exc()
 
-    print("=" * 80)
+        current_mailbox = email_address
+
+        while True:
+
+            start = time.time()
+
+            print("=" * 80)
+            print("EMAIL READER STARTED")
+            print("Mailbox:", current_mailbox)
+            print("=" * 80)
+
+            email_reader(current_mailbox)
+
+            with pending_lock:
+                pending_mailboxes.discard(current_mailbox)
+
+            print(
+                f"{current_mailbox} TOOK "
+                f"{time.time() - start:.2f} seconds"
+            )
+
+            with pending_lock:
+
+                if not pending_mailboxes:
+                    break
+
+                current_mailbox = pending_mailboxes.pop()
+
+            print(
+                f"Processing queued mailbox: "
+                f"{current_mailbox}"
+            )
+
+    finally:
+
+        reader_lock.release()
+
+
+# -------------------------------------------------
+# Scheduler
+# -------------------------------------------------
 
 scheduler = BackgroundScheduler()
-
 
 # Sent Mail Sync
 scheduler.add_job(
@@ -38,7 +126,7 @@ scheduler.add_job(
     max_instances=1
 )
 
-# Refresh Help Center
+# Help Center Refresh
 scheduler.add_job(
     refresh_knowledge_base,
     CronTrigger(hour=2, minute=0),
@@ -47,17 +135,17 @@ scheduler.add_job(
     max_instances=1
 )
 
-#runs email_reader
+# Email Reader Backup
 scheduler.add_job(
     run_email_reader,
-    "interval",
+    trigger="interval",
     minutes=5,
     id="email_reader",
     replace_existing=True,
     max_instances=1
 )
 
-# Refresh Classes
+# Class Refresh
 scheduler.add_job(
     refresh_classes,
     CronTrigger(hour=3, minute=0),
@@ -66,16 +154,21 @@ scheduler.add_job(
     max_instances=1
 )
 
-
-
-#gmail_watch
+# Gmail Watch Renewal
 scheduler.add_job(
     renew_all_gmail_watches,
     trigger="interval",
-    days=1
+    days=1,
+    id="gmail_watch",
+    replace_existing=True,
+    max_instances=1
 )
+
 scheduler.start()
 
 print("Scheduler started.")
+print("Email Reader: Every 5 minutes")
+print("Sent Mail Sync: Every 1 hour")
 print("Help Center Refresh: Daily at 2:00 AM")
 print("Classes Refresh: Daily at 3:00 AM")
+print("Gmail Watch Renewal: Every 1 day")
