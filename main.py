@@ -30,6 +30,9 @@ from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
 from gmail_history import get_gmail_history
 
+from fastapi.responses import RedirectResponse
+from sync_sent_gmail import main as sync_sent_emails
+
 import os
 from gmail_message import get_message
 
@@ -606,3 +609,22 @@ async def gmail_webhook(request: Request):
     run_email_reader(email_address)
 
     return {"success": True}
+
+
+from fastapi.responses import RedirectResponse
+from sync_sent_gmail import main as sync_sent_emails
+
+@app.get("/sync-sent/{email_id}")
+def sync_sent(email_id: int):
+
+    try:
+        sync_sent_emails()
+        print("Gmail Sent synchronized.")
+
+    except Exception as e:
+        print("Sent sync failed:", e)
+
+    return RedirectResponse(
+        url=f"/email/{email_id}?synced=1",
+        status_code=303
+    )

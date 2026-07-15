@@ -5,6 +5,7 @@ from refresh_knowledge_base import refresh_knowledge_base
 from refresh_classes import refresh_classes
 from gmail_watch import renew_all_gmail_watches
 import traceback
+from sync_sent_gmail import main as sync_sent_emails
 
 import datetime
 
@@ -27,6 +28,15 @@ def run_email_reader(email_address=None):
 scheduler = BackgroundScheduler()
 
 
+# Sent Mail Sync
+scheduler.add_job(
+    sync_sent_emails,
+    trigger="interval",
+    hours=1,
+    id="sent_mail_sync",
+    replace_existing=True,
+    max_instances=1
+)
 
 # Refresh Help Center
 scheduler.add_job(
@@ -65,6 +75,7 @@ scheduler.add_job(
     days=1
 )
 scheduler.start()
+
 print("Scheduler started.")
 print("Help Center Refresh: Daily at 2:00 AM")
 print("Classes Refresh: Daily at 3:00 AM")
