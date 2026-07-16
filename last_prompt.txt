@@ -2,46 +2,22 @@
 CURRENT EMAIL
 
 Category:
-Teacher
+General
 
 Priority:
-Medium
+Low
 
 Subject:
-Re:
+test
 
 Body:
-Hi,
-
-I wanted to allude to no need for the Zoom call because I've had a
-conversation with someone in the past for this company. Since we keep
-missing each other, let us hash out the ask from your end and see if it
-aligns with my experience, so we can get the ball rolling. What is the
-structure, and how many hours a day are my services needed for the Finance
-101 class, and the pay rate? Thanks in advance
-
-Best,
-Nnamdi I
+test
 
 ==================================================
 
 CONVERSATION HISTORY
 
-lucy@coralacademy.com:
-Hi Nnamdi,
-
-Please accept our apologies for missing your call today.
-
-Could you please reschedule the call for a time that is convenient for you?
-You can use the link below to select a time slot that works best:
-
-https://coralacademy-dot-yamm-track.appspot.com/2l8ZQNnjllov7qf0PoPwWVM1iDOt09amArVOofmSBccvmrOJhnwFbqWuv_J2G7qxyElyae4sptjvj7ZsmZmFNUczVndMjCZUkrpu5ID0S_d8_kGeFTQiZW4f9BKVdIuPVmbk2KlesoP9iaa0vmiJxserttIRxTK2US9ES_fIO_TzMI5RN-rdTNtWyZLQ_h5i7C3GPC5wzV_pBJOLhNOufUGPfaOQ
-
-Thank you for your understanding, and we look forward to speaking with you
-soon.
-
-Best regards,
-Coral Academy
+No previous conversation.
 
 ==================================================
 
@@ -51,47 +27,33 @@ Relevant Coral Academy Knowledge
 Knowledge Item 1
 
 Source:
-help_center
+class
 
 Similarity:
-0.323481271813201
+0.327603406344441
 
 Title:
-Teacher Referral Policy: Coral Academy
+Scratch Coding Lab: Build With Scratch
 
 Section:
-
+Prerequisites
 
 Category:
-Teaching
+lifeskills
 
 Content:
-Last Updated Date: July 31, 2025
-Our referral program rewards current instructors for identifying qualified candidates to join Coral Academy's community of online educators.
-How It Works
-Share your unique referral code with prospective teachers and ask them to include it during signup on our application form .
-Process Steps
-Share your unique referral code with a teacher candidate.
-If they pass the screening, an introductory call is scheduled.
-You earn $40 when the call is completed.
-If the call is successful, a trial class is scheduled.
-You earn an additional $60 when the referred teacher completes their first class.
-Payment Details
-Initial call shortlist: $40
-First class completion: $60 additional
-Payment method: Cash, paid via Stripe
-Timeline: Payments are processed within 15 days
-Your Referral Code Format
-Your referral code is your full name written in all capital letters without spaces.
-Teacher Requirements
-Full-time US residency required.
-Identity verification and criminal background check mandatory.
-Classes must maintain secular, objective standards.
-Strong English proficiency in both speaking and writing.
-Important Restrictions
+Class: Scratch Coding Lab: Build With Scratch
+
+Subject: lifeskills
+
+Section: Prerequisites
+
+Content:
+• {'title': 'Basic familiarity with using a computer (mouse, keyboard, and web browser)'}
+• {'link': 'https://scratch.mit.edu/', 'title': 'A free Scratch account (at scratch.mit.edu) is recommended'}
 
 Reference URL:
-https://www.coralacademy.com/help/teaching/teacher-referral-policy
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
 
 IMPORTANT
 
@@ -111,51 +73,29 @@ Source:
 class
 
 Similarity:
-0.320245386402009
+0.319645356363272
 
 Title:
-Entrepreneurship 101: A Mini MBA Series
+Scratch Coding Lab: Build With Scratch
 
 Section:
-Description
+Resources
 
 Category:
 lifeskills
 
 Content:
-Class: Entrepreneurship 101: A Mini MBA Series
+Class: Scratch Coding Lab: Build With Scratch
 
 Subject: lifeskills
 
-Section: Description
+Section: Resources
 
 Content:
-In this hands-on online business class with real-world case studies, learners will explore the origin stories of well-known companies and discover how small ideas can grow into global successes. Each week, the class will explore entrepreneurship, innovation, and basic business concepts in a fun and engaging way.
-
-Through interactive discussions, warm-up trivia, and creative activities, students will dive into real-world business principles. They'll also have the chance to apply their online learning by designing new products and participating in quizzes that reinforce key concepts.
-
-This class encourages curiosity, fosters creativity, and helps students think like young entrepreneurs, empowering kids to learn and explore business ideas.
-
-Whether your child is curious about entrepreneurship or eager to turn creative ideas into reality, this online business class at Coral Academy is the perfect opportunity to make their ideas come alive!
-
-Please find the weekly schedule below for the next few weeks:
-
-The topic listed for each week is the company we will focus on, where we will discuss their growth, business strategies, financials, and products/services.
-
-June 4 - June 5: Discord
-Explore how Discord grew from a gaming chat app into a major online community platform used by millions.
-
-June 11 - June 12: Prime
-Learn how Prime became a viral drink brand through influencer marketing, celebrity founders, and strong social media buzz.
-
-June 18 - June 19: Crocs
-Discover how Crocs turned a quirky shoe into a global fashion trend through comfort, collaborations, and brand reinvention.
-
-June 25 - June 26: Fidgets — Pop-Its, NeeDohs & Squishmallows
-Explore how simple sensory toys became massive trends through kid demand, collectibility, social media, and smart product design.
+• {'link': 'https://scratch.mit.edu/', 'title': 'Free Scratch Software'}
 
 Reference URL:
-https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3
+https://www.coralacademy.com/class/buildwithscratch-12fd4416-0aa4-439f-a398-75c96304d5a1
 
 IMPORTANT
 
@@ -175,29 +115,30 @@ Source:
 class
 
 Similarity:
-0.293498068977781
+0.313729646858557
 
 Title:
-Entrepreneurship 101: A Mini MBA Series
+Around the Globe with Mr. Clark
 
 Section:
-Learner Summary
+Prerequisites
 
 Category:
 lifeskills
 
 Content:
-Class: Entrepreneurship 101: A Mini MBA Series
+Class: Around the Globe with Mr. Clark
 
 Subject: lifeskills
 
-Section: Learner Summary
+Section: Prerequisites
 
 Content:
-Each week, learners explore a successful brand in our online business class, uncovering what made it thrive. Through fun activities, they dive into branding, marketing, & finance—boosting real-world learning & entrepreneurial skills.
+• {'title': 'We use Nearpod for interactive learning. Access it via the app or web browser.'}
+• {'title': 'Make sure YouTube isn’t blocked to watch videos in Nearpod during class.'}
 
 Reference URL:
-https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
 
 IMPORTANT
 
@@ -217,31 +158,29 @@ Source:
 class
 
 Similarity:
-0.289280769807238
+0.284282792398106
 
 Title:
-Entrepreneurship 101: A Mini MBA Series
+Astronomy 101: Learn About Space
 
 Section:
-Learning Goals
+Learner Summary
 
 Category:
-lifeskills
+science
 
 Content:
-Class: Entrepreneurship 101: A Mini MBA Series
+Class: Astronomy 101: Learn About Space
 
-Subject: lifeskills
+Subject: science
 
-Section: Learning Goals
+Section: Learner Summary
 
 Content:
-• Build entrepreneurial skills by learning about various companies’ history, finances, & success stories
-• Engage in quizzes, design challenges, & creative activities that develop the entrepreneurial mindset of children.
-• Create logos and marketing campaigns for mock businesses and share it with the class!
+In this exciting space class, learners will explore the science behind our universe: from comets & constellations to galaxies and gravity, all while building real scientific thinking skills that help them understand how the cosmos works.
 
 Reference URL:
-https://www.coralacademy.com/class/minibusinessseries-c61a217d-9826-45e5-81a7-ff7cdca717b3
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
 
 IMPORTANT
 
@@ -261,67 +200,29 @@ Source:
 class
 
 Similarity:
-0.288278852110982
+0.283963159938064
 
 Title:
-Geology & Earth Science Explorers
+Astronomy 101: Learn About Space
 
 Section:
-Description
+Parent Summary
 
 Category:
 science
 
 Content:
-Class: Geology & Earth Science Explorers
+Class: Astronomy 101: Learn About Space
 
 Subject: science
 
-Section: Description
+Section: Parent Summary
 
 Content:
-Learners will explore a different theme each week: from rocks and crystals to fossils, volcanoes, dinosaurs, and landforms.
-
-Each session will begin with introductions, sharing, and guided discussions. Learners are encouraged to bring items such as fossils, geodes, or rock art to share. At-home science experiments and creative art projects will be provided to extend the learning experience beyond the classroom.
-
-We even touch on exciting aspects like the Earth's history and how carnivores and herbivores have evolved through time, concepts that are often overlooked in a typical science class.
-
-If you're eager to learn geology online, our virtual classes make exploring science easy from anywhere. 
-
-Please find below the week-on-week schedule & the topic of focus for the next couple of weeks:
-Slot 1 - Costa Rican Geology: MONDAY CLASS
-WORLD BIOMES
-April 6- Deserts 
-April 13- Grasslands and Savannas
-April 20-Tropical Rainforests
-April 27- Deciduous Forests
-May 4- Taiga (Boreal Forests)
-May 11- The Tundra
-May 18- Mountains
-May 25- Freshwater (Rivers, Ponds, Wetlands)
-
-Slot 1 -TUESDAY CLASS
-March 31- The Rock Cycle- Igneous Investigations
-April 7- The Rock Cycle- Sedimentary Stories
-April 14- The Rock Cycle- Metamorphic Magic
-April 21- Crystallography
-April 28- Mineralogy Testing
-May 5- Geodes and Agates
-May 12- Types of Fossils
-May 19- Paleontology and the Geologic Timescale
-May 26- Archeology- Arrowheads and Artifacts
-June 2- Architecture of Ancient Civilizations
-June 9- NO CLASS
-June 16- The Layers of the Earth
-June 23- NO CLASS
-June 30- Submarine Volcanoes
-July 7- Hydrothermal Features
-July 14-August 11- NO CLASS, SUMMER BREAK
-
-This virtual class by Coral Academy is perfect for families seeking science enrichment or a class on planet Earth. This topic is a top pick among our Coral classes; delivering engaging life science concepts through expertly crafted online learning sessions grounded in real-world learning.
+In this exciting space class, learners will explore the science behind our universe: from comets & constellations to galaxies and gravity, all while building real scientific thinking skills that help them understand how the cosmos works.
 
 Reference URL:
-https://www.coralacademy.com/class/geologybyamalia-047f95a1-a506-421b-8f13-a986ac1eb225
+https://www.coralacademy.com/class/spacerockssummercamp-c265a135-35d9-4048-a617-4a5ceff2b5c8
 
 IMPORTANT
 
@@ -349,50 +250,11 @@ Do NOT copy wording or facts.
 Example 1
 
 Subject:
-Re: Finance 101 Friday Class Update – May 22
+Test
 
 Body:
-Hi Hannah,
+test
 
-Thank you for the update.
-
-Could we get on a quick call sometime this week? We would like to discuss
-the line items you mentioned. Please share your availability for a
-15-minute slot anytime from Tuesday, May 26 to Saturday, May 30.
-
-Best regards,
-
-Anika Arora
-
-Human Resources
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
-
-On Sat, May 23, 2026 at 5:48 AM Hannah Knecht <hannahjoyknecht@gmail.com>
-wrote:
-
-> Hello Anika!
->
->
->
-> Update on tonight’s Finance 101 class and also discuss scheduling moving
-> forward--
->
->
->
-> Friday, May 22, 2026 – 7:00 PM ET
->
->    - 5 students attended
->    - We ended on Topic 7, Slide 8
->    - No curious questions tonight
->    - Eli experienced some technical difficulties during class but was
->    able to rejoin successfully
->
-> I also shared the following announcement with the students tonight:
->
->   
 
 ----------------------------------------
 
@@ -400,33 +262,11 @@ wrote:
 Example 2
 
 Subject:
-Re: Needing Information
+Test
 
 Body:
-Yes, I am interested, but right now, my time is limited. I want to make
-sure it is worth my time to onboard with you guys.
+Hi
 
-What can you offer for classes ro me for a creative writing class? How many
-classes per week are you wanting me to teach? I would love to have a few
-depending on the pay.
-
-Do you need a recording for a Creative writing or can it be any lesson? I
-have some recorded class videos for a writing class I already have done.
-Let me know.
-
-On Mon, Dec 8, 2025 at 2:36 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> Hi Savannah,
->
-> Hope you’re doing well! I just wanted to follow up on my last message and
-> check whether you’re still interested in moving forward with the demo class
-> or sharing a past class recording. We’re currently finalizing our
-> onboarding schedule, so having a quick confirmation from you would be
-> really helpful.
->
-> We’re really excited about the possibility of welcoming you to Coral and
-> supporting you as you get starte
 
 ----------------------------------------
 
@@ -434,16 +274,11 @@ wrote:
 Example 3
 
 Subject:
-Re: Following Up on Financial Literacy Class Opportunity
+Test
 
 Body:
-Hello Coral Academy Team!
+Hi
 
-Thank you for the update and for sending over the sample draft agreement. I am still in the process of reviewing it and will ask questions as they come up. Yes, I am comfortable confirming the $50 per 50-minute session rate. That said, I’d like to revisit the two questions I mentioned earlier before we finalize anything: Will I be on a fixed or variable payment model? 
- 
-Regarding class sizes, I prefer to keep them between 4–8 students to ensure a more personalized and engaging experience. I’m open to increasing class sizes up to 10–12 if necessary, but smaller groups will maximize the impact of the lessons. Ideally, I’d like to teach more blocks with fewer students in each.
- 
-For the Financial Literacy demo class on Compounding, I’d like to take the Sunday, November 2nd slot at 1 PM PT (4 PM ET). Please lock that in and send over the invite. I appreciate the supplement you shared and will incorporate my own examples and interactive elements to make the
 
 ----------------------------------------
 
@@ -451,36 +286,30 @@ For the Financial Literacy demo class on Compounding, I’d like to take the Sun
 Example 4
 
 Subject:
-Re: Next Steps – Financial Literacy Class Planning
+Re: Mailchimp Template Test - "Automated || Kathleen Testimonial"
 
 Body:
-I understand.  No problem. The financial literacy class is good to go.  For
-the Ai class, I’ll use your notes and match it with the financial literacy
-class in mind, as mentioned above.
+Pls check subject and preheader - didnt get that - otherwise good to go
 
-I was getting a little bit of “cold feet” but my financial literacy class
-is amazing already so that’s great.
+Shagun Banthia
 
-Please give me a guess as to what date we would get started. And what time
-you’re hoping for this class?  I remember you had asked for Friday at
-noon?  I think that was it. But now we may move it.
+Founding Team
 
-I’d wonder about the other class, too. Or if you’ll host the classes twice
-a week.  Probably depends on parent replies.
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
 
-Talk later,
 
-Kelly :)
+On Wed, Jul 30, 2025 at 3:49 PM <support@coralacademy.com> wrote:
 
-On Sun, Aug 17, 2025 at 03:22 Coral Academy <support@coralacademy.com>
-wrote:
-
-> Hi Kelly,
->
-> Thanks so much for bringing this up! Our team has just started preparing
-> the class content for the Financial Literacy class. We already have the
-> materials you shared earlier, and we’re currently organizing everything.
-> We’ll send it t
+> ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌   
 
 ----------------------------------------
 
@@ -488,45 +317,22 @@ wrote:
 Example 5
 
 Subject:
-Re: Finance 101 Friday Class Update – May 22
+New Contact Form Enquiry — Test User
 
 Body:
-Hi Hannah,
+NEW CONTACT FORM SUBMISSION
 
-Thank you for sharing your availability. We can meet at 9:00 AM ET on
-Wednesday, May 27. I will schedule a call on our calendars, and share the
-details over WhatsApp as well.
+Name: Test User
 
+Email: dhanush.m@redhibbert.com
 
-Best regards,
+Phone: 1234567890
 
-Anika Arora
+Message: Testing Resend integration
 
-Human Resources
+Submitted at: 2026-06-08T23:22:44.297Z
 
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
-
-On Mon, May 25, 2026 at 8:16 PM Hannah Knecht <hannahjoyknecht@gmail.com>
-wrote:
-
-> Hello Anika!
->
-> I would be happy to connect for a call this week.
->
->
-> My availability is as follows:
->
->    - Tuesday, May 26: 2:00 PM – 5:00 PM ET
->    - Wednesday, May 27: 9:00 AM – 5:00 PM ET
->    - Thursday, May 28: 9:00 AM – 12:00 PM ET
->    - Friday, May 29: 9:00 AM – 11:00 AM ET
->
->
-> I would also kindly ask that a representative from the team who is
-> involved in the scheduling and registration decision-making process be
-> included on the call, so we can have a productive discus
+User ID: Guest
 
 ----------------------------------------
 
@@ -534,25 +340,22 @@ wrote:
 Example 6
 
 Subject:
-Re: Finance 101-Compounding: Demo Class
+New Contact Form Enquiry — Test User
 
 Body:
-Hello Coral Academy Team!
- 
-Thank you so much for the kind words about the compounding class—I’m thrilled the learners enjoyed it and felt engaged. I’d like to move forward at the $50 per session rate.
- 
-Unfortunately, the only available time your calendar has today is 10:30 PM ET, which won’t work for me as I’m working with Disney on a film shoot as a set teacher tomorrow and won’t be available again until Friday, November 7. I’ll schedule a call at 8:30am ET on Friday to discuss next steps.
- 
-In the meantime, please go ahead and send over the contract for my review. Looking forward to officially getting started!
- 
-Best Wishes!
-Hannah
+NEW CONTACT FORM SUBMISSION
 
-> On Nov 5, 2025, at 3:54 AM, Coral Academy <support@coralacademy.com> wrote:
-> 
-> Hi Hannah,
-> Hope you’re doing well!
-> We absolutely loved the class you took on compounding, and so did the learners — the session was engaging, interactive, and really helped them connect financial concepts to real-world examples. Learners found it fun, p
+Name: Test User
+
+Email: dhanush.m@redhibbert.com
+
+Phone: 1234567890
+
+Message: Testing Resend integration
+
+Submitted at: 2026-06-08T23:27:05.591Z
+
+User ID: Guest
 
 ----------------------------------------
 
@@ -560,12 +363,10 @@ Hannah
 Example 7
 
 Subject:
-
+New Contact Form Enquiry 
 
 Body:
-  Hi, I was looking into your business and wanted to check who would be the
-right person to speak with
-
+New Contact Form Submission Name: Test User Email: test@example.com Phone: 1234567890 Message: This is a test enquiry from the contact page. Submitted at: 2026-05-27T18:03:06.012Z User ID: Guest
 
 ----------------------------------------
 
@@ -573,38 +374,31 @@ right person to speak with
 Example 8
 
 Subject:
-Re: Needing Information
+Re: Mailchimp Template Test - "Automated || Jaicy Testimonial"
 
 Body:
-Sounds great. I am also open to a level of economics that would work for
-that age range, but it would take me a bit of time to build it.
+Hi - This email goes out when subs are not purchased after free trial is
+exhausted no? if thats the case - then CTA will not be try a free class -
+it should be pushing them to buy sub
 
-I can make time for a morning and evening class, but right now, my schedule
-is pretty set for spring. I schedule my classes out months in advance. So
-do you have any idea what days and times you guys are looking at soI can
-see if it is even a possibility on my end?
+Shagun Banthia
 
-On Mon, Dec 15, 2025 at 12:11 PM Coral Academy <support@coralacademy.com>
-wrote:
+Founding Team
 
-> Hi Savannah,
->
-> That works perfectly for us! We understand completely that schedules are
-> busy with the holidays approaching.
->
-> Please feel free to send over the demo or class recording whenever you
-> have a moment next week. We'll figure out steps for your onboarding &
-> Creative Writing class once we receive it.
->
-> Thank you, and happy holidays!
->
-> Warmly,
-> Keerthi
-> Coral Academy
->
->
-> On Mon, Dec 15, 2025 at 11:10 PM Savannah Gilmore <
-> spearson.gilmore@gmail.com> wr
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
+
+
+On Wed, Jul 30, 2025 at 3:50 PM <support@coralacademy.com> wrote:
+
+> ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌  
 
 ----------------------------------------
 
@@ -612,25 +406,10 @@ wrote:
 Example 9
 
 Subject:
-Re: Collaboration Opportunity with Coral Academy
+Accepted: FL Demo Class
 
 Body:
-Thank you for your response! 
 
-Before scheduling a call, I’d appreciate a bit more clarity on the compensation structure. Could you share specific details about the fixed and variable pay models, including average earnings for teachers in similar roles? 
-
-Additionally, I’d like to understand how students are sourced and what kind of marketing support is provided. This will help me determine if the opportunity aligns with my goals.
-
-Thank you!
-Hannah
-
-> On Oct 9, 2025, at 5:55 PM, Coral Academy <support@coralacademy.com> wrote:
-> 
-> Hi Hannah,
-> 
-> I hope you’re doing great! I’m so sorry for the delay in getting back to you — our team has been busy preparing for a large offline event this weekend, and things have been quite full on our end. I really appreciate your patience!
-> 
-> First off, thank you so much for your thoughtful note and for your interest in Coral Academy. We’re so glad that our mission resonates with you — it’s always exciting to connect with passionate e
 
 ----------------------------------------
 
@@ -638,31 +417,46 @@ Hannah
 Example 10
 
 Subject:
-Re: Needing Information
+Verify your identity
 
 Body:
-Yes, I would be interested in Creative Writing. I can see what I can
-arrange this week.
 
-However, I do not want to waste time. I have already sent info and had a
-meeting. If you guys want to hire me on, please do so. If not, I have other
-options. I would like to diversify out, but I also know my value. Please
-let me know if we can move forward without another meeting. If so, send me
-onboarding information. Thanks.
 
-On Sat, Sep 20, 2025 at 4:09 PM Coral Academy <support@coralacademy.com>
-wrote:
+  
+  
+    Verify your identity
+  
 
-> Hi Savannah,
->
-> Thank you so much for your patience — and we are really, really sorry for
-> the delay in getting back to you. A lot of our core team has been on and
-> off this past few weeks, preparing for one of our biggest offline events of
-> the year, focused on onboarding new parents. That’s why the delay, and we
-> truly apologize for that.
->
-> We’re incredibly grateful that you followed up with us, and we just wanted
-> to say, we are absolutely interested in working 
+  
+    
+      
+        
+          
+            
+              
+                
+                  
+                     ( http://url1719.openphone.com/ls/click?upn=u001.DMYlBxmJ9Qt4HlM62HU1YjoUDRpFcQHE-2BmueQa7UiFWu59s-2FNdVcLiEV3TN6jJUWc6MtHuKtIZq3VrWM3P7T0Q-3D-3Dn-vK_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw3-2FZQBsepyWu52CXF1P3ia8DaEFrefuMZhRJ-2FeAjSHvhUk-2F4xTv41Y3rfFy6Y4j3cfIzuwSe9etKdYUrHYsKBLnouTIwxHQhKjlucJAqAqYlAXU2jt80Cr7Sk-2Fc-2BhUXQY3GBCST4riSjfaa1BpnhqgEPb55QHT5EH60vuchcL0CkDA-3D-3D ) 
+                    
+                  
+                
+              
+            
+            
+              
+                
+                  
+                    
+                      
+                        
+                          
+                            
+                          
+                        
+                      
+                    
+                    
+                      Verify
 
 ----------------------------------------
 
@@ -670,19 +464,32 @@ wrote:
 Example 11
 
 Subject:
-Re: Finance 101 Weekly Class Update May 27-28
+Re: Mailchimp Template Test - "Automated || No show in free trial +
+ offer another"
 
 Body:
-Hello Anika!
+- lets remove to try again from banner
+- 1st line - in their free class "class name"
 
-Just circling back about Nikki—
-I just attempted to reach out.  However, I cannot find her in the chat like you’d suggested.  Below is a screenshot of my search.  I also noticed she has been withdrawn from each of my class sections.  At this point, I do not know how to contact her.  Please advise.
+Shagun Banthia
 
-Thank you for the registration link - I will share it on my LinkedIn page and with interested families I interact with.  
+Founding Team
 
-I am still working out my July schedule at this point, so I am unable to commit (yet) to what you proposed for Alison and the 4-Week extension.  However, that sounds like a great plan!  I will circle back with you about my July availability as soon as I know.  (I am planning to take a teacher training course this summer that I will be traveling for, and I am still waiting to hear back from them about those dates; and that is the reason why I do not know my July schedule currently).
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
 
-Let me know if I can continue to work on the remaining slides in T
+
+On Wed, Jul 30, 2025 at 4:16 PM <support@coralacademy.com> wrote:
+
+> ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     
 
 ----------------------------------------
 
@@ -690,41 +497,13 @@ Let me know if I can continue to work on the remaining slides in T
 Example 12
 
 Subject:
-RE: class offering
+Hello
 
 Body:
-Hi there,
-
-Thanks for the call last week. Any news about the question regarding the need to be a US resident?
-Looking forward to hearing from you.
-
-Warmly,
-
-Laure
-________________________________
-De : Laure Huys <laurehuys@hotmail.fr>
-Envoyé : jeudi 19 mars 2026 15:15
-À : Coral Academy <support@coralacademy.com>
-Objet : RE: class offering
-
-I'd love that!
-I booked a call with you tomorrow.
-
-Laure
-________________________________
-De : Coral Academy <support@coralacademy.com>
-Envoyé : jeudi 19 mars 2026 13:36
-À : Laure Huys <laurehuys@hotmail.fr>
-Objet : Re: class offering
 
 
-Hi Laure,
+I want to make enquire 
 
-Thank you so much for reaching out and for sharing a bit about your work — it sounds incredibly meaningful, and we love that you’re passionate about zero waste and sustainability.
-
-We’d absolutely love to learn more about your background and the types of classes you’re envisioning for our learners. It would be great to connect and explore whether there might be a fit.
-
-Would y
 
 ----------------------------------------
 
@@ -732,49 +511,24 @@ Would y
 Example 13
 
 Subject:
-Re: Update on Fri Jan 23 Finance 101 Class
+Reminder: Upcoming Session Ending for test bug class title
 
 Body:
-Hi Hannah,
+Sessions for the class - test bug class title are about to end next week!!
 
-I have scheduled the call. Please find the details below:
+*D* *ear Support Team,*
 
-Weekly Check in with Hannah
-Tuesday, 27 Jan · 8:30 - 9 AM ET
-Google Meet joining info
-Video call link: https://meet.google.com/qcv-rksf-xyd
-Or dial: +1 318-392-3158 PIN: 524052887
-More phone numbers: https://tel.meet/qcv-rksf-xyd?pin=3037837887311
+This is a friendly reminder that the session for the class *test bug class title* *[Mon &amp; Wed, 1:30 PM - 2:30 PM]* is scheduled to end soon. The session will conclude on *10-11-2025*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-Best Regards,
+*Session Details:*
 
-Anika Arora
+* *Class Name : test bug class title*
+* *Teacher Name : Teacher Suryansh*
+* *Session End Date: : 10-11-2025*
+* *Session Time: Central Standard Time*
 
-Human Resources
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
-
-On Mon, 26 Jan 2026 at 11:22 AM, Anika Arora <anika@coralacademy.com> wrote:
-
-> Hi Hannah,
->
-> Thank you for the update.
->
-> Can we have a call at 8:30 am ET on Tuesday, January 27? I will schedule
-> it and share a link shortly.
->
-> Best regards,
->
-> Anika Arora
->
-> Anika Arora
->
-> Human Resources
->
-> <https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-> <https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hc
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3DYLB9_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNWf5k05t9qS2CrtV0T8BEdubYiFlttm-2BA7EgG5VprQrj7NX0oZWN36CXuNQRNb-2BQv8AoIKwUwclYQFA7NdNPLFsrNL8Va0XGmbvZQyxVxstWOI3ShuzQ
 
 ----------------------------------------
 
@@ -782,10 +536,24 @@ On Mon, 26 Jan 2026 at 11:22 AM, Anika Arora <anika@coralacademy.com> wrote:
 Example 14
 
 Subject:
-Re: Following up on your Finance 101 question 😊
+Reminder: Upcoming Session Ending for test mail class
 
 Body:
-Hi Lucy, Thanks for your response. Yes, I would love for my son to do the full series, Thursday 6PM EST (best option) or Sunday 10AM EST/7PM EST works best. Please let me know what works and next steps. If this is successful, I would also enroll him in business 101. Best, Divya Reddy 847-917-9217 On Apr 10, 2026, at 1:17 AM, Coral Academy <support@coralacademy.com> wrote: ﻿ Hi there, I’m writing to follow up since you had a question about Finance 101 earlier — really glad you reached out 😊 And I’m sorry about your previous experience with the trial class. That definitely shouldn’t have happened, and I completely understand how frustrating that must have been. We’re currently planning a Finance 101 class structured as a 4-session series (starting from Topic 1) , with an upfront fee of $80 . This way, learners can build a strong foundation from the very beginning instead of joining midway. if you're interested, you could share your child’s availability (days and time ranges) along with y
+Sessions for the class - test mail class are about to end next week!!
+
+*D* *ear Support Team,*
+
+This is a friendly reminder that the session for the class *test mail class* *[Tue &amp; Thu, 8:25 PM - 9:20 PM]* is scheduled to end soon. The session will conclude on *11-09-2025*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
+
+*Session Details:*
+
+* *Class Name : test mail class*
+* *Teacher Name : Teacher Utkarsh*
+* *Session End Date: : 11-09-2025*
+* *Session Time: Central European Time*
+
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3DNGJ__wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNWf5k05t9qS2CrtV0T8BEdubYiFlttm-2BA7EgG5VprQrj7NX0oZWN36CXuNQRNb-2BQv8AoIKwUwclYQFA7NdNPLFsrNL8Va0XGmbvZQyxVxstWOI3ShuzQPX1HQGrbW5ElDm0a
 
 ----------------------------------------
 
@@ -793,35 +561,25 @@ Hi Lucy, Thanks for your response. Yes, I would love for my son to do the full s
 Example 15
 
 Subject:
-Re: Finance 101 Weekly Class Update May 27-28
+Reminder: Upcoming Session Ending for Fun test new class by teacher
+ utkarsh
 
 Body:
-Hi Hannah,
+Sessions for the class - Fun test new class by teacher utkarsh are about to end next week!!
 
-Thank you for the update and for trying to reach out to Nikki. Please don't
-worry about the technical difficulties with the chat; since she appears to
-have been withdrawn from the rosters, we will take care of contacting her
-via email directly from our end.
+*D* *ear Support Team,*
 
-Regarding your question about the course materials, you are welcome to
-continue working through the slides in the deck titled "Topic 8 -
-Investing_HJK." You can proceed with the content up to slide 100. We are
-still in the process of finalizing the materials from slide 101 onwards, so
-please hold off on those for now.
+This is a friendly reminder that the session for the class *Fun test new class by teacher utkarsh* *[Fridays, 10:20 AM - 10:30 AM]* is scheduled to end soon. The session will conclude on *30-01-2026*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-We appreciate you keeping us posted on your July schedule as you wait for
-your teacher training dates. It sounds like an exciting opportunity, and we
-look forward to hearing from you once your availability is confirmed.
+*Session Details:*
 
-Thank you for your dedication to these sessions!
+* *Class Name : Fun test new class by teacher utkarsh*
+* *Teacher Name : Teacher Utkarsh*
+* *Session End Date: : 30-01-2026*
+* *Session Time: Central European Time*
 
-Best regards,
-
-Anika Arora
-
-Human Resources
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3DCd-G_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNWf5k05t9qS2CrtV0T8BEdubYiFlttm-2BA7EgG5VprQrj7NX0oZWN36CXuNQRNb-2BQv8AoIK
 
 ----------------------------------------
 
@@ -829,31 +587,43 @@ Human Resources
 Example 16
 
 Subject:
-Re: Finance 101 Recap – Jan 30 (7pm ET)
+Re: Quick Feedback – It Takes 2 Seconds! ✨
 
 Body:
-Hi Hannah,
+4 :)
 
-It is wonderful to hear how much the students are enjoying the Finance 101
-sessions. I am so glad that the energy in the classroom is high and that
-the peer interactions are becoming a core part of their learning experience.
+On Thu, Feb 5, 2026 at 5:17 PM Coral Academy <support@coralacademy.com>
+wrote:
 
-Regarding the Monday morning meetings, I have created a recurring calendar
-invitation for our standing 8:00 AM ET sessions starting this Monday,
-February 2. You should have received the invite already, but I have
-included the meeting link below as well for your convenience:
+> Hey there!
+>
+> Thanks for joining today’s class,Mini Business Series! We’d love to hear
+> what you thought — it’ll only take a few seconds, but it really helps us
+> get better! 😊
+>
+>
+> *1. ☹️: Bad*
+> *2. 😐: Average*
+> *3. 🙂: Good**4. 😀: Great*
+>
+> Simply *reply with a number (1-4) based on your experience*. Feel free to
+> share any additional thoughts/feedback you have as well :)
+>
+> We appreciate you!
+> Team Coral Academy 💖
+>
+>
+>
+>
+>
+>
+> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
+> <https://#%23mt_unsubscribe_link%23%23>
+> 20/01/26, 13:17:49
+> Remove
+>
+>
 
-Weekly Check-in with Hannah
-Monday, 2 Feb · 8:00- 8:45 AM
-Google Meet joining info
-Video call link: https://meet.google.com/kum-hamo-wti
-Or dial: +1 585-491-9203 PIN: 756341536
-More phone numbers: https://tel.meet/kum-hamo-wti?pin=2131874229551
-
-
-Thank you for the detailed update on the classes and for flagging the
-inconsistencies in the Warren Buffett slides. We can certainly look into
-clarifying those details and discussing your ideas for the Kahoot schedule
 
 ----------------------------------------
 
@@ -861,55 +631,20 @@ clarifying those details and discussing your ideas for the Kahoot schedule
 Example 17
 
 Subject:
-Re: Finance 101 Update – Friday, April 24 (7:00 pm ET)
+Reminder: test1's class has started!
 
 Body:
-Hi Hannah,
+Fun With Science: A scientific journey session is live! Join Now
 
-Thank you so much for the detailed update on the Finance 101 class.
+Hi Coral Academy,
 
-Regarding our call, we can go ahead and skip it today.
+Just a quick reminder that  test1's class has started.
 
-Best regards,
+*You can access your session* *from the classroom page* *using the link below:*
 
-Anika Arora
+Go to Classroom Page ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjPkqggIv-2FLfrfTVjC-2B-2FJoxvmh-2Fztv7FK-2F2S5ylky7MUfOLML4hhCyulweHwIKtHJ93RfPF9d90xaqn5E6-2FGSkQm1GIrmoXAmT2TdZbMfNIDwAEVa_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNwwIWRrR61-2Bdj6fdK0BU5xSRKflL3a54Ap4Xkj-2FScv4EDvzsWmMvOEsHi6ysldQxSwxlL0BrEwVkslZMaMBinGbmEdX17CE93IcFMSuoD19BYM4nNWKR9O0hHCn4OvqjtaxarV8Sb9ifl0ElWXNkn6PnfArVWsE5qlbdoqKtL7SJOYZdRwofm8kqwOQ9RPTiJFQ0nUxlw5mRC3o-2Bntwvaf4iOiCIWLXIuMgo6-2BwV464cXsrWRtk3ezoY2qk-2BagbRgvsp6z0IVDcaorv90zHBzoTceRGl7-2By4hCkUP-2F3hGH-2BABaL7-2BWNa13D0EmbSbnQ8WnzGqd2TlMlbDSNT2S5Pqa1UU38tt-2BRukzzpB4FJMbZ6Y9QH3NeUrjYheXKYR1UHRgCSQJB-2B3zH2CXR-2Fp13CskA-3D-3D )
 
-Human Resources
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
-
-On Sat, Apr 25, 2026 at 5:45 AM Hannah Knecht <hannahjoyknecht@gmail.com>
-wrote:
-
-> Oops—just realized a typo!
->
-> **We ended on slide 86.**
->
->
-> On Apr 24, 2026, at 8:14 PM, Hannah Knecht <hannahjoyknecht@gmail.com>
-> wrote:
->
-> Hello Anika and Team!
->
->
-> Class Overview
->
->    - Completed: Topic 6 – Borrowing (through Slide 75)
->    - Strong engagement and discussion overall!
->
->
-> Highlights
->
->    - George – very engaged, answered multiple questions
->    - Theo – great participation, Kahoot winner
->
->
-> Student Questions (Curiosity)
->
->    - Theo: Highest-paying jobs after college, required degrees, and
->   
+Have questions? Reply anytime—we’re here fo
 
 ----------------------------------------
 
@@ -917,33 +652,23 @@ wrote:
 Example 18
 
 Subject:
-Re: Finance 101 Friday Class Update – May 22
+Reminder: test1's class has started!
 
 Body:
-Hello Anika!
+This is an Awesome Class session is live! Join Now
 
-I would be happy to connect for a call this week.
+Hi Coral Academy,
 
-My availability is as follows:
-Tuesday, May 26: 2:00 PM – 5:00 PM ET
-Wednesday, May 27: 9:00 AM – 5:00 PM ET
-Thursday, May 28: 9:00 AM – 12:00 PM ET
-Friday, May 29: 9:00 AM – 11:00 AM ET
+Just a quick reminder that  test1's class has started.
 
-I would also kindly ask that a representative from the team who is involved in the scheduling and registration decision-making process be included on the call, so we can have a productive discussion about the delayed registration concerns, overall strategy, and how we can best align moving forward.
+*You can access your session* *from the classroom page* *using the link below:*
 
-I would prefer to meet as soon as possible so we can establish a clear plan together going forward.
+Go to Classroom Page ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjFsyhFghnVxAXS3cOdZRVGr3qldDCFeLh9vRKOs6GMVOf05CMjK9nWTU-2B19imgvfRnaKGKj-2B2Xc0rp-2BDV6mPqB2sZGBLV4IczmrVukyTc6DcfezR_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNwwIWRrR61-2Bdj6fdK0BU5xSRKflL3a54Ap4Xkj-2FScv4EDvzsWmMvOEsHi6ysldQxSwxlL0BrEwVkslZMaMBinGbmEdX17CE93IcFMSuoD19BYM4nNWKR9O0hHCn4OvqjtaxarV8Sb9ifl0ElWXNkn6PnfArVWsE5qlbdoqKtL7SJOYZdRwofm8kqwOQ9RPTiJFQ0nUxlw5mRC3o-2Bntwvaf4iOiCIWLXIuMgo6-2BwV464f7urdQJFrOuSRaKJTgzEZ5TaePtTirLe9U4F4XwsQqwbfczbzf-2Fa5ryYCcboIvhgMPxaRq0txGcamkhi7oLRSGLzo4O5WTArW5SEi2w65nqQeyI0pHf1z84FivNLdSD2SM8x3lX-2FcmJDLscfEB84LMYvjT-2FdoyfujsS0YRz7IQRg-3D-3D )
 
-Thank you, and I look forward to speaking with everyone soon!
-Hannah
+Have questions? Reply anytime—we’re here for you.
 
-> On May 25, 2026, at 4:38 AM, Anika Arora <anika@coralacademy.com> wrote:
-> 
-> Hi Hannah,
-> 
-> Thank you for the update.
-> 
-> Could we get on a quick call sometime this week? We would like to discuss the line items you mentioned. Please share your ava
+Happy Learning!
+Tea
 
 ----------------------------------------
 
@@ -951,18 +676,25 @@ Hannah
 Example 19
 
 Subject:
-Request for Summer Finance 101 Schedule Confirmation and Class
- Updates
+Reminder: Upcoming Session Ending for testtttttttstcg hcvwjdvch
+ cjwdvhcjhe
 
 Body:
-Hello Anika and Team!
+Sessions for the class - testtttttttstcg hcvwjdvch cjwdvhcjhe are about to end next week!!
 
-I wanted to provide an update regarding tonight's (Friday) Finance 101 class on June 26 at 7pm ET. Unfortunately, no students attended today's session. I remained on the Zoom call for over 30 minutes before ending the session.
-Last Friday, June 19, only Nikki attended class, and we concluded at Topic 7, Slide 138. Given the recent attendance patterns, I would appreciate guidance on how you would like me to proceed with the Friday section moving forward.
+*D* *ear Support Team,*
 
-Additionally, I would appreciate written confirmation regarding which Finance 101 classes are ending and which classes will continue through the summer. Following our discussion during last week's meeting, my understanding was that some classes are winding down, but I have not yet received a finalized schedule. Having this information will help me appropriately plan my summer schedule and other professional commitments.
+This is a friendly reminder that the session for the class *testtttttttstcg hcvwjdvch cjwdvhcjhe* *[Thu, Fri &amp; Sat, 12:45 PM - 1:35 PM]* is scheduled to end soon. The session will conclude on *05-03-2026*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-Specifically, could someone please confirm whether I will be teaching the continuation
+*Session Details:*
+
+* *Class Name : testtttttttstcg hcvwjdvch cjwdvhcjhe*
+* *Teacher Name : Teacher Sara*
+* *Session End Date: : 05-03-2026*
+* *Session Time: India Standard Time*
+
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3D8ze4_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNwwIWRrR61-2Bdj6fdK0BU5xSRKflL3a54Ap4Xkj-2FScv4EV39ZjVNrgGzEWwLxyphsM2F4
 
 ----------------------------------------
 
@@ -970,49 +702,24 @@ Specifically, could someone please confirm whether I will be teaching the contin
 Example 20
 
 Subject:
-Re: Finance 101 Class Updates, July Availability, and Summer Program Questions
+Reminder: Upcoming Session Ending for test mail class
 
 Body:
-Would you be available tomorrow, Monday, June 15 between 9am - 10am ET?
+Sessions for the class - test mail class are about to end next week!!
 
-If not, I can do Wednesday, June 17 at the same time.
+*D* *ear Support Team,*
 
-Please let me know, or send a calendly link with your availability, so we
-can connect soon.
+This is a friendly reminder that the session for the class *test mail class* *[Tue &amp; Thu, 8:25 PM - 9:20 PM]* is scheduled to end soon. The session will conclude on *11-09-2025*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-Thank you!
-Hannah
+*Session Details:*
 
+* *Class Name : test mail class*
+* *Teacher Name : Teacher Utkarsh*
+* *Session End Date: : 11-09-2025*
+* *Session Time: Central European Time*
 
-On Sun, Jun 14, 2026 at 2:14 PM Coral Academy <support@coralacademy.com>
-wrote:
-
-> Hi Hannah,
->
-> This is Keerthi. We have a few updates and would like to provide detailed
-> answers to your questions. Please give us a couple of hours to confirm one
-> or two more things, and we will follow up with a detailed email.
->
-> Best regards,
-> Keerthi
-> Coral Academy
->
-> On Thu, Jun 11, 2026 at 12:38 PM Hannah Knecht <hannahjoyknecht@gmail.com>
-> wrote:
->
->> Hello Anika and Team!
->>
->>
->> I hope you are all doing well. I wanted to share an update on this week's
->> Finance 101 classes, along with a few scheduling and planning questions.
->>
->>
->> 1. Class Updates
->>
->>
->> Wednesday, June 10, 2026 – 7:00 PM ET
->>
->>    - En
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3DLuvJ_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNwwIWRrR61-2Bdj6fdK0BU5xSRKflL3a54Ap4Xkj-2FScv4EV39ZjVNrgGzEWwLxyphsM2F4ONeFe0GE3k-2Fu-2BzwhIcfb1GWSsIb0fDb7CpupRvfeV-2FZ1m-2F65BsEnfYKS
 
 ----------------------------------------
 
@@ -1020,43 +727,24 @@ wrote:
 Example 21
 
 Subject:
-Re: Update on Fri Jan 23 Finance 101 Class
+Reminder: Upcoming Session Ending for test ckass mm
 
 Body:
-Hi Hannah,
+Sessions for the class - test ckass mm  are about to end next week!!
 
-Thank you for the update.
+*D* *ear Support Team,*
 
-Can we have a call at 8:30 am ET on Tuesday, January 27? I will schedule it
-and share a link shortly.
+This is a friendly reminder that the session for the class *test ckass mm * *[Sundays, 11:30 AM - 1:10 PM]* is scheduled to end soon. The session will conclude on *25-12-2025*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-Best regards,
+*Session Details:*
 
-Anika Arora
+* *Class Name : test ckass mm *
+* *Teacher Name : Teacher Utkarsh*
+* *Session End Date: : 25-12-2025*
+* *Session Time: Central European Time*
 
-Anika Arora
-
-Human Resources
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
-
-On Sun, 25 Jan 2026 at 2:08 AM, Hannah Knecht <hannahjoyknecht@gmail.com>
-wrote:
-
-> Hello Team!
->
-> Quick update on last night’s class, Fri., Jan. 23 at 7pm ET—
-> Ended on slide 82 of Topic 3
->
-> Curious question from Neela - What stocks have gone up by 100% recently?
->
-> I have not received an invite for Monday, January 26.
->
-> Thank you!
-> Hannah
-
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3DUljv_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNwwIWRrR61-2Bdj6fdK0BU5xSRKflL3a54Ap4Xkj-2FScv4EV39ZjVNrgGzEWwLxyphsM2F4ONeFe0GE3k-2Fu-2BzwhIcfb1GWSsIb0fDb7CpupRvfeV-2FZ1m-2F65BsEnfYKS9fdLJnwd
 
 ----------------------------------------
 
@@ -1064,37 +752,20 @@ wrote:
 Example 22
 
 Subject:
-Finance 101 Class Updates, July Availability, and Summer Program
- Questions
+Reminder: Test, support's class has started!
 
 Body:
-Hello Anika and Team!
+Astronomy 101: Learn About Space session is live! Join Now
 
-I hope you are all doing well. I wanted to share an update on this week's Finance 101 classes, along with a few scheduling and planning questions.
+Hi support,
 
-1. Class Updates
+Just a quick reminder that  Test,  support's class have started.
 
-Wednesday, June 10, 2026 – 7:00 PM ET
-Ended on Topic 7, Slide 112
-Attendance: 3 students
-Curious question from Jacob, Nikki, and Elyssa:
-Why are commodities considered high-risk investments?
+*You can access your session* *from the classroom page* *using the link below:*
 
-Thursday, June 11, 2026 – 1:00 PM ET
-Ended on Topic 6, Slide 165.
-Next class will begin with the slide on leverage.
-Attendance: 2 students
-We welcomed a new student to the class today—Hunter! He experienced a technical issue when joining. I suggested logging out and logging back in, which successfully resolved the problem.
-No curious questions.
+Go to Classroom Page ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjDts43-2Fx-2FfIyrjN625N-2BClLVb2s1kBwAFq-2BDp3uiSoVmibFuQN6KJLk0FIB13H-2FctpICZtRDRzAe-2FBasA2wuEqoXTyZL4kPffJUvwx1c6yMSwZ8L_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNs5KmPuNarhk32a-2F3TevezWOjl19IzweRh50eI2-2BLy4OKg3JAI9mqcmzHGJqkjxYWF-2B1G8UhDr-2BIy5j6shYg2xH8h2kivYJ9-2Bi5aYGtt5VCD6qbKQUbMDYfoDaKASrwrbqt30MSYntoJIjgUvlS7z-2F5SHHJkFEmRbQ2auQJZe1o5al2DfyP3MoYlX-2ByrrovRsui6ewSFwQKiYYwu-2Bd-2FafhVrrzeswlCCK4quFXcKAL4Ly5M-2F49a3r7Ym-2BliCWjLUpITlgP-2BxYdBHD-2FQAdLgJzX4Ki4IQ4E-2Fp-2BH3eJ9W5sCKBeECvhOYOZa5di5NzQYvpEAj-2BJ2ZK4ndfMvVxRJeasLV8-2FUWRk6cxiTUtLbjMhK-2BQkpi6g7u4VEFIlZwKLb-2FNCdv7LEI0-2FCnK695MA3ABq7A-3D-3D )
 
-Thursday, June 11, 2026 – 2:00 PM ET
-Ended at the end of Topic 7 
-Next week we will begin Topic 8
-Attendance: 5 students
-No curious questions.
-
-2. Leaderboard Request
-Could you please continue extending the leaderboard for each class section by 
+Have questions? Reply anytime
 
 ----------------------------------------
 
@@ -1102,43 +773,50 @@ Could you please continue extending the leaderboard for each class section by
 Example 23
 
 Subject:
-Re: Update on Fri Jan 23 Finance 101 Class
+Re: Quick Feedback – It Takes 2 Seconds! ✨
 
 Body:
-Hi Hannah,
+The teacher did a great job (4) but we will not continue.
+Thank you for allowing us to try out the class!
 
-Wanted to check- do you think we’ll start with Topic 4 this week? If so, I
-am making a few changes in the presentation and will update it by Tuesday
-morning (ET).
-
-Apologies for the last minute change. I’ll schedule the next call according
-to your schedule for Thursday.
-
-Thank you
-
-Best regards
-
-Anika Arora
-
-Human Resources
-
-<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
-<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
-
-
-On Mon, 26 Jan 2026 at 11:40 PM, Hannah Knecht <hannahjoyknecht@gmail.com>
+On Tue, Mar 3, 2026, 12:03 PM Coral Academy <support@coralacademy.com>
 wrote:
 
-> Hello Anika!
+> Hey there!
 >
-> Thank you—unfortunately I can't attend tomorrow's 8:30 AM ET call due to a
-> prior commitment. Earliest availability is Thursday, Jan 29 morning at 8am
-> ET due to a very busy schedule this week.
+> Thanks for joining today’s class, *Into the Wild: Exploring Reptiles and
+> Amphibians on 3/3 at **9am PST*! We’d love to hear what you thought —
+> it’ll only take a few seconds, but it really helps us get better! 😊
 >
-> I've started adapting the PowerPoint for Topic 4 and will email feedback
-> soon (key prep items for our classes), since I can't meet this week.
 >
-> Going forward, could we s
+> *1. ☹️: Bad*
+> *2. 😐: Average*
+> *3. 🙂: Good**4. 😀: Great*
+>
+> Simply *reply with a number (1-4) based on your experience*. Feel free to
+> share any additional thoughts/feedback you have as well :)
+>
+> We appreciate you!
+> Team Coral Academy 💖
+>
+>
+>
+>
+>
+>
+> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
+> <https://#%23mt_unsubscribe_link%23%23>
+> 20/01/26, 13:17:49
+> Remove
+>
+>
+
+
+*Blessings,*
+
+
+*Suzy Beal*
+
 
 ----------------------------------------
 
@@ -1146,37 +824,37 @@ wrote:
 Example 24
 
 Subject:
-Re: Finance Class
+Re: Mailchimp Template Test - "Automated || FAQ 2"
 
 Body:
-Thanks so much! We’d love to sign up.
+Also whenever pricing increases we ll have to change here too - pls
+remember that i ll @Aishwarya Chadha <aishwarya@coralacademy.com> make a
+note somewhere
+
+Shagun Banthia
+
+Founding Team
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
 
 
-With gratitude,
+On Wed, Jul 30, 2025 at 5:20 PM Shagun Banthia <shagun@coralacademy.com>
+wrote:
 
-Cassandra Kuder
-
-On Thu, Jun 18, 2026 at 5:46 AM Coral Academy <lucy@coralacademy.com> wrote:
-
-> Hi Cassandra,
+> - change answer in banner to answered
+> - so its looking odd that line 2 has just one-two words - can we change
+> that in sentences with 2 lines.
+> - Can we have FAQ on teachers- and on safety - where we say teachers are
+> background checked by third party sources (check website FAQ) and also we
+> do learner verifications etc. So maybe we can club the 1st two questions
+> and add it in FAQ 1 and add better questions here? :) Also check customer
+> support wise what are the common questions that we can answer.
 >
-> We're so sorry to hear that experience last year — that likely happened
-> because he joined in between an already ongoing curriculum, which can make
-> it harder to follow along. That won't be the case this time!
 >
-> We are starting the Finance class completely from scratch. We have a
-> regular weekly ongoing class starting in July, and we would highly
-> recommend this one for your son. Starting fresh means he'll be able to
-> build his understanding step by step over time, which will make a much
-> bigger difference than a short course.
+> Shagun Banthia
 >
-> We're getting the class live and listed on our website in the next few
-> days, and we'll personally reach out to you as soon as that's done. We'll
-> also make sure you're added to our email list so you're the first to know!
->
-> Warm regards,
->      Lucy
->
+> Founding Te
 
 ----------------------------------------
 
@@ -1184,31 +862,24 @@ On Thu, Jun 18, 2026 at 5:46 AM Coral Academy <lucy@coralacademy.com> wrote:
 Example 25
 
 Subject:
-Re: Finance 101 Weekly Class Update - May 6 and 8
+Reminder: Upcoming Session Ending for Test - Late Evening Music
 
 Body:
-Hi Hannah,
+Sessions for the class - Test - Late Evening Music are about to end next week!!
 
-Thank you for the detailed update on this past week's Finance 101 classes.
+*D* *ear Support Team,*
 
+This is a friendly reminder that the session for the class *Test - Late Evening Music* *[Tuesdays, 6:50 PM - 7:40 PM]* is scheduled to end soon. The session will conclude on *10-03-2026*.
+Please take any necessary actions ahead of the session's conclusion to ensure a smooth process. If there are any follow-up steps required, this is a good time to start preparing.
 
-   - Regarding Neela's curious question, I sincerely apologize for the miss
-   on our end. We will make sure to have the answers to those curious
-   questions delivered to you moving forward to ensure you feel fully
-   supported before each session.
-   - It is great to hear that you feel prepared to facilitate Topic 2 for
-   the Thursday class. Regarding your next steps, we will have Topic 8
-   delivered to you later this week so you can begin your preparations for
-   teaching that module.
-   - As for the marketing links, we are currently in the process of listing
-   the June offerings. As soon as the classes are live and the links have been
-   generated, we will share them with you so you can pass them along to
-   interested families.
-   - Finally, there is no need for us to meet this Monday since we don't
-   have any pressing items to discuss.
+*Session Details:*
 
+* *Class Name : Test - Late Evening Music*
+* *Teacher Name : meghana*
+* *Session End Date: : 10-03-2026*
+* *Session Time: India Standard Time*
 
-Thanks for all your hard work!
+Login ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjF6gcBhp-2BD4G4rkUVXRT-2FHiUCj8v0GaivurBCy2J0vBmT-2FgaEhw1ZfhwoEPB81jWTg-3D-3DuiHN_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNWf5k05t9qS2CrtV0T8BEdubYiFlttm-2BA7EgG5VprQrj7NX0oZWN36CXuNQRNb-2BQv8AoIKwUwclYQFA7NdNPLFsrNL8Va0XGmbvZQyxVxstWOI3ShuzQP
 
 ----------------------------------------
 
@@ -1216,31 +887,33 @@ Thanks for all your hard work!
 Example 26
 
 Subject:
-Re: Class starts in 15 minutes: Finance 101: A Practical Playbook for
- Mastering Money
+Re: Quick Feedback – It Takes 2 Seconds! ✨
 
 Body:
-Hi there,
+4
 
-Can you explain something to me please? By now we are on our 7th session of
-this class, however, I see that we are only on Topic 3? When we signed up
-for this class, we were under the impression that it was 8 classes. How
-long is this going to go on for?
 
-I notice too that there are new students in each class - are we going back
-and covering old ground to catch up new students?
+On Thu, Apr 30, 2026 at 9:01 PM Coral Academy <support@coralacademy.com>
+wrote:
 
-Thanks,
-Gerrine
-
-On Wed, Feb 25, 2026 at 3:45 PM Coral Academy <
-support_at_coralacademy.com_gerrine@duck.com> wrote:
-
-> This is a reminder that Nour Maalouf & Maz Maalouf have a class in 15
-> minutes! Hi Gpan, Class starts in 15 minutes! Please follow the steps below
-> and make sure Nour Maalouf & Maz Maalouf get to class
-> *DuckDuckGo* removed trackers from SendGrid. More
-> <https://duckduckgo.com/-ADAJwHti1862zjaKBcmD8RM478gcp4F9Em3aqqp_4c4u8JYmuw6x3mQXTmWqZu7G6y6PT97y3GeUp_5wnYS09s1AGWZTrDRCzOgXjTAdaF8gZtjHsiZcv_zUfiaWV2-6tlXntxjes07vu8icvTiQA2vREcHVqojOsq71wpZXgmKpbdAEudBbGqb
+> We hope you enjoyed this session!
+> Hey parent!
+>
+> Thanks for joining today’s class, Into the Wild: Young Zoologists Club !
+> We’d love to hear what you thought — it’ll only take a few seconds, but it
+> really helps us get better!
+> *1. ☹️ : Bad* *2. 😐 : Average* *3. 🙂 : *Good *4. 😃 : *Great
+> Simply *reply with a number (1-4) based on your experience*. Feel free to
+> share any additional thoughts/feedback you have as well :) We appreciate
+> you!
+>
+> Happy Learning!
+> Team Coral Academy
+> This message was sent to your email at your request.
+> Coral Learning Academy LLC
+> 1111B S Governers Ave STE 26485, DE 19904
+> View in Browser | Email Preferences
+> <http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjAD-2F4mitqcIU-2FAo5Dn1Wowm99FF2dUssr-2BXQbJMyVPWmyn-2F37TZI3HOPSHnYPLVgwPyA3wxEnjbVMIk8Vt8v4oxXG3Nnouk49pMoq9T-2BZ8-2BdnFFWsobQljRpoXNv16-2BqVQ-3D-3DQaSV_mmV2
 
 ----------------------------------------
 
@@ -1248,37 +921,22 @@ support_at_coralacademy.com_gerrine@duck.com> wrote:
 Example 27
 
 Subject:
-Re: Finance 101-Compounding: Demo Class
+Reminder: test1's class has started!
 
 Body:
-Hello Coral Academy Team!
- 
-Thanks for sending over the Zoom details! I’m all set and really excited to do the demo lesson later today. Looking forward to bringing some energy and fresh ideas to the class.
- 
-If anything comes up before then, I’ll be sure to reach out. Otherwise, see you at 4pm ET (1pm PT)!
+This is an Awesome Class session is live! Join Now
 
-Hannah
+Hi Coral Academy,
 
-> On Nov 2, 2025, at 1:55 PM, Coral Academy <support@coralacademy.com> wrote:
-> 
-> Hi Hannah,
-> Hope you are going well.
-> 
-> We are eagerly looking forward to your session with the learners and are excited to see the amazing ideas and energy you’ll bring to the class.
-> 
-> Best,
-> Coral Academy
-> 
-> 
-> On Fri, Oct 31, 2025 at 2:32 PM Coral Academy <support@coralacademy.com <mailto:support@coralacademy.com>> wrote:
->> Hi Hannah,
->> Hope you're doing well!
->> 
->> Just wanted to share the Zoom details for the upcoming session:
->> 
->> 
->> Date & Time: Sunday, November 2nd at 1:00 PM PT
->> Meeting Link: https://us05web.zoom.us/j/85647569726?pwd=VT9iCcZ
+Just a quick reminder that  test1's class has started.
+
+*You can access your session* *from the classroom page* *using the link below:*
+
+Go to Classroom Page ( http://click2.coralacademy.com/ls/click?upn=u001.dkA2MQ7bz8hnqTRLlhuEjFsyhFghnVxAXS3cOdZRVGr3qldDCFeLh9vRKOs6GMVOf05CMjK9nWTU-2B19imgvfRnaKGKj-2B2Xc0rp-2BDV6mPqB2sZGBLV4IczmrVukyTc6DcTzGy_wmc-2BViHeaSAOdjPZKiSJ-2FceOBYQLXQiQYzM1bpWcw380Kykn3s5eDNlX8w3qbBkNwwIWRrR61-2Bdj6fdK0BU5xSRKflL3a54Ap4Xkj-2FScv4EDvzsWmMvOEsHi6ysldQxSwxlL0BrEwVkslZMaMBinGbmEdX17CE93IcFMSuoD19BYM4nNWKR9O0hHCn4OvqjtaxarV8Sb9ifl0ElWXNkn6PnfArVWsE5qlbdoqKtL7SJOYZdRwofm8kqwOQ9RPTiJFQ0nUxlw5mRC3o-2Bntwvaf4iOiCIWLXIuMgo6-2BwV464cycl25lqg-2FsPkZtGvEhgKIfZHcgGlGrzvFBNqBvHiyjuSamHcW98xLUAEme-2Bnn5AZ9nSTmQNEr6oj8S2O-2Fr3XTUb3Pmijo-2F-2FPq2uVD7aB6-2B3l167CnjPJR6-2Bmq-2BRQ3flhMbrrBP25b88tsLOQm9DMiJwz4N5JsFVP-2FgH-2BNnt3bhQ-3D-3D )
+
+Have questions? Reply anytime—we’re here for you.
+
+Happy 
 
 ----------------------------------------
 
@@ -1286,36 +944,40 @@ Hannah
 Example 28
 
 Subject:
-Re: Finance 101 Weekly Class Update May 27-28
+Re: Quick Feedback – It Takes 2 Seconds! ✨
 
 Body:
-Hi Hannah,
+3
 
-Thank you for the detailed update on this week's Finance 101 classes. It is
-great to hear about the students' engagement and the interesting questions
-they’ve been asking.
+On Fri, Jan 16, 2026, 9:54 AM Coral Academy <support@coralacademy.com>
+wrote:
 
-*Nikki:*
+> Hey there!
+>
+> Thanks for joining today’s class, History Investigators Club! We’d love to
+> hear what you thought — it’ll only take a few seconds, but it really helps
+> us get better! 😊
+>
+>
+>
+>
+> *1. 😀: Great2. 🙂: Good3. 😐: Average4. ☹️: Bad*
+>
+> Simply *reply with a number (1-4) based on your experience*. Feel free to
+> share any additional thoughts/feedback you have as well :)
+>
+> We appreciate you!
+> Team Coral Academy 💖
+>
+>
+>
+> [image: Mailsuite] Email tracked with Mailsuite  ·  Opt out
+> <https://#%23mt_unsubscribe_link%23%23>
+> 16/01/26, 20:41:24
+> Remove
+>
+>
 
-   - About Nikki, thank you for the note. When you have a chance, could you
-   please reach out to Nikki directly through the chat? You should be able to
-   find the conversation easily by going to your messages and typing Nikki’s
-   name.
-
-*Allison's Schedule:*
-
-   - Regarding the schedule, Allison has proposed a new 6-week session on
-   Thursdays at 3:00 PM ET, starting July 2nd. Could you let us know if you
-   are available for this time slot? If so, we will move forward with setting
-   up those classes.
-
-*Registration Link:*
-
-   - As you requested, here is the registration link for the 3:00 PM ET
-   class starting June 15th:
-   https://www.coralacademy.com/class/money-masters3a-a-stanford-backed-intensive-course-1a5c713a-2d9c-4d63-b792-ce5322b994b4
-
-   - Please not
 
 ----------------------------------------
 
@@ -1323,42 +985,32 @@ they’ve been asking.
 Example 29
 
 Subject:
-Re: Exploring a meaningful collaboration with Coral Academy
+Re: Mailchimp Template Test - "Automated || FAQ 1"
 
 Body:
-What is your budget like and I can see if we can make that happen? We are
-more than happy to work with you so everyone feels like they are getting
-what they need.  We like to square this away before we hop on calls since
-we have kids full time and we need to make arrangements for them so we can
-focus on calls :)
+1. Answered not answer in banner
+2. remove Q3 - replace the question with why we take card details during
+free trials and also mention we wont charge anything.
+3. Can we change this line " Before you start, we’ve put together quick
+answers to common questions from parents like you - to help you move
+forward with confidence." I liked the line in FAQ 2 if that helps - jus try
+a diff version of it
+
+Shagun Banthia
+
+Founding Team
+
+<https://www.facebook.com/share/pnbU6ZV89VMcss8e/?mibextid=LQQJ4d>
+<https://www.instagram.com/coralacademyofficial/profilecard/?igsh=ZW5hcjFrMG4xcDB4>
 
 
-Thanks,
+On Wed, Jul 30, 2025 at 3:58 PM <support@coralacademy.com> wrote:
 
-
-
-On Wed, Feb 18, 2026 at 3:52 AM Coral Academy <lucy@coralacademy.com> wrote:
-
-> Hi Lauren,
->
-> Thank you for the follow-up.
->
-> As a startup, we are looking for some flexibility on the media kit rates.
-> Regarding deliverables, we are specifically interested in one Reel and one
-> Story.
->
-> We are happy to hop on a call to discuss this further, but we want to
-> ensure we are aligned on the budget first to make the best use of
-> everyone's time. Could you let us know if you can accommodate a partnership
-> within these parameters?
->
-> Warmly,
-> Lucy
-> Coral Academy
->
->
->
-
+> ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏
+> ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌     ͏ ‌
+>   ͏ ‌     ͏ ‌     ͏ 
 
 ----------------------------------------
 
@@ -1366,32 +1018,34 @@ On Wed, Feb 18, 2026 at 3:52 AM Coral Academy <lucy@coralacademy.com> wrote:
 Example 30
 
 Subject:
-Re: Follow-Up Question about Thurs. 6pm ET Class Continuation
+Re: Quick Feedback – It Takes 2 Seconds! ✨
 
 Body:
-Hi Hannah,
+2
+On Mon, Jun 29, 2026 at 5:04 PM Coral Academy <support@coralacademy.com>
+wrote:
 
-Thank you for following up. It was great speaking with you earlier, and we
-are excited to confirm that we would like to continue the Finance 101
-session!
-
-We are proposing another 4-week extension to take place on June 11, 18, 25,
-and July 2 at 3 PM PT / 6 PM ET. Please note that we will skip next week,
-June 4, and resume on June 11.
-
-During today's final class, could you please ask the students to bring
-their parents onto the call? We would like for you to check in with the
-parents directly to gauge their interest in this continuation. When
-speaking with them, please kindly convey the following:
-
-  - This specific extension is currently intended for the three enrolled
-students.
-  - If they are interested, our team will list the class and share the
-registration link shortly.
-  - Families will need to enroll within 24–48 hours so we can finalize the
-registrations.
-  - We will officially extend the course for the full 4 weeks provided that
-all three stud
+> We hope you enjoyed this session!
+> Hey parent!
+>
+> Thanks for joining today’s class, Geology & Earth Science Explorers ! We’d
+> love to hear what you thought — it’ll only take a few seconds, but it
+> really helps us get better!
+> *1. ☹️ : Bad* *2. 😐 : Average* *3. 🙂 : *Good *4. 😃 : *Great
+> Simply *reply with a number (1-4) based on your experience*. Feel free to
+> share any additional thoughts/feedback you have as well :) We appreciate
+> you!
+>
+> Happy Learning!
+> Team Coral Academy
+> This message was sent to at your request.
+> Coral Learning Academy LLC
+> 1111B S Governers Ave STE 26485, DE 19904
+> View in Browser <https://www.coralacademy.com> | Email Preferences
+> <https://www.coralacademy.com?show_modal=email_preference_center&id=>
+> We care about your privacy. Read our Privacy Policy
+> <https://www.help.coralacademy.com/legal/privacy> and Terms of Service
+> <https://www.h
 
 ----------------------------------------
 

@@ -141,24 +141,22 @@ def main(target_email=None):
                 )
 
                 try:
-
                     process_email(
                         msg=msg,
                         account=account
                     )
-
-                    mail.store(
-                        email_id,
-                        '+FLAGS',
-                        '\\Seen'
-                    )
-
                 except Exception:
                     traceback.print_exc()
+                    continue
+
+                
 
         finally:
             if mail:
-                mail.logout()
+                try:
+                    mail.logout()
+                except Exception:
+                    pass
 
     print("=" * 60)
     print("ABOUT TO START SENT MAIL SYNC")
