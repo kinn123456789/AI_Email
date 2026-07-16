@@ -54,7 +54,7 @@
         <table class="w-full table-fixed border-collapse min-w-[1100px]">
             <thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
                 <tr>
-                    <th class="w-16 p-4 text-left">📧</th>
+                    {#<th class="w-16 p-4 text-left">📧</th>#}
                     <th class="w-72 p-4 text-left">Subject</th>
                     <th class="w-40 p-4 text-left">Sender</th>
                     <th class="w-36 p-4 text-left">Inbox</th>
@@ -76,7 +76,7 @@
                     "
                     class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
                 >
-                    <td class="p-4 text-cyan-950 font-bold">{{ loop.index }}</td>
+                    {#<td class="p-4 text-cyan-950 font-bold">{{ loop.index }}</td>#}
                     <td class="p-4 truncate">
                         <div class="truncate font-semibold text-gray-950" title="{{ email.subject }}">
                             {% if not email.is_read %}
@@ -167,10 +167,8 @@
     </div>
 </body>
 <script>
-window.addEventListener("pageshow", function () {
-    if (performance.navigation.type === 2) {
-        window.location.reload();
-    }
+window.addEventListener("focus", function () {
+    location.reload();
 });
 </script>
 </html>

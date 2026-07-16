@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TOKEN = os.getenv("TEACHER_PORTAL_TOKEN")
-BASE_URL = "https://api.coralacademy.com"
+BASE_URL = "https://api.preprod.coralacademy.com"
 
 def send_teacher_reply(
     chat_id,
@@ -17,8 +17,10 @@ def send_teacher_reply(
 
     headers = {
         "Authorization": f"Bearer {TOKEN}",
-        "Ca-Id": "e04e5250-0abf-4429-aa07-1b66d03269af",
+        "Ca-Id": "a88e2aaa-a02b-40b8-9385-f26827f3820d",
         "Ca-Teacher-Id": teacher_id,
+        "Origin": "https://teacher.preprod.coralacademy.com",
+        "Website-Base-Url": "https://teacher.preprod.coralacademy.com",
         "Content-Type": "application/json"
     }
 

@@ -39,25 +39,32 @@
 
     <div class="bg-white rounded-xl shadow p-6 mb-4">
 
-        {% if msg.sender == conversation.teacher_id %}
+    <p><b>Sender:</b> {{ msg.sender }}</p>
+    <p><b>Teacher ID:</b> {{ conversation.teacher_id }}</p>
+    <p><b>Parent ID:</b> {{ conversation.parent_id }}</p>
 
-<span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
-    {{ conversation.teacher_name }}
-</span>
+    <p><b>Teacher Match:</b> {{ msg.sender == conversation.teacher_id }}</p>
+    <p><b>Parent Match:</b> {{ msg.sender == conversation.parent_id }}</p>
 
-{% elif msg.sender == conversation.parent_id %}
+    {% if msg.sender == conversation.teacher_id %}
 
-<span class="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-    {{ conversation.parent_name }}
-</span>
+        <span class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+            {{ conversation.teacher_name }}
+        </span>
 
-{% else %}
+    {% elif msg.sender == conversation.parent_id %}
 
-<span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
-    {{ msg.sender }}
-</span>
+        <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full">
+            {{ conversation.parent_name }}
+        </span>
 
-{% endif %}
+    {% else %}
+
+        <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
+            {{ msg.sender }}
+        </span>
+
+    {% endif %}
         <p class="mt-2">
             {{ msg.body }}
         </p>
@@ -82,9 +89,38 @@
         AI Draft Reply
     </h4>
 
-    <p>
-        {{ msg.ai_draft_reply }}
-    </p>
+    <textarea
+        name="reply"
+        class="w-full border rounded-lg p-3 mt-2"
+        rows="5"
+    >{{ msg.ai_draft_reply }}</textarea>
+
+    <form method="POST" action="/send-teacher-reply">
+
+    <input
+        type="hidden"
+        name="chat_id"
+        value="{{ conversation.chat_id }}"
+    >
+
+    <input
+        type="hidden"
+        name="teacher_id"
+        value="{{ conversation.teacher_id }}"
+    >
+
+    <textarea
+        name="reply"
+        class="w-full border rounded-lg p-3"
+    >{{ msg.ai_draft_reply }}</textarea>
+
+    <button
+        class="mt-3 bg-blue-600 text-white px-4 py-2 rounded-lg"
+    >
+        Send Reply
+    </button>
+
+</form>
 </div>
 
 {% endif %}

@@ -768,3 +768,30 @@ async def compose_email(
      #   status_code=303
    # )
 
+from teacher_portal_sender import send_teacher_reply
+
+@app.post("/teacher/send")
+async def send_teacher_message(
+    chat_id: str = Form(...),
+    teacher_id: str = Form(...),
+    reply: str = Form(...)
+):
+
+    success = send_teacher_reply(
+        chat_id=chat_id,
+        teacher_id=teacher_id,
+        message=reply
+    )
+
+    if not success:
+        return RedirectResponse(
+            url=f"/conversation/{chat_id}?error=send",
+            status_code=303
+    )
+
+    return RedirectResponse(
+        url=f"/conversation/{chat_id}?sent=true",
+        status_code=303
+    )
+
+

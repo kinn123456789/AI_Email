@@ -11,7 +11,7 @@ TOKEN = os.getenv("TEACHER_PORTAL_TOKEN")
 print("TOKEN EXISTS:", TOKEN is not None)
 print("TOKEN LENGTH:", len(TOKEN) if TOKEN else 0)#Shows length of token example 989
 
-BASE_URL = "https://api.coralacademy.com"
+BASE_URL = "https://api.preprod.coralacademy.com"
 #BASE_URL
 #= Destination
 #= Where the request goes
@@ -25,16 +25,17 @@ def get_chats(teacher_id):
 
     headers = {
     "Authorization": f"Bearer {TOKEN}",
-    "Ca-Id": "e04e5250-0abf-4429-aa07-1b66d03269af",
+    "Ca-Id": "a88e2aaa-a02b-40b8-9385-f26827f3820d",
     "Ca-Teacher-Id": teacher_id,
-    "Origin": "https://www.teacher.coralacademy.com",
-    "Website-Base-Url": "https://www.teacher.coralacademy.com"
+    "Origin": "https://teacher.preprod.coralacademy.com",
+    "Website-Base-Url": "https://teacher.preprod.coralacademy.com"
 }
 
     response = requests.get(
         f"{BASE_URL}/chats?user_role=teacher",
         headers=headers
     )
+    print("STATUS:", response.status_code)
 
     print("\nSTATUS CODE:", response.status_code)
 
@@ -59,8 +60,8 @@ def get_messages(chat_id, teacher_id):
         "Authorization": f"Bearer {TOKEN}",
         "Ca-Id": "e04e5250-0abf-4429-aa07-1b66d03269af",
         "Ca-Teacher-Id": teacher_id,
-        "Origin": "https://www.teacher.coralacademy.com",
-        "Website-Base-Url": "https://www.teacher.coralacademy.com"
+        "Origin": "https://teacher.preprod.coralacademy.com",
+        "Website-Base-Url": "https://teacher.preprod.coralacademy.com"
     }
 
     response = requests.get(
@@ -89,8 +90,8 @@ def get_teachers():
     headers = {
         "Authorization": f"Bearer {TOKEN}",
         "Ca-Id": "e04e5250-0abf-4429-aa07-1b66d03269af",
-        "Origin": "https://www.teacher.coralacademy.com",
-        "Website-Base-Url": "https://www.teacher.coralacademy.com"
+        "Origin": "https://teacher.preprod.coralacademy.com",
+        "Website-Base-Url": "https://teacher.preprod.coralacademy.com"
     }
 
     response = requests.get(
@@ -101,6 +102,10 @@ def get_teachers():
     print("STATUS:", response.status_code)
 
     data = response.json()
+
+    if response.status_code != 200:
+        print(data)
+        return []
 
     return data["response"]["teachers"]
 

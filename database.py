@@ -107,7 +107,8 @@ def get_emails():
             AND status != 'Resolved'        
             AND reply_type IS DISTINCT FROM 'gmail_manual'
             ORDER BY
-                
+                is_read ASC,
+                       
                 CASE priority
                     WHEN 'Urgent' THEN 1
                     WHEN 'High' THEN 2
@@ -136,7 +137,6 @@ def get_emails():
 
             else:
                 row["handled_by"] = None
-        
         return rows
 
     finally:
@@ -268,14 +268,29 @@ def get_conversation_messages(chat_id):
         db_pool.putconn(conn)
 
 def get_conversation(chat_id):
+   
+
+    
     conn = get_connection()
-    cursor = conn.cursor(cursor_factory=RealDictCursor)
-    try:
-        cursor.execute("SELECT * FROM conversations WHERE chat_id = %s", (chat_id,))
-        return cursor.fetchone()
-    finally:
-        cursor.close()
-        db_pool.putconn(conn)
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    cur.execute("""
+        SELECT
+            chat_id,
+            parent_name,
+            teacher_name,
+            teacher_id,
+            parent_id
+        FROM conversations
+        WHERE chat_id = %s
+    """, (chat_id,))
+
+    row = cur.fetchone()
+
+    cur.close()
+    db_pool.putconn(conn)
+
+    return row
 
 def conversation_message_exists(message_id):
     conn = get_connection()

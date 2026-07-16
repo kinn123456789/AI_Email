@@ -37,16 +37,38 @@ def sync_teacher_portal():
             parent_id = None
             conversation_teacher_id = None
 
+            print("\nParticipants:")
+            for participant in chat["participants"]:
+                print(
+                    participant["user_role"],
+                    participant["user"]["name"],
+                    participant["user"]["id"]
+                )
+
+            parent_name = "Unknown"
+            teacher_name = "Unknown"
+            parent_id = None
+            conversation_teacher_id = None
+
             for participant in chat["participants"]:
 
                 if participant["user_role"] == "parent":
                     parent_name = participant["user"]["name"]
                     parent_id = participant["user"]["id"]
 
-                if participant["user_role"] == "teacher":
+                elif participant["user_role"] == "teacher":
                     teacher_name = participant["user"]["name"]
                     conversation_teacher_id = participant["user"]["id"]
 
+            print("Saving:")
+            print("Parent :", parent_name, parent_id)
+            print("Teacher:", teacher_name, conversation_teacher_id)
+            print("Saving:")
+            print("Parent :", parent_name)
+            print("Teacher:", teacher_name)
+            print("Parent ID :", parent_id)
+            print("Teacher ID:", conversation_teacher_id)
+            
             save_conversation(
                 chat_id,
                 parent_name,
