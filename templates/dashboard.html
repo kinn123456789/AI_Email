@@ -60,19 +60,33 @@
                     <th class="w-36 p-4 text-left">Inbox</th>
                     <th class="w-32 p-4 text-left">Category</th>
                     <th class="w-24 p-4 text-left">Priority</th>
-                    <th class="w-24 p-4 text-left">Confidence</th>
+                    {#<th class="w-24 p-4 text-left">Confidence</th>#}
                     <th class="w-40 p-4 text-left">Status</th>
                     <th class="w-32 p-4 text-left">Handled By</th>
                     <th class="w-36 p-4 text-left">Received</th>
-                    <th class="w-32 p-4 text-center">Actions</th>
+                    {#<th class="w-32 p-4 text-center">Actions</th>#}
                 </tr>
             </thead>
             <tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
                 {% for email in emails %}
-                <tr class="hover:bg-cyan-300/40 transition-colors">
+                <tr
+                    onclick="
+                        this.classList.add('opacity-70');
+                        window.location='/email/{{ email.id }}';
+                    "
+                    class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
+                >
                     <td class="p-4 text-cyan-950 font-bold">{{ loop.index }}</td>
                     <td class="p-4 truncate">
-                        <div class="truncate font-semibold text-gray-950" title="{{ email.subject }}">{{ email.subject }}</div>
+                        <div class="truncate font-semibold text-gray-950" title="{{ email.subject }}">
+                            {% if not email.is_read %}
+                                <span class="block text-[10px] uppercase font-black text-cyan-700 tracking-wider">Unread</span>
+                                <span class="font-bold text-stone-900">{{ email.subject }}</span>
+                            {% else %}
+                                <span class="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">Read</span>
+                                <span class="text-stone-700">{{ email.subject }}</span>
+                            {% endif %}
+                        </div>
                     </td>
                     <td class="p-4 truncate text-xs font-medium text-cyan-950" title="{{ email.sender }}">{{ email.sender }}</td>
                     
@@ -99,11 +113,11 @@
                         {% else %}<span class="text-gray-950">—</span>{% endif %}
                     </td>
 
-                    <td class="p-4 font-bold text-cyan-950">{{ email.ai_confidence }}%</td>
+                    {#<td class="p-4 font-bold text-cyan-950">{{ email.ai_confidence }}%</td>#}
 
                     <td class="p-4">
                         {% if email.status == "Needs Review" %}
-                            <span class="bg-yellow-300/60 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold border border-yellow-400/50">Needs Review</span>
+                            <span class="bg-yellow-200/40 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold border border-yellow-300/30">Needs Review</span>
                         {% elif email.status == "Replied" %}
                             <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold border border-cyan-400/50">Replied</span>
                         {% elif email.status == "Resolved" %}
@@ -114,35 +128,35 @@
                     </td>
 
                     <td class="p-4">
-                        {% if email.handled_by == "AI" %}
-                            <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">🤖 AI</span>
-                        {% elif email.handled_by == "Human" %}
-                            <span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">👤 Manual</span>
+                         {% if email.reply_type == "automatic" %}
+                            <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">
+                                🤖 AI
+                            </span>
+
+                        {% elif email.reply_type in ["human", "gmail_manual"] %}
+                            <span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">
+                                👤 Manual
+                            </span>
+
                         {% else %}
-                            <span class="bg-yellow-200/60 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold">Pending</span>
+                            <span class="bg-yellow-200/60 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold">
+                                Pending
+                            </span>
                         {% endif %}
                     </td>
 
                     <td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
-                    
+                    {#
                     <td class="p-4">
                         <div class="flex flex-col gap-2">
                             <a href="/email/{{ email.id }}"
                                class="bg-indigo-400/50 backdrop-blur-md border border-white/50 text-indigo-950 px-4 py-2 rounded-2xl text-xs font-bold text-center hover:bg-indigo-400/70 transition-all shadow-sm">
                                 {{ 'Review' if email.status == 'Needs Review' else 'View' }}
                             </a>
-                            {% if email.status != "Resolved" %}
-                            <a href="/resolve/{{ email.id }}"
-                               class="bg-emerald-400/50 backdrop-blur-md border border-white/50 text-emerald-950 px-4 py-2 rounded-2xl text-xs font-bold text-center hover:bg-emerald-400/70 transition-all shadow-sm">
-                                Resolve
-                            </a>
-                            {% else %}
-                            <span class="bg-emerald-300/50 backdrop-blur-sm border border-emerald-400/30 text-emerald-950 px-4 py-2 rounded-2xl text-xs font-bold text-center">
-                                ✓ Done
-                            </span>
-                            {% endif %}
+                            
                         </div>
                     </td>
+                    #}
                 </tr>
                 {% endfor %}
             </tbody>
@@ -152,5 +166,12 @@
         </div>
     </div>
 </body>
+<script>
+window.addEventListener("pageshow", function () {
+    if (performance.navigation.type === 2) {
+        window.location.reload();
+    }
+});
+</script>
 </html>
 

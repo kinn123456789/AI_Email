@@ -105,9 +105,20 @@ def get_emails():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, sender, subject, category, status
+        SELECT
+            id,
+            sender,
+            subject,
+            source,
+            category,
+            priority,
+            status,
+            is_read,
+            created_at,
+            email_date
         FROM messages
         ORDER BY
+            is_read ASC,
             CASE priority
                 WHEN 'Urgent' THEN 1
                 WHEN 'High' THEN 2
@@ -115,7 +126,8 @@ def get_emails():
                 WHEN 'Low' THEN 4
                 ELSE 5
             END,
-            id DESC;
+            email_date DESC NULLS LAST,
+            created_at DESC;
     """)
     rows = cursor.fetchall()
 
@@ -474,3 +486,17 @@ def get_root_thread_id(message_id):
         return row[0]
 
     return None
+
+def mark_email_read(email_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE messages
+        SET is_read = TRUE
+        WHERE id = %s
+    """, (email_id,))
+
+    conn.commit()
+    cursor.close()
+    conn.close()

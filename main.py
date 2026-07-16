@@ -26,7 +26,7 @@ from trial_followup import (
     
     
 )
-
+from database import mark_email_read,get_connection
 from fastapi import BackgroundTasks
 from save_composed_email import save_composed_email
 from gmail_fetch import get_message
@@ -122,10 +122,28 @@ def emails():
 
     return get_emails()
 
+
 @app.get("/email/{email_id}")
-
-
 def view_email(request: Request, email_id: int):
+
+    print(">>> VIEW_EMAIL START", email_id)
+
+    mark_email_read(email_id)
+
+    print(">>> AFTER mark_email_read")
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute(
+        "SELECT is_read FROM messages WHERE id = %s",
+        (email_id,)
+    )
+
+    print("AFTER UPDATE:", cur.fetchone())
+
+    cur.close()
+    db_pool.putconn(conn)
 
     email_data = get_email_by_id(email_id)
 
@@ -740,13 +758,13 @@ async def compose_email(
         status_code=303
     )
 
-@app.get("/resolve/{email_id}")
-def resolve_email(email_id: int):
+#@app.get("/resolve/{email_id}")
+#def resolve_email(email_id: int):
 
-    update_status(email_id, "Resolved")
+    #update_status(email_id, "Resolved")
 
-    return RedirectResponse(
-        "/dashboard",
-        status_code=303
-    )
+    #return RedirectResponse(
+     #   "/dashboard",
+     #   status_code=303
+   # )
 

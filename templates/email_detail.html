@@ -131,7 +131,7 @@
                 {% if email.status != "Closed" %}
                 <form action="/email/{{ email.id }}/send" method="POST" class="bg-white/50 p-6 rounded-3xl border border-cyan-100 flex flex-col flex-1" 
                       onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerText='Sending...';">
-                    <label class="block font-bold text-gray-900 text-sm tracking-wider uppercase px-1 mb-2">✍️ Compose Reply</label>
+                    <label class="block font-bold text-gray-900 text-sm tracking-wider uppercase px-1 mb-2">✍️ Compose Reply/AI draft</label>
                     
                     {% if request.query_params.get("sent") %}
                     <textarea disabled class="w-full flex-1 min-h-[16rem] rounded-2xl bg-cyan-50 border border-cyan-200 text-stone-600 p-4 mb-4">{{ email.ai_draft_reply }}</textarea>

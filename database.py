@@ -16,9 +16,16 @@ db_pool = SimpleConnectionPool(
 )
 
 
-
 def get_connection():
-    return db_pool.getconn()
+    conn = db_pool.getconn()
+
+    cur = conn.cursor()
+    cur.execute("SELECT current_database(), inet_server_addr();")
+    print(cur.fetchone())
+
+    cur.close()
+
+    return conn
 
 # --- HELPER PATTERN: Every function now uses try/finally ---
 def save_email(
@@ -41,7 +48,9 @@ def save_email(
     knowledge_url=None,
     reply_type=None,
     mailbox="inbox",
-    references_header=None  # Ensure this is added here
+    references_header=None,
+    email_date=None,
+    is_read=False 
 ):
     conn = get_connection()
     cursor = conn.cursor()
@@ -52,18 +61,18 @@ def save_email(
                 sender, subject, body, category, priority, ai_summary, 
                 ai_draft_reply, message_id, thread_id, in_reply_to, source, 
                 contact_name, phone, status, requires_review, ai_confidence, 
-                knowledge_url, reply_type, mailbox, references_header
+                knowledge_url, reply_type, mailbox, references_header,email_date,is_read
             )
             VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             RETURNING id
         """, (
             sender, subject, body, category, priority, ai_summary, 
             ai_draft_reply, message_id, thread_id, in_reply_to, source, 
             contact_name, phone, status, requires_review, ai_confidence, 
-            knowledge_url, reply_type, mailbox, references_header 
+            knowledge_url, reply_type, mailbox, references_header, email_date, is_read 
         ))
         result = cursor.fetchone()
         conn.commit()
@@ -92,28 +101,42 @@ def get_emails():
             SELECT
                 id, sender, subject, source, category, priority, status, 
                 reply_type, created_at, first_reply_at, resolved_at, 
-                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review
+                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read
             FROM messages
             WHERE mailbox = 'inbox'
             AND status != 'Resolved'        
             AND reply_type IS DISTINCT FROM 'gmail_manual'
-            ORDER BY 
+            ORDER BY
+                
                 CASE priority
                     WHEN 'Urgent' THEN 1
                     WHEN 'High' THEN 2
                     WHEN 'Medium' THEN 3
                     WHEN 'Low' THEN 4
                     ELSE 5
-                END ASC,
-                id DESC;
+                END,
+                email_date DESC NULLS LAST,
+                created_at DESC;
         """)
 
         rows = cursor.fetchall()
         # ... (rest of your existing logic for date formatting and handled_by)
         for row in rows:
+            print(row["id"], row["is_read"])
+
             if row["created_at"]:
                 row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
-            # ... (keep your existing logic here)
+
+            # NEW
+            if row["reply_type"] == "automatic":
+                row["handled_by"] = "AI"
+
+            elif row["reply_type"] in ("human", "gmail_manual"):
+                row["handled_by"] = "Human"
+
+            else:
+                row["handled_by"] = None
+        
         return rows
 
     finally:
@@ -335,7 +358,7 @@ def get_thread(thread_id):
             SELECT sender, body, created_at 
             FROM messages 
             WHERE thread_id = %s 
-            ORDER BY created_at ASC
+            ORDER BY email_date ASC
         """
         cursor.execute(query, (thread_id,))
         return cursor.fetchall()
@@ -697,12 +720,12 @@ def get_email_thread(thread_id):
                 sender,
                 source,
                 body,
-                created_at,
+                created_at,  
                 reply_type,
                 status
             FROM messages
             WHERE thread_id = %s
-            ORDER BY created_at ASC
+            ORDER BY email_date ASC
         """, (thread_id,))
 
         rows = cur.fetchall()
@@ -906,3 +929,19 @@ def reopen_thread(thread_id):
     finally:
         cursor.close()
         db_pool.putconn(conn)
+
+def mark_email_read(email_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    cur.execute("""
+        UPDATE messages
+        SET is_read = TRUE
+        WHERE id = %s
+    """, (email_id,))
+
+    conn.commit()
+
+    cur.close()
+    db_pool.putconn(conn)

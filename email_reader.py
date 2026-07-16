@@ -24,7 +24,7 @@ from process_email import process_email
 # Custom modules
 from email_filter import is_automated_email
 from ai_classifier import ai_triage
-
+from email.utils import parsedate_to_datetime
 
 # Configuration
 load_dotenv()
@@ -139,7 +139,9 @@ def main(target_email=None):
                 msg = email.message_from_bytes(
                     msg_data[0][1]
                 )
+                
 
+                email_date = parsedate_to_datetime(msg["Date"])
                 try:
                     process_email(
                         msg=msg,

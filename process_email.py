@@ -13,6 +13,8 @@ from rag_reranker import rerank_emails
 from knowledge_search import search_knowledge_base
 from reply_generator import generate_reply
 from slack_notifications import send_slack_notification
+from email.utils import parsedate_to_datetime
+
 
 from database import (
     email_exists,
@@ -52,6 +54,9 @@ def process_email(msg, account):
     )
 
     sender_email = parseaddr(msg.get("From", ""))[1]
+    
+    email_date = parsedate_to_datetime(msg["Date"])
+    
 
     body = ""
     html_body = ""
@@ -186,7 +191,8 @@ def process_email(msg, account):
             source=account["source"],
             status="No Reply Required",
             mailbox=mailbox,
-            references_header=references_header
+            references_header=references_header,
+            email_date=email_date
         )
 
         return
@@ -249,7 +255,8 @@ def process_email(msg, account):
         ai_confidence=result["confidence"],
         reply_type="human",
         mailbox=mailbox,
-        references_header=references_header
+        references_header=references_header,
+        email_date=email_date
     )
 
     print("Processed:", message_id)

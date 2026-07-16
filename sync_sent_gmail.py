@@ -14,6 +14,7 @@ from database import (
     email_exists,
     get_message_by_message_id,
 )
+from email.utils import parsedate_to_datetime
 
 load_dotenv()
 
@@ -96,7 +97,14 @@ def main():
                     status, msg_data = mail.fetch(sent_id, "(RFC822)")
                     if status != "OK": continue
 
+                    
+
+                    
+
                     msg = email.message_from_bytes(msg_data[0][1])
+
+                    email_date = parsedate_to_datetime(msg["Date"])
+
                     message_id = " ".join((msg.get("Message-ID") or "").split())
 
                     if not message_id or email_exists(message_id):
@@ -158,7 +166,8 @@ def main():
                         status="Replied",
                         requires_review=False,
                         reply_type="gmail_manual",
-                        references_header=references
+                        references_header=references,
+                        email_date=email_date
                     )
                     imported += 1
                     logger.info(f"Imported: {message_id}")
