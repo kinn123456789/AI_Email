@@ -15,6 +15,7 @@ from database import (
     get_message_by_message_id,
 )
 from email.utils import parsedate_to_datetime
+from database import set_sent_time
 
 load_dotenv()
 
@@ -107,10 +108,10 @@ def main():
 
                     message_id = " ".join((msg.get("Message-ID") or "").split())
 
-                    if not message_id or email_exists(message_id):
-                        skipped += 1
-                        logger.info(f"Duplicate skipped: {message_id}")
-                        continue
+                    #if not message_id or email_exists(message_id):
+                       # skipped += 1
+                        #logger.info(f"Duplicate skipped: {message_id}")
+                       # continue#}
 
                     # Normalization & Threading
                     in_reply_to = " ".join((msg.get("In-Reply-To") or "").split())
@@ -127,9 +128,15 @@ def main():
                     
                     if parent:
                         thread_id = parent["thread_id"]
+                        set_sent_time(parent["id"])
                         logger.info(f"Thread linked: {message_id} -> {thread_id}")
                     else:
                         logger.info(f"New thread: {message_id}")
+
+                    if not message_id or email_exists(message_id):
+                        skipped += 1
+                        logger.info(f"Duplicate skipped: {message_id}")
+                        continue
 
 
                     ai_summary = "Reply sent"

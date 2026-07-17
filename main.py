@@ -331,14 +331,36 @@ def dashboard(request: Request):
 
     rows = get_emails()
     counts = get_category_counts()
-    avg_response = get_avg_first_response_time()
+
+    avg_minutes = get_avg_first_response_time()
     avg_resolution = get_avg_resolution_time()
+
     needs_review_count = len(
-    [e for e in rows if e["status"] == "Needs Review"]
-)
+        [e for e in rows if e["status"] == "Needs Review"]
+    )
+
     auto_reply_count = len(
-    [e for e in rows if e.get("reply_type") == "automatic"]
-)
+        [e for e in rows if e.get("reply_type") == "automatic"]
+    )
+
+    if avg_minutes is not None:
+        avg_minutes = float(avg_minutes)
+
+        days = int(avg_minutes // 1440)
+        hours = int((avg_minutes % 1440) // 60)
+        minutes = int(avg_minutes % 60)
+
+        if days > 0:
+            avg_response = f"{days}d {hours}h"
+        elif hours > 0:
+            avg_response = f"{hours}h {minutes}m"
+        else:
+            avg_response = f"{minutes}m"
+    else:
+        avg_response = "-"
+
+    
+
     return templates.TemplateResponse( #Everything below this line will never run:(in this function)
                                         #Because Python exits the function as soon as it hits:
                                         #return templates.TemplateResponse

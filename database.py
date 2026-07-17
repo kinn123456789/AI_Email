@@ -454,10 +454,19 @@ def resolve_thread(thread_id):
 def get_avg_first_response_time():
     conn = get_connection()
     cursor = conn.cursor()
+
     try:
-        cursor.execute("SELECT AVG(first_reply_at - created_at) FROM messages WHERE first_reply_at IS NOT NULL")
+        cursor.execute("""
+            SELECT AVG(
+                EXTRACT(EPOCH FROM (sent_at - created_at)) / 60
+            )
+            FROM messages
+            WHERE sent_at IS NOT NULL
+        """)
+
         result = cursor.fetchone()
         return result[0] if result else None
+
     finally:
         cursor.close()
         db_pool.putconn(conn)
@@ -960,3 +969,18 @@ def mark_email_read(email_id):
 
     cur.close()
     db_pool.putconn(conn)
+
+def set_sent_time(email_id):
+    conn = db_pool.getconn()
+
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                UPDATE messages
+                SET sent_at = NOW()
+                WHERE id = %s
+                AND sent_at IS NULL
+            """, (email_id,))
+            conn.commit()
+    finally:
+        db_pool.putconn(conn)
