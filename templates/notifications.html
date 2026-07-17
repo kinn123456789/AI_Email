@@ -14,99 +14,61 @@
 <div class="max-w-7xl mx-auto">
 
     <div class="flex justify-between items-center mb-8">
-
         <div>
-            <h1 class="text-4xl font-bold text-stone-800">
-                🔔 Notifications
-            </h1>
-
-            <p class="text-stone-500 mt-2">
-                Automated emails filtered from the main inbox.
-            </p>
+            <h1 class="text-4xl font-bold text-stone-800">🔔 Notifications</h1>
+            <p class="text-stone-500 mt-2">Automated emails filtered from the main inbox.</p>
         </div>
-
-        <a href="/dashboard"
-           class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition">
+        <a href="/dashboard" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition">
             ← Dashboard
         </a>
-
     </div>
 
-    <div class="bg-cyan-100/30 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/50 overflow-hidden">
-
-        <table class="w-full">
-
-            <thead class="bg-white/50 border-b border-cyan-100">
-
-                <tr class="text-left text-stone-700">
-                    
-                    
-                    <th class="px-6 py-4">Subject</th>
-                    <th class="px-6 py-4">Source</th>
-                    <th class="px-6 py-4">Sender</th>
-
-                    <th class="px-6 py-4">Category</th>
-                    <th class="px-6 py-4">Received</th>
-
+    <!-- UI Aligned with Dashboard -->
+    <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
+        <table class="w-full table-fixed border-collapse min-w-[1000px]">
+            <thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
+                <tr>
+                    <th class="w-4/12 p-4 text-left">Subject</th>
+                    <th class="w-3/12 p-4 text-left">Source</th>
+                    <th class="w-2/12 p-4 text-left">Sender</th>
+                    <th class="w-1.5/12 p-4 text-left">Category</th>
+                    <th class="w-1.5/12 p-4 text-left">Received</th>
                 </tr>
-
             </thead>
-
-            <tbody>
-
+            <tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
             {% for email in emails %}
-
-                <tr onclick="window.location='/email/{{ email.id }}'" class="border-t border-cyan-100 hover:bg-white/40 cursor-pointer transition">
-
-                  
-
-                    <td class="px-6 py-4 font-medium">
-                        {{ email.subject }}
-                    </td>
-
-
-                    <td class="px-6 py-4">
-                        <span class="bg-cyan-100/50 text-stone-700 px-3 py-1 rounded-full text-xs font-semibold">
+                <tr onclick="window.location='/email/{{ email.id }}'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer">
+                    <td class="p-4 truncate font-semibold">{{ email.subject }}</td>
+                    <td class="p-4 truncate">
+                        <span class="bg-cyan-100/50 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium inline-block max-w-full truncate border border-cyan-200/30">
                             {{ email.source }}
                         </span>
                     </td>
-
-
-                    <td class="px-6 py-4 text-stone-600">
-                        {{ email.sender }}
-                    </td>
-
-                    
-
-                    <td class="px-6 py-4">
-                        <span class="bg-blue-100/50 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
+                    <td class="p-4 truncate text-xs font-medium text-cyan-950">{{ email.sender }}</td>
+                    <td class="p-4 truncate">
+                        <!-- Toned down category styling -->
+                        <span class="bg-blue-100/40 text-blue-800 px-2 py-1 rounded-full text-xs font-medium border border-blue-200/30">
                             {{ email.category }}
                         </span>
                     </td>
-
-                    <td class="px-6 py-4 text-stone-500">
-                        {{ email.created_at }}
-                    </td>
-
+                    <td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
                 </tr>
-
             {% endfor %}
 
             {% if not emails %}
                 <tr>
-                    <td colspan="6" class="text-center py-12 text-stone-400">
-                        🎉 No notifications found.
-                    </td>
+                    <td colspan="5" class="text-center py-12 text-cyan-950 font-bold">🎉 No notifications found.</td>
                 </tr>
             {% endif %}
-
             </tbody>
-
         </table>
-
+        <div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
+            Showing {{ emails|length }} notifications
+        </div>
     </div>
 
 </div>
 
 </body>
 </html>
+
