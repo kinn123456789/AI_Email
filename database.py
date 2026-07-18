@@ -504,13 +504,58 @@ def update_teacher_ai_fields(message_id, category, priority, summary, draft_repl
     finally:
         cursor.close()
         db_pool.putconn(conn)
-
 def get_teacher_messages():
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     try:
-        cursor.execute("SELECT id, chat_id, sender, body, ai_category, ai_priority, ai_draft_reply, ai_summary, created_at FROM conversation_messages ORDER BY created_at DESC LIMIT 100")
+        cursor.execute("""
+            SELECT *
+            FROM (
+                SELECT DISTINCT ON (cm.chat_id)
+                    cm.id,
+                    cm.chat_id,
+                    cm.sender,
+                    cm.body,
+                    cm.ai_category,
+                    cm.ai_priority,
+                    cm.ai_draft_reply,
+                    cm.ai_summary,
+                    cm.created_at,
+                    cm.is_read,
+
+                    c.parent_name,
+                    c.teacher_name,
+                    c.parent_id,
+                    c.teacher_id
+
+                FROM conversation_messages cm
+
+                JOIN conversations c
+                    ON cm.chat_id = c.chat_id
+
+                ORDER BY
+                    cm.chat_id,
+                    cm.created_at DESC,
+                    cm.id DESC
+            ) latest
+
+            ORDER BY
+                latest.is_read ASC,
+
+                CASE latest.ai_priority
+                    WHEN 'Urgent' THEN 1
+                    WHEN 'High' THEN 2
+                    WHEN 'Medium' THEN 3
+                    WHEN 'Low' THEN 4
+                    ELSE 5
+                END,
+
+                latest.created_at DESC;
+        """)
+
         return cursor.fetchall()
+
     finally:
         cursor.close()
         db_pool.putconn(conn)
@@ -920,7 +965,7 @@ def update_last_history_id(email_address, history_id):
             )
             VALUES (%s, %s)
             ON CONFLICT (email_address)
-            DO UPDATE
+            DO from teacher_portal_sender import send_teacher_replyUPDATE
             SET history_id = EXCLUDED.history_id
         """, (email_address, history_id))
 
@@ -984,3 +1029,84 @@ def set_sent_time(email_id):
             conn.commit()
     finally:
         db_pool.putconn(conn)
+
+def mark_conversation_read(chat_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE conversation_messages
+            SET is_read = TRUE
+            WHERE chat_id = %s
+              AND is_read = FALSE
+        """, (chat_id,))
+
+        print("Rows updated:", cursor.rowcount)
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_teacher_conversations(teacher_id):
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+
+        cursor.execute("""
+            SELECT *
+            FROM (
+                SELECT DISTINCT ON (cm.chat_id)
+
+                    cm.chat_id,
+                    cm.body,
+                    cm.created_at,
+                    cm.ai_priority,
+                    cm.is_read,
+
+                    c.parent_name,
+                    c.parent_id,
+                    c.teacher_name,
+                    c.teacher_id
+
+                FROM conversation_messages cm
+
+                JOIN conversations c
+                ON cm.chat_id = c.chat_id
+
+                WHERE c.teacher_id = %s
+
+                ORDER BY
+                    cm.chat_id,
+                    cm.created_at DESC,
+                    cm.id DESC
+            ) latest
+
+            ORDER BY
+
+                latest.is_read ASC,
+
+                CASE latest.ai_priority
+                    WHEN 'Urgent' THEN 1
+                    WHEN 'High' THEN 2
+                    WHEN 'Medium' THEN 3
+                    WHEN 'Low' THEN 4
+                    ELSE 5
+                END,
+
+                latest.created_at DESC
+
+        """, (teacher_id,))
+
+        return cursor.fetchall()
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+

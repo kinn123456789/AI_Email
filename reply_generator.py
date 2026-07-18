@@ -40,14 +40,14 @@ def generate_reply(
 
     try:
         print("\nKNOWLEDGE OBJECT BEFORE PROMPT")
-        print("LEN AFTER SEARCH:", len(knowledge))
+        print("LEN AFTER SEARCH:", len(knowledge or []))
 
-        for i, k in enumerate(knowledge, 1):
+        for i, k in enumerate(knowledge or [], 1):
             print(i, k["title"], "|", k["section"], "|", id(k))
         
-            user_prompt = build_user_prompt(
+        user_prompt = build_user_prompt(
             subject=subject,
-            body=body,
+            body=body, 
             category=category,
             priority=priority,
             thread_history=thread_history,

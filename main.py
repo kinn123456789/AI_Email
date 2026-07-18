@@ -4,7 +4,8 @@ from database import db_pool,get_latest_thread_ai
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
-from database import get_teacher_messages,get_last_history_id,update_last_history_id
+from database import (get_teacher_messages,get_last_history_id,update_last_history_id,mark_conversation_read,
+                    get_teacher_conversations)
 from fastapi import Form
 from trial_followup import (
     get_trial_followup_dashboard,
@@ -24,9 +25,16 @@ from trial_followup import (
     get_due_followups,
     update_followup_schedule
     
-    
 )
-from database import mark_email_read,get_connection
+
+
+from fastapi import Form
+from fastapi.responses import RedirectResponse
+from datetime import datetime
+
+from teacher_portal_sender import send_teacher_reply
+
+from database import mark_email_read,get_connection,save_conversation_message
 from fastapi import BackgroundTasks
 from save_composed_email import save_composed_email
 from gmail_fetch import get_message
@@ -101,22 +109,35 @@ def conversation_detail(
     request: Request,
     chat_id: str
 ):
-
+    mark_conversation_read(chat_id)
     conversation = get_conversation(chat_id)
 
     print("CONVERSATION:")
     print(conversation)
 
     messages = get_conversation_messages(chat_id)
+    
+    latest_parent_message = None
 
+    for msg in reversed(messages):
+        if (
+            msg["sender"] == conversation["parent_id"]
+            and msg.get("ai_draft_reply")
+        ):
+            latest_parent_message = msg
+            break
+        print("Latest Parent Message:")
+        print(latest_parent_message)
     return templates.TemplateResponse(
         "conversation_detail.html",
         {
             "request": request,
             "conversation": conversation,
-            "messages": messages
+            "messages": messages,
+            "latest_parent_message": latest_parent_message
         }
     )
+
 @app.get("/emails")
 def emails():
 
@@ -792,28 +813,74 @@ async def compose_email(
 
 from teacher_portal_sender import send_teacher_reply
 
-@app.post("/teacher/send")
-async def send_teacher_message(
+
+@app.post("/send-teacher-reply")
+def send_teacher_reply_route(
     chat_id: str = Form(...),
     teacher_id: str = Form(...),
-    reply: str = Form(...)
+    message: str = Form(...)
 ):
 
-    success = send_teacher_reply(
+    response = send_teacher_reply(
         chat_id=chat_id,
         teacher_id=teacher_id,
-        message=reply
+        message=message
     )
 
-    if not success:
+    if response is None:
         return RedirectResponse(
-            url=f"/conversation/{chat_id}?error=send",
+            url=f"/conversation/{chat_id}?error=connection",
             status_code=303
+        )
+
+    if response.status_code not in [200, 201]:
+        return RedirectResponse(
+            url=f"/conversation/{chat_id}?error={response.status_code}",
+            status_code=303
+        )
+
+    # Default in case API doesn't return one
+    message_id = f"teacher-{datetime.utcnow().timestamp()}"
+
+    try:
+        data = response.json()
+
+        # Update this after seeing the real API response
+        if "response" in data:
+            message_id = data["response"].get("id", message_id)
+
+    except Exception:
+        pass
+
+    save_conversation_message(
+        chat_id,
+        teacher_id,
+        message,
+        datetime.utcnow(),
+        message_id
     )
 
     return RedirectResponse(
-        url=f"/conversation/{chat_id}?sent=true",
+        url=f"/conversation/{chat_id}",
         status_code=303
     )
 
+@app.get("/teacher/{teacher_id}")
+def teacher_conversations(request: Request, teacher_id: str):
 
+    conversations = get_teacher_conversations(teacher_id)
+
+    teacher_name = ""
+
+    if conversations:
+        teacher_name = conversations[0]["teacher_name"]
+
+    return templates.TemplateResponse(
+        "teacher_conversation_list.html",
+        {
+            "request": request,
+            "teacher_name": teacher_name,
+            "teacher_id": teacher_id,
+            "conversations": conversations
+        }
+    )

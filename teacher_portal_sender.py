@@ -1,7 +1,7 @@
 # teacher_portal_sender.py
 
-import requests
 import os
+import requests
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,11 +9,8 @@ load_dotenv()
 TOKEN = os.getenv("TEACHER_PORTAL_TOKEN")
 BASE_URL = "https://api.preprod.coralacademy.com"
 
-def send_teacher_reply(
-    chat_id,
-    teacher_id,
-    message
-):
+
+def send_teacher_reply(chat_id, teacher_id, message):
 
     headers = {
         "Authorization": f"Bearer {TOKEN}",
@@ -28,10 +25,27 @@ def send_teacher_reply(
         "text": message
     }
 
-    response = requests.post(
-        f"{BASE_URL}/chats/{chat_id}/messages",
-        headers=headers,
-        json=payload
-    )
+    print("=" * 50)
+    print("TOKEN:", headers.get("Authorization"))
+    print("CA-ID:", headers.get("Ca-Id"))
+    print("TEACHER:", headers.get("Ca-Teacher-Id"))
+    print("CHAT:", chat_id)
+    print("MESSAGE:", message)
+    print("=" * 50)
+    
+    try:
+        response = requests.post(
+            f"{BASE_URL}/chats/{chat_id}/messages",
+            headers=headers,
+            json=payload,
+            timeout=20
+        )
 
-    return response.status_code in [200, 201]
+        print("Status:", response.status_code)
+        print("Response:", response.text)
+
+        return response
+
+    except requests.RequestException as e:
+        print("Teacher Portal Error:", e)
+        return None

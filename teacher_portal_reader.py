@@ -63,11 +63,18 @@ def get_messages(chat_id, teacher_id):
         "Origin": "https://teacher.preprod.coralacademy.com",
         "Website-Base-Url": "https://teacher.preprod.coralacademy.com"
     }
+    print("TOKEN:", os.getenv("TEACHER_PORTAL_TOKEN")[:20])
 
     response = requests.get(
         f"{BASE_URL}/chats/{chat_id}/messages?page=0",
         headers=headers
     )
+
+    print("=" * 60)
+    print("Status:", response.status_code)
+    print("Response:")
+    print(response.text)
+    print("=" * 60)
 
     print("\nMESSAGES STATUS CODE:", response.status_code)
 
