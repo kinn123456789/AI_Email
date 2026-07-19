@@ -55,10 +55,11 @@ def get_chats(teacher_id):
 
 
 def get_messages(chat_id, teacher_id):
-
+    print(">>> get_messages() CALLED <<<")
     headers = {
         "Authorization": f"Bearer {TOKEN}",
-        "Ca-Id": "e04e5250-0abf-4429-aa07-1b66d03269af",
+        "Ca-Id": "a88e2aaa-a02b-40b8-9385-f26827f3820d",
+       
         "Ca-Teacher-Id": teacher_id,
         "Origin": "https://teacher.preprod.coralacademy.com",
         "Website-Base-Url": "https://teacher.preprod.coralacademy.com"
@@ -96,7 +97,7 @@ def get_teachers():
 
     headers = {
         "Authorization": f"Bearer {TOKEN}",
-        "Ca-Id": "e04e5250-0abf-4429-aa07-1b66d03269af",
+        "Ca-Id": "a88e2aaa-a02b-40b8-9385-f26827f3820d",
         "Origin": "https://teacher.preprod.coralacademy.com",
         "Website-Base-Url": "https://teacher.preprod.coralacademy.com"
     }

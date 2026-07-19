@@ -11,17 +11,281 @@ Subject:
 Teacher Portal Message
 
 Body:
-test msg 154
+jkklk;k;';
 
 ==================================================
 
 CONVERSATION HISTORY
 
-No previous conversation.
+Teacher: Hii
+Teacher: Hello
+Teacher: hi
+Teacher: Test
+Teacher: hhh
+Teacher: ddd
+Teacher: test
+Teacher: qqq
+Teacher: k
+Teacher: k
+Teacher: k
+Teacher: None
+Teacher: a
+Teacher: s
+Teacher: A
+Teacher: a
+Teacher: q
+Parent: asdfasfasf
+Teacher: hi...sending test message
+Teacher: hkgjhlk;k
+Parent: hello...test new
+Teacher: zzz
+Parent: kkk
+Parent: assaasdasdas
+Parent: hi
+Parent: tesetestseett
+Parent: hi
+Teacher: helllllooooo teeeessssstttt
+Parent: hiiiiiiiiiiiiiiiiiiiiiiiiiiii
+Teacher: hwloww
+Parent: a
+Parent: a
+Parent: aDFASDSafsa
+Parent: a
+Teacher: heyyyy hi
+Teacher: asa
+Teacher: test messgae
+Teacher: jkklk;k;';
+Parent: k
+Teacher: qwe
 
 ==================================================
 
-No relevant Coral Academy Knowledge was found.
+Relevant Coral Academy Knowledge
+
+
+Knowledge Item 1
+
+Source:
+class
+
+Similarity:
+0.424248275474966
+
+Title:
+Around the Globe with Mr. Clark
+
+Section:
+Prerequisites
+
+Category:
+lifeskills
+
+Content:
+Class: Around the Globe with Mr. Clark
+
+Subject: lifeskills
+
+Section: Prerequisites
+
+Content:
+• {'title': 'We use Nearpod for interactive learning. Access it via the app or web browser.'}
+• {'title': 'Make sure YouTube isn’t blocked to watch videos in Nearpod during class.'}
+
+Reference URL:
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 2
+
+Source:
+class
+
+Similarity:
+0.376135922993762
+
+Title:
+Around the Globe with Mr. Clark
+
+Section:
+Description
+
+Category:
+lifeskills
+
+Content:
+Class: Around the Globe with Mr. Clark
+
+Subject: lifeskills
+
+Section: Description
+
+Content:
+In this interactive travel-themed virtual class, learners will embark on a virtual journey to explore a new destination each session. 
+
+Using Nearpod, polls, and engaging activities, learners will navigate through cultural landmarks, historical sites, and natural wonders. They will explore essential travel questions—through geography lessons, language, currency, transportation, climate, and local customs—to gain a deeper understanding of global cultures. 
+
+Through discussions and student-led exploration, learners will help shape the journey by suggesting places to visit, topics to research, and questions to investigate. This class is a fun mix of social studies, where we explore everything from geography and history to culture, religion, politics, natural wonders, wildlife, and even food!
+
+Please find the week-on-week schedule for the next few weeks below, highlighting the destination for each week:
+
+March 16-22: Israel - A complicated piece of geography
+March 23-29: Palestine - A complicated piece of geography
+March 30 - April 5: Jordan - Petra, the Dead Sea, ancient history, stunning desert landscapes, and rich culture.
+April 6 - 12: Iraq - Babylon, and ancient Mesopotamia between the Tigris and Euphrates rivers
+April 13-19: Syria - Damascus and the Cradle of Civilization
+April 20-26: Turkey - The Ottoman Empire and a city in two continents.
+April 27 - May 3: Greece - Philosophy? It's all Greek to me.
+
+This class by Coral Academy is ideal for young learners wanting to study geography in an interactive way, blending online learning with real-world exploration. It’s a great way for kids to learn geography and explore different cultures as they virtually travel around the world.
+
+Reference URL:
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 3
+
+Source:
+help_center
+
+Similarity:
+0.375350941815615
+
+Title:
+Teacher Referral Policy: Coral Academy
+
+Section:
+
+
+Category:
+Teaching
+
+Content:
+You must be an approved teacher on the platform to refer others.
+The referred person must be new to the Coral Academy platform.
+Self-referrals are prohibited.
+The referral code must be entered in the application form.
+
+Reference URL:
+https://www.coralacademy.com/help/teaching/teacher-referral-policy
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 4
+
+Source:
+class
+
+Similarity:
+0.365814050461212
+
+Title:
+Around the Globe with Mr. Clark
+
+Section:
+Parent Summary
+
+Category:
+lifeskills
+
+Content:
+Class: Around the Globe with Mr. Clark
+
+Subject: lifeskills
+
+Section: Parent Summary
+
+Content:
+Explore the world from your screen! In this online class for kids, learners travel using VR, polls, & activities to explore cultural landmarks, history, and natural wonders. Learn geography and have fun with this virtual travel experience!
+
+Reference URL:
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
+Knowledge Item 5
+
+Source:
+class
+
+Similarity:
+0.365020923177197
+
+Title:
+Around the Globe with Mr. Clark
+
+Section:
+Learner Summary
+
+Category:
+lifeskills
+
+Content:
+Class: Around the Globe with Mr. Clark
+
+Subject: lifeskills
+
+Section: Learner Summary
+
+Content:
+Explore the world from your screen! In this online class for kids, learners travel using VR, polls, & activities to explore cultural landmarks, history, and natural wonders. Learn geography and have fun with this virtual travel experience!
+
+Reference URL:
+https://www.coralacademy.com/class/aroundtheglobe-8b7f84a0-2a95-46da-8560-a1312b123bda
+
+IMPORTANT
+
+The CURRENT EMAIL below is the only email you should answer.
+
+Conversation History is provided only for context.
+
+If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
+
+Do not continue discussing previous issues unless the customer explicitly asks about them.
+----------------------------------------
+
+
 
 ==================================================
 

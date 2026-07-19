@@ -83,21 +83,29 @@ def sync_teacher_portal():
             messages_response = get_messages(
                 chat_id, 
                 api_teacher_id)
+            
             if messages_response is None:
                 continue
+            print(messages_response["response"]["messages"])
             messages = messages_response["response"]["messages"]
+            
+            if messages:
+                print("FIRST :", messages[0]["created_at"])
+                print("LAST  :", messages[-1]["created_at"])
+            
             print(
                 f"Messages in chat: {len(messages)}"
-        )
+            )
 
 
 
 
             for message in messages:
-                
+
                 print(message)
-                
+
                 if conversation_message_exists(message["id"]):
+                    print(f"Skipping existing: {message['id']}")
                     continue
 
                 save_conversation_message(

@@ -6,7 +6,8 @@ from refresh_knowledge_base import refresh_knowledge_base
 from refresh_classes import refresh_classes
 from gmail_watch import renew_all_gmail_watches
 from sync_sent_gmail import main as sync_sent_emails
-
+from teacher_sync import sync_teacher_portal
+from teacher_api_sync import sync_teacher_portal
 import threading
 import time
 
@@ -109,6 +110,28 @@ def run_email_reader(email_address=None):
 
         reader_lock.release()
 
+def run_teacher_sync():
+    start = time.time()
+
+    print("=" * 80)
+    print("TEACHER SYNC STARTED")
+    print("=" * 80)
+
+    try:
+        sync_teacher_portal()
+
+        print(
+            f"TEACHER SYNC COMPLETED IN "
+            f"{time.time() - start:.2f} seconds"
+        )
+
+    except Exception as e:
+        print(
+            f"TEACHER SYNC FAILED AFTER "
+            f"{time.time() - start:.2f} seconds"
+        )
+        print(e)
+
 
 # -------------------------------------------------
 # Scheduler
@@ -164,6 +187,16 @@ scheduler.add_job(
     max_instances=1
 )
 
+scheduler.add_job(
+    run_teacher_sync,
+    trigger="interval",
+    minutes=10,
+    id="teacher_sync",
+    replace_existing=True,
+    max_instances=1
+)
+
+
 scheduler.start()
 
 print("Scheduler started.")
@@ -172,3 +205,4 @@ print("Sent Mail Sync: Every 1 hour")
 print("Help Center Refresh: Daily at 2:00 AM")
 print("Classes Refresh: Daily at 3:00 AM")
 print("Gmail Watch Renewal: Every 1 day")
+print("Teacher Sync: Every 1 hour")

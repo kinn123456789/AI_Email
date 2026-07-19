@@ -27,14 +27,18 @@ from trial_followup import (
     
 )
 
-
+from teacher_api_sync import sync_teacher_portal
 from fastapi import Form
 from fastapi.responses import RedirectResponse
 from datetime import datetime
 
-from teacher_portal_sender import send_teacher_reply
+from teacher_api_sender import send_teacher_reply
 
-from database import mark_email_read,get_connection,save_conversation_message
+from database import (mark_email_read,get_connection,save_conversation_message,
+                       get_teachers,get_teacher_conversations,
+                       get_conversation,
+                       get_conversation_messages)
+
 from fastapi import BackgroundTasks
 from save_composed_email import save_composed_email
 from gmail_fetch import get_message
@@ -883,4 +887,93 @@ def teacher_conversations(request: Request, teacher_id: str):
             "teacher_id": teacher_id,
             "conversations": conversations
         }
+    )
+
+@app.get("/sync-teacher")
+def sync_teacher():
+
+    sync_teacher_portal()
+
+    return {
+        "status": "success",
+        "message": "Teacher Portal sync completed."
+    }
+
+
+from fastapi import Request
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="templates")
+
+
+@app.get("/teacher-inbox")
+def teacher_inbox(
+    request: Request,
+    teacher_id: str = None,
+    chat_id: str = None
+):
+
+    teachers = get_teachers()
+    print(teachers)
+
+    conversations = []
+
+    conversation = None
+    messages = []
+
+    if teacher_id:
+        conversations = get_teacher_conversations(teacher_id)
+
+    if chat_id:
+        conversation = get_conversation(chat_id)
+        messages = get_conversation_messages(chat_id)
+
+    return templates.TemplateResponse(
+        "teacher_inbox.html",
+        {
+            "request": request,
+            "teachers": teachers,
+            "selected_teacher": teacher_id,
+            "conversations": conversations,
+            "selected_chat": chat_id,
+            "conversation": conversation,
+            "messages": messages
+        }
+    )
+
+from fastapi import Form
+from teacher_api_sender import send_teacher_reply
+from database import mark_reply_sent
+
+@app.post("/teacher/send-reply")
+def send_reply(
+
+    chat_id: str = Form(...),
+    teacher_id: str = Form(...),
+    message_id: int = Form(...),
+    reply: str = Form("")
+
+):
+
+    reply = reply.strip()
+
+    # Don't send empty messages
+    if not reply:
+        return RedirectResponse(
+            url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
+            status_code=303
+        )
+
+    result = send_teacher_reply(
+        chat_id=chat_id,
+        teacher_id=teacher_id,
+        message=reply
+    )
+
+    if result["success"]:
+        mark_reply_sent(message_id)
+
+    return RedirectResponse(
+        url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
+        status_code=303
     )
