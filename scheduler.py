@@ -6,7 +6,7 @@ from refresh_knowledge_base import refresh_knowledge_base
 from refresh_classes import refresh_classes
 from gmail_watch import renew_all_gmail_watches
 from sync_sent_gmail import main as sync_sent_emails
-from teacher_sync import sync_teacher_portal
+
 from teacher_api_sync import sync_teacher_portal
 import threading
 import time
@@ -146,7 +146,9 @@ scheduler.add_job(
     hours=1,
     id="sent_mail_sync",
     replace_existing=True,
-    max_instances=1
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
 )
 
 # Help Center Refresh
@@ -155,7 +157,9 @@ scheduler.add_job(
     CronTrigger(hour=2, minute=0),
     id="help_center_refresh",
     replace_existing=True,
-    max_instances=1
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
 )
 
 # Email Reader Backup
@@ -165,7 +169,9 @@ scheduler.add_job(
     minutes=5,
     id="email_reader",
     replace_existing=True,
-    max_instances=1
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
 )
 
 # Class Refresh
@@ -174,7 +180,9 @@ scheduler.add_job(
     CronTrigger(hour=3, minute=0),
     id="classes_refresh",
     replace_existing=True,
-    max_instances=1
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
 )
 
 # Gmail Watch Renewal
@@ -184,16 +192,20 @@ scheduler.add_job(
     days=1,
     id="gmail_watch",
     replace_existing=True,
-    max_instances=1
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
 )
 
 scheduler.add_job(
     run_teacher_sync,
     trigger="interval",
-    minutes=10,
+    minutes=1,
     id="teacher_sync",
     replace_existing=True,
-    max_instances=1
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
 )
 
 
@@ -205,4 +217,4 @@ print("Sent Mail Sync: Every 1 hour")
 print("Help Center Refresh: Daily at 2:00 AM")
 print("Classes Refresh: Daily at 3:00 AM")
 print("Gmail Watch Renewal: Every 1 day")
-print("Teacher Sync: Every 1 hour")
+print("Teacher Sync: Every 10 minutes")

@@ -84,21 +84,68 @@ Reply required:
 • requests
 • admissions
 • enrollment
-• billing
 • technical support
 • complaints
 • feedback
+• parents asking billing questions
+• invoice disputes
+• refund requests
+• payment enquiries
+• contact form submissions
+Contact form submissions always require attention.
+
+They are General.
+
+They normally require a reply.
+
+
+Meeting cancellations, schedule changes and event updates
+are operational emails.
+
+They are NOT Notification emails.
+
+Categorize them as General.
+
+Use the "Notification" category ONLY for system-generated technical or security notifications.
+
+Do not classify operational business emails as Notification.
+
+• OTP
+• password reset
+• verification
+• deployment alerts
+• monitoring alerts
+• system generated informational messages
+
+Do NOT classify these as Notification:
+
+• meeting cancellations
+• schedule changes
+• billing reminders
+• overdue invoices
+• contact form enquiries
 
 Reply usually NOT required:
 
 • newsletters
-• automated notifications
-• receipts
-• deployment alerts
-• monitoring emails
-• spam
 • marketing
+• OTPs
+• password resets
+• verification emails
+• deployment alerts
+• monitoring alerts
+• automated invoices
+• payment reminders
+• payment receipts
 
+Automated notifications should be evaluated individually.
+
+Examples:
+
+- OTP → No reply
+- Password reset → No reply
+- Meeting cancelled → Usually no reply, but still operationally important
+- Class cancelled → Usually no reply, but operationally important
 --------------------------------------------------
 
 Step 3
@@ -134,6 +181,17 @@ Low
 
 Priority should reflect business impact, not emotional wording.
 
+Examples
+
+Outstanding balance due today → High
+
+Refund request → High
+
+Meeting cancelled → Medium
+
+Newsletter → Low
+
+OTP → Low
 --------------------------------------------------
 
 Step 5
@@ -145,9 +203,46 @@ Allowed Categories
 Admissions
 Teacher
 Billing
-Urgent
-General
 
+General
+General includes:
+
+• scheduling updates
+• meeting cancellations
+• contact form enquiries
+• operational updates
+• conversations that do not fit Admissions, Teacher or Billing
+
+Example
+
+Subject: Cancelled: Schedule an Introductory Call
+
+category = General
+priority = Medium
+needs_reply = false
+reply_type = none
+
+--------------------
+
+Example
+
+Subject: FINAL NOTICE: Outstanding Balance Due Today
+
+category = Billing
+priority = High
+needs_reply = false
+reply_type = none
+
+--------------------
+
+Example
+
+Subject: New Contact Form Enquiry
+
+category = General
+priority = Medium
+needs_reply = true
+reply_type = automatic
 --------------------------------------------------
 OUTPUT RULES
 --------------------------------------------------

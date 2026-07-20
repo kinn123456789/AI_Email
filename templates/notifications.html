@@ -5,12 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notifications</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 <body class="min-h-screen p-8 bg-cyan-50"
       style="background: url('/static/background.png') center/cover no-repeat fixed;">
-
+ {% if trashed %}
+    <div id="trash-message-notifications"
+     class="mb-6 rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
+        🗑️ {{ trashed }} notification(s) moved to Trash.
+    </div>
+{% endif %}
 <div class="max-w-7xl mx-auto">
 
     <div class="flex justify-between items-center mb-8">
@@ -18,9 +24,27 @@
             <h1 class="text-4xl font-bold text-stone-800">🔔 Notifications</h1>
             <p class="text-stone-500 mt-2">Automated emails filtered from the main inbox.</p>
         </div>
-        <a href="/dashboard" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition">
-            ← Dashboard
-        </a>
+
+        <div class="flex items-center gap-3">
+            <form method="post" action="/notifications/delete-selected" id="delete-form">
+                <button
+                    id="delete-btn"
+                    type="submit"
+                    disabled
+                    onclick="return confirm('Move selected notifications to Trash?')"
+                    class="bg-red-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-700 disabled:opacity-50">
+                    🗑️ Delete Selected
+                </button>
+            </form>
+
+            <a href="/trash" class="bg-red-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-red-950 transition flex items-center gap-2">
+                <span>🗑️</span> Trash Box
+            </a>
+
+            <a href="/dashboard" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition">
+                ← Dashboard
+            </a>
+        </div>
     </div>
 
     <!-- UI Aligned with Dashboard -->
@@ -28,6 +52,9 @@
         <table class="w-full table-fixed border-collapse min-w-[1000px]">
             <thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
                 <tr>
+                    <th class="w-12 p-4 text-center">
+                        <input type="checkbox" id="select-all">
+                    </th>
                     <th class="w-4/12 p-4 text-left">Subject</th>
                     <th class="w-3/12 p-4 text-left">Source</th>
                     <th class="w-2/12 p-4 text-left">Sender</th>
@@ -38,6 +65,16 @@
             <tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
             {% for email in emails %}
                 <tr onclick="window.location='/email/{{ email.id }}'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer">
+                    <td class="p-4 text-center" onclick="event.stopPropagation();">
+                        <input
+                            type="checkbox"
+                            name="email_ids"
+                            value="{{ email.id }}"
+                            form="delete-form"
+                            class="email-checkbox"
+                            onclick="event.stopPropagation();"
+                            onchange="event.stopPropagation();">
+                    </td>
                     <td class="p-4 truncate font-semibold">{{ email.subject }}</td>
                     <td class="p-4 truncate">
                         <span class="bg-cyan-100/50 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium inline-block max-w-full truncate border border-cyan-200/30">
@@ -57,7 +94,7 @@
 
             {% if not emails %}
                 <tr>
-                    <td colspan="5" class="text-center py-12 text-cyan-950 font-bold">🎉 No notifications found.</td>
+                    <td colspan="6" class="text-center py-12 text-cyan-950 font-bold">🎉 No notifications found.</td>
                 </tr>
             {% endif %}
             </tbody>
@@ -70,5 +107,47 @@
 </div>
 
 </body>
+<script>
+const trashMessage1 = document.getElementById("trash-message-notifications");
+
+if (trashMessage1) {
+    setTimeout(() => {
+        trashMessage1.remove();
+        window.history.replaceState({}, "", "/notifications");
+    }, 3000);
+}
+
+const selectAll = document.getElementById("select-all");
+const checkboxes = document.querySelectorAll(".email-checkbox");
+const deleteBtn = document.getElementById("delete-btn");
+
+function updateDeleteButton() {
+    if (deleteBtn) {
+        deleteBtn.disabled =
+            document.querySelectorAll(".email-checkbox:checked").length === 0;
+    }
+}
+
+if (selectAll) {
+    selectAll.addEventListener("change", function () {
+        checkboxes.forEach(cb => cb.checked = this.checked);
+        updateDeleteButton();
+    });
+}
+
+checkboxes.forEach(cb => {
+    cb.addEventListener("change", function () {
+        if (selectAll) {
+            selectAll.checked =
+                checkboxes.length > 0 &&
+                document.querySelectorAll(".email-checkbox:checked").length === checkboxes.length;
+        }
+
+        updateDeleteButton();
+    });
+});
+
+updateDeleteButton();
+</script>
 </html>
 

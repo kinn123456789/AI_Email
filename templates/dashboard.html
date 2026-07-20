@@ -2,209 +2,258 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Inbox Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Inbox Dashboard</title>
+{% if trashed %}
+<div id="trash-message" class="mb-6 rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
+    🗑️ {{ trashed }} email(s) moved to Trash.
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
-    
-    <div class="flex items-center justify-between mb-6">
-        <h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">✨ AI Unified Inbox</h1>
-        <a href="/compose" class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
-            <span class="text-xl">✉️</span> Compose Email
-        </a>
-    </div>
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">✨ AI Unified Inbox</h1>
+<div class="flex items-center gap-3">
 
-    <!-- Metrics Cards -->
-    <div class="grid grid-cols-5 gap-6 mb-8">
-        {#<div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
-            <h3 class="text-cyan-950/70 text-sm font-bold">Avg First Response</h3>
-            <p class="text-3xl font-bold text-purple-950 mt-1">{{ avg_response }}</p>
-        </div>
-        <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
-            <h3 class="text-cyan-950/70 text-sm font-bold">Avg Resolution</h3>
-            <p class="text-3xl font-bold text-indigo-950 mt-1">{{ avg_resolution }}</p>
-        </div>#}
-        <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
-            <h3 class="text-cyan-950/70 text-sm font-bold">Total Messages</h3>
-            <p class="text-3xl font-bold text-gray-950 mt-1">{{ emails|length }}</p>
-        </div>
-        <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
-            <h3 class="text-cyan-950/70 text-sm font-bold">Auto Replies</h3>
-            <p class="text-3xl font-bold text-cyan-950 mt-1">{{ auto_reply_count }}</p>
-        </div>
-        <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
-            <h3 class="text-cyan-950/70 text-sm font-bold">Needs Review</h3>
-            <p class="text-3xl font-bold text-red-950 mt-1">{{ needs_review_count }}</p>
-        </div>
-    </div>
-    
-    <!-- Actions Bar -->
-    <div class="grid grid-cols-2 gap-6 mb-8">
+<form method="post" action="/emails/delete-selected" id="delete-form">
+<button
+    id="delete-btn"
+    type="submit"
+    disabled
+    onclick="return confirm('Move selected emails to Trash?')"
+    class="bg-red-600 text-white px-5 py-4 rounded-3xl font-bold hover:bg-red-700 transition shadow-lg border border-white/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+    <span>🗑️</span> Delete Selected
+</button>
+</form>
 
-    <!-- No Reply Required -->
-    <a href="/notifications"
-       class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 border border-cyan-100/50 hover:bg-cyan-200/50 transition">
+<a href="/trash"
+   class="bg-gray-700 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    <span class="text-xl">🗑️</span> Trash
+</a>
 
-        <div class="text-3xl mb-2">🔔</div>
+<a href="/compose"
+   class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    <span class="text-xl">✉️</span> Compose Email
+</a>
 
-        <div class="text-lg font-bold text-cyan-950">
-            No Reply Required
-        </div>
+</div>
+</div>
 
-        <div class="text-cyan-950/70 text-sm font-medium">
-            Security codes, system alerts →
-        </div>
+<!-- Metrics Cards -->
+<div class="grid grid-cols-5 gap-6 mb-8">
+<div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
+<h3 class="text-cyan-950/70 text-sm font-bold">Total Messages</h3>
+<p class="text-3xl font-bold text-gray-950 mt-1">{{ emails|length }}</p>
+</div>
+<div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
+<h3 class="text-cyan-950/70 text-sm font-bold">Auto Replies</h3>
+<p class="text-3xl font-bold text-cyan-950 mt-1">{{ auto_reply_count }}</p>
+</div>
+<div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
+<h3 class="text-cyan-950/70 text-sm font-bold">Needs Review</h3>
+<p class="text-3xl font-bold text-red-950 mt-1">{{ needs_review_count }}</p>
+</div>
+</div>
+<!-- Actions Bar -->
+<div class="grid grid-cols-2 gap-6 mb-8">
 
-    </a>
+<!-- No Reply Required -->
+<a href="/notifications"
+class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 border border-cyan-100/50 hover:bg-cyan-200/50 transition">
 
-    <!-- Response Metrics -->
-    <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 border border-cyan-100/50">
+<div class="text-3xl mb-2">🔔</div>
 
-        <div class="text-3xl mb-2">📊</div>
+<div class="text-lg font-bold text-cyan-950">
+No Reply Required
+</div>
 
-        <div class="text-lg font-bold text-cyan-950 mb-4">
-            Response Metrics
-        </div>
+<div class="text-cyan-950/70 text-sm font-medium">
+Security codes, system alerts →
+</div>
 
-        <div class="mt-6">
-            <p class="text-gray-600 text-sm">Avg First Response</p>
-            <p class="text-base font-semibold text-gray-900 mt-1">
-                {{ avg_response }}
-            </p>
-        </div>
+</a>
 
-        {#<div class="flex justify-between">
-            <span class="text-sm text-cyan-950/70">Avg Resolution</span>
-            <span class="font-bold">{{ avg_resolution }}</span>
-        </div>#}
+<!-- Response Metrics -->
+<div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 border border-cyan-100/50">
 
-    </div>
+<div class="text-3xl mb-2">📊</div>
+
+<div class="text-lg font-bold text-cyan-950 mb-4">
+Response Metrics
+</div>
+
+<div class="mt-6">
+<p class="text-gray-600 text-sm">Avg First Response</p>
+<p class="text-base font-semibold text-gray-900 mt-1">
+{{ avg_response }}
+</p>
+</div>
 
 </div>
 
-    <!-- Table -->
-    <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
-        <table class="w-full table-fixed border-collapse min-w-[1100px]">
-            <thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
-                <tr>
-                    {#<th class="w-16 p-4 text-left">📧</th>#}
-                    <th class="w-72 p-4 text-left">Subject</th>
-                    <th class="w-40 p-4 text-left">Sender</th>
-                    <th class="w-36 p-4 text-left">Inbox</th>
-                    <th class="w-32 p-4 text-left">Category</th>
-                    <th class="w-24 p-4 text-left">Priority</th>
-                    {#<th class="w-24 p-4 text-left">Confidence</th>#}
-                    <th class="w-40 p-4 text-left">Status</th>
-                    <th class="w-32 p-4 text-left">Handled By</th>
-                    <th class="w-36 p-4 text-left">Received</th>
-                    {#<th class="w-32 p-4 text-center">Actions</th>#}
-                </tr>
-            </thead>
-            <tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
-                {% for email in emails %}
-                <tr
-                    onclick="
-                        this.classList.add('opacity-70');
-                        window.location='/email/{{ email.id }}';
-                    "
-                    class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
-                >
-                    {#<td class="p-4 text-cyan-950 font-bold">{{ loop.index }}</td>#}
-                    <td class="p-4 truncate">
-                        <div class="truncate font-semibold text-gray-950" title="{{ email.subject }}">
-                            {% if not email.is_read %}
-                                <span class="block text-[10px] uppercase font-black text-cyan-700 tracking-wider">Unread</span>
-                                <span class="font-bold text-stone-900">{{ email.subject }}</span>
-                            {% else %}
-                                <span class="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">Read</span>
-                                <span class="text-stone-700">{{ email.subject }}</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <td class="p-4 truncate text-xs font-medium text-cyan-950" title="{{ email.sender }}">{{ email.sender }}</td>
-                    
-                    <td class="p-4">
-                        {% if email.source == "support@coralacademy.com" %}
-                            <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">📧 Support</span>
-                        {% elif email.source == "lucy@coralacademy.com" %}
-                            <span class="bg-pink-300/60 text-pink-950 px-3 py-1 rounded-full text-xs font-bold">👩 Lucy</span>
-                        {% else %}
-                            <span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">Other</span>
-                        {% endif %}
-                    </td>
+</div>
 
-                    <td class="p-4">
-                        {% set cat_colors = {"Admissions": "bg-pink-300/60 text-pink-950", "Support": "bg-cyan-300/60 text-cyan-950", "Billing": "bg-amber-300/60 text-amber-950", "Urgent": "bg-red-300/60 text-red-950", "General": "bg-gray-300/60 text-gray-950", "Technical": "bg-indigo-300/60 text-indigo-950", "Teacher Portal": "bg-emerald-300/60 text-emerald-950", "Contact Form": "bg-cyan-300/60 text-cyan-950"} %}
-                        <span class="px-3 py-1 rounded text-xs font-bold {{ cat_colors.get(email.category, 'bg-gray-300/60 text-gray-950') }}">{{ email.category }}</span>
-                    </td>
+<!-- Table -->
+<div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
+<table class="w-full table-fixed border-collapse min-w-[1100px]">
+<thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
+<tr>
+<th class="w-12 p-4 text-center">
+<input type="checkbox" id="select-all"></th>
+<th class="w-72 p-4 text-left">Subject</th>
+<th class="w-40 p-4 text-left">Sender</th>
+<th class="w-36 p-4 text-left">Inbox</th>
+<th class="w-32 p-4 text-left">Category</th>
+<th class="w-24 p-4 text-left">Priority</th>
+<th class="w-40 p-4 text-left">Status</th>
+<th class="w-32 p-4 text-left">Handled By</th>
+<th class="w-36 p-4 text-left">Received</th>
+</tr>
+</thead>
+<tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
+{% for email in emails %}
+<tr
+onclick="window.location='/email/{{ email.id }}'"
+class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
+>
+<td class="p-4 text-center"
+    onclick="event.stopPropagation();">
 
-                    <td class="p-4 font-bold">
-                        {% if email.priority == "Urgent" %}<span class="text-red-950">Urgent</span>
-                        {% elif email.priority == "High" %}<span class="text-orange-950">High</span>
-                        {% elif email.priority == "Medium" %}<span class="text-yellow-950">Medium</span>
-                        {% elif email.priority == "Low" %}<span class="text-cyan-950">Low</span>
-                        {% else %}<span class="text-gray-950">—</span>{% endif %}
-                    </td>
+    <input
+        type="checkbox"
+        name="email_ids"
+        value="{{ email.id }}"
+        form="delete-form"
+        class="email-checkbox"
+        onclick="event.stopPropagation();"
+        onchange="event.stopPropagation();">
+</td>
+<td class="p-4 truncate">
+<div class="truncate font-semibold text-gray-950" title="{{ email.subject }}">
+{% if not email.is_read %}
+<span class="block text-[10px] uppercase font-black text-cyan-700 tracking-wider">Unread</span>
+<span class="font-bold text-stone-900">
+    {% if email.has_attachment %}📎 {% endif %}
+    {{ email.subject }}
+</span>
+{% else %}
+<span class="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">Read</span>
+<span class="text-stone-700">
+    {% if email.has_attachment %}📎 {% endif %}
+    {{ email.subject }}
+</span>
+{% endif %}
+</div>
+</td>
+<td class="p-4 truncate text-xs font-medium text-cyan-950" title="{{ email.sender }}">{{ email.sender }}</td>
+<td class="p-4">
+{% if email.source == "support@coralacademy.com" %}
+<span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">📧 Support</span>
+{% elif email.source == "lucy@coralacademy.com" %}
+<span class="bg-pink-300/60 text-pink-950 px-3 py-1 rounded-full text-xs font-bold">👩 Lucy</span>
+{% else %}
+<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">Other</span>
+{% endif %}
+</td>
 
-                    {#<td class="p-4 font-bold text-cyan-950">{{ email.ai_confidence }}%</td>#}
+<td class="p-4">
+{% set cat_colors = {"Admissions": "bg-pink-300/60 text-pink-950", "Support": "bg-cyan-300/60 text-cyan-950", "Billing": "bg-amber-300/60 text-amber-950", "Urgent": "bg-red-300/60 text-red-950", "General": "bg-gray-300/60 text-gray-950", "Technical": "bg-indigo-300/60 text-indigo-950", "Teacher Portal": "bg-emerald-300/60 text-emerald-950", "Contact Form": "bg-cyan-300/60 text-cyan-950"} %}
+<span class="px-3 py-1 rounded text-xs font-bold {{ cat_colors.get(email.category, 'bg-gray-300/60 text-gray-950') }}">{{ email.category }}</span>
+</td>
 
-                    <td class="p-4">
-                        {% if email.status == "Needs Review" %}
-                            <span class="bg-yellow-200/40 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold border border-yellow-300/30">Needs Review</span>
-                        {% elif email.status == "Replied" %}
-                            <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold border border-cyan-400/50">Replied</span>
-                        {% elif email.status == "Resolved" %}
-                            <span class="bg-green-300/60 text-green-950 px-3 py-1 rounded-full text-xs font-bold border border-green-400/50">Resolved</span>
-                        {% else %}
-                            <span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">{{ email.status }}</span>
-                        {% endif %}
-                    </td>
+<td class="p-4 font-bold">
+{% if email.priority == "Urgent" %}<span class="text-red-950">Urgent</span>
+{% elif email.priority == "High" %}<span class="text-orange-950">High</span>
+{% elif email.priority == "Medium" %}<span class="text-yellow-950">Medium</span>
+{% elif email.priority == "Low" %}<span class="text-cyan-950">Low</span>
+{% else %}<span class="text-gray-950">—</span>{% endif %}
+</td>
 
-                    <td class="p-4">
-                         {% if email.reply_type == "automatic" %}
-                            <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">
-                                🤖 AI
-                            </span>
+<td class="p-4">
+{% if email.status == "Needs Review" %}
+<span class="bg-yellow-200/40 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold border border-yellow-300/30">Needs Review</span>
+{% elif email.status == "Replied" %}
+<span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold border border-cyan-400/50">Replied</span>
+{% elif email.status == "Resolved" %}
+<span class="bg-green-300/60 text-green-950 px-3 py-1 rounded-full text-xs font-bold border border-green-400/50">Resolved</span>
+{% else %}
+<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">{{ email.status }}</span>
+{% endif %}
+</td>
 
-                        {% elif email.reply_type in ["human", "gmail_manual"] %}
-                            <span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">
-                                👤 Manual
-                            </span>
+<td class="p-4">
+{% if email.reply_type == "automatic" %}
+<span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">
+🤖 AI
+</span>
 
-                        {% else %}
-                            <span class="bg-yellow-200/60 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold">
-                                Pending
-                            </span>
-                        {% endif %}
-                    </td>
+{% elif email.reply_type in ["human", "gmail_manual"] %}
+<span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">
+👤 Manual
+</span>
 
-                    <td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
-                    {#
-                    <td class="p-4">
-                        <div class="flex flex-col gap-2">
-                            <a href="/email/{{ email.id }}"
-                               class="bg-indigo-400/50 backdrop-blur-md border border-white/50 text-indigo-950 px-4 py-2 rounded-2xl text-xs font-bold text-center hover:bg-indigo-400/70 transition-all shadow-sm">
-                                {{ 'Review' if email.status == 'Needs Review' else 'View' }}
-                            </a>
-                            
-                        </div>
-                    </td>
-                    #}
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
-            Showing {{ emails|length }} emails
-        </div>
-    </div>
+{% else %}
+<span class="bg-yellow-200/60 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold">
+Pending
+</span>
+{% endif %}
+</td>
+
+<td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+<div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
+Showing {{ emails|length }} emails
+</div>
+</div>
 </body>
 <script>
-window.addEventListener("focus", function () {
-    location.reload();
+const selectAll = document.getElementById("select-all");
+const checkboxes = document.querySelectorAll(".email-checkbox");
+const deleteBtn = document.getElementById("delete-btn");
+
+function updateDeleteButton() {
+    const checked = document.querySelectorAll(".email-checkbox:checked").length;
+    deleteBtn.disabled = checked === 0;
+}
+
+selectAll.addEventListener("change", function () {
+    checkboxes.forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+    updateDeleteButton();
 });
+
+checkboxes.forEach(cb => {
+    cb.addEventListener("change", function () {
+
+        // Update Select All checkbox
+        selectAll.checked =
+            document.querySelectorAll(".email-checkbox:checked").length === checkboxes.length;
+
+        updateDeleteButton();
+    });
+});
+
+// Initial state
+updateDeleteButton();
 </script>
+<script>
+const trashMessage = document.getElementById("trash-message");
+
+if (trashMessage) {
+    setTimeout(() => {
+        trashMessage.remove();
+    }, 3000); // disappears after 3 seconds
+}
+</script>
+
+
 </html>
 

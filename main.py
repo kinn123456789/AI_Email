@@ -5,7 +5,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
 from database import (get_teacher_messages,get_last_history_id,update_last_history_id,mark_conversation_read,
-                    get_teacher_conversations,mark_chat_read)
+                    get_teacher_conversations,mark_chat_read,move_to_trash,get_trash_emails,delete_email)
 from fastapi import Form
 from trial_followup import (
     get_trial_followup_dashboard,
@@ -235,6 +235,7 @@ def teacher_dashboard(request: Request):
         {
             "request": request,
             "messages": messages
+            
         }
     )
 
@@ -402,7 +403,8 @@ def dashboard(request: Request):
             "needs_review_count": needs_review_count,
             "auto_reply_count": auto_reply_count,
             "avg_response": avg_response,
-            "avg_resolution": avg_resolution
+            "avg_resolution": avg_resolution,
+            "trashed": request.query_params.get("trashed")
         }
     )
 
@@ -566,7 +568,8 @@ def notification_mailbox(request: Request):
         "notifications.html",
         {
             "request": request,
-            "emails": rows
+            "emails": rows,
+            "trashed": request.query_params.get("trashed")
         }
     )
 
@@ -937,7 +940,7 @@ def teacher_inbox(
         conversation = get_conversation(chat_id)
 
         mark_conversation_read(chat_id)
-        
+
         t = time.time()
 
         messages = get_conversation_messages(chat_id)
@@ -1025,3 +1028,66 @@ def send_reply(
         url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
         status_code=303
     )
+
+
+@app.post("/email/{email_id}/trash")
+def trash_email(email_id: int):
+
+    move_to_trash(email_id)
+
+    return RedirectResponse(
+        url="/dashboard?trashed=1",
+        status_code=303
+    )
+
+
+
+@app.post("/emails/delete-selected")
+def delete_selected(email_ids: list[int] = Form(...)):
+    count = len(email_ids)
+
+    for email_id in email_ids:
+        move_to_trash(email_id)
+
+    return RedirectResponse(
+        url=f"/dashboard?trashed={count}",
+        status_code=303
+    )
+
+@app.get("/trash")
+def trash(request: Request):
+    emails = get_trash_emails()
+
+    return templates.TemplateResponse(
+        "trash.html",
+        {
+            "request": request,
+            "emails": emails,
+            "deleted": request.query_params.get("deleted")
+        }
+    )
+
+@app.post("/emails/delete-permanently")
+def delete_permanently(email_ids: list[int] = Form(...)):
+    count = len(email_ids)
+
+    for email_id in email_ids:
+        delete_email(email_id)
+
+    return RedirectResponse(
+        url=f"/trash?deleted={count}",
+        status_code=303
+    )
+
+@app.post("/notifications/delete-selected")
+def delete_notifications(email_ids: list[int] = Form(...)):
+    count = len(email_ids)
+
+    for email_id in email_ids:
+        move_to_trash(email_id)
+
+    return RedirectResponse(
+        url=f"/notifications?trashed={count}",
+        status_code=303
+    )
+

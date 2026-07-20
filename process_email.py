@@ -69,12 +69,16 @@ def process_email(msg, account):
         .replace("/", "_")
     )
 
+    has_attachment = False
+
     for part in msg.walk():
 
         content_type = part.get_content_type()
         filename = part.get_filename()
 
         if filename:
+
+            has_attachment = True
 
             filename = os.path.basename(filename)
 
@@ -192,7 +196,8 @@ def process_email(msg, account):
             status="No Reply Required",
             mailbox=mailbox,
             references_header=references_header,
-            email_date=email_date
+            email_date=email_date,
+            has_attachment=has_attachment
         )
 
         return
@@ -256,7 +261,8 @@ def process_email(msg, account):
         reply_type="human",
         mailbox=mailbox,
         references_header=references_header,
-        email_date=email_date
+        email_date=email_date,
+        has_attachment=has_attachment
     )
 
     print("Processed:", message_id)

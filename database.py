@@ -50,7 +50,8 @@ def save_email(
     mailbox="inbox",
     references_header=None,
     email_date=None,
-    is_read=False 
+    is_read=False,
+    has_attachment=False 
 ):
     conn = get_connection()
     cursor = conn.cursor()
@@ -61,18 +62,18 @@ def save_email(
                 sender, subject, body, category, priority, ai_summary, 
                 ai_draft_reply, message_id, thread_id, in_reply_to, source, 
                 contact_name, phone, status, requires_review, ai_confidence, 
-                knowledge_url, reply_type, mailbox, references_header,email_date,is_read
+                knowledge_url, reply_type, mailbox, references_header,email_date,is_read,has_attachment
             )
             VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             RETURNING id
         """, (
             sender, subject, body, category, priority, ai_summary, 
             ai_draft_reply, message_id, thread_id, in_reply_to, source, 
             contact_name, phone, status, requires_review, ai_confidence, 
-            knowledge_url, reply_type, mailbox, references_header, email_date, is_read 
+            knowledge_url, reply_type, mailbox, references_header, email_date, is_read , has_attachment
         ))
         result = cursor.fetchone()
         conn.commit()
@@ -101,14 +102,20 @@ def get_emails():
             SELECT
                 id, sender, subject, source, category, priority, status, 
                 reply_type, created_at, first_reply_at, resolved_at, 
-                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read
+                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment
             FROM messages
             WHERE mailbox = 'inbox'
             AND status != 'Resolved'        
             AND reply_type IS DISTINCT FROM 'gmail_manual'
             ORDER BY
                 is_read ASC,
-                       
+                
+                CASE status
+                    WHEN 'Needs Review' THEN 1
+                    WHEN 'Replied' THEN 2
+                    ELSE 3
+                END,
+
                 CASE priority
                     WHEN 'Urgent' THEN 1
                     WHEN 'High' THEN 2
@@ -1342,3 +1349,129 @@ def mark_chat_read(chat_id, teacher_id):
     finally:
         cur.close()
         db_pool.putconn(conn)
+
+def move_to_trash(email_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE messages
+            SET mailbox = 'trash'
+            WHERE id = %s
+        """, (email_id,))
+        conn.commit()
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+from psycopg2.extras import RealDictCursor
+
+def get_trash_emails():
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT
+                id,
+                sender,
+                subject,
+                source,
+                category,
+                priority,
+                status,
+                reply_type,
+                created_at
+            FROM messages
+            WHERE mailbox = 'trash'
+            ORDER BY created_at DESC;
+        """)
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+
+            if row["reply_type"] == "automatic":
+                row["handled_by"] = "AI"
+            elif row["reply_type"] in ("human", "gmail_manual"):
+                row["handled_by"] = "Human"
+            else:
+                row["handled_by"] = None
+
+        return rows
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+
+def delete_email(email_id):
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        # Get the Gmail Message-ID
+        cursor.execute("""
+            SELECT message_id
+            FROM messages
+            WHERE id = %s
+        """, (email_id,))
+
+        row = cursor.fetchone()
+
+        if row and row["message_id"]:
+            cursor.execute("""
+                DELETE FROM attachments
+                WHERE message_id = %s
+            """, (row["message_id"],))
+
+        cursor.execute("""
+            DELETE FROM messages
+            WHERE id = %s
+        """, (email_id,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+from psycopg2.extras import RealDictCursor
+
+def get_notification_emails():
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    cursor.execute("""
+        SELECT
+            id,
+            subject,
+            source,
+            sender,
+            category,
+            created_at
+        FROM messages
+        WHERE status = 'No Reply Required'
+          AND mailbox != 'trash'
+        ORDER BY created_at DESC
+    """)
+
+    emails = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return emails
+
+def has_attachments(message):
+    payload = message.get("payload", {})
+
+    for part in payload.get("parts", []):
+        body = part.get("body", {})
+
+        if body.get("attachmentId"):
+            return True
+
+    return False

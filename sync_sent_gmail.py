@@ -85,7 +85,7 @@ def main():
                 logger.error(f"Could not open Sent Mail for {account['source']}")
                 continue
 
-            status, search_data = mail.search(None, "ALL")
+            status, search_data = mail.search(None, '(SINCE "20-Jul-2026")')
             
             if status != "OK": continue
 
@@ -174,7 +174,8 @@ def main():
                         requires_review=False,
                         reply_type="gmail_manual",
                         references_header=references,
-                        email_date=email_date
+                        email_date=email_date,
+                        has_attachment=has_attachment
                     )
                     imported += 1
                     logger.info(f"Imported: {message_id}")
