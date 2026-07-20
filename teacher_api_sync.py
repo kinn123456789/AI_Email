@@ -11,10 +11,12 @@ from database import (
     get_last_message_id
 )
 
-
+import time
 def sync_teacher_portal():
 
+    t = time.time()
     teachers = get_teachers()
+    print("teachers:", time.time() - t)
 
     print("=" * 70)
     print("Teacher Portal Sync Started")

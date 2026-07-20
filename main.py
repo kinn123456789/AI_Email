@@ -5,7 +5,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
 from database import (get_teacher_messages,get_last_history_id,update_last_history_id,mark_conversation_read,
-                    get_teacher_conversations)
+                    get_teacher_conversations,mark_chat_read)
 from fastapi import Form
 from trial_followup import (
     get_trial_followup_dashboard,
@@ -26,7 +26,7 @@ from trial_followup import (
     update_followup_schedule
     
 )
-
+import time
 from teacher_api_sync import sync_teacher_portal
 from fastapi import Form
 from fastapi.responses import RedirectResponse
@@ -37,7 +37,7 @@ from teacher_api_sender import send_teacher_reply
 from database import (mark_email_read,get_connection,save_conversation_message,
                        get_teachers,get_teacher_conversations,
                        get_conversation,
-                       get_conversation_messages)
+                       get_conversation_messages,save_teacher_reply)
 
 from fastapi import BackgroundTasks
 from save_composed_email import save_composed_email
@@ -118,6 +118,10 @@ def conversation_detail(
 
     print("CONVERSATION:")
     print(conversation)
+    mark_chat_read(
+        chat_id,
+        conversation["teacher_id"]
+    )
 
     messages = get_conversation_messages(chat_id)
     
@@ -872,7 +876,9 @@ def send_teacher_reply_route(
 @app.get("/teacher/{teacher_id}")
 def teacher_conversations(request: Request, teacher_id: str):
 
+    t = time.time()
     conversations = get_teacher_conversations(teacher_id)
+    print("conversations:", time.time() - t)
 
     teacher_name = ""
 
@@ -922,11 +928,35 @@ def teacher_inbox(
     messages = []
 
     if teacher_id:
+        t = time.time()
         conversations = get_teacher_conversations(teacher_id)
-
+        print("conversations:", time.time() - t)
     if chat_id:
+        t = time.time()
+
         conversation = get_conversation(chat_id)
+
+        mark_conversation_read(chat_id)
+        
+        t = time.time()
+
         messages = get_conversation_messages(chat_id)
+        print("messages:", time.time() - t)
+
+        latest_parent_message = None
+
+        latest_parent_message = None
+
+        for msg in reversed(messages):
+
+            if (
+                msg["sender"] == conversation["parent_id"]
+                and msg.get("ai_draft_reply")
+            ):
+                latest_parent_message = msg
+                break
+    else:
+        latest_parent_message = None
 
     return templates.TemplateResponse(
         "teacher_inbox.html",
@@ -937,7 +967,8 @@ def teacher_inbox(
             "conversations": conversations,
             "selected_chat": chat_id,
             "conversation": conversation,
-            "messages": messages
+            "messages": messages,
+            "latest_parent_message": latest_parent_message
         }
     )
 
@@ -963,15 +994,32 @@ def send_reply(
             url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
             status_code=303
         )
+    import time
 
+    t = time.time() 
     result = send_teacher_reply(
         chat_id=chat_id,
         teacher_id=teacher_id,
         message=reply
     )
+    print("Teacher API:", time.time() - t)
+    print("API RESULT:", result)
 
     if result["success"]:
+        print("Calling save_teacher_reply()")
+
         mark_reply_sent(message_id)
+
+        save_teacher_reply(
+            chat_id=chat_id,
+            teacher_id=teacher_id,
+            body=reply,
+            message_id=None
+        )
+
+        print("Finished save_teacher_reply()")
+    else:
+        print("API FAILED")
 
     return RedirectResponse(
         url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",

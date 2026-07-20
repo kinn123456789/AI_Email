@@ -3,200 +3,250 @@
 <html>
 
 <head>
-    <meta charset="UTF-8">
-    <title>Teacher Inbox</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-    textarea {
-        border: 1px solid rgba(15, 93, 122, 0.4) !important;
-    }
-    textarea:focus {
-        box-shadow: 0 0 0 3px rgba(15, 93, 122, 0.3) !important;
-        border-color: #0F5D7A !important;
-        background-color: rgba(255, 255, 255, 0.6) !important;
-    }
+<meta charset="UTF-8">
+<title>Teacher Inbox</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+textarea {
+border: 1px solid rgba(15, 93, 122, 0.4) !important;
+}
+textarea:focus {
+box-shadow: 0 0 0 3px rgba(15, 93, 122, 0.3) !important;
+border-color: #0F5D7A !important;
+background-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+width: 8px;
+}
+
+::-webkit-scrollbar-track {
+background: rgba(255,255,255,0.15);
+border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+background: rgba(15,93,122,0.45);
+border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+background: rgba(15,93,122,0.7);
+}
 </style>
 </head>
 
 <body class="h-screen overflow-hidden font-sans"
-      style="background:url('/static/background.png') center/cover fixed no-repeat;">
+style="background:url('/static/background.png') center/cover fixed no-repeat;">
 
 <div class="flex h-screen bg-white/30 backdrop-blur-xl">
 
-    <!-- ================= TEACHERS ================= -->
-    <div class="w-1/5 border-r border-white/30 flex flex-col min-h-0">
-        <div class="p-6 font-bold text-lg text-[#0F5D7A] border-b border-white/20 shrink-0">
-            Teachers
-        </div>
-        <div class="overflow-y-auto flex-1">
-            {% for teacher in teachers %}
-            <a href="/teacher-inbox?teacher_id={{ teacher.teacher_id }}"
-               class="block p-5 border-b border-white/10 hover:bg-white/40 transition-colors 
-                      {% if selected_teacher == teacher.teacher_id %}bg-white/50 border-l-4 border-l-[#0F5D7A]{% endif %}">
-                <div class="font-semibold text-gray-800">{{ teacher.teacher_name }}</div>
-                <div class="text-sm text-gray-600">{{ teacher.total_chats }} Chats</div>
-                {% if teacher.unread_chats > 0 %}
-                <span class="inline-block mt-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-                    {{ teacher.unread_chats }} Unread
-                </span>
-                {% endif %}
-            </a>
-            {% endfor %}
-        </div>
-    </div>
+<!-- ================= TEACHERS ================= -->
+<div class="w-1/5 border-r border-white/30 flex flex-col h-full min-h-0">
 
-    <!-- ================= CHATS ================= -->
-    <div class="w-1/4 border-r border-white/30 flex flex-col min-h-0">
-        <div class="p-6 font-bold text-lg text-[#0F5D7A] border-b border-white/20 shrink-0">
-            Chats
-        </div>
-        <div class="overflow-y-auto flex-1">
-            {% for chat in conversations %}
-            <a href="/teacher-inbox?teacher_id={{ selected_teacher }}&chat_id={{ chat.chat_id }}"
-               class="block p-5 border-b border-white/10 hover:bg-white/40 
-                      {% if selected_chat == chat.chat_id %}bg-white/50{% endif %}">
-                <div class="flex justify-between items-center mb-1">
-                    <div class="font-bold text-gray-800">{{ chat.parent_name }}</div>
-                    <div class="text-[11px] text-gray-500 font-medium">{{ chat.created_at.strftime('%d %b') }}</div>
-                </div>
-                <div class="text-gray-600 text-sm truncate">{{ chat.body }}</div>
-                <div class="mt-3 flex gap-2">
-                    {% if chat.ai_priority %}
-                    <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                        {{ chat.ai_priority }}
-                    </span>
-                    {% endif %}
-                    {% if not chat.is_read %}
-                    <span class="bg-[#0F5D7A] text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">
-                        New
-                    </span>
-                    {% endif %}
-                </div>
-            </a>
-            {% endfor %}
-        </div>
-    </div>
+<div class="p-6 font-bold text-lg text-[#0F5D7A] border-b border-white/20 flex-shrink-0">
+Teachers
+</div>
 
-    <!-- ================= CONVERSATION ================= -->
-    <div class="flex-1 flex flex-col bg-white/20">
-        {% if conversation %}
-        <div class="p-6 border-b border-white/30 backdrop-blur-md">
-            <div class="text-xl font-bold text-[#0F5D7A]">{{ conversation.parent_name }}</div>
-            <div class="text-sm text-gray-700 font-medium">Teacher: {{ conversation.teacher_name }}</div>
-        </div>
+<div id="teachersList" class="flex-1 min-h-0 overflow-y-auto">
+{% for teacher in teachers %}
+<a href="/teacher-inbox?teacher_id={{ teacher.teacher_id }}"
+class="block p-5 border-b border-white/10 hover:bg-white/40 transition-colors 
+{% if selected_teacher == teacher.teacher_id %}bg-white/50 border-l-4 border-l-[#0F5D7A]{% endif %}">
+<div class="font-semibold text-gray-800">{{ teacher.teacher_name }}</div>
+<div class="text-sm text-gray-600">{{ teacher.total_chats }} Chats</div>
+{% if teacher.unread_chats > 0 %}
+<span class="inline-block mt-2 bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+{{ teacher.unread_chats }} Unread
+</span>
+{% endif %}
+</a>
+{% endfor %}
+</div>
+</div>
 
-        <!-- Messages -->
-        <div class="flex-1 overflow-y-auto p-8 space-y-6">
-            {% for message in messages %}
-            <div class="{% if message.sender == 'teacher' %}text-right{% endif %}">
-                <div class="inline-block max-w-lg px-5 py-3 rounded-2xl shadow-md border border-white/40 
-                            {% if message.sender == 'teacher' %}bg-[#0F5D7A] text-white{% else %}bg-white/70 text-gray-800{% endif %}">
-                    <div class="text-sm">{{ message.body }}</div>
-                    <div class="text-[10px] mt-2 opacity-70">{{ message.created_at }}</div>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
+<!-- ================= CHATS ================= -->
+<div class="w-1/4 border-r border-white/30 flex flex-col h-full">
 
-        <!-- AI Section -->
+<div class="p-6 font-bold text-lg text-[#0F5D7A] border-b border-white/20 flex-shrink-0">
+Chats
+</div>
+
+<div class="flex-1 overflow-y-auto">
+{% for chat in conversations %}
+<a href="/teacher-inbox?teacher_id={{ selected_teacher }}&chat_id={{ chat.chat_id }}"
+class="block p-5 border-b border-white/10 hover:bg-white/40 
+{% if selected_chat == chat.chat_id %}bg-white/50{% endif %}">
+<div class="flex justify-between items-center mb-1">
+<div class="font-bold text-gray-800">{{ chat.parent_name }}</div>
+<div class="text-[11px] text-gray-500 font-medium">{{ chat.created_at.strftime('%d %b') }}</div>
+</div>
+<div class="text-gray-600 text-sm truncate">{{ chat.body }}</div>
+<div class="mt-3 flex gap-2">
+{% if chat.ai_priority %}
+<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+{{ chat.ai_priority }}
+</span>
+{% endif %}
+{% if chat.unread %}
+<span class="bg-[#0F5D7A] text-white px-2 py-0.5 rounded text-[10px] font-bold uppercase">
+New
+</span>
+{% endif %}
+</div>
+</a>
+{% endfor %}
+</div>
+</div>
+
+<!-- ================= CONVERSATION ================= -->
+<div class="flex-1 flex flex-col h-full bg-white/20">
+{% if conversation %}
+<div class="p-6 border-b border-white/30 backdrop-blur-md">
+<div class="text-xl font-bold text-[#0F5D7A]">{{ conversation.parent_name }}</div>
+<div class="text-sm text-gray-700 font-medium">Teacher: {{ conversation.teacher_name }}</div>
+</div>
+
+<!-- Messages -->
+<div id="messages" class="flex-1 overflow-y-auto p-8 flex flex-col gap-4">
+{% for message in messages %}
+
+<div class="flex {% if message.sender == conversation.teacher_id %}justify-end{% else %}justify-start{% endif %}">
+
+<div class="max-w-lg rounded-2xl px-5 py-3 shadow-md
+{% if message.sender == conversation.teacher_id %}
+bg-[#0F5D7A] text-white
+{% else %}
+bg-white text-gray-800
+{% endif %}">
+
+<div class="text-sm whitespace-pre-wrap">
+{{ message.body }}
+</div>
+
+<div class="text-[10px] opacity-70 mt-2">
+{{ message.created_at }}
+</div>
+
+</div>
+
+</div>
+
+{% endfor %}
+</div>
+
+<!-- AI Section -->
 {% if messages|length > 0 %}
-{% set latest = messages[-1] %}
 
 <div class="border-t border-white/30 p-6 bg-white/40 backdrop-blur-md">
 
-    {% if latest.reply_sent %}
-    <div id="replySentBanner" class="bg-green-100 border border-green-300 rounded-lg p-3 mb-4">
-        <div class="font-bold text-green-700">
-            ✓ Reply Sent
-        </div>
-    </div>
-    {% endif %}
+{% if latest_parent_message.reply_sent %}
+<div id="replySentBanner" class="bg-green-100 border border-green-300 rounded-lg p-3 mb-4">
+<div class="font-bold text-green-700">
+✓ Reply Sent
+</div>
+</div>
+{% endif %}
 
-    <h2 class="font-bold text-[#0F5D7A] text-sm uppercase tracking-wider mb-4">
-        AI Assistant
-    </h2>
+<h2 class="font-bold text-[#0F5D7A] text-sm uppercase tracking-wider mb-4">
+AI Assistant
+</h2>
 
-    <div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-2 gap-6">
 
-        <div>
-            <div class="font-bold text-xs text-gray-500 mb-1 uppercase">
-                Summary
-            </div>
+<div>
+<div class="font-bold text-xs text-gray-500 mb-1 uppercase">
+Summary
+</div>
 
-            <div class="text-sm text-gray-700 bg-white/30 p-3 rounded-lg">
-                {{ latest.ai_summary if not latest.reply_sent else "" }}
-            </div>
-        </div>
+<div class="text-sm text-gray-700 bg-white/30 p-3 rounded-lg">
+{{ latest_parent_message.ai_summary }}
+</div>
+</div>
 
-        <div>
-            <div class="font-bold text-xs text-gray-500 mb-1 uppercase">
-                Suggested Reply
-            </div>
+<div>
+<div class="font-bold text-xs text-gray-500 mb-1 uppercase">
+Suggested Reply
+</div>
 
-            <textarea
-                class="w-full border border-white/40 bg-white/30 rounded-lg p-3 text-sm h-24"
-                readonly>{{ latest.ai_draft_reply if not latest.reply_sent else "" }}</textarea>
+<textarea
+class="w-full border border-white/40 bg-white/30 rounded-lg p-3 text-sm h-24"
+readonly>{{ latest_parent_message.ai_draft_reply }}</textarea>
 
-        </div>
+</div>
 
-    </div>
+</div>
 
-    <form action="/teacher/send-reply" method="POST">
+<form action="/teacher/send-reply" method="POST">
 
-        <input type="hidden" name="chat_id" value="{{ conversation.chat_id }}">
-        <input type="hidden" name="teacher_id" value="{{ conversation.teacher_id }}">
-        <input type="hidden" name="message_id" value="{{ latest.id }}">
+<input type="hidden" name="chat_id" value="{{ conversation.chat_id }}">
+<input type="hidden" name="teacher_id" value="{{ conversation.teacher_id }}">
+<input type="hidden" name="message_id" value="{{ latest_parent_message.id }}">
 
-        <textarea
-            id="replyBox"
-            name="reply"
-            required
-            placeholder="Type your reply..."
-            class="w-full border border-white/40 bg-white/30 rounded-lg p-3 text-sm h-24 mt-4">
-            {% if not latest.reply_sent %}{{ latest.ai_draft_reply }}{% endif %}
-        </textarea>
+<textarea
+id="replyBox"
+name="reply"
+required
+placeholder="Type your reply..."
+class="w-full border border-white/40 bg-white/30 rounded-lg p-3 text-sm h-24 mt-4">
+{% if not latest_parent_message.reply_sent %}{{ latest_parent_message.ai_draft_reply }}{% endif %}
+</textarea>
 
-        <button
-            type="submit"
-            class="mt-4 bg-[#0F5D7A] hover:bg-[#0c4c65] text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg">
-            Send Reply
-        </button>
+<button
+type="submit"
+class="mt-4 bg-[#0F5D7A] hover:bg-[#0c4c65] text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-lg">
+Send Reply
+</button>
 
-    </form>
+</form>
 
 </div>
 
 {% endif %}
 
-        {% else %}
-        <div class="flex flex-1 items-center justify-center text-gray-400 font-medium">
-            Select a chat to view conversation
-        </div>
-        {% endif %}
-    </div>
+{% else %}
+<div class="flex flex-1 items-center justify-center text-gray-400 font-medium">
+Select a chat to view conversation
+</div>
+{% endif %}
+</div>
 
 </div>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-    const replyBox = document.getElementById("replyBox");
-    const replySentBanner = document.getElementById("replySentBanner");
+const replyBox = document.getElementById("replyBox");
+const replySentBanner = document.getElementById("replySentBanner");
 
-    if (replyBox && replySentBanner) {
+if (replyBox && replySentBanner) {
 
-        replyBox.addEventListener("input", function () {
+replyBox.addEventListener("input", function () {
 
-            if (this.value.trim().length > 0) {
-                replySentBanner.style.display = "none";
-            } else {
-                replySentBanner.style.display = "";
-            }
-
-        });
-
-    }
+if (this.value.trim().length > 0) {
+replySentBanner.style.display = "none";
+} else {
+replySentBanner.style.display = "";
+}
 
 });
+
+}
+
+});
+</script>
+<script>
+window.onload = function () {
+const box = document.getElementById("messages");
+if (box) {
+box.scrollTop = box.scrollHeight;
+}
+
+const selectedTeacherElement = document.querySelector("#teachersList .bg-white\\/50");
+if (selectedTeacherElement) {
+selectedTeacherElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+};
 </script>
 </body>
 </html>

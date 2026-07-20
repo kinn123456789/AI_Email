@@ -1117,7 +1117,6 @@ def mark_conversation_read(chat_id):
         cursor.close()
         db_pool.putconn(conn)
 
-
 def get_teacher_conversations(teacher_id):
 
     conn = get_connection()
@@ -1139,12 +1138,20 @@ def get_teacher_conversations(teacher_id):
                     c.parent_name,
                     c.parent_id,
                     c.teacher_name,
-                    c.teacher_id
+                    c.teacher_id,
+
+                    EXISTS (
+                        SELECT 1
+                        FROM conversation_messages x
+                        WHERE x.chat_id = cm.chat_id
+                          AND x.sender = c.parent_id
+                          AND x.is_read = FALSE
+                    ) AS unread
 
                 FROM conversation_messages cm
 
                 JOIN conversations c
-                ON cm.chat_id = c.chat_id
+                  ON cm.chat_id = c.chat_id
 
                 WHERE c.teacher_id = %s
 
@@ -1152,21 +1159,19 @@ def get_teacher_conversations(teacher_id):
                     cm.chat_id,
                     cm.created_at DESC,
                     cm.id DESC
+
             ) latest
 
             ORDER BY
-
+                latest.unread DESC,
                 latest.created_at DESC,
-
                 CASE latest.ai_priority
                     WHEN 'Urgent' THEN 1
                     WHEN 'High' THEN 2
                     WHEN 'Medium' THEN 3
                     WHEN 'Low' THEN 4
                     ELSE 5
-                END,
-
-                latest.created_at DESC
+                END
 
         """, (teacher_id,))
 
@@ -1176,8 +1181,6 @@ def get_teacher_conversations(teacher_id):
 
         cursor.close()
         db_pool.putconn(conn)
-
-
 
 
 def get_last_message_id(chat_id):
@@ -1267,4 +1270,75 @@ def mark_reply_sent(message_id):
 
     finally:
         cursor.close()
+        db_pool.putconn(conn)
+
+def save_teacher_reply(chat_id, teacher_id, body, message_id=None):
+
+    print("SAVE_TEACHER_REPLY CALLED")
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+
+        cur.execute("""
+            INSERT INTO conversation_messages
+            (
+                chat_id,
+                sender,
+                body,
+                created_at,
+                source,
+                message_id,
+                is_read
+            )
+            VALUES
+            (
+                %s,
+                %s,
+                %s,
+                NOW(),
+                'teacher_portal',
+                %s,
+                TRUE
+            )
+        """, (
+            chat_id,
+            teacher_id,
+            body,
+            message_id
+        ))
+
+        conn.commit()
+
+        print("INSERT SUCCESS")
+
+    except Exception as e:
+
+        print("INSERT ERROR:", e)
+        conn.rollback()
+
+    finally:
+
+        cur.close()
+        db_pool.putconn(conn)
+
+def mark_chat_read(chat_id, teacher_id):
+
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute("""
+            UPDATE conversation_messages
+            SET is_read = TRUE
+            WHERE chat_id = %s
+              AND sender <> %s
+              AND is_read = FALSE
+        """, (chat_id, teacher_id))
+
+        conn.commit()
+
+    finally:
+        cur.close()
         db_pool.putconn(conn)
