@@ -157,7 +157,12 @@ def main():
 
                     # Remove quoted reply history
                     body = clean_email_body(body)
-
+                    
+                    has_attachment = any(
+                        part.get_filename()
+                        for part in msg.walk()
+                    )
+                    
                     save_email(
                         sender=parseaddr(msg.get("From", ""))[1],
                         subject=str(make_header(decode_header(msg.get("Subject", "")))),

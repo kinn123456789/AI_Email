@@ -26,6 +26,8 @@ from trial_followup import (
     update_followup_schedule
     
 )
+import sync_sent_gmail
+from fastapi import BackgroundTasks
 import time
 from teacher_api_sync import sync_teacher_portal
 from fastapi import Form
@@ -47,7 +49,7 @@ from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
 from gmail_history import get_gmail_history
 
-from fastapi.responses import RedirectResponse
+
 from sync_sent_gmail import main as sync_sent_emails
 
 import os
@@ -248,11 +250,12 @@ def teacher_dashboard(request: Request):
 
 
 from fastapi import Form, Request
-from fastapi.responses import RedirectResponse
+
 
 @app.post("/email/{email_id}/send")
 async def send_reply(
     request: Request,
+     background_tasks: BackgroundTasks,
     email_id: int,
     reply_body: str = Form(...)
 ):
@@ -303,11 +306,13 @@ async def send_reply(
         set_resolved_time(email_id)
         set_first_reply_time(email_id)
 
-        import time
-        time.sleep(2)
+        #import time
+        #time.sleep(2)
 
-        import sync_sent_gmail
-        sync_sent_gmail.main()
+        
+        #sync_sent_gmail.main()
+
+        background_tasks.add_task(sync_sent_gmail.main)
 
         return RedirectResponse(
             url=f"/email/{email_id}?sent=true",
@@ -695,8 +700,8 @@ async def gmail_webhook(
     return {"success": True}
 
 
-from fastapi.responses import RedirectResponse
-from sync_sent_gmail import main as sync_sent_emails
+
+
 
 @app.get("/sync-sent/{email_id}")
 def sync_sent(email_id: int):
@@ -724,7 +729,7 @@ def compose(request: Request):
     )
 
 from fastapi import Form, Request
-from fastapi.responses import RedirectResponse
+
 import time
 import sync_sent_gmail
 

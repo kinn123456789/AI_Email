@@ -146,6 +146,21 @@ Examples:
 - Password reset → No reply
 - Meeting cancelled → Usually no reply, but still operationally important
 - Class cancelled → Usually no reply, but operationally important
+Teacher Portal notifications (for example, "New message from <parent>")
+are operational emails.
+
+Categorize them as Teacher.
+
+They usually do not require a reply unless the parent has asked a question.
+
+Example:
+
+Subject: New message from Amber - Coral Academy
+
+category = Teacher
+priority = Medium
+needs_reply = false
+reply_type = none
 --------------------------------------------------
 
 Step 3
