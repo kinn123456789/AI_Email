@@ -113,7 +113,7 @@ def main(target_email=None):
         
         try:
             mail = oauth_login(account["email"], account["token"])
-            mail.select("INBOX")
+            mail.select("INBOX", readonly=True)
             
             status, messages = mail.search(None, "UNSEEN")
             print(account["source"], "Unread emails:", len(messages[0].split()))
@@ -127,7 +127,7 @@ def main(target_email=None):
 
                 status, msg_data = mail.fetch(
                     email_id,
-                    "(RFC822)"
+                    "(BODY.PEEK[])"
                 )
 
                 if (

@@ -133,11 +133,11 @@ def insert_enrollment(learner_id):
             "batch_version": DEFAULT_BATCH_VERSION,
             "learner_id": learner_id,
             "start_timestamp": (
-                datetime.now(timezone.utc) - timedelta(days=8)
+                datetime.now(timezone.utc) - timedelta(days=7)
             ).isoformat(),
 
             "end_timestamp": (
-                datetime.now(timezone.utc) - timedelta(days=1)
+                datetime.now(timezone.utc)
             ).isoformat(),
             "enrollment_method": "free_trial",
             "enrollment_status": "withdrawn",
@@ -162,11 +162,11 @@ def insert_free_trial(parent_id, enrollment_id):
             "status": "redeemed",
 
             "created_at": (
-                datetime.now(timezone.utc) - timedelta(days=8)
+                datetime.now(timezone.utc) - timedelta(days=7)
             ).isoformat(),
 
             "expiry_at": (
-                datetime.now(timezone.utc) - timedelta(days=1)
+                datetime.now(timezone.utc) 
             ).isoformat(),
 
             "updated_at": datetime.now(timezone.utc).isoformat(),
@@ -177,11 +177,11 @@ def insert_free_trial(parent_id, enrollment_id):
             ],
 
             "enrollment_start_timestamp": (
-                datetime.now(timezone.utc) - timedelta(days=8)
+                datetime.now(timezone.utc) - timedelta(days=7)
             ).isoformat(),
 
             "enrollment_end_timestamp": (
-                datetime.now(timezone.utc) - timedelta(days=1)
+                datetime.now(timezone.utc) 
             ).isoformat(),
         })
         .execute()

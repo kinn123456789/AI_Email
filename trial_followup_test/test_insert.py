@@ -13,7 +13,7 @@ from helpers import (
 
 print("Creating Parent Auth User...")
 
-parent_email = f"shopsat19+{uuid.uuid4().hex[:8]}@gmail.com"
+parent_email = f"support+{uuid.uuid4().hex[:8]}@coralacademy.com"
 
 parent_auth = create_auth_user(parent_email)
 
@@ -81,5 +81,8 @@ trial_id = insert_free_trial(
 print(trial_id)
 
 print("\n✅ SUCCESS")
-print("Parent:", parent_id)
-print("Learner:", learner_id)
+print("Parent Name :", parent_name)
+print("Learner Name:", learner_name)
+print("Parent Email:", parent_email)
+print("Parent ID   :", parent_id)
+print("Learner ID  :", learner_id)

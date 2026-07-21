@@ -12,7 +12,8 @@ subject, body = generate_followup_email(
 )
 
 success = send_email(
-    "shopsat19@gmail.com",
+    #"shopsat19@gmail.com",
+    "support@coralacademy.com",
     subject,
     body
 )

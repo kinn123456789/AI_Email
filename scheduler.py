@@ -201,7 +201,7 @@ scheduler.add_job(
 scheduler.add_job(
     run_teacher_sync,
     trigger="interval",
-    minutes=1,
+    minutes=8,
     id="teacher_sync",
     replace_existing=True,
     max_instances=1,
@@ -227,5 +227,5 @@ print("Sent Mail Sync: Every 1 hour")
 print("Help Center Refresh: Daily at 2:00 AM")
 print("Classes Refresh: Daily at 3:00 AM")
 print("Gmail Watch Renewal: Every 1 day")
-print("Teacher Sync: Every 1 minutes")
+print("Teacher Sync: Every 8 minutes")
 print("Trial Follow-ups: Daily at 9:00 AM")
