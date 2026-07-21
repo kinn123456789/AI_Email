@@ -5,7 +5,8 @@ from psycopg2.extras import RealDictCursor
 from dotenv import load_dotenv
 import re
 from psycopg2.extras import RealDictCursor
-
+from datetime import timezone
+from zoneinfo import ZoneInfo
 
 load_dotenv()
 
@@ -132,9 +133,15 @@ def get_emails():
         for row in rows:
             print(row["id"], row["is_read"])
 
+            #if row["created_at"]:
+               # row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
-                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
-
+                row["created_at"] = (
+                    row["created_at"]
+                    .replace(tzinfo=timezone.utc)
+                    .astimezone(ZoneInfo("Asia/Kolkata"))
+                    .strftime("%b %-d, %-I:%M %p")
+                )
             # NEW
             if row["reply_type"] == "automatic":
                 row["handled_by"] = "AI"
@@ -185,8 +192,15 @@ def get_emails_by_category(category):
         rows = cursor.fetchall()
 
         for row in rows:
+            #if row["created_at"]:
+                #row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
-                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+                row["created_at"] = (
+                    row["created_at"]
+                    .replace(tzinfo=timezone.utc)
+                    .astimezone(ZoneInfo("Asia/Kolkata"))
+                    .strftime("%b %-d, %-I:%M %p")
+                )
 
         return rows
 
@@ -938,8 +952,16 @@ def get_support_emails():
 
         for row in rows:
 
+            #if row["created_at"]:
+                #row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+
             if row["created_at"]:
-                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+                row["created_at"] = (
+                    row["created_at"]
+                    .replace(tzinfo=timezone.utc)
+                    .astimezone(ZoneInfo("Asia/Kolkata"))
+                    .strftime("%b %-d, %-I:%M %p")
+                )   
 
         return rows
 
@@ -1390,8 +1412,15 @@ def get_trash_emails():
         rows = cursor.fetchall()
 
         for row in rows:
+            #if row["created_at"]:
+               # row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
-                row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
+                row["created_at"] = (
+                    row["created_at"]
+                    .replace(tzinfo=timezone.utc)
+                    .astimezone(ZoneInfo("Asia/Kolkata"))
+                    .strftime("%b %-d, %-I:%M %p")
+                )
 
             if row["reply_type"] == "automatic":
                 row["handled_by"] = "AI"
@@ -1457,11 +1486,20 @@ def get_notification_emails():
           AND mailbox != 'trash'
         ORDER BY created_at DESC
     """)
-
     emails = cursor.fetchall()
 
+    for row in emails:
+        if row["created_at"]:
+            row["created_at"] = (
+                row["created_at"]
+                .replace(tzinfo=timezone.utc)
+                .astimezone(ZoneInfo("Asia/Kolkata"))
+                .strftime("%b %-d, %-I:%M %p")
+            )
+    
+
     cursor.close()
-    conn.close()
+    db_pool.putconn(conn)
 
     return emails
 
