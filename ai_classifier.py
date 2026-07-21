@@ -146,12 +146,21 @@ Examples:
 - Password reset → No reply
 - Meeting cancelled → Usually no reply, but still operationally important
 - Class cancelled → Usually no reply, but operationally important
+
 Teacher Portal notifications (for example, "New message from <parent>")
-are operational emails.
+indicate that a parent has sent a new message through the Teacher Portal.
+
+These emails always require staff attention.
 
 Categorize them as Teacher.
 
-They usually do not require a reply unless the parent has asked a question.
+Priority = Medium.
+
+needs_reply = true
+
+requires_review = false
+
+reply_type = automatic
 
 Example:
 
@@ -159,8 +168,9 @@ Subject: New message from Amber - Coral Academy
 
 category = Teacher
 priority = Medium
-needs_reply = false
-reply_type = none
+needs_reply = true
+requires_review = false
+reply_type = automatic
 --------------------------------------------------
 
 Step 3
@@ -362,6 +372,22 @@ Return only valid JSON.
         # Business Rule Overrides
         text_content = (subject + " " + body).lower()
 
+        # --------------------------------------------------
+        # Teacher Portal notification override
+        # --------------------------------------------------
+
+        subject_lower = subject.lower()
+
+        if (
+            "new message from" in subject_lower
+            and "coral academy" in subject_lower
+        ):
+            result["category"] = "Teacher"
+            result["priority"] = "Medium"
+            result["needs_reply"] = True
+            result["requires_review"] = False
+            result["reply_type"] = "automatic"
+            result["confidence"] = max(result.get("confidence", 0), 95)
         human_keywords = [
             "complaint",
             "refund",

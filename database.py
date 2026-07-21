@@ -1475,3 +1475,4 @@ def has_attachments(message):
             return True
 
     return False
+

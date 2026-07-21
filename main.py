@@ -26,6 +26,7 @@ from trial_followup import (
     update_followup_schedule
     
 )
+#from database import delete_teacher_message_db
 import sync_sent_gmail
 from fastapi import BackgroundTasks
 import time
@@ -1033,7 +1034,6 @@ def send_reply(
         url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
         status_code=303
     )
-
 
 @app.post("/email/{email_id}/trash")
 def trash_email(email_id: int):

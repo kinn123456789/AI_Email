@@ -178,7 +178,7 @@ readonly>{{ latest_parent_message.ai_draft_reply }}</textarea>
 
 </div>
 
-<form action="/teacher/send-reply" method="POST">
+<form id="replyForm" action="/teacher/send-reply" method="POST">
 
 <input type="hidden" name="chat_id" value="{{ conversation.chat_id }}">
 <input type="hidden" name="teacher_id" value="{{ conversation.teacher_id }}">
@@ -248,6 +248,6 @@ selectedTeacherElement.scrollIntoView({ block: "nearest", behavior: "smooth" });
 }
 };
 </script>
+
 </body>
 </html>
-
