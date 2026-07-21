@@ -3,42 +3,34 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
+loaded = load_dotenv()
+print("Loaded .env:", loaded)
+print("Current directory:", os.getcwd())
+print("API_KEY:", os.getenv("TEACHER_PORTAL_API_KEY"))
+# Read API Key from .env
+API_KEY = os.getenv("TEACHER_PORTAL_TOKEN")
 
-TOKEN = os.getenv("TEACHER_PORTAL_TOKEN")
-
-BASE_URL = "https://api.preprod.coralacademy.com"
-
-CA_ID = "a88e2aaa-a02b-40b8-9385-f26827f3820d"
-
-WEBSITE_URL = "https://teacher.preprod.coralacademy.com"
+BASE_URL = "https://api.preprod.coralacademy.com/ai_email"
 
 
 def get_headers(teacher_id=None):
-    """
-    Common headers used for every Teacher Portal request.
-    """
+    print("API_KEY:", API_KEY)
+    print("Headers:", get_headers())
+    if not API_KEY:
+        raise ValueError(
+            "TEACHER_PORTAL_API_KEY is not configured. Set it in your environment or .env file."
+        )
 
-    headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Ca-Id": CA_ID,
-        "Origin": WEBSITE_URL,
-        "Website-Base-Url": WEBSITE_URL
+    return {
+        "x-api-key": API_KEY,
     }
-
-    if teacher_id:
-        headers["Ca-Teacher-Id"] = teacher_id
-
-    return headers
-
-
 # ----------------------------------------------------
 # Teachers
-# ----------------------------------------------------
 
 def get_teachers():
 
     response = requests.get(
-        f"{BASE_URL}/teachers",
+        f"{BASE_URL}/ai-email/teachers",
         headers=get_headers(),
         timeout=30
     )
@@ -57,8 +49,8 @@ def get_teachers():
 def get_chats(teacher_id):
 
     response = requests.get(
-        f"{BASE_URL}/chats?user_role=teacher",
-        headers=get_headers(teacher_id),
+        f"{BASE_URL}/ai-email/chats?teacher_id={teacher_id}",
+        headers=get_headers(),
         timeout=30
     )
 
@@ -76,8 +68,8 @@ def get_chats(teacher_id):
 def get_messages(chat_id, teacher_id):
 
     response = requests.get(
-        f"{BASE_URL}/chats/{chat_id}/messages?page=0",
-        headers=get_headers(teacher_id),
+        f"{BASE_URL}/ai-email/chats/{chat_id}/messages?teacher_id={teacher_id}&page=0",
+        headers=get_headers(),
         timeout=30
     )
 
