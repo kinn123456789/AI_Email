@@ -116,6 +116,7 @@ def main(target_email=None):
             mail.select("INBOX")
             
             status, messages = mail.search(None, "UNSEEN")
+            print(account["source"], "Unread emails:", len(messages[0].split()))
             if status != "OK":
                 continue
 

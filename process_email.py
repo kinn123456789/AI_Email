@@ -227,12 +227,24 @@ def process_email(msg, account):
         body,
         similar
     )
+    selected_ids = {
+        item["id"]
+        for item in reranked["selected"]
+    }
 
+    historical_emails = [
+        email
+        for email in similar
+        if email[0] in selected_ids
+    ]
     knowledge = search_knowledge_base(
         subject,
         body
     )
+    print("Selected IDs:", selected_ids)
+    print("Historical Emails Count:", len(historical_emails))
 
+    
     draft = generate_reply(
         message_id,
         subject,
@@ -240,7 +252,9 @@ def process_email(msg, account):
         result["category"],
         result["priority"],
         history_text,
-        similar,
+        #similar,
+        #reranked,
+        historical_emails,
         knowledge
     )
 

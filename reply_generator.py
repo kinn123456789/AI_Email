@@ -28,7 +28,7 @@ def generate_reply(
     category,
     priority,
     thread_history,
-    similar_emails,
+    historical_emails,
     knowledge=None,
 ):
     """
@@ -53,7 +53,7 @@ def generate_reply(
             priority=priority,
             thread_history=thread_history,
             knowledge=knowledge or [],
-            similar_emails=similar_emails or [],
+            similar_emails=historical_emails or [],
         )
 
         print("\n" + "=" * 80)
@@ -78,7 +78,7 @@ def generate_reply(
             )
 
         print("\nHISTORICAL EMAILS RETRIEVED:")
-        for e in (similar_emails or []):
+        for e in (historical_emails or []):
             if isinstance(e, dict):
                 print("-", e.get("subject"))
             else:
@@ -133,7 +133,7 @@ def generate_reply(
 
         historical_log = []
 
-        for email in similar_emails or []:
+        for email in historical_emails or []:
 
             if isinstance(email, dict):
 
