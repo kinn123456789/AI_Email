@@ -1,3 +1,4 @@
+#reply_generator.py
 import os
 
 from dotenv import load_dotenv
@@ -91,8 +92,8 @@ def generate_reply(
         start_time = time.time()
 
 
-        with open("last_prompt.txt", "w", encoding="utf-8") as f:
-            f.write(user_prompt)
+        #with open("last_prompt.txt", "w", encoding="utf-8") as f:
+         #   f.write(user_prompt)
         
         response = client.chat.completions.create(
             model="gpt-5-nano",

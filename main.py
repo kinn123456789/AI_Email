@@ -579,7 +579,7 @@ def notification_mailbox(request: Request):
         }
     )
 
-@app.get("/trial-followup/send/{email_id}")
+@app.post("/trial-followup/send/{email_id}")
 def send_followup(email_id: int):
 
     email = get_followup_email(email_id)
@@ -593,7 +593,7 @@ def send_followup(email_id: int):
             "message": "Email already sent."
         }
 
-    gmail_message_id = send_email(
+    gmail_message_id = followup_send_email(
         email["recipient_email"],
         email["subject"],
         email["email_body"]
@@ -630,7 +630,10 @@ def send_followup(email_id: int):
         update_followup_email3_sent(email["learner_id"])
         complete_followup_campaign(email["learner_id"])
 
-
+    return RedirectResponse(
+        url=f"/trial-followup/email/{email_id}?sent=true",
+        status_code=303
+    )
 
 @app.post("/trial-followup/reply/{email_id}")
 

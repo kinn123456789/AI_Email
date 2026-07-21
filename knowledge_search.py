@@ -1,3 +1,4 @@
+#knowledge_search.py
 from database import get_connection, db_pool
 from embedding_service import generate_embedding
 

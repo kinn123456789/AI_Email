@@ -52,14 +52,14 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
 
     # Send email through AI
     #gmail_message_id = send_email(
-     #   parent_email,
+      #  parent_email,
       #  subject,
-     #   body
+      #  body
     #)
     
     #if not gmail_message_id:
-     #   print(f"✗ Email {email_number} sending failed")
-     #   return False
+      #  print(f"✗ Email {email_number} sending failed")
+      #  return False
     print("Saving AI draft for review...")
 
     gmail_message_id = None
@@ -74,7 +74,7 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
         subject=subject,
         email_body=body,
         #gmail_message_id=gmail_message_id,
-        #status="sent"
+        #status="sent",
         gmail_message_id=None,
         status="draft"
     )
@@ -86,13 +86,13 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
     print(f"✓ Email {email_number} sent successfully")
 
     # Update database
-    #if email_number == 1:
-     #   update_followup_email1_sent(learner_id)
-    #elif email_number == 2:
-    #    update_followup_email2_sent(learner_id)
-    #elif email_number == 3:
-     #   update_followup_email3_sent(learner_id)
-     #   complete_followup_campaign(learner_id)
+    if email_number == 1:
+        update_followup_email1_sent(learner_id)
+    elif email_number == 2:
+        update_followup_email2_sent(learner_id)
+    elif email_number == 3:
+        update_followup_email3_sent(learner_id)
+        complete_followup_campaign(learner_id)
 
    
     return True

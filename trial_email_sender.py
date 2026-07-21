@@ -60,5 +60,5 @@ def send_email(to_email, subject, body):
         return response["id"]
 
     except Exception as e:
-        print(f"Send Email Error: {e}")
+        print(f"Send Email Error: {type(e).__name__}: {e}")
         return None

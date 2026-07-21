@@ -6,6 +6,7 @@ from refresh_knowledge_base import refresh_knowledge_base
 from refresh_classes import refresh_classes
 from gmail_watch import renew_all_gmail_watches
 from sync_sent_gmail import main as sync_sent_emails
+from process_trial_followup import process_trial_followups
 
 from teacher_api_sync import sync_teacher_portal
 import threading
@@ -208,6 +209,15 @@ scheduler.add_job(
     misfire_grace_time=300
 )
 
+scheduler.add_job(
+    process_trial_followups,
+    CronTrigger(hour=9, minute=0),
+    id="trial_followups",
+    replace_existing=True,
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
+)
 
 scheduler.start()
 
@@ -218,3 +228,4 @@ print("Help Center Refresh: Daily at 2:00 AM")
 print("Classes Refresh: Daily at 3:00 AM")
 print("Gmail Watch Renewal: Every 1 day")
 print("Teacher Sync: Every 10 minutes")
+print("Trial Follow-ups: Daily at 9:00 AM")
