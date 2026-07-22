@@ -140,7 +140,12 @@ def process_trial_followups():
                     free_trial_pass_id=candidate["free_trial_pass_id"],
                     trial_expiry_at=trial_expiry_at
                 )
-                continue
+                followup = {
+                    "status": "active",
+                    "email1_sent_at": None,
+                    "email2_sent_at": None,
+                    "email3_sent_at": None,
+                }
 
             # Skip if campaign closed
             if followup.get('status') != 'active':
@@ -150,19 +155,13 @@ def process_trial_followups():
             email2 = followup.get('email2_sent_at')
             email3 = followup.get('email3_sent_at')
 
-            # --- Logic Engine ---
-            # Email 1 (Day 1)
+            # Temporary test mode: trigger follow-ups after 5/10/15 minutes.
             if email1 is None and trial_expiry_at <= now - timedelta(days=1):
                 send_followup_email(candidate, parent_id, learner_id, 1)
-
-            # Email 2 (Day 3)
             elif email1 is not None and email2 is None and trial_expiry_at <= now - timedelta(days=3):
                 send_followup_email(candidate, parent_id, learner_id, 2)
-
-            # Email 3 (Day 7)
             elif email1 is not None and email2 is not None and email3 is None and trial_expiry_at <= now - timedelta(days=7):
                 send_followup_email(candidate, parent_id, learner_id, 3)
-                # Note: You might want to update status to 'completed' here
 
         except Exception as e:
             print(f"Error processing learner {candidate.get('learner_id')}: {e}")

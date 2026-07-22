@@ -516,22 +516,30 @@ def get_followup_email_logs():
 
     try:
 
+        # Exclude future-scheduled "pending" rows so they don't appear on the
+        # dashboard until their scheduled_at time arrives. Drafts (status='draft')
+        # and already-sent rows remain visible immediately.
         cursor.execute("""
-            SELECT
-                id,
-                learner_id,
-                learner_name,
-                parent_id,
-                parent_name,
-                email_number,
-                recipient_email,
-                subject,
-                email_body,
-                gmail_message_id,
-                status,
-                sent_at
-            FROM trial_followup_email_logs
-            ORDER BY sent_at DESC
+            SELECT * FROM (
+                SELECT DISTINCT ON (learner_id, email_number)
+                    id,
+                    learner_id,
+                    learner_name,
+                    parent_id,
+                    parent_name,
+                    email_number,
+                    recipient_email,
+                    subject,
+                    email_body,
+                    gmail_message_id,
+                    status,
+                    sent_at,
+                    scheduled_at
+                FROM trial_followup_email_logs
+                WHERE NOT (status = 'pending' AND scheduled_at > NOW())
+                ORDER BY learner_id, email_number, id DESC
+            ) latest
+            ORDER BY COALESCE(sent_at, scheduled_at) DESC
         """)
 
         return cursor.fetchall()

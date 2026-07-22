@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-TOKEN = os.getenv("TEACHER_PORTAL_TOKEN")
+API_KEY = os.getenv("TEACHER_PORTAL_API_KEY")
 BASE_URL = "https://api.preprod.coralacademy.com"
 
 
@@ -20,16 +20,19 @@ def send_teacher_reply(chat_id, teacher_id, message):
         }
     """
 
+    if not API_KEY:
+        raise ValueError(
+            "TEACHER_PORTAL_API_KEY is not configured. Set it in your environment or .env file."
+        )
+
     headers = {
-        "Authorization": f"Bearer {TOKEN}",
-        "Ca-Id": "a88e2aaa-a02b-40b8-9385-f26827f3820d",
-        "Ca-Teacher-Id": teacher_id,
-        "Origin": "https://teacher.preprod.coralacademy.com",
-        "Website-Base-Url": "https://teacher.preprod.coralacademy.com",
+        "x-api-key": API_KEY,
         "Content-Type": "application/json"
     }
 
     payload = {
+        "teacher_id": teacher_id,
+        "chat_id": chat_id,
         "text": message
     }
 
@@ -43,7 +46,7 @@ def send_teacher_reply(chat_id, teacher_id, message):
 
     try:
         response = requests.post(
-            f"{BASE_URL}/chats/{chat_id}/messages",
+            f"{BASE_URL}/ai-email/reply",
             headers=headers,
             json=payload,
             timeout=20

@@ -3,19 +3,14 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
-loaded = load_dotenv()
-print("Loaded .env:", loaded)
-print("Current directory:", os.getcwd())
-print("API_KEY:", os.getenv("TEACHER_PORTAL_API_KEY"))
-# Read API Key from .env
-API_KEY = os.getenv("TEACHER_PORTAL_TOKEN")
 
-BASE_URL = "https://api.preprod.coralacademy.com/ai_email"
+# Read API Key from .env
+API_KEY = os.getenv("TEACHER_PORTAL_API_KEY")
+
+BASE_URL = "https://api.preprod.coralacademy.com"
 
 
 def get_headers(teacher_id=None):
-    print("API_KEY:", API_KEY)
-    print("Headers:", get_headers())
     if not API_KEY:
         raise ValueError(
             "TEACHER_PORTAL_API_KEY is not configured. Set it in your environment or .env file."
@@ -24,8 +19,11 @@ def get_headers(teacher_id=None):
     return {
         "x-api-key": API_KEY,
     }
+
+
 # ----------------------------------------------------
 # Teachers
+# ----------------------------------------------------
 
 def get_teachers():
 

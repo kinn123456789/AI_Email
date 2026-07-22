@@ -612,19 +612,13 @@ def send_followup(email_id: int):
 
     if email["email_number"] == 1:
         update_followup_email1_sent(email["learner_id"])
-
-        update_followup_schedule(
-            email_id=email_id,
-             scheduled_at=datetime.now() + timedelta(days=3)
-        )
+        # Do not create the next pending row here. The processor will create
+        # a draft for the next follow-up when its timing condition is met.
 
     elif email["email_number"] == 2:
         update_followup_email2_sent(email["learner_id"])
-
-        update_followup_schedule(
-            email_id=email_id,
-            scheduled_at=datetime.now() + timedelta(days=7)
-        )
+        # Do not create the next pending row here. The processor will create
+        # a draft for the next follow-up when its timing condition is met.
 
     elif email["email_number"] == 3:
         update_followup_email3_sent(email["learner_id"])
