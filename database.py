@@ -375,6 +375,16 @@ def conversation_message_exists(message_id):
         cursor.close()
         db_pool.putconn(conn)
 
+def delete_conversation_message(message_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("DELETE FROM conversation_messages WHERE message_id = %s", (message_id,))
+        conn.commit()
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
 def save_attachment(message_id, filename, file_type, file_path):
     conn = get_connection()
     cursor = conn.cursor()
@@ -561,18 +571,20 @@ def get_unclassified_teacher_messages():
     try:
 
         cursor.execute("""
-            SELECT
-                id,
-                message_id,
-                chat_id,
-                sender,
-                body
-            FROM conversation_messages
-            WHERE ai_processed = FALSE
-              AND body IS NOT NULL
-              AND TRIM(body) <> ''
-            ORDER BY created_at DESC
-            LIMIT 3
+            SELECT DISTINCT ON (cm.chat_id)
+                cm.id,
+                cm.message_id,
+                cm.chat_id,
+                cm.sender,
+                cm.body
+            FROM conversation_messages cm
+            JOIN conversations c
+              ON cm.chat_id = c.chat_id
+            WHERE cm.ai_processed = FALSE
+              AND cm.sender = c.parent_id
+              AND cm.body IS NOT NULL
+              AND TRIM(cm.body) <> ''
+            ORDER BY cm.chat_id, cm.created_at DESC
         """)
 
         return cursor.fetchall()
@@ -581,14 +593,30 @@ def get_unclassified_teacher_messages():
         cursor.close()
         db_pool.putconn(conn)
 
-def update_teacher_ai_fields(message_id, category, priority, summary, draft_reply):
+def update_teacher_ai_fields(message_id, category, priority, summary, draft_reply, row_id=None):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("""
-            UPDATE conversation_messages SET ai_category = %s, ai_priority = %s, ai_summary = %s, ai_draft_reply = %s, ai_processed = TRUE
-            WHERE message_id = %s
-        """, (category, priority, summary, draft_reply, message_id))
+        if row_id is not None:
+            cursor.execute("""
+                UPDATE conversation_messages
+                SET ai_category = %s,
+                    ai_priority = %s,
+                    ai_summary = %s,
+                    ai_draft_reply = %s,
+                    ai_processed = TRUE
+                WHERE id = %s
+            """, (category, priority, summary, draft_reply, row_id))
+        else:
+            cursor.execute("""
+                UPDATE conversation_messages
+                SET ai_category = %s,
+                    ai_priority = %s,
+                    ai_summary = %s,
+                    ai_draft_reply = %s,
+                    ai_processed = TRUE
+                WHERE message_id = %s
+            """, (category, priority, summary, draft_reply, message_id))
         conn.commit()
     finally:
         cursor.close()
@@ -1062,7 +1090,7 @@ def update_last_history_id(email_address, history_id):
             )
             VALUES (%s, %s)
             ON CONFLICT (email_address)
-            DO from teacher_portal_sender import send_teacher_replyUPDATE
+            DO UPDATE
             SET history_id = EXCLUDED.history_id
         """, (email_address, history_id))
 
@@ -1301,7 +1329,7 @@ def mark_reply_sent(message_id):
         cursor.close()
         db_pool.putconn(conn)
 
-def save_teacher_reply(chat_id, teacher_id, body, message_id=None):
+def save_teacher_reply(chat_id, teacher_id, body, message_id=None, created_at=None):
 
     print("SAVE_TEACHER_REPLY CALLED")
 
@@ -1321,21 +1349,28 @@ def save_teacher_reply(chat_id, teacher_id, body, message_id=None):
                 message_id,
                 is_read
             )
-            VALUES
-            (
-                %s,
-                %s,
-                %s,
-                NOW(),
-                'teacher_portal',
-                %s,
-                TRUE
-            )
+            VALUES (%s, %s, %s, COALESCE(%s, NOW()), 'teacher_portal', %s, TRUE)
+            ON CONFLICT (message_id) DO NOTHING
         """, (
             chat_id,
             teacher_id,
             body,
+            created_at,
             message_id
+        ))
+
+        cur.execute("""
+            UPDATE conversations
+            SET
+                updated_at = COALESCE(%s, NOW()),
+                last_message = %s,
+                last_message_id = COALESCE(%s, last_message_id)
+            WHERE chat_id = %s
+        """, (
+            created_at,
+            body,
+            message_id,
+            chat_id
         ))
 
         conn.commit()
@@ -1346,6 +1381,7 @@ def save_teacher_reply(chat_id, teacher_id, body, message_id=None):
 
         print("INSERT ERROR:", e)
         conn.rollback()
+        raise
 
     finally:
 
@@ -1513,4 +1549,3 @@ def has_attachments(message):
             return True
 
     return False
-

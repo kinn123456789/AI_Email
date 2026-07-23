@@ -94,7 +94,8 @@ def process_teacher_messages():
                 category=result["category"],
                 priority=result["priority"],
                 summary=result["summary"],
-                draft_reply=draft_reply
+                draft_reply=draft_reply,
+                row_id=msg["id"]
             )
 
             processed += 1

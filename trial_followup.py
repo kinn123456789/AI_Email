@@ -19,8 +19,8 @@ def get_trial_followup_candidates():
     now = datetime.now(timezone.utc)
     #yesterday = now - timedelta(days=1)
     
-    start_date = now - timedelta(days=30)
-    
+    #start_date = now - timedelta(days=30)
+    start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
     # --------------------------------------------------
     # 1. Get trial passes that expired in the last day
     # --------------------------------------------------

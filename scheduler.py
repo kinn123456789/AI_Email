@@ -9,9 +9,10 @@ from sync_sent_gmail import main as sync_sent_emails
 from process_trial_followup import process_trial_followups
 
 from teacher_api_sync import sync_teacher_portal
+#from teacher_ai_processor import process_teacher_messages
 import threading
 import time
-
+from teacher_ai_processor1 import process_teacher_messages
 # -------------------------------------------------
 # Locks & Queue
 # -------------------------------------------------
@@ -120,6 +121,7 @@ def run_teacher_sync():
 
     try:
         sync_teacher_portal()
+        process_teacher_messages()
 
         print(
             f"TEACHER SYNC COMPLETED IN "

@@ -26,6 +26,7 @@ from trial_followup import (
     update_followup_schedule
     
 )
+
 #from database import delete_teacher_message_db
 import sync_sent_gmail
 from fastapi import BackgroundTasks
@@ -35,12 +36,14 @@ from fastapi import Form
 from fastapi.responses import RedirectResponse
 from datetime import datetime
 
-from teacher_api_sender import send_teacher_reply
+from teacher_api_sender import send_teacher_reply, delete_teacher_message
+import requests
 
 from database import (mark_email_read,get_connection,save_conversation_message,
                        get_teachers,get_teacher_conversations,
                        get_conversation,
-                       get_conversation_messages,save_teacher_reply)
+                       get_conversation_messages,save_teacher_reply,
+                       delete_conversation_message)
 
 from fastapi import BackgroundTasks
 from save_composed_email import save_composed_email
@@ -89,6 +92,10 @@ templates = Jinja2Templates(directory="templates")
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 app = FastAPI()
+print("MAIN.PY LOADED")
+print("########## THIS IS MY MAIN.PY ##########")
+for route in app.routes:
+    print(route.path, route.methods)
 
 from fastapi.staticfiles import StaticFiles
 
@@ -825,9 +832,6 @@ async def compose_email(
      #   status_code=303
    # )
 
-from teacher_portal_sender import send_teacher_reply
-
-
 @app.post("/send-teacher-reply")
 def send_teacher_reply_route(
     chat_id: str = Form(...),
@@ -835,36 +839,30 @@ def send_teacher_reply_route(
     message: str = Form(...)
 ):
 
-    response = send_teacher_reply(
+    result = send_teacher_reply(
         chat_id=chat_id,
         teacher_id=teacher_id,
         message=message
     )
 
-    if response is None:
+    if result is None:
         return RedirectResponse(
             url=f"/conversation/{chat_id}?error=connection",
             status_code=303
         )
 
-    if response.status_code not in [200, 201]:
+    status_code = result.get("status_code")
+    if not result.get("success"):
         return RedirectResponse(
-            url=f"/conversation/{chat_id}?error={response.status_code}",
+            url=f"/conversation/{chat_id}?error={status_code or 'connection'}",
             status_code=303
         )
 
     # Default in case API doesn't return one
     message_id = f"teacher-{datetime.utcnow().timestamp()}"
-
-    try:
-        data = response.json()
-
-        # Update this after seeing the real API response
-        if "response" in data:
-            message_id = data["response"].get("id", message_id)
-
-    except Exception:
-        pass
+    data = result.get("data")
+    if isinstance(data, dict) and "response" in data:
+        message_id = data["response"].get("id", message_id)
 
     save_conversation_message(
         chat_id,
@@ -947,20 +945,19 @@ def teacher_inbox(
         t = time.time()
 
         messages = get_conversation_messages(chat_id)
+        for m in messages:
+            print(m)
         print("messages:", time.time() - t)
 
-        latest_parent_message = None
-
-        latest_parent_message = None
-
         for msg in reversed(messages):
-
-            if (
-                msg["sender"] == conversation["parent_id"]
-                and msg.get("ai_draft_reply")
-            ):
+            if msg["sender"] == conversation["parent_id"]:
                 latest_parent_message = msg
                 break
+        print("LATEST PARENT MESSAGE =", latest_parent_message)
+        print("ID =", latest_parent_message.get("id") if latest_parent_message else None)
+        if latest_parent_message:
+            print("ID =", latest_parent_message.get("id"))
+            print("KEYS =", latest_parent_message.keys())
     else:
         latest_parent_message = None
 
@@ -982,15 +979,87 @@ from fastapi import Form
 from teacher_api_sender import send_teacher_reply
 from database import mark_reply_sent
 
+from fastapi import Request
+
+def extract_teacher_api_message(result, fallback_body, fallback_teacher_id):
+    data = result.get("data") if isinstance(result, dict) else None
+    response = data.get("response") if isinstance(data, dict) else None
+
+    if isinstance(response, dict):
+        message = response.get("message") or response.get("data") or response
+    else:
+        message = None
+
+    if not isinstance(message, dict):
+        return {
+            "message_id": None,
+            "sender": fallback_teacher_id,
+            "body": fallback_body,
+            "created_at": None,
+        }
+
+    return {
+        "message_id": str(message["id"]) if message.get("id") else None,
+        "sender": str(message.get("user_id") or message.get("sender") or fallback_teacher_id),
+        "body": message.get("text") or message.get("body") or fallback_body,
+        "created_at": message.get("created_at"),
+    }
+
+#@app.middleware("http")
+#sync def log_request(request: Request, call_next):
+#    print("METHOD:", request.method)
+ #   print("URL:", request.url)
+
+   # if request.method == "POST":
+    #    form = await request.form()
+     #   print("FORM DATA:", dict(form))
+
+    #response = await call_next(request)
+    # return response
+
 @app.post("/teacher/send-reply")
-def send_reply(
+async def send_reply(request: Request):
+#def send_reply(
+#
+ #   chat_id: str = Form(...),
+  #  teacher_id: str = Form(...),
+   # message_id: int = Form(...),
+    #reply: str = Form("")
 
-    chat_id: str = Form(...),
-    teacher_id: str = Form(...),
-    message_id: int = Form(...),
-    reply: str = Form("")
+#):
+    print(">>> ENTERED send_reply")
+    form = await request.form()
 
-):
+    print("=" * 80)
+    print("RAW FORM")
+    print(dict(form))
+    print("=" * 80)
+
+    chat_id = form.get("chat_id")
+    teacher_id = form.get("teacher_id")
+    message_id = form.get("message_id")
+    reply = form.get("reply", "").strip()
+
+    # Recover IDs from the inbox URL if the browser submits empty or literal
+    # "None" hidden fields from a stale/rendered form.
+    if chat_id in (None, "", "None") or teacher_id in (None, "", "None"):
+        from urllib.parse import parse_qs, urlparse
+
+        referer = request.headers.get("referer", "")
+        query = parse_qs(urlparse(referer).query)
+        chat_id = chat_id if chat_id not in (None, "", "None") else query.get("chat_id", [None])[0]
+        teacher_id = teacher_id if teacher_id not in (None, "", "None") else query.get("teacher_id", [None])[0]
+
+    print("chat_id:", chat_id)
+    print("teacher_id:", teacher_id)
+    print("message_id:", message_id)
+    print("reply:", reply)
+
+    if not chat_id or not teacher_id:
+        return {
+            "success": False,
+            "error": "Missing chat_id or teacher_id. Open a specific chat before sending."
+        }
 
     reply = reply.strip()
 
@@ -1013,19 +1082,48 @@ def send_reply(
 
     if result["success"]:
         print("Calling save_teacher_reply()")
+        sent_message = extract_teacher_api_message(result, reply, teacher_id)
+        print("EXTRACTED TEACHER API MESSAGE:", sent_message)
 
-        mark_reply_sent(message_id)
+        if message_id:
+            mark_reply_sent(message_id)
 
         save_teacher_reply(
             chat_id=chat_id,
-            teacher_id=teacher_id,
-            body=reply,
-            message_id=None
+            teacher_id=sent_message["sender"],
+            body=sent_message["body"],
+            message_id=sent_message["message_id"],
+            created_at=sent_message["created_at"]
         )
 
         print("Finished save_teacher_reply()")
     else:
         print("API FAILED")
+        return RedirectResponse(
+            url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}&error=teacher_api_send_failed",
+            status_code=303
+        )
+
+    return RedirectResponse(
+        url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
+        status_code=303
+    )
+
+@app.post("/teacher/delete-message")
+def delete_message_route(
+    chat_id: str = Form(...),
+    teacher_id: str = Form(...),
+    message_id: str = Form(...)
+):
+    try:
+        delete_teacher_message(chat_id, message_id, teacher_id)
+    except requests.RequestException:
+        return RedirectResponse(
+            url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}&error=delete_failed",
+            status_code=303
+        )
+
+    delete_conversation_message(message_id)
 
     return RedirectResponse(
         url=f"/teacher-inbox?teacher_id={teacher_id}&chat_id={chat_id}",
@@ -1092,4 +1190,3 @@ def delete_notifications(email_ids: list[int] = Form(...)):
         url=f"/notifications?trashed={count}",
         status_code=303
     )
-

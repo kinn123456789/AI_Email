@@ -7,8 +7,7 @@ from teacher_portal_api_reader import (
 from database import (
     save_conversation,
     save_conversation_message,
-    conversation_message_exists,
-    get_last_message_id
+    conversation_message_exists
 )
 
 import time
@@ -25,6 +24,7 @@ def sync_teacher_portal():
     total_chats = 0
     total_messages = 0
     new_messages = 0
+    skipped_chats = 0
 
     for teacher in teachers:
 
@@ -48,12 +48,6 @@ def sync_teacher_portal():
 
             latest = chat.get("latest_message")
 
-            latest_message_id = str(latest["id"]) if latest else None
-
-            stored_message_id = get_last_message_id(chat["id"])
-
-            if latest_message_id == stored_message_id:
-                continue
             participants = chat["participants"]
 
             parent = None
@@ -83,6 +77,10 @@ def sync_teacher_portal():
                 last_message_id=str(latest["id"]) if latest else None,
                 unread_count=0
             )
+
+            if not latest or conversation_message_exists(str(latest["id"])):
+                skipped_chats += 1
+                continue
 
             try:
                 response = get_messages(chat["id"], teacher_id)
@@ -116,6 +114,7 @@ def sync_teacher_portal():
     print("=" * 70)
     print(f"Teachers       : {len(teachers)}")
     print(f"Chats          : {total_chats}")
+    print(f"Chats Skipped  : {skipped_chats}")
     print(f"Messages Seen  : {total_messages}")
     print(f"New Messages   : {new_messages}")
     print("=" * 70)

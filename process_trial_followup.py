@@ -156,11 +156,11 @@ def process_trial_followups():
             email3 = followup.get('email3_sent_at')
 
             # Temporary test mode: trigger follow-ups after 5/10/15 minutes.
-            if email1 is None and trial_expiry_at <= now - timedelta(days=1):
+            if email1 is None and trial_expiry_at <= now - timedelta(minutes=2):
                 send_followup_email(candidate, parent_id, learner_id, 1)
-            elif email1 is not None and email2 is None and trial_expiry_at <= now - timedelta(days=3):
+            elif email1 is not None and email2 is None and trial_expiry_at <= now - timedelta(minutes=3):
                 send_followup_email(candidate, parent_id, learner_id, 2)
-            elif email1 is not None and email2 is not None and email3 is None and trial_expiry_at <= now - timedelta(days=7):
+            elif email1 is not None and email2 is not None and email3 is None and trial_expiry_at <= now - timedelta(minutes=4):
                 send_followup_email(candidate, parent_id, learner_id, 3)
 
         except Exception as e:

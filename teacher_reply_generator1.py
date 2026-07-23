@@ -27,6 +27,6 @@ def generate_teacher_reply(
         category=category,
         priority=priority,
         thread_history=thread_history,
-        similar_emails=[],
+        historical_emails=[],
         knowledge=knowledge
     )

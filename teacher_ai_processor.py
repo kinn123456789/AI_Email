@@ -56,7 +56,8 @@ def process_teacher_messages():
                 category=result["category"],
                 priority=result["priority"],
                 summary=result["summary"],
-                draft_reply=draft
+                draft_reply=draft,
+                row_id=msg["id"]
             )
 
             print("Database updated successfully")
