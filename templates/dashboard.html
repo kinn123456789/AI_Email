@@ -97,20 +97,27 @@ Response Metrics
 </div>
 
 <!-- Filter Bar -->
-<form method="get" action="/dashboard" class="flex flex-wrap items-center gap-3 mb-6">
+<form method="get" action="/dashboard" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
 
-<select name="source"
+<select name="source" onchange="this.form.submit()"
     class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
 <option value="" {% if not selected_source %}selected{% endif %}>All Mailboxes</option>
 <option value="support@coralacademy.com" {% if selected_source == "support@coralacademy.com" %}selected{% endif %}>Support</option>
 <option value="lucy@coralacademy.com" {% if selected_source == "lucy@coralacademy.com" %}selected{% endif %}>Lucy</option>
 <option value="engineering@coralacademy.com" {% if selected_source == "engineering@coralacademy.com" %}selected{% endif %}>Engineering</option>
-<option value="shopsat19@gmail.com" {% if selected_source == "shopsat19@gmail.com" %}selected{% endif %}>Sat Shop</option>
+</select>
+
+<select name="status" onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+<option value="" {% if not selected_status %}selected{% endif %}>All Statuses</option>
+<option value="Needs Review" {% if selected_status == "Needs Review" %}selected{% endif %}>Needs Review</option>
+<option value="Replied" {% if selected_status == "Replied" %}selected{% endif %}>Replied</option>
 </select>
 
 <input
     type="text"
     name="q"
+    id="searchInput"
     value="{{ search_query or '' }}"
     placeholder="Search subject, sender, or body..."
     class="flex-1 min-w-[240px] bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm text-cyan-950 placeholder-cyan-950/40">
@@ -120,7 +127,7 @@ Response Metrics
     Filter
 </button>
 
-{% if selected_source or search_query %}
+{% if selected_source or search_query or selected_status %}
 <a href="/dashboard" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
 {% endif %}
 
@@ -282,6 +289,17 @@ if (trashMessage) {
         trashMessage.remove();
     }, 3000); // disappears after 3 seconds
 }
+</script>
+<script>
+const searchInput = document.getElementById("searchInput");
+let searchDebounce;
+
+searchInput.addEventListener("input", function () {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        document.getElementById("filterForm").submit();
+    }, 600);
+});
 </script>
 <script>
 setInterval(function () {

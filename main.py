@@ -284,10 +284,6 @@ async def send_reply(
         from_email = os.getenv("EMAIL_3")
         token_file = "token_engineering.json"
 
-    elif source == "shopsat19@gmail.com":
-        from_email = os.getenv("EMAIL_4")
-        token_file = "token_sat.json"
-
     else:
         return RedirectResponse(
             "/dashboard",
@@ -370,9 +366,9 @@ async def send_reply(
 
    
 @app.get("/dashboard")
-def dashboard(request: Request, source: str = None, q: str = None):
+def dashboard(request: Request, source: str = None, q: str = None, status: str = None):
 
-    rows = get_emails(source=source, search=q)
+    rows = get_emails(source=source, search=q, status=status)
     counts = get_category_counts()
 
     avg_minutes = get_avg_first_response_time()
@@ -419,7 +415,8 @@ def dashboard(request: Request, source: str = None, q: str = None):
             "avg_resolution": avg_resolution,
             "trashed": request.query_params.get("trashed"),
             "selected_source": source,
-            "search_query": q
+            "search_query": q,
+            "selected_status": status
         }
     )
 
@@ -779,8 +776,10 @@ async def compose_email(
 
     else:
 
-        from_email = os.getenv("EMAIL_4")
-        token_file = "token_sat.json"
+        return RedirectResponse(
+            "/compose",
+            status_code=303
+        )
 
     result = send_new_email(
 

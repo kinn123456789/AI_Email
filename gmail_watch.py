@@ -53,8 +53,7 @@ def renew_all_gmail_watches():
     tokens = [
         "token_support.json",
         "token_lucy.json",
-        "token_engineering.json",
-        "token_sat.json"
+        "token_engineering.json"
     ]
 
     for token in tokens:

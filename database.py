@@ -88,7 +88,7 @@ def email_exists(message_id, source):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_emails(source=None, search=None):
+def get_emails(source=None, search=None, status=None):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -100,6 +100,10 @@ def get_emails(source=None, search=None):
         if source:
             filters += " AND source = %s"
             params.append(source)
+
+        if status:
+            filters += " AND status = %s"
+            params.append(status)
 
         if search:
             filters += " AND (subject ILIKE %s OR sender ILIKE %s OR body ILIKE %s)"

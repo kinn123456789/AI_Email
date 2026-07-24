@@ -49,11 +49,6 @@ EMAIL_ACCOUNTS = [
         "email": os.getenv("EMAIL_3"),
         "token": "token_engineering.json",
         "source": "engineering@coralacademy.com",
-    },
-    {
-        "email": os.getenv("EMAIL_4"),
-        "token": "token_sat.json",
-        "source": "shopsat19@gmail.com",
     }
 ]
 
