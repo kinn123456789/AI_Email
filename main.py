@@ -53,7 +53,7 @@ from gmail_fetch import get_message
 from compose_email_sender import send_new_email
 from followup_email import send_email as followup_send_email
 from datetime import datetime, timedelta
-from gmail_history import get_gmail_history
+from gmail_history import get_gmail_history, run_history_reader
 
 
 from sync_sent_gmail import main as sync_sent_emails
@@ -64,8 +64,6 @@ import os
 from emails_cleaner import clean_email_body
 
 from process_email import process_email
-
-from scheduler import run_email_reader
 
 from fastapi import Request
 import json
@@ -330,11 +328,26 @@ async def send_reply(
         set_resolved_time(email_id)
         set_first_reply_time(email_id)
 
-        #import time
-        #time.sleep(2)
+        sent_msg = get_message(token_file, sent_result["gmail_id"])
+        real_message_id = " ".join((sent_msg.get("Message-ID") or "").split())
 
-        
-        #sync_sent_gmail.main()
+        save_email(
+            sender=source,
+            subject=original_email["subject"],
+            body=reply_body,
+            category=original_email["category"],
+            priority=original_email["priority"],
+            ai_summary="Manual reply",
+            ai_draft_reply=reply_body,
+            message_id=real_message_id,
+            thread_id=original_email["thread_id"],
+            in_reply_to=original_email["message_id"],
+            source=source,
+            status="Replied",
+            reply_type="human",
+            mailbox=mailbox,
+            references_header=original_email.get("references_header")
+        )
 
         background_tasks.add_task(sync_sent_gmail.main)
 
@@ -342,47 +355,6 @@ async def send_reply(
             url=f"/email/{email_id}?sent=true",
             status_code=303
         )
-
-        #save_email(
-          #  sender=source,
-           # subject=original_email["subject"],
-           # body=reply_body,
-          #  category=original_email["category"],
-          #  priority=original_email["priority"],
-          #  ai_summary="Manual reply",
-          #  ai_draft_reply=reply_body,
-          #  message_id=sent_result["message_id"],
-          #  thread_id=original_email["thread_id"], 
-          #  in_reply_to=original_email["message_id"],
-          #  source=source,
-          #  status="Replied",
-          #  reply_type="human",
-          #  mailbox=mailbox,
-          #  references_header=original_email.get("references_header")
-
-       # )
-
-        #update_final_reply(email_id, reply_body)
-        #update_reply_type(email_id, "human")
-        #update_status(email_id, "Replied")
-       # set_resolved_time(email_id)
-       # set_first_reply_time(email_id)
-
-       # print(f"✅ Email {email_id} sent and saved successfully.")
-
-        
-
-       # return RedirectResponse(
-        #    url=f"/email/{email_id}?sent=true",
-        #    status_code=303
-       # )
-
-    #print(f"❌ Email sending failed for {email_id}")
-
-   # return RedirectResponse(
-    #    url=f"/email/{email_id}?error=true",
-    #    status_code=303
-   # )
 
    
 @app.get("/dashboard")
@@ -773,13 +745,16 @@ async def gmail_webhook(
         data = json.loads(decoded)
 
         email_address = data["emailAddress"]
+        history_id = data.get("historyId")
 
         print("Mailbox:", email_address)
+        print("History ID:", history_id)
         print("Scheduling background task...")
 
         background_tasks.add_task(
-            run_email_reader,
-            email_address
+            run_history_reader,
+            email_address,
+            history_id
         )
 
         return {"success": True}

@@ -106,7 +106,7 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
         <!-- Bulk Recipients -->
         <div>
             <label class="block font-semibold text-stone-700 mb-2">
-                Bulk Recipients <span class="font-normal text-stone-500">(optional — overrides "To" above, sends an individual email to each)</span>
+                Bulk Recipients <span class="font-normal text-stone-500">(optional — overrides "To" above, sends an individual email to each, up to 100 recipients per send)</span>
             </label>
             <textarea
                 name="bulk_recipients"
@@ -135,6 +135,7 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
             <p class="text-stone-500 text-sm mt-2">
                 First column is the email address, second column (optional) is the name. A header row like
                 <code class="bg-white/60 px-1.5 py-0.5 rounded">email,name</code> is fine — it's detected and skipped automatically.
+                Same 100-recipient limit applies here too.
             </p>
         </div>
 
