@@ -41,7 +41,7 @@ def save_composed_email(
         )
 
 
-    if email_exists(message_id):
+    if email_exists(message_id, from_email):
         return
     save_email(
 

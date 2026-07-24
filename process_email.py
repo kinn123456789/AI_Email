@@ -37,7 +37,7 @@ def process_email(msg, account):
 
     message_id = " ".join((msg.get("Message-ID") or "").split())
 
-    if not message_id or email_exists(message_id):
+    if not message_id or email_exists(message_id, account["source"]):
         print("Duplicate:", message_id)
         return
 
@@ -151,7 +151,7 @@ def process_email(msg, account):
     if in_reply_to:
 
         parent = get_message_by_message_id(
-            in_reply_to
+            in_reply_to, account["source"]
         )
 
         if not parent and references_header:
@@ -160,7 +160,7 @@ def process_email(msg, account):
                 references_header.split()
             ):
 
-                parent = get_message_by_message_id(ref)
+                parent = get_message_by_message_id(ref, account["source"])
 
                 if parent:
                     break

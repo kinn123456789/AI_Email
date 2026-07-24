@@ -83,11 +83,14 @@ def save_email(
         cursor.close()
         db_pool.putconn(conn)
 
-def email_exists(message_id):
+def email_exists(message_id, source):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("SELECT id FROM messages WHERE message_id = %s LIMIT 1", (message_id,))
+        cursor.execute(
+            "SELECT id FROM messages WHERE message_id = %s AND source = %s LIMIT 1",
+            (message_id, source)
+        )
         return cursor.fetchone() is not None
     finally:
         cursor.close()
@@ -925,8 +928,8 @@ def get_email_thread(thread_id):
 from psycopg2.extras import RealDictCursor
 
 
-def get_message_by_message_id(message_id):
-    
+def get_message_by_message_id(message_id, source):
+
     if not message_id:
         return None
 
@@ -941,9 +944,9 @@ def get_message_by_message_id(message_id):
             """
             SELECT *
             FROM messages
-            WHERE message_id = %s
+            WHERE message_id = %s AND source = %s
             """,
-            (message_id,)
+            (message_id, source)
         )
 
         return cursor.fetchone()

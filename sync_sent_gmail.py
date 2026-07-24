@@ -119,11 +119,11 @@ def main():
                     
                     thread_id, parent = message_id, None
                     if in_reply_to:
-                        parent = get_message_by_message_id(in_reply_to)
-                    
+                        parent = get_message_by_message_id(in_reply_to, account["source"])
+
                     if not parent and references:
                         for ref in reversed(references.split()):
-                            parent = get_message_by_message_id(ref)
+                            parent = get_message_by_message_id(ref, account["source"])
                             if parent: break
                     
                     if parent:
@@ -133,7 +133,7 @@ def main():
                     else:
                         logger.info(f"New thread: {message_id}")
 
-                    if not message_id or email_exists(message_id):
+                    if not message_id or email_exists(message_id, account["source"]):
                         skipped += 1
                         logger.info(f"Duplicate skipped: {message_id}")
                         continue
