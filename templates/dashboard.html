@@ -109,7 +109,7 @@ Response Metrics
 <th class="w-32 p-4 text-left">Category</th>
 <th class="w-24 p-4 text-left">Priority</th>
 <th class="w-40 p-4 text-left">Status</th>
-<th class="w-32 p-4 text-left">Handled By</th>
+{#<th class="w-32 p-4 text-left">Handled By</th>#}
 <th class="w-36 p-4 text-left">Received</th>
 </tr>
 </thead>
@@ -183,7 +183,7 @@ class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
 <span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">{{ email.status }}</span>
 {% endif %}
 </td>
-
+{#
 <td class="p-4">
 {% if email.reply_type == "automatic" %}
 <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">
@@ -200,7 +200,7 @@ class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
 Pending
 </span>
 {% endif %}
-</td>
+</td>#}
 
 <td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
 </tr>
