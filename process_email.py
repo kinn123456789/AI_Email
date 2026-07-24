@@ -55,7 +55,8 @@ def process_email(msg, account):
     )
 
     sender_email = parseaddr(msg.get("From", ""))[1]
-    
+    sender_name = parseaddr(msg.get("From", ""))[0]
+
     email_date = parsedate_to_datetime(msg["Date"])
     
 
@@ -196,7 +197,8 @@ def process_email(msg, account):
             mailbox=mailbox,
             references_header=references_header,
             email_date=email_date,
-            has_attachment=has_attachment
+            has_attachment=has_attachment,
+            sender_name=sender_name
         )
 
         return
@@ -276,7 +278,8 @@ def process_email(msg, account):
         mailbox=mailbox,
         references_header=references_header,
         email_date=email_date,
-        has_attachment=has_attachment
+        has_attachment=has_attachment,
+        sender_name=sender_name
     )
 
     print("Processed:", message_id)

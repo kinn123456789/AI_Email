@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+import csv
+import io
 from ai_classifier import ai_triage
 from database import db_pool,get_latest_thread_ai
 from fastapi import Request
@@ -90,7 +92,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 from fastapi.responses import HTMLResponse, RedirectResponse, Response
-from database import get_attachments, get_attachment_by_id
+from database import get_attachments, get_attachment_by_id, find_recipient_name
 
 app = FastAPI()
 print("MAIN.PY LOADED")
@@ -821,6 +823,30 @@ import time
 import sync_sent_gmail
 
 
+MAX_BULK_RECIPIENTS = 100
+
+
+def parse_csv_recipients(file_bytes):
+    text = file_bytes.decode("utf-8-sig", errors="ignore")
+    rows = list(csv.reader(io.StringIO(text)))
+
+    if not rows:
+        return []
+
+    if rows[0] and rows[0][0].strip().lower() in ("email", "e-mail", "email address"):
+        rows = rows[1:]
+
+    recipients = []
+    for row in rows:
+        if not row or not row[0].strip():
+            continue
+        email = row[0].strip()
+        name = row[1].strip() if len(row) > 1 else ""
+        recipients.append({"email": email, "name": name})
+
+    return recipients
+
+
 @app.post("/compose")
 async def compose_email(
 
@@ -831,6 +857,8 @@ async def compose_email(
     to_email: str = Form(None),
 
     bulk_recipients: str = Form(None),
+
+    recipients_csv: UploadFile = File(None),
 
     subject: str = Form(...),
 
@@ -862,23 +890,38 @@ async def compose_email(
             status_code=303
         )
 
-    if bulk_recipients and bulk_recipients.strip():
-        recipients = []
+    csv_bytes = await recipients_csv.read() if (recipients_csv and recipients_csv.filename) else None
+
+    if csv_bytes:
+        raw_recipients = parse_csv_recipients(csv_bytes)
+    elif bulk_recipients and bulk_recipients.strip():
+        raw_recipients = []
         for line in bulk_recipients.splitlines():
             line = line.strip()
             if not line:
                 continue
             email_part, _, name_part = line.partition(",")
-            recipients.append(
+            raw_recipients.append(
                 {"email": email_part.strip(), "name": name_part.strip()}
             )
     elif to_email and to_email.strip():
-        recipients = [{"email": to_email.strip(), "name": ""}]
+        raw_recipients = [{"email": to_email.strip(), "name": ""}]
     else:
         return RedirectResponse(
             "/compose",
             status_code=303
         )
+
+    if len(raw_recipients) > MAX_BULK_RECIPIENTS:
+        return RedirectResponse(
+            f"/compose?error=too_many_recipients&limit={MAX_BULK_RECIPIENTS}",
+            status_code=303
+        )
+
+    recipients = []
+    for r in raw_recipients:
+        name = r["name"] or find_recipient_name(r["email"]) or ""
+        recipients.append({"email": r["email"], "name": name})
 
     attachment_data = []
     for upload in (attachments or []):

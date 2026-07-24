@@ -44,7 +44,8 @@ def save_email(
     references_header=None,
     email_date=None,
     is_read=False,
-    has_attachment=False 
+    has_attachment=False,
+    sender_name=None
 ):
     conn = get_connection()
     cursor = conn.cursor()
@@ -52,25 +53,52 @@ def save_email(
         # Added 'references_header' to the column list and the %s placeholder
         cursor.execute("""
             INSERT INTO messages(
-                sender, subject, body, category, priority, ai_summary, 
-                ai_draft_reply, message_id, thread_id, in_reply_to, source, 
-                contact_name, phone, status, requires_review, ai_confidence, 
-                knowledge_url, reply_type, mailbox, references_header,email_date,is_read,has_attachment
+                sender, subject, body, category, priority, ai_summary,
+                ai_draft_reply, message_id, thread_id, in_reply_to, source,
+                contact_name, phone, status, requires_review, ai_confidence,
+                knowledge_url, reply_type, mailbox, references_header,email_date,is_read,has_attachment,
+                sender_name
             )
             VALUES (
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             RETURNING id
         """, (
-            sender, subject, body, category, priority, ai_summary, 
-            ai_draft_reply, message_id, thread_id, in_reply_to, source, 
-            contact_name, phone, status, requires_review, ai_confidence, 
-            knowledge_url, reply_type, mailbox, references_header, email_date, is_read , has_attachment
+            sender, subject, body, category, priority, ai_summary,
+            ai_draft_reply, message_id, thread_id, in_reply_to, source,
+            contact_name, phone, status, requires_review, ai_confidence,
+            knowledge_url, reply_type, mailbox, references_header, email_date, is_read , has_attachment,
+            sender_name
         ))
         result = cursor.fetchone()
         conn.commit()
         return result[0] if result else None
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def find_recipient_name(email):
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT parent_name FROM trial_followup_email_logs WHERE recipient_email = %s AND parent_name IS NOT NULL LIMIT 1",
+            (email,)
+        )
+        row = cursor.fetchone()
+        if row:
+            return row[0]
+
+        cursor.execute(
+            "SELECT sender_name FROM messages WHERE sender = %s AND sender_name IS NOT NULL LIMIT 1",
+            (email,)
+        )
+        row = cursor.fetchone()
+        if row:
+            return row[0]
+
+        return None
     finally:
         cursor.close()
         db_pool.putconn(conn)
