@@ -89,7 +89,8 @@ templates = Jinja2Templates(directory="templates")
 
 
 
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from database import get_attachments, get_attachment_by_id
 
 app = FastAPI()
 print("MAIN.PY LOADED")
@@ -159,7 +160,7 @@ def conversation_detail(
 @app.get("/emails")
 def emails():
 
-    return get_emails()
+    return get_emails()["rows"]
 
 
 @app.get("/email/{email_id}")
@@ -218,6 +219,7 @@ def view_email(request: Request, email_id: int):
 
     conversation = get_thread(thread_id) if thread_id else []
     school_email = email_data["source"]
+    attachments = get_attachments(email_data["message_id"]) if email_data.get("message_id") else []
 
     print("Thread:", thread_id)
     print("CONVERSATION:")
@@ -230,8 +232,24 @@ def view_email(request: Request, email_id: int):
             "request": request,
             "email": email_data,
             "conversation": conversation,
-            "school_email": school_email
-            
+            "school_email": school_email,
+            "attachments": attachments
+        }
+    )
+
+@app.get("/attachments/{attachment_id}")
+def download_attachment(attachment_id: int):
+
+    attachment = get_attachment_by_id(attachment_id)
+
+    if not attachment or not attachment.get("file_data"):
+        return Response(content="Attachment not found", status_code=404)
+
+    return Response(
+        content=bytes(attachment["file_data"]),
+        media_type=attachment["file_type"] or "application/octet-stream",
+        headers={
+            "Content-Disposition": f'attachment; filename="{attachment["filename"]}"'
         }
     )
 
@@ -366,21 +384,21 @@ async def send_reply(
 
    
 @app.get("/dashboard")
-def dashboard(request: Request, source: str = None, q: str = None, status: str = None):
+def dashboard(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1):
 
-    rows = get_emails(source=source, search=q, status=status)
+    page_size = 50
+    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+    rows = result["rows"]
+    total_count = result["total"]
+    needs_review_count = result["needs_review_count"]
+    auto_reply_count = result["auto_reply_count"]
+    page = result["page"]
+    total_pages = result["total_pages"]
+
     counts = get_category_counts()
 
     avg_minutes = get_avg_first_response_time()
     avg_resolution = get_avg_resolution_time()
-
-    needs_review_count = len(
-        [e for e in rows if e["status"] == "Needs Review"]
-    )
-
-    auto_reply_count = len(
-        [e for e in rows if e.get("reply_type") == "automatic"]
-    )
 
     if avg_minutes is not None:
         avg_minutes = float(avg_minutes)
@@ -416,9 +434,47 @@ def dashboard(request: Request, source: str = None, q: str = None, status: str =
             "trashed": request.query_params.get("trashed"),
             "selected_source": source,
             "search_query": q,
-            "selected_status": status
+            "selected_status": status,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "current_page": page,
+            "total_pages": total_pages,
+            "total_count": total_count,
+            "page_size": page_size
         }
     )
+
+@app.get("/dashboard-data")
+def dashboard_data(source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+
+    page_size = 50
+    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+
+    emails = [
+        {
+            "id": e["id"],
+            "subject": e["subject"],
+            "sender": e["sender"],
+            "source": e["source"],
+            "category": e["category"],
+            "priority": e["priority"],
+            "status": e["status"],
+            "created_at": e["created_at"],
+            "is_read": e["is_read"],
+            "has_attachment": e["has_attachment"],
+        }
+        for e in result["rows"]
+    ]
+
+    return {
+        "emails": emails,
+        "total": result["total"],
+        "needs_review_count": result["needs_review_count"],
+        "auto_reply_count": result["auto_reply_count"],
+        "current_page": result["page"],
+        "total_pages": result["total_pages"],
+        "page_size": page_size,
+    }
 
     
 @app.get("/category/{category}")
@@ -500,19 +556,30 @@ def category_view(
     )
 
 @app.get("/trial-followup", response_class=HTMLResponse)
-def trial_followups(request: Request):
+def trial_followups(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
 
-    rows = get_followup_email_logs()
+    page_size = 50
+    result = get_followup_email_logs(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
     completed_campaigns = get_completed_campaign_count()
-    
-    due_followups = get_due_followups() 
+
+    due_followups = get_due_followups()
     return templates.TemplateResponse(
         "trial_followup.html",
         {
             "request": request,
-            "rows": rows,
+            "rows": result["rows"],
             "completed_campaigns": completed_campaigns,
-            "due_followups": due_followups 
+            "due_followups": due_followups,
+            "total_count": result["total"],
+            "followup1_count": result["followup1_count"],
+            "followup2_count": result["followup2_count"],
+            "followup3_count": result["followup3_count"],
+            "search_query": q,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "current_page": result["page"],
+            "total_pages": result["total_pages"],
+            "page_size": page_size
         }
     )
 @app.get("/trial-followup/email/{email_id}")
@@ -573,15 +640,24 @@ def dismiss_email(email_id: int):
 
 
 @app.get("/notifications")
-def notification_mailbox(request: Request):
-    rows = get_support_emails()
+def notification_mailbox(request: Request, source: str = None, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+    page_size = 50
+    result = get_support_emails(source=source, search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
 
     return templates.TemplateResponse(
         "notifications.html",
         {
             "request": request,
-            "emails": rows,
-            "trashed": request.query_params.get("trashed")
+            "emails": result["rows"],
+            "trashed": request.query_params.get("trashed"),
+            "selected_source": source,
+            "search_query": q,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "current_page": result["page"],
+            "total_pages": result["total_pages"],
+            "total_count": result["total"],
+            "page_size": page_size
         }
     )
 
@@ -738,7 +814,8 @@ def compose(request: Request):
         }
     )
 
-from fastapi import Form, Request
+from fastapi import Form, Request, File, UploadFile
+from typing import List
 
 import time
 import sync_sent_gmail
@@ -751,11 +828,15 @@ async def compose_email(
 
     from_account: str = Form(...),
 
-    to_email: str = Form(...),
+    to_email: str = Form(None),
+
+    bulk_recipients: str = Form(None),
 
     subject: str = Form(...),
 
-    body: str = Form(...)
+    body: str = Form(...),
+
+    attachments: List[UploadFile] = File(None)
 
 ):
 
@@ -781,47 +862,76 @@ async def compose_email(
             status_code=303
         )
 
-    result = send_new_email(
-
-        from_email=from_email,
-        token_file=token_file,
-        to_email=to_email,
-        subject=subject,
-        body=body
-
-    )
-    if not result:
+    if bulk_recipients and bulk_recipients.strip():
+        recipients = []
+        for line in bulk_recipients.splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            email_part, _, name_part = line.partition(",")
+            recipients.append(
+                {"email": email_part.strip(), "name": name_part.strip()}
+            )
+    elif to_email and to_email.strip():
+        recipients = [{"email": to_email.strip(), "name": ""}]
+    else:
         return RedirectResponse(
             "/compose",
             status_code=303
         )
-    
 
-    msg = get_message(
-        token_file,
-        result["id"]
-    )
-    if msg:
-        save_composed_email(
-            msg,
-            from_email
-            
+    attachment_data = []
+    for upload in (attachments or []):
+        if upload.filename:
+            attachment_data.append(
+                (upload.filename, await upload.read(), upload.content_type)
+            )
+
+    sent_count = 0
+
+    for recipient in recipients:
+
+        personalized_subject = subject
+        personalized_body = body
+
+        if recipient["name"]:
+            personalized_subject = personalized_subject.replace("{{name}}", recipient["name"])
+            personalized_body = personalized_body.replace("{{name}}", recipient["name"])
+
+        result = send_new_email(
+
+            from_email=from_email,
+            token_file=token_file,
+            to_email=recipient["email"],
+            attachments=attachment_data,
+            subject=personalized_subject,
+            body=personalized_body
+
         )
-        print(msg["Message-ID"])
-        print(msg["Subject"])
-        print(msg["From"])
-    
-    
-    if result:
 
-        #import time
-        #time.sleep(2)
+        if not result:
+            continue
 
-        #import sync_sent_gmail
-        #sync_sent_gmail.main()
+        sent_count += 1
+
+        msg = get_message(
+            token_file,
+            result["id"]
+        )
+        if msg:
+            save_composed_email(
+                msg,
+                from_email
+
+            )
+            print(msg["Message-ID"])
+            print(msg["Subject"])
+            print(msg["From"])
+
+    if sent_count:
 
         return RedirectResponse(
-            "/compose?sent=true",
+            f"/compose?sent=true&count={sent_count}",
             status_code=303
         )
     return RedirectResponse(

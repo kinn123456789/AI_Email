@@ -1,6 +1,9 @@
 import base64
 
 from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from email.mime.base import MIMEBase
+from email import encoders
 
 from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
@@ -12,7 +15,8 @@ def send_new_email(
     token_file,
     to_email,
     subject,
-    body
+    body,
+    attachments=None
 ):
 
     creds = Credentials.from_authorized_user_file(
@@ -32,7 +36,26 @@ def send_new_email(
         credentials=creds
     )
 
-    message = MIMEText(body)
+    if attachments:
+
+        message = MIMEMultipart()
+        message.attach(MIMEText(body))
+
+        for filename, file_data, content_type in attachments:
+
+            maintype, _, subtype = (content_type or "application/octet-stream").partition("/")
+
+            part = MIMEBase(maintype or "application", subtype or "octet-stream")
+            part.set_payload(file_data)
+            encoders.encode_base64(part)
+            part.add_header(
+                "Content-Disposition",
+                f'attachment; filename="{filename}"'
+            )
+            message.attach(part)
+
+    else:
+        message = MIMEText(body)
 
     message["To"] = to_email
     message["From"] = from_email

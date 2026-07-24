@@ -95,9 +95,6 @@ def process_email(msg, account):
                     f"{safe_message_id}_{filename}"
                 )
 
-                with open(filepath, "wb") as f:
-                    f.write(file_data)
-
                 if "image" in content_type:
 
                     image_data_list.append(
@@ -111,7 +108,8 @@ def process_email(msg, account):
                     message_id,
                     filename,
                     content_type,
-                    filepath
+                    filepath,
+                    file_data=file_data
                 )
 
         else:

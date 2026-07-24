@@ -509,17 +509,56 @@ def get_active_campaign_count():
         cursor.close()
         db_pool.putconn(conn)
 
-def get_followup_email_logs():
+def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, page_size=50):
 
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
 
+        params = []
+        filters = ""
+
+        if search:
+            filters += " AND (subject ILIKE %s OR recipient_email ILIKE %s OR learner_name ILIKE %s OR parent_name ILIKE %s)"
+            like = f"%{search}%"
+            params.extend([like, like, like, like])
+
+        if date_from:
+            filters += " AND COALESCE(sent_at, scheduled_at)::date >= %s"
+            params.append(date_from)
+
+        if date_to:
+            filters += " AND COALESCE(sent_at, scheduled_at)::date <= %s"
+            params.append(date_to)
+
         # Exclude future-scheduled "pending" rows so they don't appear on the
         # dashboard until their scheduled_at time arrives. Drafts (status='draft')
         # and already-sent rows remain visible immediately.
-        cursor.execute("""
+        cursor.execute(f"""
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE email_number = 1) AS followup1_count,
+                COUNT(*) FILTER (WHERE email_number = 2) AS followup2_count,
+                COUNT(*) FILTER (WHERE email_number = 3) AS followup3_count
+            FROM (
+                SELECT DISTINCT ON (learner_id, email_number)
+                    id, email_number
+                FROM trial_followup_email_logs
+                WHERE NOT (status = 'pending' AND scheduled_at > NOW())
+                {filters}
+                ORDER BY learner_id, email_number, id DESC
+            ) latest
+        """, params)
+
+        counts_row = cursor.fetchone()
+        total = counts_row["total"]
+
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = max(1, min(page, total_pages))
+        offset = (page - 1) * page_size
+
+        cursor.execute(f"""
             SELECT * FROM (
                 SELECT DISTINCT ON (learner_id, email_number)
                     id,
@@ -537,12 +576,24 @@ def get_followup_email_logs():
                     scheduled_at
                 FROM trial_followup_email_logs
                 WHERE NOT (status = 'pending' AND scheduled_at > NOW())
+                {filters}
                 ORDER BY learner_id, email_number, id DESC
             ) latest
             ORDER BY COALESCE(sent_at, scheduled_at) DESC
-        """)
+            LIMIT %s OFFSET %s
+        """, params + [page_size, offset])
 
-        return cursor.fetchall()
+        rows = cursor.fetchall()
+
+        return {
+            "rows": rows,
+            "total": total,
+            "page": page,
+            "total_pages": total_pages,
+            "followup1_count": counts_row["followup1_count"],
+            "followup2_count": counts_row["followup2_count"],
+            "followup3_count": counts_row["followup3_count"],
+        }
 
     finally:
         cursor.close()

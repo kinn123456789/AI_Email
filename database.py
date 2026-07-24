@@ -88,7 +88,7 @@ def email_exists(message_id, source):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_emails(source=None, search=None, status=None):
+def get_emails(source=None, search=None, status=None, date_from=None, date_to=None, page=1, page_size=50):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -105,10 +105,37 @@ def get_emails(source=None, search=None, status=None):
             filters += " AND status = %s"
             params.append(status)
 
+        if date_from:
+            filters += " AND created_at::date >= %s"
+            params.append(date_from)
+
+        if date_to:
+            filters += " AND created_at::date <= %s"
+            params.append(date_to)
+
         if search:
             filters += " AND (subject ILIKE %s OR sender ILIKE %s OR body ILIKE %s)"
             like = f"%{search}%"
             params.extend([like, like, like])
+
+        cursor.execute(f"""
+            SELECT
+                COUNT(*) AS total,
+                COUNT(*) FILTER (WHERE status = 'Needs Review') AS needs_review_count,
+                COUNT(*) FILTER (WHERE reply_type = 'automatic') AS auto_reply_count
+            FROM messages
+            WHERE mailbox = 'inbox'
+            AND status != 'Resolved'
+            AND reply_type IS DISTINCT FROM 'gmail_manual'
+            {filters}
+        """, params)
+
+        counts_row = cursor.fetchone()
+        total = counts_row["total"]
+
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = max(1, min(page, total_pages))
+        offset = (page - 1) * page_size
 
         cursor.execute(f"""
             SELECT
@@ -137,8 +164,9 @@ def get_emails(source=None, search=None, status=None):
                     ELSE 5
                 END,
                 email_date DESC NULLS LAST,
-                created_at DESC;
-        """, params)
+                created_at DESC
+            LIMIT %s OFFSET %s;
+        """, params + [page_size, offset])
 
         rows = cursor.fetchall()
         # ... (rest of your existing logic for date formatting and handled_by)
@@ -163,7 +191,15 @@ def get_emails(source=None, search=None, status=None):
 
             else:
                 row["handled_by"] = None
-        return rows
+
+        return {
+            "rows": rows,
+            "total": total,
+            "needs_review_count": counts_row["needs_review_count"],
+            "auto_reply_count": counts_row["auto_reply_count"],
+            "page": page,
+            "total_pages": total_pages,
+        }
 
     finally:
         cursor.close()
@@ -397,11 +433,14 @@ def delete_conversation_message(message_id):
         cursor.close()
         db_pool.putconn(conn)
 
-def save_attachment(message_id, filename, file_type, file_path):
+def save_attachment(message_id, filename, file_type, file_path, file_data=None):
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        cursor.execute("INSERT INTO attachments(message_id, filename, file_type, file_path) VALUES (%s, %s, %s, %s)", (message_id, filename, file_type, file_path))
+        cursor.execute(
+            "INSERT INTO attachments(message_id, filename, file_type, file_path, file_data) VALUES (%s, %s, %s, %s, %s)",
+            (message_id, filename, file_type, file_path, psycopg2.Binary(file_data) if file_data else None)
+        )
         conn.commit()
     finally:
         cursor.close()
@@ -409,10 +448,26 @@ def save_attachment(message_id, filename, file_type, file_path):
 
 def get_attachments(message_id):
     conn = get_connection()
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute("SELECT * FROM attachments WHERE message_id = %s", (message_id,))
+        cursor.execute(
+            "SELECT id, message_id, filename, file_type, created_at FROM attachments WHERE message_id = %s",
+            (message_id,)
+        )
         return cursor.fetchall()
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def get_attachment_by_id(attachment_id):
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+    try:
+        cursor.execute(
+            "SELECT filename, file_type, file_data FROM attachments WHERE id = %s",
+            (attachment_id,)
+        )
+        return cursor.fetchone()
     finally:
         cursor.close()
         db_pool.putconn(conn)
@@ -964,14 +1019,46 @@ def get_message_by_message_id(message_id, source):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_support_emails():
+def get_support_emails(source=None, search=None, date_from=None, date_to=None, page=1, page_size=50):
 
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
 
-        cursor.execute("""
+        params = []
+        filters = ""
+
+        if source:
+            filters += " AND source = %s"
+            params.append(source)
+
+        if date_from:
+            filters += " AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata')::date >= %s"
+            params.append(date_from)
+
+        if date_to:
+            filters += " AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata')::date <= %s"
+            params.append(date_to)
+
+        if search:
+            filters += " AND (subject ILIKE %s OR sender ILIKE %s OR body ILIKE %s)"
+            like = f"%{search}%"
+            params.extend([like, like, like])
+
+        cursor.execute(f"""
+            SELECT COUNT(*) AS total
+            FROM messages
+            WHERE mailbox = 'support'
+            {filters}
+        """, params)
+
+        total = cursor.fetchone()["total"]
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = max(1, min(page, total_pages))
+        offset = (page - 1) * page_size
+
+        cursor.execute(f"""
             SELECT
                 id,
                 sender,
@@ -982,11 +1069,14 @@ def get_support_emails():
                 status,
                 reply_type,
                 created_at,
-                ai_summary
+                ai_summary,
+                has_attachment
             FROM messages
             WHERE mailbox = 'support'
+            {filters}
             ORDER BY created_at DESC
-        """)
+            LIMIT %s OFFSET %s
+        """, params + [page_size, offset])
 
         rows = cursor.fetchall()
 
@@ -1001,9 +1091,14 @@ def get_support_emails():
                     .replace(tzinfo=timezone.utc)
                     .astimezone(ZoneInfo("Asia/Kolkata"))
                     .strftime("%b %-d, %-I:%M %p")
-                )   
+                )
 
-        return rows
+        return {
+            "rows": rows,
+            "total": total,
+            "page": page,
+            "total_pages": total_pages,
+        }
 
 
 

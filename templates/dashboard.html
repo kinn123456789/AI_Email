@@ -46,15 +46,15 @@
 <div class="grid grid-cols-5 gap-6 mb-8">
 <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
 <h3 class="text-cyan-950/70 text-sm font-bold">Total Messages</h3>
-<p class="text-3xl font-bold text-gray-950 mt-1">{{ emails|length }}</p>
+<p id="metric-total" class="text-3xl font-bold text-gray-950 mt-1">{{ total_count }}</p>
 </div>
 <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
 <h3 class="text-cyan-950/70 text-sm font-bold">Auto Replies</h3>
-<p class="text-3xl font-bold text-cyan-950 mt-1">{{ auto_reply_count }}</p>
+<p id="metric-auto-reply" class="text-3xl font-bold text-cyan-950 mt-1">{{ auto_reply_count }}</p>
 </div>
 <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
 <h3 class="text-cyan-950/70 text-sm font-bold">Needs Review</h3>
-<p class="text-3xl font-bold text-red-950 mt-1">{{ needs_review_count }}</p>
+<p id="metric-needs-review" class="text-3xl font-bold text-red-950 mt-1">{{ needs_review_count }}</p>
 </div>
 </div>
 <!-- Actions Bar -->
@@ -99,6 +99,8 @@ Response Metrics
 <!-- Filter Bar -->
 <form method="get" action="/dashboard" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
 
+<input type="hidden" name="page" value="{{ current_page }}">
+
 <select name="source" onchange="this.form.submit()"
     class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
 <option value="" {% if not selected_source %}selected{% endif %}>All Mailboxes</option>
@@ -115,6 +117,20 @@ Response Metrics
 </select>
 
 <input
+    type="date"
+    name="date_from"
+    value="{{ selected_date_from or '' }}"
+    onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+<input
+    type="date"
+    name="date_to"
+    value="{{ selected_date_to or '' }}"
+    onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+<input
     type="text"
     name="q"
     id="searchInput"
@@ -127,7 +143,7 @@ Response Metrics
     Filter
 </button>
 
-{% if selected_source or search_query or selected_status %}
+{% if selected_source or search_query or selected_status or selected_date_from or selected_date_to %}
 <a href="/dashboard" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
 {% endif %}
 
@@ -150,7 +166,7 @@ Response Metrics
 <th class="w-36 p-4 text-left">Received</th>
 </tr>
 </thead>
-<tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
+<tbody id="tableBody" class="text-sm text-gray-950 divide-y divide-cyan-300/40">
 {% for email in emails %}
 <tr
 onclick="window.location='/email/{{ email.id }}'"
@@ -244,14 +260,37 @@ Pending
 {% endfor %}
 </tbody>
 </table>
-<div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
-Showing {{ emails|length }} emails
+<div id="showing-count" class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
+{% if total_count > 0 %}
+Showing {{ ((current_page - 1) * page_size) + 1 }}-{{ [current_page * page_size, total_count]|min }} of {{ total_count }} emails
+{% else %}
+Showing 0 emails
+{% endif %}
 </div>
+</div>
+
+<!-- Pagination -->
+{% set base_qs = {
+    'source': selected_source or '',
+    'status': selected_status or '',
+    'q': search_query or '',
+    'date_from': selected_date_from or '',
+    'date_to': selected_date_to or ''
+} %}
+<div id="paginationControls" class="flex items-center justify-center gap-4 mt-6">
+<a id="prevPageLink" href="/dashboard?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"
+   class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page <= 1 %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+   ← Previous
+</a>
+<span id="pageLabel" class="text-sm font-bold text-cyan-950">Page {{ current_page }} of {{ total_pages }}</span>
+<a id="nextPageLink" href="/dashboard?{{ base_qs|urlencode }}&page={{ current_page + 1 }}"
+   class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page >= total_pages %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+   Next →
+</a>
 </div>
 </body>
 <script>
 const selectAll = document.getElementById("select-all");
-const checkboxes = document.querySelectorAll(".email-checkbox");
 const deleteBtn = document.getElementById("delete-btn");
 
 function updateDeleteButton() {
@@ -259,26 +298,28 @@ function updateDeleteButton() {
     deleteBtn.disabled = checked === 0;
 }
 
+function bindCheckboxEvents(checkboxList) {
+    checkboxList.forEach(cb => {
+        cb.addEventListener("change", function () {
+            const all = document.querySelectorAll(".email-checkbox");
+            selectAll.checked =
+                all.length > 0 &&
+                document.querySelectorAll(".email-checkbox:checked").length === all.length;
+
+            updateDeleteButton();
+        });
+    });
+}
+
 selectAll.addEventListener("change", function () {
-    checkboxes.forEach(cb => {
+    document.querySelectorAll(".email-checkbox").forEach(cb => {
         cb.checked = this.checked;
     });
 
     updateDeleteButton();
 });
 
-checkboxes.forEach(cb => {
-    cb.addEventListener("change", function () {
-
-        // Update Select All checkbox
-        selectAll.checked =
-            document.querySelectorAll(".email-checkbox:checked").length === checkboxes.length;
-
-        updateDeleteButton();
-    });
-});
-
-// Initial state
+bindCheckboxEvents(document.querySelectorAll(".email-checkbox"));
 updateDeleteButton();
 </script>
 <script>
@@ -302,9 +343,145 @@ searchInput.addEventListener("input", function () {
 });
 </script>
 <script>
-setInterval(function () {
-    location.reload();
-}, 8000); // Refresh every 8 seconds
+const catColors = {
+    "Admissions": "bg-pink-300/60 text-pink-950",
+    "Support": "bg-cyan-300/60 text-cyan-950",
+    "Billing": "bg-amber-300/60 text-amber-950",
+    "Urgent": "bg-red-300/60 text-red-950",
+    "General": "bg-gray-300/60 text-gray-950",
+    "Technical": "bg-indigo-300/60 text-indigo-950",
+    "Teacher Portal": "bg-emerald-300/60 text-emerald-950",
+    "Contact Form": "bg-cyan-300/60 text-cyan-950"
+};
+
+function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str == null ? "" : str;
+    return div.innerHTML;
+}
+
+function sourceBadgeHtml(source) {
+    if (source === "support@coralacademy.com") {
+        return '<span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">📧 Support</span>';
+    }
+    if (source === "lucy@coralacademy.com") {
+        return '<span class="bg-pink-300/60 text-pink-950 px-3 py-1 rounded-full text-xs font-bold">👩 Lucy</span>';
+    }
+    return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">Other</span>';
+}
+
+function priorityHtml(priority) {
+    if (priority === "Urgent") return '<span class="text-red-950">Urgent</span>';
+    if (priority === "High") return '<span class="text-orange-950">High</span>';
+    if (priority === "Medium") return '<span class="text-yellow-950">Medium</span>';
+    if (priority === "Low") return '<span class="text-cyan-950">Low</span>';
+    return '<span class="text-gray-950">—</span>';
+}
+
+function statusHtml(status) {
+    if (status === "Needs Review") {
+        return '<span class="bg-yellow-200/40 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold border border-yellow-300/30">Needs Review</span>';
+    }
+    if (status === "Replied") {
+        return '<span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold border border-cyan-400/50">Replied</span>';
+    }
+    if (status === "Resolved") {
+        return '<span class="bg-green-300/60 text-green-950 px-3 py-1 rounded-full text-xs font-bold border border-green-400/50">Resolved</span>';
+    }
+    return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">' + escapeHtml(status) + '</span>';
+}
+
+function subjectHtml(email) {
+    const attach = email.has_attachment ? "📎 " : "";
+    const subject = escapeHtml(email.subject || "");
+    const title = escapeHtml(email.subject || "");
+
+    if (!email.is_read) {
+        return '<div class="truncate font-semibold text-gray-950" title="' + title + '">' +
+            '<span class="block text-[10px] uppercase font-black text-cyan-700 tracking-wider">Unread</span>' +
+            '<span class="font-bold text-stone-900">' + attach + subject + '</span></div>';
+    }
+
+    return '<div class="truncate font-semibold text-gray-950" title="' + title + '">' +
+        '<span class="block text-[10px] uppercase font-bold text-stone-400 tracking-wider">Read</span>' +
+        '<span class="text-stone-700">' + attach + subject + '</span></div>';
+}
+
+function buildRowHtml(email) {
+    const catClass = catColors[email.category] || "bg-gray-300/60 text-gray-950";
+
+    return '<tr onclick="window.location=\'/email/' + email.id + '\'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer">' +
+        '<td class="p-4 text-center" onclick="event.stopPropagation();">' +
+            '<input type="checkbox" name="email_ids" value="' + email.id + '" form="delete-form" class="email-checkbox" onclick="event.stopPropagation();">' +
+        '</td>' +
+        '<td class="p-4 truncate">' + subjectHtml(email) + '</td>' +
+        '<td class="p-4 truncate text-xs font-medium text-cyan-950" title="' + escapeHtml(email.sender) + '">' + escapeHtml(email.sender) + '</td>' +
+        '<td class="p-4">' + sourceBadgeHtml(email.source) + '</td>' +
+        '<td class="p-4"><span class="px-3 py-1 rounded text-xs font-bold ' + catClass + '">' + escapeHtml(email.category) + '</span></td>' +
+        '<td class="p-4 font-bold">' + priorityHtml(email.priority) + '</td>' +
+        '<td class="p-4">' + statusHtml(email.status) + '</td>' +
+        '<td class="p-4 text-cyan-950 text-xs font-bold">' + escapeHtml(email.created_at) + '</td>' +
+    '</tr>';
+}
+
+function refreshDashboard() {
+    fetch("/dashboard-data" + window.location.search)
+        .then(res => res.json())
+        .then(data => {
+            const checkedIds = new Set(
+                Array.from(document.querySelectorAll(".email-checkbox:checked")).map(cb => cb.value)
+            );
+
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = data.emails.map(buildRowHtml).join("");
+
+            const newCheckboxes = Array.from(document.querySelectorAll(".email-checkbox"));
+            newCheckboxes.forEach(cb => {
+                if (checkedIds.has(cb.value)) {
+                    cb.checked = true;
+                }
+            });
+
+            bindCheckboxEvents(newCheckboxes);
+            selectAll.checked =
+                newCheckboxes.length > 0 && checkedIds.size === newCheckboxes.length;
+            updateDeleteButton();
+
+            document.getElementById("metric-total").textContent = data.total;
+            document.getElementById("metric-auto-reply").textContent = data.auto_reply_count;
+            document.getElementById("metric-needs-review").textContent = data.needs_review_count;
+
+            if (data.total > 0) {
+                const start = ((data.current_page - 1) * data.page_size) + 1;
+                const end = Math.min(data.current_page * data.page_size, data.total);
+                document.getElementById("showing-count").textContent =
+                    "Showing " + start + "-" + end + " of " + data.total + " emails";
+            } else {
+                document.getElementById("showing-count").textContent = "Showing 0 emails";
+            }
+
+            document.getElementById("pageLabel").textContent =
+                "Page " + data.current_page + " of " + data.total_pages;
+
+            const prevLink = document.getElementById("prevPageLink");
+            const nextLink = document.getElementById("nextPageLink");
+
+            if (data.current_page <= 1) {
+                prevLink.classList.add("opacity-40", "pointer-events-none");
+            } else {
+                prevLink.classList.remove("opacity-40", "pointer-events-none");
+            }
+
+            if (data.current_page >= data.total_pages) {
+                nextLink.classList.add("opacity-40", "pointer-events-none");
+            } else {
+                nextLink.classList.remove("opacity-40", "pointer-events-none");
+            }
+        })
+        .catch(err => console.error("Dashboard refresh failed:", err));
+}
+
+setInterval(refreshDashboard, 8000);
 </script>
 
 </html>

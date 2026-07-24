@@ -61,4 +61,7 @@ def renew_all_gmail_watches():
             register_watch(token)
         except Exception as e:
             print(f"Failed to renew {token}: {e}")
+
+if __name__ == "__main__":
+    renew_all_gmail_watches()
     

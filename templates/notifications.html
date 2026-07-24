@@ -47,6 +47,52 @@
         </div>
     </div>
 
+    <!-- Filter Bar -->
+    <form method="get" action="/notifications" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
+
+    <input type="hidden" name="page" value="{{ current_page }}">
+
+    <select name="source" onchange="this.form.submit()"
+        class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+    <option value="" {% if not selected_source %}selected{% endif %}>All Mailboxes</option>
+    <option value="support@coralacademy.com" {% if selected_source == "support@coralacademy.com" %}selected{% endif %}>Support</option>
+    <option value="lucy@coralacademy.com" {% if selected_source == "lucy@coralacademy.com" %}selected{% endif %}>Lucy</option>
+    <option value="engineering@coralacademy.com" {% if selected_source == "engineering@coralacademy.com" %}selected{% endif %}>Engineering</option>
+    </select>
+
+    <input
+        type="date"
+        name="date_from"
+        value="{{ selected_date_from or '' }}"
+        onchange="this.form.submit()"
+        class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+    <input
+        type="date"
+        name="date_to"
+        value="{{ selected_date_to or '' }}"
+        onchange="this.form.submit()"
+        class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+    <input
+        type="text"
+        name="q"
+        id="searchInput"
+        value="{{ search_query or '' }}"
+        placeholder="Search subject, sender, or body..."
+        class="flex-1 min-w-[240px] bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm text-cyan-950 placeholder-cyan-950/40">
+
+    <button type="submit"
+        class="bg-cyan-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
+        Filter
+    </button>
+
+    {% if selected_source or search_query or selected_date_from or selected_date_to %}
+    <a href="/notifications" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
+    {% endif %}
+
+    </form>
+
     <!-- UI Aligned with Dashboard -->
     <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
         <table class="w-full table-fixed border-collapse min-w-[1000px]">
@@ -75,7 +121,7 @@
                             onclick="event.stopPropagation();"
                             onchange="event.stopPropagation();">
                     </td>
-                    <td class="p-4 truncate font-semibold">{{ email.subject }}</td>
+                    <td class="p-4 truncate font-semibold">{% if email.has_attachment %}📎 {% endif %}{{ email.subject }}</td>
                     <td class="p-4 truncate">
                         <span class="bg-cyan-100/50 text-cyan-800 px-2 py-1 rounded-full text-xs font-medium inline-block max-w-full truncate border border-cyan-200/30">
                             {{ email.source }}
@@ -100,8 +146,31 @@
             </tbody>
         </table>
         <div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
-            Showing {{ emails|length }} notifications
+        {% if total_count > 0 %}
+            Showing {{ ((current_page - 1) * page_size) + 1 }}-{{ [current_page * page_size, total_count]|min }} of {{ total_count }} notifications
+        {% else %}
+            Showing 0 notifications
+        {% endif %}
         </div>
+    </div>
+
+    <!-- Pagination -->
+    {% set base_qs = {
+        'source': selected_source or '',
+        'q': search_query or '',
+        'date_from': selected_date_from or '',
+        'date_to': selected_date_to or ''
+    } %}
+    <div class="flex items-center justify-center gap-4 mt-6">
+    <a href="/notifications?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"
+       class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page <= 1 %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+       ← Previous
+    </a>
+    <span class="text-sm font-bold text-cyan-950">Page {{ current_page }} of {{ total_pages }}</span>
+    <a href="/notifications?{{ base_qs|urlencode }}&page={{ current_page + 1 }}"
+       class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page >= total_pages %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+       Next →
+    </a>
     </div>
 
 </div>
@@ -148,6 +217,17 @@ checkboxes.forEach(cb => {
 });
 
 updateDeleteButton();
+</script>
+<script>
+const searchInput = document.getElementById("searchInput");
+let searchDebounce;
+
+searchInput.addEventListener("input", function () {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        document.getElementById("filterForm").submit();
+    }, 600);
+});
 </script>
 </html>
 

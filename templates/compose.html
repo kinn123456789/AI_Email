@@ -40,7 +40,12 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
         <span class="text-xl">✅</span>
         <div>
             <div class="font-semibold">
+                {% set sent_count = request.query_params.get("count") %}
+                {% if sent_count and sent_count|int > 1 %}
+                {{ sent_count }} emails sent successfully.
+                {% else %}
                 Mail sent successfully.
+                {% endif %}
             </div>
         </div>
     </div>
@@ -49,6 +54,7 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
     <form
         action="/compose"
         method="POST"
+        enctype="multipart/form-data"
         class="space-y-6">
 
         <!-- From -->
@@ -82,9 +88,20 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
             <input
                 type="email"
                 name="to_email"
-                required
                 placeholder="parent@gmail.com"
                 class="w-full rounded-xl border border-white/50 bg-white/50 px-4 py-3 focus:ring-2 focus:ring-cyan-500 outline-none">
+        </div>
+
+        <!-- Bulk Recipients -->
+        <div>
+            <label class="block font-semibold text-stone-700 mb-2">
+                Bulk Recipients <span class="font-normal text-stone-500">(optional — overrides "To" above, sends an individual email to each)</span>
+            </label>
+            <textarea
+                name="bulk_recipients"
+                rows="4"
+                placeholder="one@example.com, two@example.com&#10;three@example.com"
+                class="w-full rounded-2xl border border-white/50 bg-white/50 p-4 resize-none focus:ring-2 focus:ring-cyan-500 outline-none"></textarea>
         </div>
 
         <!-- Subject -->
@@ -109,6 +126,18 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
                 rows="14"
                 required
                 class="w-full rounded-2xl border border-white/50 bg-white/50 p-4 resize-none focus:ring-2 focus:ring-cyan-500 outline-none"></textarea>
+        </div>
+
+        <!-- Attachments -->
+        <div>
+            <label class="block font-semibold text-stone-700 mb-2">
+                Attachments
+            </label>
+            <input
+                type="file"
+                name="attachments"
+                multiple
+                class="w-full rounded-xl border border-white/50 bg-white/50 px-4 py-3 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-cyan-800 file:text-white file:font-semibold hover:file:bg-black">
         </div>
 
         <!-- Buttons -->

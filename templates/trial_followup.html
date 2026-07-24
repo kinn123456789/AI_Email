@@ -28,19 +28,19 @@
     <div class="grid grid-cols-1 md:grid-cols-6 gap-6 mb-8 relative z-10">
         <div class="bg-cyan-200/40 backdrop-blur-xl p-6 rounded-2xl border border-cyan-100/50 shadow-sm">
             <h3 class="text-stone-600 text-sm font-medium">Emails Sent</h3>
-            <p class="text-3xl font-bold text-blue-600 mt-1">{{ rows|length }}</p>
+            <p class="text-3xl font-bold text-blue-600 mt-1">{{ total_count }}</p>
         </div>
         <div class="bg-cyan-200/40 backdrop-blur-xl p-6 rounded-2xl border border-cyan-100/50 shadow-sm">
             <h3 class="text-stone-600 text-sm font-medium">Follow-up 1</h3>
-            <p class="text-3xl font-bold text-green-600 mt-1">{{ rows|selectattr("email_number","equalto",1)|list|length }}</p>
+            <p class="text-3xl font-bold text-green-600 mt-1">{{ followup1_count }}</p>
         </div>
         <div class="bg-cyan-200/40 backdrop-blur-xl p-6 rounded-2xl border border-cyan-100/50 shadow-sm">
             <h3 class="text-stone-600 text-sm font-medium">Follow-up 2</h3>
-            <p class="text-3xl font-bold text-yellow-600 mt-1">{{ rows|selectattr("email_number","equalto",2)|list|length }}</p>
+            <p class="text-3xl font-bold text-yellow-600 mt-1">{{ followup2_count }}</p>
         </div>
         <div class="bg-cyan-200/40 backdrop-blur-xl p-6 rounded-2xl border border-cyan-100/50 shadow-sm">
             <h3 class="text-stone-600 text-sm font-medium">Follow-up 3</h3>
-            <p class="text-3xl font-bold text-red-600 mt-1">{{ rows|selectattr("email_number","equalto",3)|list|length }}</p>
+            <p class="text-3xl font-bold text-red-600 mt-1">{{ followup3_count }}</p>
         </div>
         <div class="bg-cyan-200/40 backdrop-blur-xl p-6 rounded-2xl border border-cyan-100/50 shadow-sm">
             <h3 class="text-stone-600 text-sm font-medium">Active Campaigns</h3>
@@ -58,6 +58,44 @@
            </div>
         </a>
     </div>
+
+    <!-- Filter Bar -->
+    <form method="get" action="/trial-followup" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
+
+    <input type="hidden" name="page" value="{{ current_page }}">
+
+    <input
+        type="date"
+        name="date_from"
+        value="{{ selected_date_from or '' }}"
+        onchange="this.form.submit()"
+        class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+    <input
+        type="date"
+        name="date_to"
+        value="{{ selected_date_to or '' }}"
+        onchange="this.form.submit()"
+        class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+    <input
+        type="text"
+        name="q"
+        id="searchInput"
+        value="{{ search_query or '' }}"
+        placeholder="Search subject, recipient, learner, or parent..."
+        class="flex-1 min-w-[240px] bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm text-cyan-950 placeholder-cyan-950/40">
+
+    <button type="submit"
+        class="bg-cyan-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
+        Filter
+    </button>
+
+    {% if search_query or selected_date_from or selected_date_to %}
+    <a href="/trial-followup" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
+    {% endif %}
+
+    </form>
 
     <!-- Table Container -->
     <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
@@ -108,7 +146,11 @@
             </tbody>
         </table>
         <div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
-            Showing {{ rows|length }} email records
+        {% if total_count > 0 %}
+            Showing {{ ((current_page - 1) * page_size) + 1 }}-{{ [current_page * page_size, total_count]|min }} of {{ total_count }} email records
+        {% else %}
+            Showing 0 email records
+        {% endif %}
         </div>
         {% else %}
         <div class="p-12 text-center text-cyan-950 font-bold">
@@ -117,7 +159,37 @@
         {% endif %}
     </div>
 
+    <!-- Pagination -->
+    {% set base_qs = {
+        'q': search_query or '',
+        'date_from': selected_date_from or '',
+        'date_to': selected_date_to or ''
+    } %}
+    <div class="flex items-center justify-center gap-4 mt-6">
+    <a href="/trial-followup?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"
+       class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page <= 1 %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+       ← Previous
+    </a>
+    <span class="text-sm font-bold text-cyan-950">Page {{ current_page }} of {{ total_pages }}</span>
+    <a href="/trial-followup?{{ base_qs|urlencode }}&page={{ current_page + 1 }}"
+       class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page >= total_pages %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+       Next →
+    </a>
+    </div>
+
 </div>
+
+<script>
+const searchInput = document.getElementById("searchInput");
+let searchDebounce;
+
+searchInput.addEventListener("input", function () {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        document.getElementById("filterForm").submit();
+    }, 600);
+});
+</script>
 
 </body>
 </html>
