@@ -679,33 +679,39 @@ def reply_again(
         status_code=303
     )    
 
-
 @app.post("/gmail/webhook")
 async def gmail_webhook(
     request: Request,
     background_tasks: BackgroundTasks
 ):
-
-    body = await request.json()
-
-    encoded = body["message"]["data"]
-    decoded = base64.b64decode(encoded).decode("utf-8")
-    data = json.loads(decoded)
-
-    email_address = data["emailAddress"]
-
     print("=" * 80)
-    print("WEBHOOK")
-    print("Mailbox:", email_address)
-    print("=" * 80)
+    print("WEBHOOK RECEIVED")
 
-    background_tasks.add_task(
-        run_email_reader,
-        email_address
-    )
+    body = await request.body()
+    print(body.decode())
 
-    return {"success": True}
+    try:
+        payload = json.loads(body)
 
+        encoded = payload["message"]["data"]
+        decoded = base64.b64decode(encoded).decode("utf-8")
+        data = json.loads(decoded)
+
+        email_address = data["emailAddress"]
+
+        print("Mailbox:", email_address)
+        print("Scheduling background task...")
+
+        background_tasks.add_task(
+            run_email_reader,
+            email_address
+        )
+
+        return {"success": True}
+
+    except Exception as e:
+        print("WEBHOOK ERROR:", repr(e))
+        return {"success": False, "error": str(e)}
 
 
 
