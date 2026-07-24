@@ -370,9 +370,9 @@ async def send_reply(
 
    
 @app.get("/dashboard")
-def dashboard(request: Request):
+def dashboard(request: Request, source: str = None, q: str = None):
 
-    rows = get_emails()
+    rows = get_emails(source=source, search=q)
     counts = get_category_counts()
 
     avg_minutes = get_avg_first_response_time()
@@ -417,7 +417,9 @@ def dashboard(request: Request):
             "auto_reply_count": auto_reply_count,
             "avg_response": avg_response,
             "avg_resolution": avg_resolution,
-            "trashed": request.query_params.get("trashed")
+            "trashed": request.query_params.get("trashed"),
+            "selected_source": source,
+            "search_query": q
         }
     )
 

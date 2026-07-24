@@ -18,15 +18,7 @@ db_pool = SimpleConnectionPool(
 
 
 def get_connection():
-    conn = db_pool.getconn()
-
-    cur = conn.cursor()
-    cur.execute("SELECT current_database(), inet_server_addr();")
-    print(cur.fetchone())
-
-    cur.close()
-
-    return conn
+    return db_pool.getconn()
 
 # --- HELPER PATTERN: Every function now uses try/finally ---
 def save_email(
@@ -96,24 +88,37 @@ def email_exists(message_id, source):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_emails():
+def get_emails(source=None, search=None):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
     try:
         # Added a CASE statement to order by priority weight before ID
-        cursor.execute("""
+        params = []
+        filters = ""
+
+        if source:
+            filters += " AND source = %s"
+            params.append(source)
+
+        if search:
+            filters += " AND (subject ILIKE %s OR sender ILIKE %s OR body ILIKE %s)"
+            like = f"%{search}%"
+            params.extend([like, like, like])
+
+        cursor.execute(f"""
             SELECT
-                id, sender, subject, source, category, priority, status, 
-                reply_type, created_at, first_reply_at, resolved_at, 
+                id, sender, subject, source, category, priority, status,
+                reply_type, created_at, first_reply_at, resolved_at,
                 knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment
             FROM messages
             WHERE mailbox = 'inbox'
-            AND status != 'Resolved'        
+            AND status != 'Resolved'
             AND reply_type IS DISTINCT FROM 'gmail_manual'
+            {filters}
             ORDER BY
                 is_read ASC,
-                
+
                 CASE status
                     WHEN 'Needs Review' THEN 1
                     WHEN 'Replied' THEN 2
@@ -129,7 +134,7 @@ def get_emails():
                 END,
                 email_date DESC NULLS LAST,
                 created_at DESC;
-        """)
+        """, params)
 
         rows = cursor.fetchall()
         # ... (rest of your existing logic for date formatting and handled_by)
