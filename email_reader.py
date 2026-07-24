@@ -4,6 +4,7 @@ import base64
 import time
 import imaplib
 import traceback
+from datetime import datetime, timedelta
 
 
 from email.utils import parseaddr
@@ -114,9 +115,10 @@ def main(target_email=None):
         try:
             mail = oauth_login(account["email"], account["token"])
             mail.select("INBOX", readonly=True)
-            
-            status, messages = mail.search(None, "UNSEEN")
-            print(account["source"], "Unread emails:", len(messages[0].split()))
+
+            since_date = (datetime.now() - timedelta(days=2)).strftime("%d-%b-%Y")
+            status, messages = mail.search(None, "OR", "UNSEEN", "SINCE", since_date)
+            print(account["source"], "Unread/recent emails:", len(messages[0].split()))
             if status != "OK":
                 continue
 
