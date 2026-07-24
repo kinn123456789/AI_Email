@@ -514,7 +514,7 @@ def get_contact_forms():
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
-        cursor.execute("SELECT * FROM messages WHERE source = 'contact_form' ORDER BY created_at DESC")
+        cursor.execute("SELECT * FROM messages WHERE mailbox = 'contact_form' ORDER BY created_at DESC")
         return cursor.fetchall()
     finally:
         cursor.close()

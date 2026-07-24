@@ -162,6 +162,20 @@ def is_automated_email(msg):
         local_part, domain = sender.split("@", 1)
 
     # --------------------
+    # Website Contact Form
+    # --------------------
+    if (
+        sender == "no-reply@coralacademy.com"
+        and msg.get("Subject", "").lower().startswith("new contact form enquiry")
+    ):
+        return (
+            False,
+            "Contact Form Enquiry",
+            "",
+            "contact_form"
+        )
+
+    # --------------------
     # Reply Detection
     # --------------------
     is_reply = bool(

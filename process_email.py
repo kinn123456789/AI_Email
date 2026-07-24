@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 import base64
 import email
 import os
+import re
 
 from emails_cleaner import clean_email_body
 from email_filter import is_automated_email
@@ -178,7 +179,32 @@ def process_email(msg, account):
         thread_id = message_id
 
     skip, category, reason, mailbox = is_automated_email(msg)
-    
+
+    contact_phone = None
+
+    if mailbox == "contact_form":
+
+        name_match = re.search(r"Name:\s*(.*)", body)
+        email_match = re.search(r"Email:\s*(\S+)", body)
+        phone_match = re.search(r"Phone:\s*(.*)", body)
+        message_match = re.search(
+            r"Message:\s*(.*?)\s*(?:\n\s*Submitted at:|$)",
+            body,
+            re.DOTALL
+        )
+
+        if name_match:
+            sender_name = name_match.group(1).strip() or sender_name
+
+        if email_match and "@" in email_match.group(1):
+            sender_email = email_match.group(1).strip()
+
+        if phone_match:
+            contact_phone = phone_match.group(1).strip()
+
+        if message_match:
+            body = message_match.group(1).strip()
+
     if skip:
         
         save_email(
@@ -279,7 +305,9 @@ def process_email(msg, account):
         references_header=references_header,
         email_date=email_date,
         has_attachment=has_attachment,
-        sender_name=sender_name
+        sender_name=sender_name,
+        contact_name=sender_name if mailbox == "contact_form" else None,
+        phone=contact_phone
     )
 
     print("Processed:", message_id)

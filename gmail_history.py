@@ -2,6 +2,7 @@
 import os
 import base64
 import email
+import threading
 import traceback
 
 from google.oauth2.credentials import Credentials
@@ -12,6 +13,22 @@ from googleapiclient.errors import HttpError
 from database import get_last_history_id, update_last_history_id
 
 SCOPES = ["https://mail.google.com/"]
+
+_locks_guard = threading.Lock()
+_reader_locks = {}
+
+_pending_lock = threading.Lock()
+_pending_mailboxes = set()
+
+
+def _get_lock(email_address):
+
+    with _locks_guard:
+
+        if email_address not in _reader_locks:
+            _reader_locks[email_address] = threading.Lock()
+
+        return _reader_locks[email_address]
 
 
 def _build_service(token_file):
@@ -84,6 +101,41 @@ def _resync_from_scratch(account):
 
 def run_history_reader(email_address, webhook_history_id=None):
 
+    lock = _get_lock(email_address)
+
+    if not lock.acquire(blocking=False):
+
+        with _pending_lock:
+            _pending_mailboxes.add(email_address)
+
+        print(f"History reader busy for {email_address}, queued.")
+        return
+
+    try:
+
+        while True:
+
+            _run_history_reader_once(email_address, webhook_history_id)
+
+            # Only the triggering webhook's historyId hint applies to the
+            # first pass; a queued re-run re-derives everything from the DB.
+            webhook_history_id = None
+
+            with _pending_lock:
+
+                if email_address not in _pending_mailboxes:
+                    break
+
+                _pending_mailboxes.discard(email_address)
+
+            print(f"Re-running history reader for {email_address} (caught up while busy)")
+
+    finally:
+        lock.release()
+
+
+def _run_history_reader_once(email_address, webhook_history_id=None):
+
     from email_reader import EMAIL_ACCOUNTS
     from process_email import process_email
 
@@ -137,6 +189,11 @@ def run_history_reader(email_address, webhook_history_id=None):
 
     print(f"[{account['source']}] History API: {len(added_ids)} new message(s)")
 
+    if webhook_history_id:
+        newest_history_id = max(newest_history_id, int(webhook_history_id))
+
+    update_last_history_id(account["email"], newest_history_id)
+
     service = _build_service(account["token"])
 
     for msg_id in added_ids:
@@ -156,8 +213,3 @@ def run_history_reader(email_address, webhook_history_id=None):
         except Exception:
             traceback.print_exc()
             continue
-
-    if webhook_history_id:
-        newest_history_id = max(newest_history_id, int(webhook_history_id))
-
-    update_last_history_id(account["email"], newest_history_id)
