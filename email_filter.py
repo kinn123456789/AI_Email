@@ -1,6 +1,7 @@
 import re
 
 from email.utils import parseaddr
+from email.header import decode_header
 
 from database import get_email_filter_rules
 
@@ -164,9 +165,16 @@ def is_automated_email(msg):
     # --------------------
     # Website Contact Form
     # --------------------
+    subject_raw, subject_encoding = decode_header(msg.get("Subject", ""))[0]
+    decoded_subject = (
+        subject_raw.decode(subject_encoding or "utf-8", errors="ignore")
+        if isinstance(subject_raw, bytes)
+        else subject_raw
+    )
+
     if (
         sender == "no-reply@coralacademy.com"
-        and msg.get("Subject", "").lower().startswith("new contact form enquiry")
+        and decoded_subject.lower().startswith("new contact form enquiry")
     ):
         return (
             False,
