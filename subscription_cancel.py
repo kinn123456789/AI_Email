@@ -21,12 +21,30 @@ def _new_supabase_client():
     global `supabase` client's underlying HTTP/2 connection isn't safe for
     concurrent requests from multiple threads (causes ConnectionTerminated
     errors), so each concurrent branch in _fetch_all_subscription_rows gets
-    its own isolated client instead."""
+    its own isolated client instead.
+
+    IMPORTANT: every client this returns wraps a real httpx.Client with its
+    own connection pool. It must be closed with _close_client() after use —
+    this function used to be called dozens of times per minute (once per
+    query, more with chunking) with nothing ever closing the result, which
+    was a real, confirmed memory leak contributing to repeated OOM kills in
+    production on 2026-07-25."""
 
     return create_client(
         os.getenv("SUPABASE_URL"),
         os.getenv("SUPABASE_SECRET_KEY")
     )
+
+
+def _close_client(client):
+    """Closes the underlying httpx connection for a client created by
+    _new_supabase_client(). Never call this on the shared global `supabase`
+    client — only ever on fresh instances from _new_supabase_client()."""
+
+    try:
+        client.postgrest.session.close()
+    except Exception as e:
+        print("Failed to close Supabase client:", e)
 
 
 _PAGE_SIZE = 1000  # PostgREST silently caps unbounded responses at 1000 rows
@@ -86,15 +104,19 @@ def _fetch_in_chunks(table, select_cols, id_column, ids, filters=None, max_worke
     ]
 
     def fetch_chunk(chunk):
-        query = (
-            _new_supabase_client()
-            .table(table)
-            .select(select_cols)
-            .in_(id_column, chunk)
-        )
-        if filters:
-            query = filters(query)
-        return query.execute().data
+        client = _new_supabase_client()
+        try:
+            query = (
+                client
+                .table(table)
+                .select(select_cols)
+                .in_(id_column, chunk)
+            )
+            if filters:
+                query = filters(query)
+            return query.execute().data
+        finally:
+            _close_client(client)
 
     if len(chunks) == 1:
         return fetch_chunk(chunks[0])
@@ -573,16 +595,23 @@ def _fetch_all_subscription_rows(since=None):
     # Subscriptions and the trial-candidates lookup don't depend on each
     # other, so run them concurrently — each is a Supabase round trip
     # dominated by fixed network latency rather than data volume.
-    with ThreadPoolExecutor(max_workers=2) as executor:
-        subscriptions_future = executor.submit(
-            _fetch_subscriptions, _new_supabase_client(), since
-        )
-        trials_future = executor.submit(
-            _get_expired_unconverted_trials, _new_supabase_client(), since
-        )
+    subscriptions_client = _new_supabase_client()
+    trials_client = _new_supabase_client()
 
-        subscriptions = subscriptions_future.result()
-        trial_candidates = trials_future.result()
+    try:
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            subscriptions_future = executor.submit(
+                _fetch_subscriptions, subscriptions_client, since
+            )
+            trials_future = executor.submit(
+                _get_expired_unconverted_trials, trials_client, since
+            )
+
+            subscriptions = subscriptions_future.result()
+            trial_candidates = trials_future.result()
+    finally:
+        _close_client(subscriptions_client)
+        _close_client(trials_client)
 
     if not subscriptions and not trial_candidates:
         return []
@@ -927,16 +956,25 @@ def _build_row(learner_id, parent_id, subscription_id, subscription_type,
     pages (e.g. clicking into a win-back email) fast instead of paying 4+
     sequential round trips."""
 
-    with ThreadPoolExecutor(max_workers=4) as executor:
-        learner_name_future = executor.submit(_fetch_learner_name, learner_id, _new_supabase_client())
-        parent_info_future = executor.submit(_fetch_parent_info, parent_id, _new_supabase_client())
-        session_count_future = executor.submit(_fetch_session_count, learner_id, _new_supabase_client())
-        class_titles_future = executor.submit(_build_class_titles_lookup, [learner_id])
+    learner_name_client = _new_supabase_client()
+    parent_info_client = _new_supabase_client()
+    session_count_client = _new_supabase_client()
 
-        learner_name = learner_name_future.result()
-        parent_name, parent_email = parent_info_future.result()
-        sessions_attended = session_count_future.result()
-        class_title = class_titles_future.result().get(learner_id)
+    try:
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            learner_name_future = executor.submit(_fetch_learner_name, learner_id, learner_name_client)
+            parent_info_future = executor.submit(_fetch_parent_info, parent_id, parent_info_client)
+            session_count_future = executor.submit(_fetch_session_count, learner_id, session_count_client)
+            class_titles_future = executor.submit(_build_class_titles_lookup, [learner_id])
+
+            learner_name = learner_name_future.result()
+            parent_name, parent_email = parent_info_future.result()
+            sessions_attended = session_count_future.result()
+            class_title = class_titles_future.result().get(learner_id)
+    finally:
+        _close_client(learner_name_client)
+        _close_client(parent_info_client)
+        _close_client(session_count_client)
 
     return {
         "row_key": row_key,
