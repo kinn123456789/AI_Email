@@ -20,6 +20,7 @@
 <div class="flex items-center gap-3">
 
 <form method="post" action="/subscription-cancel/delete-selected" id="delete-form">
+<input type="hidden" name="show_all" value="{{ 'true' if show_all_time else '' }}">
 <button
     id="delete-btn"
     type="submit"
@@ -59,6 +60,7 @@
 <form method="get" action="/subscription-cancel" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
 
 <input type="hidden" name="page" value="{{ current_page }}">
+<input type="hidden" name="show_all" value="{{ 'true' if show_all_time else '' }}">
 
 <select
     id="subscriptionFilter"
@@ -66,6 +68,16 @@
 <option value="all">All Subscription Types</option>
 {% for t in subscription_types %}
 <option value="{{ t }}">{{ t }}</option>
+{% endfor %}
+</select>
+
+<select
+    name="status"
+    onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+<option value="" {% if not selected_status %}selected{% endif %}>All Statuses</option>
+{% for st in subscription_statuses %}
+<option value="{{ st }}" {% if selected_status == st %}selected{% endif %}>{{ st|replace("_", " ")|title }}</option>
 {% endfor %}
 </select>
 
@@ -96,11 +108,35 @@
     Filter
 </button>
 
-{% if search_query or selected_date_from or selected_date_to %}
-<a href="/subscription-cancel" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
+{% set toggle_qs = {
+    'q': search_query or '',
+    'date_from': selected_date_from or '',
+    'date_to': selected_date_to or '',
+    'status': selected_status or ''
+} %}
+{% if show_all_time %}
+<a href="/subscription-cancel?{{ toggle_qs|urlencode }}"
+    class="bg-amber-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-amber-700 transition">
+    ← Back to Last 3 Months
+</a>
+{% else %}
+<a href="/subscription-cancel?{{ toggle_qs|urlencode }}&show_all=true"
+    class="bg-stone-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
+    Show All-Time
+</a>
+{% endif %}
+
+{% if search_query or selected_date_from or selected_date_to or selected_status %}
+<a href="/subscription-cancel{% if show_all_time %}?show_all=true{% endif %}" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
 {% endif %}
 
 </form>
+
+{% if show_all_time %}
+<div class="mb-4 -mt-2 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded-xl px-4 py-2 inline-block">
+    Showing all-time history (may be slower) — cached for 5 minutes
+</div>
+{% endif %}
 
 <!-- Table -->
 <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
@@ -142,11 +178,18 @@
 <td class="p-4 font-bold text-cyan-950">{{ s.sessions_attended }}</td>
 <td class="p-4 text-cyan-950 text-xs font-bold">{{ s.canceled_at_display or "-" }}</td>
 <td class="p-4">
-    {% if s.subscription_status == "trial_expired" %}
-    <span class="bg-amber-300/60 text-amber-950 px-3 py-1 rounded-full text-xs font-bold border border-amber-400/50">Trial Expired</span>
-    {% else %}
-    <span class="bg-red-300/60 text-red-950 px-3 py-1 rounded-full text-xs font-bold border border-red-400/50">Cancelled</span>
-    {% endif %}
+    {% set status_styles = {
+        "trial_expired": "bg-amber-300/60 text-amber-950 border-amber-400/50",
+        "canceled": "bg-red-300/60 text-red-950 border-red-400/50",
+        "canceled_waiting_for_expiration": "bg-orange-300/60 text-orange-950 border-orange-400/50",
+        "active": "bg-green-300/60 text-green-950 border-green-400/50",
+        "never_activated": "bg-gray-300/60 text-gray-950 border-gray-400/50",
+        "active_waiting_for_payment": "bg-blue-300/60 text-blue-950 border-blue-400/50",
+        "active_payment_failure": "bg-rose-300/60 text-rose-950 border-rose-400/50"
+    } %}
+    <span class="{{ status_styles.get(s.subscription_status, 'bg-gray-300/60 text-gray-950 border-gray-400/50') }} px-3 py-1 rounded-full text-xs font-bold border inline-block">
+        {{ s.subscription_status|replace("_", " ")|title }}
+    </span>
 </td>
 </tr>
 {% endfor %}
@@ -171,7 +214,9 @@ Showing 0 cancelled subscriptions
 {% set base_qs = {
     'q': search_query or '',
     'date_from': selected_date_from or '',
-    'date_to': selected_date_to or ''
+    'date_to': selected_date_to or '',
+    'status': selected_status or '',
+    'show_all': 'true' if show_all_time else ''
 } %}
 <div class="flex items-center justify-center gap-4 mt-6">
 <a href="/subscription-cancel?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"

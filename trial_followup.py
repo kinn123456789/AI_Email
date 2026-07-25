@@ -5,7 +5,7 @@ from supabase_client import supabase
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 
-from subscription_cancel import _build_class_titles_lookup
+from subscription_cancel import _build_class_titles_lookup, _fetch_in_chunks, _fetch_all_paginated
 
 
 
@@ -27,22 +27,25 @@ def get_trial_followup_candidates():
     # 1. Get trial passes that expired in the last day
     # --------------------------------------------------
 
-    trial_response = (
-        supabase
-        .table("FreeTrialPass")
-        .select(
-            "free_trial_pass_id,"
-            "parent_id,"
-            "enrollment_ids,"
-            "expiry_at,"
-            "enrollment_start_timestamp"
+    def build_trial_query(client):
+        return (
+            client
+            .table("FreeTrialPass")
+            .select(
+                "free_trial_pass_id,"
+                "parent_id,"
+                "enrollment_ids,"
+                "expiry_at,"
+                "enrollment_start_timestamp"
+            )
+            .gte("expiry_at", start_date.isoformat())
+            .lte("expiry_at", now.isoformat())
         )
-        .gte("expiry_at", start_date.isoformat())
-        .lte("expiry_at", now.isoformat())
-        .execute()
-    )
 
-    trials = trial_response.data
+    # Paginated (not just chunked-.in_()) since this is an unbounded fetch,
+    # not one filtered by a variable id list — see _fetch_all_paginated for
+    # why an unbounded fetch needs this regardless of how small it usually is.
+    trials = _fetch_all_paginated(build_trial_query, supabase)
 
     if not trials:
         return []
@@ -67,18 +70,9 @@ def get_trial_followup_candidates():
     # 3. Read enrollments
     # --------------------------------------------------
 
-    enrollment_response = (
-        supabase
-        .table("Enrollments")
-        .select(
-            "enrollment_id,"
-            "learner_id"
-        )
-        .in_("enrollment_id", enrollment_ids)
-        .execute()
+    enrollments = _fetch_in_chunks(
+        "Enrollments", "enrollment_id, learner_id", "enrollment_id", enrollment_ids
     )
-
-    enrollments = enrollment_response.data
 
     enrollment_lookup = {}
 
@@ -101,20 +95,10 @@ def get_trial_followup_candidates():
     # 4. Read active subscriptions
     # --------------------------------------------------
 
-    subscription_response = (
-        supabase
-        .table("Subscriptions")
-        .select(
-            "learner_id,"
-            "subscription_status,"
-            "subscribed_at"
-        )
-        .eq("subscription_status", "active")
-        .in_("learner_id", learner_ids)
-        .execute()
+    subscriptions = _fetch_in_chunks(
+        "Subscriptions", "learner_id, subscription_status, subscribed_at", "learner_id", learner_ids,
+        filters=lambda q: q.eq("subscription_status", "active")
     )
-
-    subscriptions = subscription_response.data
 
     subscription_lookup = {}
 
@@ -133,17 +117,13 @@ def get_trial_followup_candidates():
 # 4A. Read learner names
 # --------------------------------------------------
 
-    user_response = (
-        supabase
-        .table("Users")
-        .select("user_id, name")
-        .in_("user_id", learner_ids)
-        .execute()
+    user_rows = _fetch_in_chunks(
+        "Users", "user_id, name", "user_id", learner_ids
     )
 
     user_lookup = {}
 
-    for user in user_response.data:
+    for user in user_rows:
 
         user_lookup[str(user["user_id"])] = user["name"]
     # --------------------------------------------------

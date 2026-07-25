@@ -38,7 +38,9 @@ from fastapi.responses import HTMLResponse
 
 from subscription_cancel import (
     get_cancelled_subscriptions,
+    get_all_time_cancelled_subscriptions,
     get_subscription_types,
+    get_subscription_statuses,
     dismiss_subscription_rows,
     get_dismissed_subscriptions,
     restore_subscription_rows,
@@ -1435,11 +1437,14 @@ def delete_notifications(email_ids: list[int] = Form(...)):
 
 
 @app.get("/subscription-cancel", response_class=HTMLResponse)
-async def subscription_cancel_dashboard(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+async def subscription_cancel_dashboard(request: Request, q: str = None, date_from: str = None, date_to: str = None, status: str = None, page: int = 1, show_all: str = None):
 
     page_size = 50
-    result = get_cancelled_subscriptions(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+    show_all_time = show_all == "true"
+    fetch = get_all_time_cancelled_subscriptions if show_all_time else get_cancelled_subscriptions
+    result = fetch(search=q, date_from=date_from, date_to=date_to, status=status, page=page, page_size=page_size)
     subscription_types = get_subscription_types()
+    subscription_statuses = get_subscription_statuses()
 
     return templates.TemplateResponse(
         "subscription_cancel.html",
@@ -1447,21 +1452,25 @@ async def subscription_cancel_dashboard(request: Request, q: str = None, date_fr
             "request": request,
             "subscriptions": result["rows"],
             "subscription_types": subscription_types,
+            "subscription_statuses": subscription_statuses,
             "trashed": request.query_params.get("trashed"),
             "search_query": q,
             "selected_date_from": date_from,
             "selected_date_to": date_to,
+            "selected_status": status,
             "current_page": result["page"],
             "total_pages": result["total_pages"],
             "total": result["total"],
-            "page_size": page_size
+            "page_size": page_size,
+            "show_all_time": show_all_time
         }
     )
 
 @app.post("/subscription-cancel/delete-selected")
-async def subscription_cancel_delete_selected(row_keys: list[str] = Form(...)):
+async def subscription_cancel_delete_selected(row_keys: list[str] = Form(...), show_all: str = Form(None)):
 
-    all_rows = get_cancelled_subscriptions(page_size=100000)["rows"]
+    fetch = get_all_time_cancelled_subscriptions if show_all == "true" else get_cancelled_subscriptions
+    all_rows = fetch(page_size=100000)["rows"]
     selected = [r for r in all_rows if r["row_key"] in set(row_keys)]
 
     dismiss_subscription_rows(selected)
