@@ -27,135 +27,149 @@ def split_into_chunks(text, max_chars=1200):
 conn = get_connection()
 cursor = conn.cursor()
 
-with sync_playwright() as p:
-    browser = p.chromium.launch(headless=True)
-    page = browser.new_page()
+try:
+    with sync_playwright() as p:
+        # --disable-dev-shm-usage: Docker/Render containers give /dev/shm
+        # only 64MB by default, which Chromium's shared-memory rendering
+        # can blow through — this makes it spill to disk instead, avoiding
+        # a second, container-specific way for this browser to blow up
+        # memory (on top of its own baseline ~150-300MB).
+        browser = p.chromium.launch(headless=True, args=["--disable-dev-shm-usage"])
 
-    print("Opening Help Center...")
-    page.goto(
-        "https://www.coralacademy.com/help",
-        wait_until="domcontentloaded",
-        timeout=120000
-    )
-    page.wait_for_selector("h1")
+        try:
+            page = browser.new_page()
 
-    links = page.locator("a").evaluate_all("""
-    els => {
-        const seen = new Set();
-        return els
-            .map(e => ({
-                title: e.innerText.trim(),
-                href: e.href
-            }))
-            .filter(x =>
-                x.href.includes('/help/') &&
-                x.title.length > 5 &&
-                !seen.has(x.href) &&
-                seen.add(x.href)
-            );
-    }
-    """)
-
-    print(f"\nFound {len(links)} help articles\n")
-
-    for item in links:
-        url = item["href"]
-        title = item["title"]
-
-        print(f"Reading: {title}")
-        page.goto(
-            url,
-            wait_until="domcontentloaded",
-            timeout=120000
-        )
-        page.wait_for_selector("h1")
-
-        html = page.content()
-        soup = BeautifulSoup(html, "html.parser")
-
-        h1 = soup.find("h1")
-        if h1:
-            title = h1.get_text(strip=True)
-
-        content = []
-        for tag in soup.find_all(["h2", "h3", "p", "li"]):
-            text = tag.get_text(" ", strip=True)
-            if text:
-                content.append(text)
-
-        article = "\n".join(content)
-        chunks = split_into_chunks(article)
-
-        print(f"  Scraped {len(chunks)} chunks from live page")
-
-        # ----------------------------------------------------
-        # NEW LOOKUP & COMPARE STEP (FIXED CONDITIONAL)
-        # ----------------------------------------------------
-        cursor.execute(
-            """
-            SELECT content
-            FROM knowledge_base
-            WHERE url = %s
-            ORDER BY id
-            """, 
-            (url,)
-        )
-        existing = cursor.fetchall()
-        existing_chunks = [row[0] for row in existing]
-
-        existing_chunks = [c.strip() for c in existing_chunks]
-        chunks = [c.strip() for c in chunks]
-        
-        # FIXED: Put back the matching check condition here
-        if existing_chunks == chunks:
-            print("  ✨ No changes detected in content — skipping database write")
-            continue
-        # ----------------------------------------------------
-
-        print("  ⚠️ Content changed or new page. Updating database...")
-
-        # Categorization logic
-        if "/subscription-payments/" in url:
-            category = "Subscription"
-        elif "/teaching/" in url:
-            category = "Teaching"
-        elif "/legal/" in url:
-            category = "Legal"
-        elif "/getting-started/" in url:
-            category = "Getting Started"
-        else:
-            category = "General"
-
-        # Only wipe old chunks if the content actually diverged
-        cursor.execute(
-            """
-            DELETE FROM knowledge_base
-            WHERE url = %s
-            """,
-            (url,)
-        )
-
-        for chunk in chunks:
-            cursor.execute(
-                """
-                INSERT INTO knowledge_base
-                (
-                    article_title,
-                    section_title,
-                    category,
-                    content,
-                    url
-                )
-                VALUES (%s, %s, %s, %s, %s)
-                """,
-                (title, "", category, chunk, url)
+            print("Opening Help Center...")
+            page.goto(
+                "https://www.coralacademy.com/help",
+                wait_until="domcontentloaded",
+                timeout=120000
             )
+            page.wait_for_selector("h1")
 
-        conn.commit()
+            links = page.locator("a").evaluate_all("""
+            els => {
+                const seen = new Set();
+                return els
+                    .map(e => ({
+                        title: e.innerText.trim(),
+                        href: e.href
+                    }))
+                    .filter(x =>
+                        x.href.includes('/help/') &&
+                        x.title.length > 5 &&
+                        !seen.has(x.href) &&
+                        seen.add(x.href)
+                    );
+            }
+            """)
 
-    browser.close()
+            print(f"\nFound {len(links)} help articles\n")
 
-cursor.close()
-conn.close()
+            for item in links:
+                url = item["href"]
+                title = item["title"]
+
+                print(f"Reading: {title}")
+                page.goto(
+                    url,
+                    wait_until="domcontentloaded",
+                    timeout=120000
+                )
+                page.wait_for_selector("h1")
+
+                html = page.content()
+                soup = BeautifulSoup(html, "html.parser")
+
+                h1 = soup.find("h1")
+                if h1:
+                    title = h1.get_text(strip=True)
+
+                content = []
+                for tag in soup.find_all(["h2", "h3", "p", "li"]):
+                    text = tag.get_text(" ", strip=True)
+                    if text:
+                        content.append(text)
+
+                article = "\n".join(content)
+                chunks = split_into_chunks(article)
+
+                print(f"  Scraped {len(chunks)} chunks from live page")
+
+                # ----------------------------------------------------
+                # NEW LOOKUP & COMPARE STEP (FIXED CONDITIONAL)
+                # ----------------------------------------------------
+                cursor.execute(
+                    """
+                    SELECT content
+                    FROM knowledge_base
+                    WHERE url = %s
+                    ORDER BY id
+                    """,
+                    (url,)
+                )
+                existing = cursor.fetchall()
+                existing_chunks = [row[0] for row in existing]
+
+                existing_chunks = [c.strip() for c in existing_chunks]
+                chunks = [c.strip() for c in chunks]
+
+                # FIXED: Put back the matching check condition here
+                if existing_chunks == chunks:
+                    print("  ✨ No changes detected in content — skipping database write")
+                    continue
+                # ----------------------------------------------------
+
+                print("  ⚠️ Content changed or new page. Updating database...")
+
+                # Categorization logic
+                if "/subscription-payments/" in url:
+                    category = "Subscription"
+                elif "/teaching/" in url:
+                    category = "Teaching"
+                elif "/legal/" in url:
+                    category = "Legal"
+                elif "/getting-started/" in url:
+                    category = "Getting Started"
+                else:
+                    category = "General"
+
+                # Only wipe old chunks if the content actually diverged
+                cursor.execute(
+                    """
+                    DELETE FROM knowledge_base
+                    WHERE url = %s
+                    """,
+                    (url,)
+                )
+
+                for chunk in chunks:
+                    cursor.execute(
+                        """
+                        INSERT INTO knowledge_base
+                        (
+                            article_title,
+                            section_title,
+                            category,
+                            content,
+                            url
+                        )
+                        VALUES (%s, %s, %s, %s, %s)
+                        """,
+                        (title, "", category, chunk, url)
+                    )
+
+                conn.commit()
+
+        finally:
+            # Guarantees the Chromium process is torn down even if a page
+            # times out or a selector isn't found mid-scrape — otherwise a
+            # crashed run can leave a full browser process running in the
+            # same 512Mi container until something else finally kills it.
+            browser.close()
+
+finally:
+    cursor.close()
+    conn.close()
 
 print("\nKnowledge Base Updated!")

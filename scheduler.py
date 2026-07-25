@@ -145,6 +145,21 @@ def run_prefetch_reengagement_drafts():
         subscription_cancel_lock.release()
 
 
+def run_help_center_refresh():
+    """Waits for subscription_cancel_lock before starting — this job launches
+    a full headless Chromium browser (sync_help_center.py), which alone can
+    use 150-300MB, so it must never run at the same moment as the
+    once-a-minute dashboard refresh in the same 512Mi container. Blocks
+    (rather than skipping) since this only runs once a day and the dashboard
+    refresh it might be waiting on typically finishes within a few seconds."""
+
+    subscription_cancel_lock.acquire(blocking=True)
+    try:
+        refresh_knowledge_base()
+    finally:
+        subscription_cancel_lock.release()
+
+
 def run_teacher_sync():
     start = time.time()
 
@@ -198,7 +213,7 @@ scheduler.add_job(
 
 # Help Center Refresh
 scheduler.add_job(
-    refresh_knowledge_base,
+    run_help_center_refresh,
     CronTrigger(hour=2, minute=0),
     id="help_center_refresh",
     replace_existing=True,

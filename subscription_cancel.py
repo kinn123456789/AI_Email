@@ -3,7 +3,7 @@
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
 from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
@@ -433,9 +433,29 @@ def _get_expired_unconverted_trials(client=None, since=None):
     return candidates
 
 
-_cache = {"rows": None, "loaded_at": 0}
+_cache = {
+    "rows": None,
+    "rows_by_key": {},
+    "loaded_at": 0,
+    "last_change_cutoff": None,
+    "cycles_since_full": 0,
+}
 _CACHE_TTL_SECONDS = 60
 _DEFAULT_WINDOW_MONTHS = 3
+
+# The full rebuild (fetch+join over the whole window) is the expensive part
+# of this cycle, run every 60s forever — a real contributor to repeated OOM
+# kills on Render's 512Mi tier. Most cycles nothing actually changed, so
+# refresh_subscription_cache() below only fetches+joins rows that changed
+# since the last cycle and merges them in, instead of redoing the whole
+# window every time. A full rebuild still runs periodically (every
+# _FULL_REFRESH_EVERY_N_CYCLES cycles) to catch the two things an
+# incremental pass can't see by construction: a learner's session count
+# changing without their Subscriptions row changing, and a trial's parent
+# converting after the trial itself already expired (which would otherwise
+# leave a stale row in the dashboard indefinitely).
+_FULL_REFRESH_EVERY_N_CYCLES = 30
+_INCREMENTAL_OVERLAP_SECONDS = 120
 
 _all_time_cache = {"rows": None, "loaded_at": 0}
 _ALL_TIME_CACHE_TTL_SECONDS = 300
@@ -448,15 +468,56 @@ def _default_window_cutoff():
 
 
 def refresh_subscription_cache():
-    """Rebuild the cached base dataset (Subscriptions/FreeTrialPass joined
+    """Refresh the cached base dataset (Subscriptions/FreeTrialPass joined
     against Learners/Users/EmailDeliveryStatus/SessionInteraction), bounded
     to the last _DEFAULT_WINDOW_MONTHS. Meant to be called proactively from
     scheduler.py every minute, so page loads read an already-warm cache
     instead of triggering the rebuild themselves. Older rows are still
     reachable via the separate, on-demand all-time view (see
-    _get_all_time_base_rows) — they just aren't kept warm in this cache."""
+    _get_all_time_base_rows) — they just aren't kept warm in this cache.
 
-    _cache["rows"] = _fetch_all_subscription_rows(since=_default_window_cutoff())
+    Most cycles only fetch+join rows that changed since the last cycle and
+    merge them into the existing cache, rather than redoing the full
+    window's fetch+join every single time — see _FULL_REFRESH_EVERY_N_CYCLES
+    for why a full rebuild still happens periodically."""
+
+    window_cutoff = _default_window_cutoff()
+
+    do_full_refresh = (
+        not _cache["rows_by_key"]
+        or _cache["cycles_since_full"] >= _FULL_REFRESH_EVERY_N_CYCLES
+    )
+
+    if do_full_refresh:
+        subscriptions, trial_candidates = _fetch_subscriptions_and_trials(since=window_cutoff)
+        changed_rows = _build_rows_from(subscriptions, trial_candidates)
+        _cache["rows_by_key"] = {row["row_key"]: row for row in changed_rows}
+        _cache["cycles_since_full"] = 0
+    else:
+        subscriptions, trial_candidates = _fetch_subscriptions_and_trials(
+            since=_cache["last_change_cutoff"]
+        )
+        changed_rows = _build_rows_from(subscriptions, trial_candidates)
+
+        for row in changed_rows:
+            _cache["rows_by_key"][row["row_key"]] = row
+
+        _cache["cycles_since_full"] += 1
+
+    # Cheap in-memory pass so rows that have aged out of the rolling window
+    # get dropped every cycle, not just on the periodic full rebuild.
+    _cache["rows_by_key"] = {
+        key: row
+        for key, row in _cache["rows_by_key"].items()
+        if row["canceled_at"] and row["canceled_at"] >= window_cutoff
+    }
+
+    # Small overlap so a row that changed right at the edge of the last
+    # cutoff (clock skew, in-flight transaction) isn't missed next cycle.
+    _cache["last_change_cutoff"] = (
+        datetime.now(timezone.utc) - timedelta(seconds=_INCREMENTAL_OVERLAP_SECONDS)
+    ).isoformat()
+    _cache["rows"] = list(_cache["rows_by_key"].values())
     _cache["loaded_at"] = time.time()
 
     return _cache["rows"]
@@ -598,21 +659,23 @@ def _fetch_subscriptions(client, since=None):
     return _fetch_all_paginated(build, client)
 
 
-def _fetch_all_subscription_rows(since=None):
-    """The expensive part: fetch + join Subscriptions/FreeTrialPass against
-    Learners/Users/EmailDeliveryStatus/SessionInteraction. Returns the full,
-    unpaginated row list for everything since the given cutoff (or all time
-    if since is None) — this is what gets cached."""
+def _fetch_subscriptions_and_trials(since=None):
+    """Stage A: fetch the raw Subscriptions + FreeTrialPass candidate rows
+    only — no joins yet. `since` bounds both by their own change timestamp
+    (canceled_at/updated_at for subscriptions, expiry_at for trials), so
+    passing the cutoff of the last successful refresh returns just what
+    changed since then (see refresh_subscription_cache), while passing the
+    window cutoff returns everything in the window (full rebuild), and None
+    returns all of history (all-time view).
 
-    # Subscriptions and the trial-candidates lookup don't depend on each
-    # other, and used to run concurrently here — but every concurrent
-    # Supabase connection adds to peak memory at the exact moment this
-    # runs (every 60s, forever), and that peak was contributing to
-    # repeated OOM kills on Render's 512Mi free tier even after fixing the
-    # scheduling collision and the connection leak. Running sequentially
-    # trades some speed (back toward the pre-optimization ~7s total) for
-    # meaningfully lower peak memory — one connection open at a time here
-    # instead of two.
+    Subscriptions and the trial-candidates lookup don't depend on each
+    other, and used to run concurrently here — but every concurrent
+    Supabase connection adds to peak memory at the exact moment this runs,
+    and that peak was contributing to repeated OOM kills on Render's 512Mi
+    free tier even after fixing the scheduling collision and the connection
+    leak. Running sequentially trades some speed for meaningfully lower
+    peak memory — one connection open at a time here instead of two."""
+
     subscriptions_client = _new_supabase_client()
     try:
         subscriptions = _fetch_subscriptions(subscriptions_client, since)
@@ -624,6 +687,19 @@ def _fetch_all_subscription_rows(since=None):
         trial_candidates = _get_expired_unconverted_trials(trials_client, since)
     finally:
         _close_client(trials_client)
+
+    return subscriptions, trial_candidates
+
+
+def _build_rows_from(subscriptions, trial_candidates):
+    """Stage B: join the given subscriptions/trial_candidates against
+    Learners/Users/EmailDeliveryStatus/SessionInteraction/class_titles and
+    build display rows. Deliberately takes explicit lists rather than a
+    `since` bound — the join cost scales with however many rows are passed
+    in, not with the size of the whole dashboard window, so callers doing an
+    incremental refresh (see refresh_subscription_cache) can pass just the
+    handful of rows that changed since the last cycle instead of paying the
+    full window's join cost every single time."""
 
     if not subscriptions and not trial_candidates:
         return []
@@ -763,6 +839,18 @@ def _fetch_all_subscription_rows(since=None):
         })
 
     return results
+
+
+def _fetch_all_subscription_rows(since=None):
+    """Full fetch+join in one call — used by the all-time view and cache
+    bootstrapping, where there's no prior cache to merge incrementally
+    against. The periodic cache refresh itself calls
+    _fetch_subscriptions_and_trials + _build_rows_from directly so it can
+    fetch and join just the changed subset on most cycles (see
+    refresh_subscription_cache)."""
+
+    subscriptions, trial_candidates = _fetch_subscriptions_and_trials(since)
+    return _build_rows_from(subscriptions, trial_candidates)
 
 
 def _filter_sort_paginate(results, search, date_from, date_to, status, page, page_size):
