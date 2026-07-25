@@ -13,7 +13,7 @@ from teacher_api_sync import sync_teacher_portal
 import threading
 import time
 from teacher_ai_processor1 import process_teacher_messages
-from subscription_cancel import refresh_subscription_cache
+from subscription_cancel import refresh_subscription_cache, prefetch_winback_drafts
 # -------------------------------------------------
 # Locks & Queue
 # -------------------------------------------------
@@ -240,6 +240,19 @@ scheduler.add_job(
     misfire_grace_time=60
 )
 
+# Pre-generates win-back drafts for rows that don't have one cached yet, so
+# clicking into a row in the UI doesn't trigger a ~20s synchronous AI call.
+scheduler.add_job(
+    prefetch_winback_drafts,
+    trigger="interval",
+    minutes=1,
+    id="subscription_cancel_draft_prefetch",
+    replace_existing=True,
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=60
+)
+
 scheduler.start()
 
 print("Scheduler started.")
@@ -251,3 +264,4 @@ print("Gmail Watch Renewal: Every 1 day")
 print("Teacher Sync: Every 8 minutes")
 print("Trial Follow-ups: Daily at 9:00 AM")
 print("Subscription Cancel Cache: Every 1 minute")
+print("Subscription Cancel Draft Prefetch: Every 1 minute (batch of 5)")

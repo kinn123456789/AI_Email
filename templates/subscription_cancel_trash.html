@@ -48,6 +48,7 @@
 <th class="w-1/6 p-4 text-left">Learner</th>
 <th class="w-1/4 p-4 text-left">Email</th>
 <th class="w-1/6 p-4 text-left">Subscription</th>
+<th class="w-1/6 p-4 text-left">Class</th>
 <th class="w-1/6 p-4 text-left">Cancelled</th>
 <th class="w-1/6 p-4 text-left">Dismissed At</th>
 </tr>
@@ -69,6 +70,7 @@
 <td class="p-4">
     <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">{{ d.subscription_type }}</span>
 </td>
+<td class="p-4 truncate text-cyan-950 text-xs font-medium">{{ d.class_title or "-" }}</td>
 <td class="p-4 text-cyan-950 text-xs font-bold">{{ d.canceled_at_display or "-" }}</td>
 <td class="p-4 text-cyan-950 text-xs font-bold">{{ d.dismissed_at }}</td>
 </tr>
@@ -76,7 +78,7 @@
 
 {% if not dismissed %}
 <tr>
-    <td colspan="7" class="text-center py-12 text-cyan-950 font-bold">Trash is empty.</td>
+    <td colspan="8" class="text-center py-12 text-cyan-950 font-bold">Trash is empty.</td>
 </tr>
 {% endif %}
 </tbody>

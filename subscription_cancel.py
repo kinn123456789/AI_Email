@@ -2,14 +2,30 @@
 
 import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
 from openai import OpenAI
 
+from supabase import create_client
+
 from supabase_client import supabase
 from database import get_connection, db_pool
 from psycopg2.extras import RealDictCursor
+
+
+def _new_supabase_client():
+    """A fresh Supabase client for use inside a worker thread. The shared
+    global `supabase` client's underlying HTTP/2 connection isn't safe for
+    concurrent requests from multiple threads (causes ConnectionTerminated
+    errors), so each concurrent branch in _fetch_all_subscription_rows gets
+    its own isolated client instead."""
+
+    return create_client(
+        os.getenv("SUPABASE_URL"),
+        os.getenv("SUPABASE_SECRET_KEY")
+    )
 
 _ai_client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
@@ -139,17 +155,24 @@ def get_subscription_types():
     return sorted(types)
 
 
-def _get_expired_unconverted_trials():
+def _get_expired_unconverted_trials(client=None):
     """
     Trial passes that expired without the learner ever subscribing —
     same "converted" check trial_followup.py uses, but over all history
     (not just today's expirations) since this is a cumulative list.
+
+    Accepts an optional client so callers running this concurrently
+    alongside other queries (see _fetch_all_subscription_rows) can pass
+    an isolated client instead of sharing the global one — the shared
+    client's underlying HTTP/2 connection isn't safe for concurrent use
+    from multiple threads.
     """
 
+    client = client or supabase
     now = datetime.now(timezone.utc)
 
     trial_response = (
-        supabase
+        client
         .table("FreeTrialPass")
         .select(
             "free_trial_pass_id,"
@@ -177,7 +200,7 @@ def _get_expired_unconverted_trials():
         return []
 
     enrollment_response = (
-        supabase
+        client
         .table("Enrollments")
         .select("enrollment_id, learner_id")
         .in_("enrollment_id", enrollment_ids)
@@ -201,7 +224,7 @@ def _get_expired_unconverted_trials():
     # learner converted at some point — exclude them so they aren't
     # double-counted alongside the real Subscriptions-cancelled rows.
     subscription_response = (
-        supabase
+        client
         .table("Subscriptions")
         .select("learner_id, subscribed_at")
         .in_("learner_id", learner_ids)
@@ -289,29 +312,127 @@ def _get_base_rows():
     return _cache["rows"]
 
 
+def _build_class_titles_lookup(learner_ids, client=None):
+    """learner_id -> "Title1, Title2" for their current (is_latest) classes.
+    One shared lookup for both subscription and trial rows, since both key
+    on learner_id via the same Enrollments -> Batches -> Classes chain.
+
+    Accepts an optional client — see _get_expired_unconverted_trials for why."""
+
+    client = client or supabase
+
+    if not learner_ids:
+        return {}
+
+    enrollment_response = (
+        client
+        .table("Enrollments")
+        .select("learner_id, batch_id")
+        .in_("learner_id", learner_ids)
+        .eq("is_latest", True)
+        .execute()
+    )
+
+    enrollments = enrollment_response.data
+
+    if not enrollments:
+        return {}
+
+    batch_ids = list({
+        e["batch_id"]
+        for e in enrollments
+        if e["batch_id"]
+    })
+
+    if not batch_ids:
+        return {}
+
+    batch_response = (
+        client
+        .table("Batches")
+        .select("batch_id, class_id")
+        .in_("batch_id", batch_ids)
+        .execute()
+    )
+
+    class_id_by_batch = {
+        b["batch_id"]: b["class_id"]
+        for b in batch_response.data
+    }
+
+    class_ids = list({
+        cid
+        for cid in class_id_by_batch.values()
+        if cid
+    })
+
+    if not class_ids:
+        return {}
+
+    class_response = (
+        client
+        .table("Classes")
+        .select("class_id, title")
+        .in_("class_id", class_ids)
+        .execute()
+    )
+
+    title_by_class = {
+        c["class_id"]: c["title"]
+        for c in class_response.data
+    }
+
+    titles_by_learner = {}
+
+    for e in enrollments:
+
+        class_id = class_id_by_batch.get(e["batch_id"])
+        title = title_by_class.get(class_id)
+
+        if not title:
+            continue
+
+        learner_id = e["learner_id"]
+        titles_by_learner.setdefault(learner_id, [])
+
+        if title not in titles_by_learner[learner_id]:
+            titles_by_learner[learner_id].append(title)
+
+    return {
+        learner_id: ", ".join(titles)
+        for learner_id, titles in titles_by_learner.items()
+    }
+
+
 def _fetch_all_subscription_rows():
     """The expensive part: fetch + join Subscriptions/FreeTrialPass against
     Learners/Users/EmailDeliveryStatus/SessionInteraction. Returns the full,
     unfiltered, unpaginated row list — this is what gets cached."""
 
-    subscription_response = (
-        supabase
-        .table("Subscriptions")
-        .select(
-            "id,"
-            "learner_id,"
-            "subscription_type,"
-            "subscription_status,"
-            "subscribed_at,"
-            "canceled_at,"
-            "updated_at"
+    # Subscriptions and the trial-candidates lookup don't depend on each
+    # other, so run them concurrently — each is a Supabase round trip
+    # dominated by fixed network latency rather than data volume.
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        subscriptions_future = executor.submit(
+            lambda: _new_supabase_client()
+                .table("Subscriptions")
+                .select(
+                    "id,"
+                    "learner_id,"
+                    "subscription_type,"
+                    "subscription_status,"
+                    "subscribed_at,"
+                    "canceled_at,"
+                    "updated_at"
+                )
+                .eq("subscription_status", "canceled")
+                .execute()
+                .data
         )
-        .eq("subscription_status", "canceled")
-        .execute()
-    )
+        trials_future = executor.submit(_get_expired_unconverted_trials, _new_supabase_client())
 
-    subscriptions = subscription_response.data
-    trial_candidates = _get_expired_unconverted_trials()
+        subscriptions = subscriptions_future.result()
+        trial_candidates = trials_future.result()
 
     if not subscriptions and not trial_candidates:
         return []
@@ -326,34 +447,44 @@ def _fetch_all_subscription_rows():
         if t["learner_id"]
     })
 
-    learner_response = (
-        supabase
-        .table("Learners")
-        .select("learner_id, parent_id")
-        .in_("learner_id", learner_ids)
-        .execute()
-    )
+    # These four all depend only on learner_ids, not on each other — run
+    # them concurrently too, for the same reason as above.
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        learner_future = executor.submit(
+            lambda: _new_supabase_client()
+                .table("Learners")
+                .select("learner_id, parent_id")
+                .in_("learner_id", learner_ids)
+                .execute()
+                .data
+        )
+        class_titles_future = executor.submit(_build_class_titles_lookup, learner_ids, _new_supabase_client())
+        learner_name_future = executor.submit(
+            lambda: _new_supabase_client()
+                .table("Users")
+                .select("user_id, name")
+                .in_("user_id", learner_ids)
+                .execute()
+                .data
+        )
+        session_future = executor.submit(
+            lambda: _new_supabase_client()
+                .table("SessionInteraction")
+                .select("learner_id")
+                .in_("learner_id", learner_ids)
+                .eq("did_attend", True)
+                .execute()
+                .data
+        )
 
-    learner_name_response = (
-        supabase
-        .table("Users")
-        .select("user_id, name")
-        .in_("user_id", learner_ids)
-        .execute()
-    )
-
-    session_response = (
-        supabase
-        .table("SessionInteraction")
-        .select("learner_id")
-        .in_("learner_id", learner_ids)
-        .eq("did_attend", True)
-        .execute()
-    )
+        learner_rows = learner_future.result()
+        class_titles_by_learner = class_titles_future.result()
+        learner_name_rows = learner_name_future.result()
+        session_rows = session_future.result()
 
     parent_by_learner = {
         row["learner_id"]: row["parent_id"]
-        for row in learner_response.data
+        for row in learner_rows
     }
 
     parent_ids = list({
@@ -368,7 +499,7 @@ def _fetch_all_subscription_rows():
 
     learner_name_lookup = {
         row["user_id"]: row["name"]
-        for row in learner_name_response.data
+        for row in learner_name_rows
     }
 
     parent_email_lookup = {}
@@ -396,7 +527,7 @@ def _fetch_all_subscription_rows():
 
     session_counts = {}
 
-    for row in session_response.data:
+    for row in session_rows:
 
         learner_id = row["learner_id"]
         session_counts[learner_id] = session_counts.get(learner_id, 0) + 1
@@ -427,7 +558,8 @@ def _fetch_all_subscription_rows():
             "parent_id": parent_id,
             "parent_name": parent_info.get("parent_name"),
             "parent_email": parent_info.get("parent_email"),
-            "sessions_attended": session_counts.get(learner_id, 0)
+            "sessions_attended": session_counts.get(learner_id, 0),
+            "class_title": class_titles_by_learner.get(learner_id)
         })
 
     for t in trial_candidates:
@@ -449,7 +581,8 @@ def _fetch_all_subscription_rows():
             "parent_id": parent_id,
             "parent_name": parent_info.get("parent_name"),
             "parent_email": parent_info.get("parent_email"),
-            "sessions_attended": session_counts.get(learner_id, 0)
+            "sessions_attended": session_counts.get(learner_id, 0),
+            "class_title": class_titles_by_learner.get(learner_id)
         })
 
     return results
@@ -478,6 +611,7 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=
             or search_lower in (r["parent_email"] or "").lower()
             or search_lower in (r["subscription_type"] or "").lower()
             or search_lower in (r["learner_name"] or "").lower()
+            or search_lower in (r["class_title"] or "").lower()
         ]
 
     if date_from:
@@ -526,7 +660,7 @@ def get_dismissed_row_keys():
 
 def dismiss_subscription_rows(rows):
     """rows: list of dicts with row_key, subscription_type, subscription_status,
-    parent_name, parent_email, learner_name, canceled_at_display."""
+    parent_name, parent_email, learner_name, canceled_at_display, class_title."""
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -535,8 +669,8 @@ def dismiss_subscription_rows(rows):
         for row in rows:
             cursor.execute("""
                 INSERT INTO subscription_cancel_dismissed
-                (row_key, subscription_type, subscription_status, parent_name, parent_email, learner_name, canceled_at_display)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                (row_key, subscription_type, subscription_status, parent_name, parent_email, learner_name, canceled_at_display, class_title)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 ON CONFLICT (row_key) DO NOTHING
             """, (
                 row["row_key"],
@@ -546,6 +680,7 @@ def dismiss_subscription_rows(rows):
                 row.get("parent_email"),
                 row.get("learner_name"),
                 row.get("canceled_at_display"),
+                row.get("class_title"),
             ))
 
         conn.commit()
@@ -627,6 +762,8 @@ def _build_row(learner_id, parent_id, subscription_id, subscription_type,
         .execute()
     )
 
+    class_title = _build_class_titles_lookup([learner_id]).get(learner_id)
+
     return {
         "row_key": row_key,
         "subscription_id": subscription_id,
@@ -640,7 +777,8 @@ def _build_row(learner_id, parent_id, subscription_id, subscription_type,
         "parent_id": parent_id,
         "parent_name": parent_name,
         "parent_email": parent_email,
-        "sessions_attended": len(session_response.data)
+        "sessions_attended": len(session_response.data),
+        "class_title": class_title
     }
 
 
@@ -721,8 +859,8 @@ def save_sent_subscription_email(row, subject, body, gmail_message_id):
     try:
         cursor.execute("""
             INSERT INTO subscription_cancel_sent
-            (row_key, parent_name, parent_email, learner_name, subscription_type, subscription_status, subject, body, gmail_message_id)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (row_key, parent_name, parent_email, learner_name, subscription_type, subscription_status, subject, body, gmail_message_id, class_title)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (row_key) DO UPDATE
             SET subject = EXCLUDED.subject,
                 body = EXCLUDED.body,
@@ -738,6 +876,7 @@ def save_sent_subscription_email(row, subject, body, gmail_message_id):
             subject,
             body,
             gmail_message_id,
+            row.get("class_title"),
         ))
 
         conn.commit()
@@ -833,6 +972,41 @@ def get_or_generate_winback_email(row):
     save_draft(row["row_key"], subject, body)
 
     return subject, body
+
+
+def _get_draft_row_keys():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT row_key FROM subscription_cancel_drafts")
+        return {row[0] for row in cursor.fetchall()}
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def prefetch_winback_drafts(batch_size=5):
+    """Generate+cache AI drafts for non-dismissed rows that don't have one
+    yet, so opening a row is instant instead of triggering a ~20s synchronous
+    AI call on first click. Meant to be called periodically from
+    scheduler.py — bounded by batch_size per call so a large backlog doesn't
+    turn one run into an hours-long block."""
+
+    rows = get_cancelled_subscriptions(page_size=100000)["rows"]
+    existing = _get_draft_row_keys()
+
+    missing = [r for r in rows if r["row_key"] not in existing]
+
+    for row in missing[:batch_size]:
+        try:
+            get_or_generate_winback_email(row)
+        except Exception as e:
+            print(f"Draft prefetch failed for {row['row_key']}:", e)
+
+    return len(missing)
 
 
 if __name__ == "__main__":
