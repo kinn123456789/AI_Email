@@ -1,6 +1,7 @@
 # subscription_cancel.py
 
 import os
+import time
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
@@ -259,7 +260,39 @@ def _get_expired_unconverted_trials():
     return candidates
 
 
-def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=1, page_size=50):
+_cache = {"rows": None, "loaded_at": 0}
+_CACHE_TTL_SECONDS = 60
+
+
+def refresh_subscription_cache():
+    """Rebuild the cached base dataset (Subscriptions/FreeTrialPass joined
+    against Learners/Users/EmailDeliveryStatus/SessionInteraction). Meant to
+    be called proactively from scheduler.py every minute, so page loads read
+    an already-warm cache instead of triggering the rebuild themselves."""
+
+    _cache["rows"] = _fetch_all_subscription_rows()
+    _cache["loaded_at"] = time.time()
+
+    return _cache["rows"]
+
+
+def _get_base_rows():
+    """Lazy fallback for the case the scheduler hasn't populated the cache
+    yet (e.g. right after deploy) — normally this just reads the cache the
+    scheduler already refreshed."""
+
+    cache_age = time.time() - _cache["loaded_at"]
+
+    if _cache["rows"] is None or cache_age > _CACHE_TTL_SECONDS:
+        return refresh_subscription_cache()
+
+    return _cache["rows"]
+
+
+def _fetch_all_subscription_rows():
+    """The expensive part: fetch + join Subscriptions/FreeTrialPass against
+    Learners/Users/EmailDeliveryStatus/SessionInteraction. Returns the full,
+    unfiltered, unpaginated row list — this is what gets cached."""
 
     subscription_response = (
         supabase
@@ -281,12 +314,7 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=
     trial_candidates = _get_expired_unconverted_trials()
 
     if not subscriptions and not trial_candidates:
-        return {
-            "rows": [],
-            "total": 0,
-            "page": 1,
-            "total_pages": 1,
-        }
+        return []
 
     learner_ids = list({
         s["learner_id"]
@@ -306,6 +334,23 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=
         .execute()
     )
 
+    learner_name_response = (
+        supabase
+        .table("Users")
+        .select("user_id, name")
+        .in_("user_id", learner_ids)
+        .execute()
+    )
+
+    session_response = (
+        supabase
+        .table("SessionInteraction")
+        .select("learner_id")
+        .in_("learner_id", learner_ids)
+        .eq("did_attend", True)
+        .execute()
+    )
+
     parent_by_learner = {
         row["learner_id"]: row["parent_id"]
         for row in learner_response.data
@@ -320,14 +365,6 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=
         for t in trial_candidates
         if t["parent_id"]
     })
-
-    learner_name_response = (
-        supabase
-        .table("Users")
-        .select("user_id, name")
-        .in_("user_id", learner_ids)
-        .execute()
-    )
 
     learner_name_lookup = {
         row["user_id"]: row["name"]
@@ -356,15 +393,6 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=
             # are ordered by created_at DESC.
             if pid not in parent_email_lookup:
                 parent_email_lookup[pid] = row
-
-    session_response = (
-        supabase
-        .table("SessionInteraction")
-        .select("learner_id")
-        .in_("learner_id", learner_ids)
-        .eq("did_attend", True)
-        .execute()
-    )
 
     session_counts = {}
 
@@ -423,6 +451,17 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=
             "parent_email": parent_info.get("parent_email"),
             "sessions_attended": session_counts.get(learner_id, 0)
         })
+
+    return results
+
+
+def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, page=1, page_size=50):
+    """Reads the cached base dataset (see _get_base_rows/refresh_subscription_cache)
+    and applies dismissed-row filtering, search, date range, sort and
+    pagination fresh on every call — those are cheap and should always
+    reflect the latest state, unlike the expensive Supabase joins."""
+
+    results = list(_get_base_rows())
 
     dismissed_keys = get_dismissed_row_keys()
 

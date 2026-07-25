@@ -2,6 +2,7 @@ from fastapi import FastAPI
 import csv
 import io
 from urllib.parse import urlencode
+import scheduler
 from ai_classifier import ai_triage
 from database import db_pool,get_latest_thread_ai
 from fastapi import Request
@@ -1516,7 +1517,7 @@ async def subscription_cancel_email(request: Request, row_key: str):
     if not row:
         return Response(content="Not found", status_code=404)
 
-    subject, body = generate_winback_email(row)
+    subject, body = get_or_generate_winback_email(row)
 
     return templates.TemplateResponse(
         "subscription_cancel_email.html",

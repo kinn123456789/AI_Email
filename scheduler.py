@@ -13,6 +13,7 @@ from teacher_api_sync import sync_teacher_portal
 import threading
 import time
 from teacher_ai_processor1 import process_teacher_messages
+from subscription_cancel import refresh_subscription_cache
 # -------------------------------------------------
 # Locks & Queue
 # -------------------------------------------------
@@ -221,6 +222,24 @@ scheduler.add_job(
     misfire_grace_time=300
 )
 
+# Warm the cache immediately at startup so the first page load after a
+# deploy/restart doesn't pay the ~5s cold-fetch cost either.
+try:
+    refresh_subscription_cache()
+except Exception as e:
+    print("Initial subscription cache warm-up failed:", e)
+
+scheduler.add_job(
+    refresh_subscription_cache,
+    trigger="interval",
+    minutes=1,
+    id="subscription_cancel_cache",
+    replace_existing=True,
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=60
+)
+
 scheduler.start()
 
 print("Scheduler started.")
@@ -231,3 +250,4 @@ print("Classes Refresh: Daily at 3:00 AM")
 print("Gmail Watch Renewal: Every 1 day")
 print("Teacher Sync: Every 8 minutes")
 print("Trial Follow-ups: Daily at 9:00 AM")
+print("Subscription Cancel Cache: Every 1 minute")
