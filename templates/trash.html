@@ -58,7 +58,6 @@
 <th class="w-32 p-4 text-left">Category</th>
 <th class="w-24 p-4 text-left">Priority</th>
 <th class="w-40 p-4 text-left">Status</th>
-<th class="w-32 p-4 text-left">Handled By</th>
 <th class="w-36 p-4 text-left">Received</th>
 </tr>
 </thead>
@@ -125,24 +124,6 @@
             {% endif %}
         </td>
 
-        <td class="p-4">
-            {% if email.reply_type == "automatic" %}
-            <span class="bg-cyan-300/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">
-            🤖 AI
-            </span>
-
-            {% elif email.reply_type in ["human", "gmail_manual"] %}
-            <span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">
-            👤 Manual
-            </span>
-
-            {% else %}
-            <span class="bg-yellow-200/60 text-yellow-950 px-3 py-1 rounded-full text-xs font-bold">
-            Pending
-            </span>
-            {% endif %}
-        </td>
-
         <td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
     </tr>
     {% endfor %}
@@ -150,7 +131,7 @@
 {% else %}
 <tbody>
 <tr>
-    <td colspan="9" class="text-center py-16 text-gray-500">
+    <td colspan="8" class="text-center py-16 text-gray-500">
         🗑️ Trash is empty.
     </td>
 </tr>
