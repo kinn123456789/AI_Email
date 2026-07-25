@@ -146,7 +146,11 @@ def _new_ai_client():
     )
 
 
-def generate_winback_email(row, ai_client=None):
+_PARENT_PLACEHOLDER = "[PARENT_NAME]"
+_LEARNER_PLACEHOLDER = "[STUDENT_NAME]"
+
+
+def generate_reengagement_email(row, ai_client=None):
 
     ai_client = ai_client or _ai_client
 
@@ -156,25 +160,28 @@ def generate_winback_email(row, ai_client=None):
 
     if row["subscription_status"] == "trial_expired":
         subject = f"We'd love to have {learner_name} back at Coral Academy"
-        context = f"{learner_name}'s free trial expired without continuing to a paid membership."
+        redacted_context = f"{_LEARNER_PLACEHOLDER}'s free trial expired without continuing to a paid membership."
     else:
         subject = f"We miss {learner_name} at Coral Academy"
-        context = f"{learner_name}'s subscription ({row.get('subscription_type')}) was recently cancelled."
+        redacted_context = f"{_LEARNER_PLACEHOLDER}'s subscription ({row.get('subscription_type')}) was recently cancelled."
 
-    session_note = (
-        f"{learner_name} attended {sessions_attended} class session(s) before this."
+    redacted_session_note = (
+        f"{_LEARNER_PLACEHOLDER} attended {sessions_attended} class session(s) before this."
         if sessions_attended > 0
         else ""
     )
 
+    # Real parent/learner names never leave the process — the AI only ever
+    # sees the placeholder tokens, and the real names are substituted back
+    # in after the response comes back (see below).
     prompt = f"""
-Write a warm, professional win-back email.
+Write a warm, professional re-engagement email.
 
-Parent name: {parent_name}
-Learner name: {learner_name}
+Parent name: {_PARENT_PLACEHOLDER}
+Learner name: {_LEARNER_PLACEHOLDER}
 
-{context}
-{session_note}
+{redacted_context}
+{redacted_session_note}
 
 Gently invite the parent to come back and continue learning with Coral Academy.
 
@@ -183,6 +190,10 @@ Ask if there was anything that didn't work well, and offer to help.
 Keep it around 100 words.
 
 Return ONLY the email body.
+
+{_PARENT_PLACEHOLDER} and {_LEARNER_PLACEHOLDER} are literal placeholder
+tokens — reproduce them EXACTLY as written, including the square brackets,
+everywhere a name would go. Do not translate, rename, or remove them.
 
 Do not include:
 - Subject
@@ -219,6 +230,7 @@ Do not include:
         )
 
         body = response.choices[0].message.content.strip()
+        body = body.replace(_PARENT_PLACEHOLDER, parent_name).replace(_LEARNER_PLACEHOLDER, learner_name)
         return subject, body
 
     except Exception as e:
@@ -227,7 +239,7 @@ Do not include:
         return subject, f"""
 Hi {parent_name},
 
-{context} We'd love to have {learner_name} continue learning with us.
+{redacted_context.replace(_LEARNER_PLACEHOLDER, learner_name)} We'd love to have {learner_name} continue learning with us.
 
 If anything didn't work well for you, please reply and let us know — we're happy to help.
 
@@ -955,7 +967,7 @@ def _build_row(learner_id, parent_id, subscription_id, subscription_type,
     """These 4 lookups are all independent given learner_id/parent_id, so
     run them concurrently — same reasoning (and isolated-client pattern) as
     _fetch_all_subscription_rows. This is what makes single-row detail
-    pages (e.g. clicking into a win-back email) fast instead of paying 4+
+    pages (e.g. clicking into a re-engagement email) fast instead of paying 4+
     sequential round trips."""
 
     learner_name_client = _new_supabase_client()
@@ -1243,7 +1255,7 @@ def save_draft(row_key, subject, body):
         db_pool.putconn(conn)
 
 
-def get_or_generate_winback_email(row, ai_client=None):
+def get_or_generate_reengagement_email(row, ai_client=None):
     """Generate the AI draft only once per row_key — cache it locally so
     revisiting the page (or re-clicking after a slow first load) is instant."""
 
@@ -1252,7 +1264,7 @@ def get_or_generate_winback_email(row, ai_client=None):
     if cached:
         return cached["subject"], cached["body"]
 
-    subject, body = generate_winback_email(row, ai_client=ai_client)
+    subject, body = generate_reengagement_email(row, ai_client=ai_client)
     save_draft(row["row_key"], subject, body)
 
     return subject, body
@@ -1272,7 +1284,7 @@ def _get_draft_row_keys():
         db_pool.putconn(conn)
 
 
-def prefetch_winback_drafts(batch_size=5):
+def prefetch_reengagement_drafts(batch_size=5):
     """Generate+cache AI drafts for non-dismissed rows that don't have one
     yet, so opening a row is instant instead of triggering a ~20s synchronous
     AI call on first click. Meant to be called periodically from
@@ -1286,17 +1298,17 @@ def prefetch_winback_drafts(batch_size=5):
 
     for row in missing[:batch_size]:
         try:
-            get_or_generate_winback_email(row)
+            get_or_generate_reengagement_email(row)
         except Exception as e:
             print(f"Draft prefetch failed for {row['row_key']}:", e)
 
     return len(missing)
 
 
-def backfill_winback_drafts(concurrency=10):
+def backfill_reengagement_drafts(concurrency=10):
     """One-time catch-up: generate+cache every missing draft right now using
     several concurrent AI calls (each with its own client — see
-    _new_ai_client) instead of waiting on prefetch_winback_drafts' slow
+    _new_ai_client) instead of waiting on prefetch_reengagement_drafts' slow
     5/minute background trickle. Meant to be run manually/once, not on a
     schedule — safe to re-run since it only targets rows still missing a
     cached draft."""
@@ -1313,7 +1325,7 @@ def backfill_winback_drafts(concurrency=10):
 
     with ThreadPoolExecutor(max_workers=concurrency) as executor:
         futures = {
-            executor.submit(get_or_generate_winback_email, row, _new_ai_client()): row
+            executor.submit(get_or_generate_reengagement_email, row, _new_ai_client()): row
             for row in missing
         }
 

@@ -45,12 +45,12 @@ from subscription_cancel import (
     get_dismissed_subscriptions,
     restore_subscription_rows,
     get_subscription_row,
-    get_or_generate_winback_email,
+    get_or_generate_reengagement_email,
     save_sent_subscription_email,
     get_sent_subscription_email,
     get_sent_subscriptions
 )
-from followup_email import send_email as winback_send_email
+from followup_email import send_email as reengagement_send_email
 #from database import delete_teacher_message_db
 import sync_sent_gmail
 from fastapi import BackgroundTasks
@@ -1615,7 +1615,7 @@ async def subscription_cancel_email(request: Request, row_key: str):
     if not row:
         return Response(content="Not found", status_code=404)
 
-    subject, body = get_or_generate_winback_email(row)
+    subject, body = get_or_generate_reengagement_email(row)
 
     return templates.TemplateResponse(
         "subscription_cancel_email.html",
@@ -1636,7 +1636,7 @@ async def subscription_cancel_email_send(row_key: str, subject: str = Form(...),
     if not row or not row.get("parent_email"):
         return RedirectResponse(url=f"/subscription-cancel/email/{row_key}", status_code=303)
 
-    gmail_message_id = winback_send_email(row["parent_email"], subject, body)
+    gmail_message_id = reengagement_send_email(row["parent_email"], subject, body)
 
     save_sent_subscription_email(row, subject, body, gmail_message_id)
 

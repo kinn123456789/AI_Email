@@ -14,7 +14,7 @@ from teacher_api_sync import sync_teacher_portal
 import threading
 import time
 from teacher_ai_processor1 import process_teacher_messages
-from subscription_cancel import refresh_subscription_cache, prefetch_winback_drafts
+from subscription_cancel import refresh_subscription_cache, prefetch_reengagement_drafts
 # -------------------------------------------------
 # Locks & Queue
 # -------------------------------------------------
@@ -116,7 +116,7 @@ def run_email_reader(email_address=None):
         reader_lock.release()
 
 def run_refresh_subscription_cache():
-    """Shares subscription_cancel_lock with run_prefetch_winback_drafts so
+    """Shares subscription_cancel_lock with run_prefetch_reengagement_drafts so
     the two never run concurrently even if their staggered schedules ever
     drift into overlap — both are concurrency-heavy (ThreadPoolExecutor +
     several Supabase clients each), and stacking them was part of what
@@ -132,7 +132,7 @@ def run_refresh_subscription_cache():
         subscription_cancel_lock.release()
 
 
-def run_prefetch_winback_drafts():
+def run_prefetch_reengagement_drafts():
     """See run_refresh_subscription_cache — shares the same lock."""
 
     if not subscription_cancel_lock.acquire(blocking=False):
@@ -140,7 +140,7 @@ def run_prefetch_winback_drafts():
         return
 
     try:
-        prefetch_winback_drafts()
+        prefetch_reengagement_drafts()
     finally:
         subscription_cancel_lock.release()
 
@@ -284,10 +284,10 @@ scheduler.add_job(
     misfire_grace_time=60
 )
 
-# Pre-generates win-back drafts for rows that don't have one cached yet, so
+# Pre-generates re-engagement drafts for rows that don't have one cached yet, so
 # clicking into a row in the UI doesn't trigger a ~20s synchronous AI call.
 scheduler.add_job(
-    run_prefetch_winback_drafts,
+    run_prefetch_reengagement_drafts,
     trigger="interval",
     minutes=1,
     next_run_time=_schedule_base + timedelta(seconds=20),

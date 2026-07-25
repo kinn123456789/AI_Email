@@ -10,11 +10,18 @@ client = OpenAI(
 )
 
 
+_PARENT_PLACEHOLDER = "[PARENT_NAME]"
+_LEARNER_PLACEHOLDER = "[STUDENT_NAME]"
+
+
 def generate_followup_email(candidate, parent_name, email_number):
 
     learner_name = candidate.get("learner_name", "your child")
     class_title = candidate.get("class_title")
-    class_line = f"{learner_name}'s classes: {class_title}" if class_title else ""
+    # Real parent/learner names never leave the process — the AI only ever
+    # sees the placeholder tokens below, and the real names are substituted
+    # back in after the response comes back (see try/except below).
+    redacted_class_line = f"{_LEARNER_PLACEHOLDER}'s classes: {class_title}" if class_title else ""
 
     if email_number == 1:
 
@@ -23,15 +30,15 @@ def generate_followup_email(candidate, parent_name, email_number):
         prompt = f"""
 Write a warm, friendly follow-up email.
 
-Parent name: {parent_name}
-learner name: {learner_name}
-{class_line}
+Parent name: {_PARENT_PLACEHOLDER}
+learner name: {_LEARNER_PLACEHOLDER}
+{redacted_class_line}
 
-{learner_name} completed a free trial yesterday.
+{_LEARNER_PLACEHOLDER} completed a free trial yesterday.
 
 Thank the parent for trying Coral Academy.
 
-Mention {learner_name} enjoyed interactive classes.
+Mention {_LEARNER_PLACEHOLDER} enjoyed interactive classes.
 
 Invite them to continue learning.
 
@@ -41,6 +48,10 @@ Keep the email around 120 words.
 
 
 Return ONLY the email body.
+
+{_PARENT_PLACEHOLDER} and {_LEARNER_PLACEHOLDER} are literal placeholder
+tokens — reproduce them EXACTLY as written, including the square brackets,
+everywhere a name would go. Do not translate, rename, or remove them.
 
 Do not include:
 - Subject
@@ -56,11 +67,11 @@ Do not include:
         prompt = f"""
 Write a follow-up email.
 
-Parent name: {parent_name}
-learner name: {learner_name}
-{class_line}
+Parent name: {_PARENT_PLACEHOLDER}
+learner name: {_LEARNER_PLACEHOLDER}
+{redacted_class_line}
 
-{learner_name} completed a free trial three days ago.
+{_LEARNER_PLACEHOLDER} completed a free trial three days ago.
 
 Encourage enrollment.
 
@@ -81,6 +92,10 @@ Write naturally as if written by a real member of the Coral Academy team.
 
 Do not sound like AI.
 
+{_PARENT_PLACEHOLDER} and {_LEARNER_PLACEHOLDER} are literal placeholder
+tokens — reproduce them EXACTLY as written, including the square brackets,
+everywhere a name would go. Do not translate, rename, or remove them.
+
 Do not include:
 - Subject
 - Markdown
@@ -94,11 +109,11 @@ Do not include:
         prompt = f"""
 Write the final reminder email.
 
-Parent name: {parent_name}
-learner name: {learner_name}
-{class_line}
+Parent name: {_PARENT_PLACEHOLDER}
+learner name: {_LEARNER_PLACEHOLDER}
+{redacted_class_line}
 
-{learner_name} completed a free trial seven days ago.
+{_LEARNER_PLACEHOLDER} completed a free trial seven days ago.
 
 Be warm.
 
@@ -113,6 +128,10 @@ Return ONLY the email body.
 Write naturally as if written by a real member of the Coral Academy team.
 
 Do not sound like AI.
+
+{_PARENT_PLACEHOLDER} and {_LEARNER_PLACEHOLDER} are literal placeholder
+tokens — reproduce them EXACTLY as written, including the square brackets,
+everywhere a name would go. Do not translate, rename, or remove them.
 
 Do not include:
 - Subject
@@ -154,6 +173,7 @@ Do not include:
         )
 
         body = response.choices[0].message.content.strip()
+        body = body.replace(_PARENT_PLACEHOLDER, parent_name).replace(_LEARNER_PLACEHOLDER, learner_name)
 
         return subject, body
 
