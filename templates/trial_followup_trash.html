@@ -53,6 +53,7 @@
                     <th class="p-4 text-left">Learner</th>
                     <th class="p-4 text-left">Recipient</th>
                     <th class="p-4 text-left w-32">Type</th>
+                    <th class="p-4 text-left">Classes</th>
                     <th class="p-4 text-left">Subject</th>
                     <th class="p-4 text-left w-32">Status</th>
                     <th class="p-4 text-left">Sent At</th>
@@ -78,6 +79,7 @@
                             Follow-up {{ row.email_number }}
                         </span>
                     </td>
+                    <td class="p-4 truncate text-stone-700 text-sm" title="{{ row.class_title or '' }}">{{ row.class_title or '-' }}</td>
                     <td class="p-4 font-medium text-stone-900 truncate" title="{{ row.subject }}">
                         {{ row.subject }}
                     </td>

@@ -13,6 +13,8 @@ client = OpenAI(
 def generate_followup_email(candidate, parent_name, email_number):
 
     learner_name = candidate.get("learner_name", "your child")
+    class_title = candidate.get("class_title")
+    class_line = f"{learner_name}'s classes: {class_title}" if class_title else ""
 
     if email_number == 1:
 
@@ -23,6 +25,7 @@ Write a warm, friendly follow-up email.
 
 Parent name: {parent_name}
 learner name: {learner_name}
+{class_line}
 
 {learner_name} completed a free trial yesterday.
 
@@ -55,6 +58,7 @@ Write a follow-up email.
 
 Parent name: {parent_name}
 learner name: {learner_name}
+{class_line}
 
 {learner_name} completed a free trial three days ago.
 
@@ -92,6 +96,7 @@ Write the final reminder email.
 
 Parent name: {parent_name}
 learner name: {learner_name}
+{class_line}
 
 {learner_name} completed a free trial seven days ago.
 

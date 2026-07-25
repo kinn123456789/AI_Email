@@ -76,7 +76,8 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
         #gmail_message_id=gmail_message_id,
         #status="sent",
         gmail_message_id=None,
-        status="draft"
+        status="draft",
+        class_title=candidate.get("class_title")
     )
 
 

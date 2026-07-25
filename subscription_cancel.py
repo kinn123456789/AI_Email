@@ -33,7 +33,20 @@ _ai_client = OpenAI(
 )
 
 
-def generate_winback_email(row):
+def _new_ai_client():
+    """A fresh OpenAI/OpenRouter client for concurrent backfill use — same
+    isolation reasoning as _new_supabase_client, so parallel draft generation
+    doesn't share one client's connection across threads."""
+
+    return OpenAI(
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+        base_url="https://openrouter.ai/api/v1"
+    )
+
+
+def generate_winback_email(row, ai_client=None):
+
+    ai_client = ai_client or _ai_client
 
     parent_name = row.get("parent_name") or "there"
     learner_name = row.get("learner_name") or "your child"
@@ -77,7 +90,7 @@ Do not include:
 """
 
     try:
-        response = _ai_client.chat.completions.create(
+        response = ai_client.chat.completions.create(
             model="gpt-5-nano",
             messages=[
                 {
@@ -959,7 +972,7 @@ def save_draft(row_key, subject, body):
         db_pool.putconn(conn)
 
 
-def get_or_generate_winback_email(row):
+def get_or_generate_winback_email(row, ai_client=None):
     """Generate the AI draft only once per row_key — cache it locally so
     revisiting the page (or re-clicking after a slow first load) is instant."""
 
@@ -968,7 +981,7 @@ def get_or_generate_winback_email(row):
     if cached:
         return cached["subject"], cached["body"]
 
-    subject, body = generate_winback_email(row)
+    subject, body = generate_winback_email(row, ai_client=ai_client)
     save_draft(row["row_key"], subject, body)
 
     return subject, body
@@ -1007,6 +1020,46 @@ def prefetch_winback_drafts(batch_size=5):
             print(f"Draft prefetch failed for {row['row_key']}:", e)
 
     return len(missing)
+
+
+def backfill_winback_drafts(concurrency=10):
+    """One-time catch-up: generate+cache every missing draft right now using
+    several concurrent AI calls (each with its own client — see
+    _new_ai_client) instead of waiting on prefetch_winback_drafts' slow
+    5/minute background trickle. Meant to be run manually/once, not on a
+    schedule — safe to re-run since it only targets rows still missing a
+    cached draft."""
+
+    rows = get_cancelled_subscriptions(page_size=100000)["rows"]
+    existing = _get_draft_row_keys()
+
+    missing = [r for r in rows if r["row_key"] not in existing]
+
+    print(f"Backfilling {len(missing)} drafts with concurrency={concurrency}")
+
+    done = 0
+    failed = []
+
+    with ThreadPoolExecutor(max_workers=concurrency) as executor:
+        futures = {
+            executor.submit(get_or_generate_winback_email, row, _new_ai_client()): row
+            for row in missing
+        }
+
+        for future in futures:
+            row = futures[future]
+            try:
+                future.result()
+                done += 1
+                if done % 10 == 0:
+                    print(f"  {done}/{len(missing)} done")
+            except Exception as e:
+                failed.append(row["row_key"])
+                print(f"Backfill failed for {row['row_key']}:", e)
+
+    print(f"Backfill complete: {done} succeeded, {len(failed)} failed")
+
+    return {"done": done, "failed": failed}
 
 
 if __name__ == "__main__":

@@ -26,6 +26,9 @@
                     👤 <span class="text-stone-500 font-normal">Parent:</span> {{ email.parent_name or 'N/A' }}
                 </p>
                 <p class="flex items-center gap-1.5">🎓 <span class="text-stone-500">Learner:</span> <span class="font-medium text-stone-800">{{ email.learner_name or 'N/A' }}</span></p>
+                {% if email.class_title %}
+                <p class="flex items-center gap-1.5">📚 <span class="text-stone-500">Classes:</span> <span class="font-medium text-stone-800">{{ email.class_title }}</span></p>
+                {% endif %}
                 <p class="flex items-center gap-1.5">📧 <span class="text-stone-500">Recipient:</span> <span class="font-medium text-stone-800">{{ email.recipient_email }}</span></p>
                 <p class="flex items-center gap-1.5">📌 <span class="text-stone-500">Status:</span> <span class="font-medium text-stone-800">{{ email.status|capitalize }}</span></p>
                 <p class="flex items-center gap-1.5">

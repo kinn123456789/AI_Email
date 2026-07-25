@@ -5,12 +5,14 @@ from supabase_client import supabase
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 
+from subscription_cancel import _build_class_titles_lookup
+
 
 
 from database import (
-    
+
     get_connection,
-    
+
     db_pool
 )
 
@@ -92,6 +94,8 @@ def get_trial_followup_candidates():
 
     if not learner_ids:
         return []
+
+    class_titles_by_learner = _build_class_titles_lookup(learner_ids)
 
     # --------------------------------------------------
     # 4. Read active subscriptions
@@ -207,6 +211,9 @@ def get_trial_followup_candidates():
 
                 "learner_name":
                 user_lookup.get(learner_id, ""),
+
+                "class_title":
+                class_titles_by_learner.get(learner_id, ""),
 
                 "trial_expiry_at":
                 expiry
@@ -420,7 +427,8 @@ def save_followup_email_log(
     email_body,
     gmail_message_id,
     scheduled_at=None,
-    status="sent"
+    status="sent",
+    class_title=None
 ):
 
     conn = get_connection()
@@ -441,9 +449,10 @@ def save_followup_email_log(
                 email_body,
                 gmail_message_id,
                 status,
-                scheduled_at
+                scheduled_at,
+                class_title
             )
-            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """, (
             learner_id,
             learner_name,
@@ -455,7 +464,8 @@ def save_followup_email_log(
             email_body,
             gmail_message_id,
             status,
-            scheduled_at
+            scheduled_at,
+            class_title
         ))
 
         conn.commit()
@@ -520,9 +530,9 @@ def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, p
         filters = ""
 
         if search:
-            filters += " AND (subject ILIKE %s OR recipient_email ILIKE %s OR learner_name ILIKE %s OR parent_name ILIKE %s)"
+            filters += " AND (subject ILIKE %s OR recipient_email ILIKE %s OR learner_name ILIKE %s OR parent_name ILIKE %s OR class_title ILIKE %s)"
             like = f"%{search}%"
-            params.extend([like, like, like, like])
+            params.extend([like, like, like, like, like])
 
         if date_from:
             filters += " AND COALESCE(sent_at, scheduled_at)::date >= %s"
@@ -578,7 +588,8 @@ def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, p
                     gmail_message_id,
                     status,
                     sent_at,
-                    scheduled_at
+                    scheduled_at,
+                    class_title
                 FROM trial_followup_email_logs
                 WHERE NOT (status = 'pending' AND scheduled_at > NOW())
                 AND is_trashed = FALSE
@@ -955,7 +966,8 @@ def get_trashed_followup_email_logs():
                 subject,
                 status,
                 sent_at,
-                scheduled_at
+                scheduled_at,
+                class_title
             FROM trial_followup_email_logs
             WHERE is_trashed = TRUE
             ORDER BY id DESC
