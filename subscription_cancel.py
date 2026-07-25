@@ -82,7 +82,7 @@ def _fetch_all_paginated(build_query, client):
     return all_rows
 
 
-def _fetch_in_chunks(table, select_cols, id_column, ids, filters=None, max_workers=8):
+def _fetch_in_chunks(table, select_cols, id_column, ids, filters=None, max_workers=3):
     """Runs `.in_(id_column, ids)` in parallel chunks of _IN_CHUNK_SIZE
     (each with its own isolated client), merging results — PostgREST's
     URL-encoded IN(...) queries fail outright somewhere around 500-700
@@ -593,24 +593,24 @@ def _fetch_all_subscription_rows(since=None):
     if since is None) — this is what gets cached."""
 
     # Subscriptions and the trial-candidates lookup don't depend on each
-    # other, so run them concurrently — each is a Supabase round trip
-    # dominated by fixed network latency rather than data volume.
+    # other, and used to run concurrently here — but every concurrent
+    # Supabase connection adds to peak memory at the exact moment this
+    # runs (every 60s, forever), and that peak was contributing to
+    # repeated OOM kills on Render's 512Mi free tier even after fixing the
+    # scheduling collision and the connection leak. Running sequentially
+    # trades some speed (back toward the pre-optimization ~7s total) for
+    # meaningfully lower peak memory — one connection open at a time here
+    # instead of two.
     subscriptions_client = _new_supabase_client()
-    trials_client = _new_supabase_client()
-
     try:
-        with ThreadPoolExecutor(max_workers=2) as executor:
-            subscriptions_future = executor.submit(
-                _fetch_subscriptions, subscriptions_client, since
-            )
-            trials_future = executor.submit(
-                _get_expired_unconverted_trials, trials_client, since
-            )
-
-            subscriptions = subscriptions_future.result()
-            trial_candidates = trials_future.result()
+        subscriptions = _fetch_subscriptions(subscriptions_client, since)
     finally:
         _close_client(subscriptions_client)
+
+    trials_client = _new_supabase_client()
+    try:
+        trial_candidates = _get_expired_unconverted_trials(trials_client, since)
+    finally:
         _close_client(trials_client)
 
     if not subscriptions and not trial_candidates:
@@ -626,11 +626,13 @@ def _fetch_all_subscription_rows(since=None):
         if t["learner_id"]
     })
 
-    # These four all depend only on learner_ids, not on each other — run
-    # them concurrently too, for the same reason as above. Each uses
+    # These four all depend only on learner_ids, not on each other. Capped
+    # at 2 concurrent workers (was 4) — same peak-memory reasoning as Stage
+    # A above: fewer simultaneous open connections during this once-a-minute
+    # cycle, at the cost of this stage taking longer. Each uses
     # _fetch_in_chunks, which internally parallel-chunks + isolates clients
     # when learner_ids is large (see _fetch_in_chunks for why that's needed).
-    with ThreadPoolExecutor(max_workers=4) as executor:
+    with ThreadPoolExecutor(max_workers=2) as executor:
         learner_future = executor.submit(
             _fetch_in_chunks, "Learners", "learner_id, parent_id", "learner_id", learner_ids
         )
