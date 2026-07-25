@@ -158,9 +158,9 @@ Priority = Medium.
 
 needs_reply = true
 
-requires_review = false
-
-reply_type = automatic
+Determine requires_review and reply_type for these the same way as any
+other email — using Step 3 below. Being a Teacher Portal notification does
+not by itself make an email safe to skip review.
 
 Example:
 
@@ -169,8 +169,6 @@ Subject: New message from Amber - Coral Academy
 category = Teacher
 priority = Medium
 needs_reply = true
-requires_review = false
-reply_type = automatic
 --------------------------------------------------
 
 Step 3
@@ -385,9 +383,6 @@ Return only valid JSON.
             result["category"] = "Teacher"
             result["priority"] = "Medium"
             result["needs_reply"] = True
-            result["requires_review"] = False
-            result["reply_type"] = "automatic"
-            result["confidence"] = max(result.get("confidence", 0), 95)
         human_keywords = [
             "complaint",
             "refund",
