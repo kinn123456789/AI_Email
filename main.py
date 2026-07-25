@@ -110,6 +110,7 @@ from database import (
     save_embedding
 )
 from embedding_service import generate_embedding
+from historical_email_redaction import redact_pii
 templates = Jinja2Templates(directory="templates")
 
 
@@ -401,7 +402,13 @@ def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender,
     by the time this runs."""
 
     try:
-        text = f"Subject: {subject}\n\nBody:\n{clean_email_body(body)}"
+        # Redact known names/emails/phone numbers before this text is ever
+        # sent for embedding or stored — this becomes a "style example" the
+        # AI sees while drafting replies to other, unrelated families.
+        redacted_subject = redact_pii(subject)
+        redacted_body = redact_pii(body)
+
+        text = f"Subject: {redacted_subject}\n\nBody:\n{clean_email_body(redacted_body)}"
         embedding = generate_embedding(text[:8000])
 
         historical_id = save_historical_email(
@@ -410,8 +417,8 @@ def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender,
             in_reply_to=in_reply_to,
             sender=sender,
             recipient=recipient,
-            subject=subject,
-            body=body,
+            subject=redacted_subject,
+            body=redacted_body,
             sent_at=datetime.utcnow(),
             source_account=sender
         )

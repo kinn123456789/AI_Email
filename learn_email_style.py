@@ -12,6 +12,7 @@ import socket
 from email_filter import is_automated_email
 from database import historical_email_exists, save_historical_email, get_root_thread_id
 from email_reader import oauth_login
+from historical_email_redaction import redact_pii
 
 load_dotenv()
 
@@ -134,6 +135,12 @@ for account in EMAIL_ACCOUNTS:
                 print(f"Skipping non-staff sender in Sent Mail: {sender}")
                 continue
 
+            # Redact known names/emails/phone numbers before this becomes a
+            # "style example" the AI sees while drafting replies to other,
+            # unrelated families.
+            redacted_subject = redact_pii(subject)
+            redacted_body = redact_pii(body)
+
             try:# Save to DB
                 email_id = save_historical_email(
                     message_id=message_id,
@@ -142,8 +149,8 @@ for account in EMAIL_ACCOUNTS:
                     reference_ids=reference_ids,
                     sender=sender,
                     recipient=recipient,
-                    subject=subject,
-                    body=body,
+                    subject=redacted_subject,
+                    body=redacted_body,
                     sent_at=sent_at,
                     source_account=account["source"],
                     has_attachment=attachment_count > 0,
