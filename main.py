@@ -105,8 +105,11 @@ from database import (
     get_conversation_messages,
     get_contact_forms,
     update_final_reply, update_reply_type,get_email_thread,get_thread,get_latest_ai_summary,
-    get_support_emails
+    get_support_emails,
+    save_historical_email,
+    save_embedding
 )
+from embedding_service import generate_embedding
 templates = Jinja2Templates(directory="templates")
 
 
@@ -372,13 +375,54 @@ async def send_reply(
         )
 
         background_tasks.add_task(sync_sent_gmail.main)
+        background_tasks.add_task(
+            _save_reply_to_historical_emails,
+            message_id=real_message_id,
+            thread_id=original_email["thread_id"],
+            in_reply_to=original_email["message_id"],
+            sender=source,
+            recipient=original_email["sender"],
+            subject=original_email["subject"],
+            body=reply_body
+        )
 
         return RedirectResponse(
             url=f"/email/{email_id}?sent=true",
             status_code=303
         )
 
-   
+
+def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender, recipient, subject, body):
+    """Every real staff-sent reply feeds back into the RAG example pool used
+    by search_similar_emails/rag_reranker.py, so the AI's style examples
+    keep growing from genuine Coral Academy replies instead of only the
+    one-time Sent Mail import. Runs as a background task — failures here
+    must never affect the actual email send, which has already succeeded
+    by the time this runs."""
+
+    try:
+        text = f"Subject: {subject}\n\nBody:\n{clean_email_body(body)}"
+        embedding = generate_embedding(text[:8000])
+
+        historical_id = save_historical_email(
+            message_id=message_id,
+            thread_id=thread_id,
+            in_reply_to=in_reply_to,
+            sender=sender,
+            recipient=recipient,
+            subject=subject,
+            body=body,
+            sent_at=datetime.utcnow(),
+            source_account=sender
+        )
+
+        if historical_id:
+            save_embedding(historical_id, embedding)
+
+    except Exception as e:
+        print("Failed to save reply to historical_emails:", e)
+
+
 @app.get("/dashboard")
 def dashboard(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1):
 

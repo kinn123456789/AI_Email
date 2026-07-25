@@ -942,6 +942,7 @@ def     save_historical_email(
             VALUES (
                 %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
             )
+            ON CONFLICT (message_id) DO NOTHING
             RETURNING id
         """, (
             message_id,
@@ -958,11 +959,16 @@ def     save_historical_email(
             reference_ids
         ))
 
-        email_id = cursor.fetchone()[0]
+        row = cursor.fetchone()
 
         conn.commit()
 
-        return email_id
+        return row[0] if row else None
+
+    except Exception:
+
+        conn.rollback()
+        raise
 
     finally:
 
