@@ -5,6 +5,8 @@ from supabase_client import supabase
 from psycopg2.extras import RealDictCursor
 from datetime import datetime, timedelta
 
+from concurrent.futures import ThreadPoolExecutor
+
 from subscription_cancel import _build_class_titles_lookup, _fetch_in_chunks, _fetch_all_paginated
 
 
@@ -89,16 +91,25 @@ def get_trial_followup_candidates():
     if not learner_ids:
         return []
 
-    class_titles_by_learner = _build_class_titles_lookup(learner_ids)
-
     # --------------------------------------------------
-    # 4. Read active subscriptions
+    # 4. Class titles, active subscriptions, and learner names are all
+    # independent given learner_ids — run them concurrently, same pattern
+    # as _fetch_all_subscription_rows in subscription_cancel.py. Each of
+    # _build_class_titles_lookup/_fetch_in_chunks already isolates its own
+    # Supabase client(s) internally, so this is safe to parallelize.
     # --------------------------------------------------
 
-    subscriptions = _fetch_in_chunks(
-        "Subscriptions", "learner_id, subscription_status, subscribed_at", "learner_id", learner_ids,
-        filters=lambda q: q.eq("subscription_status", "active")
-    )
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        class_titles_future = executor.submit(_build_class_titles_lookup, learner_ids)
+        subscriptions_future = executor.submit(
+            _fetch_in_chunks, "Subscriptions", "learner_id, subscription_status, subscribed_at", "learner_id", learner_ids,
+            lambda q: q.eq("subscription_status", "active")
+        )
+        user_future = executor.submit(_fetch_in_chunks, "Users", "user_id, name", "user_id", learner_ids)
+
+        class_titles_by_learner = class_titles_future.result()
+        subscriptions = subscriptions_future.result()
+        user_rows = user_future.result()
 
     subscription_lookup = {}
 
@@ -110,16 +121,6 @@ def get_trial_followup_candidates():
             learner_id,
             []
         ).append(row)
-
-
-
-# --------------------------------------------------
-# 4A. Read learner names
-# --------------------------------------------------
-
-    user_rows = _fetch_in_chunks(
-        "Users", "user_id, name", "user_id", learner_ids
-    )
 
     user_lookup = {}
 
