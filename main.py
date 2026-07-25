@@ -908,8 +908,7 @@ import sync_sent_gmail
 MAX_BULK_RECIPIENTS = 100
 
 
-def parse_csv_recipients(file_bytes):
-    text = file_bytes.decode("utf-8-sig", errors="ignore")
+def parse_csv_recipients(text):
     rows = list(csv.reader(io.StringIO(text)))
 
     if not rows:
@@ -941,6 +940,8 @@ async def compose_email(
     bulk_recipients: str = Form(None),
 
     recipients_csv: UploadFile = File(None),
+
+    recipients_csv_text: str = Form(None),
 
     subject: str = Form(...),
 
@@ -975,7 +976,9 @@ async def compose_email(
     csv_bytes = await recipients_csv.read() if (recipients_csv and recipients_csv.filename) else None
 
     if csv_bytes:
-        raw_recipients = parse_csv_recipients(csv_bytes)
+        raw_recipients = parse_csv_recipients(csv_bytes.decode("utf-8-sig", errors="ignore"))
+    elif recipients_csv_text and recipients_csv_text.strip():
+        raw_recipients = parse_csv_recipients(recipients_csv_text)
     elif bulk_recipients and bulk_recipients.strip():
         raw_recipients = []
         for line in bulk_recipients.splitlines():

@@ -125,7 +125,7 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
         <!-- CSV Upload -->
         <div>
             <label class="block font-semibold text-stone-700 mb-2">
-                Or Upload a CSV <span class="font-normal text-stone-500">(optional — if provided, this is used instead of Bulk Recipients above)</span>
+                Or Upload a CSV <span class="font-normal text-stone-500">(optional — if provided, this is used instead of everything above)</span>
             </label>
             <input
                 type="file"
@@ -136,6 +136,22 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
                 First column is the email address, second column (optional) is the name. A header row like
                 <code class="bg-white/60 px-1.5 py-0.5 rounded">email,name</code> is fine — it's detected and skipped automatically.
                 Same 100-recipient limit applies here too.
+            </p>
+        </div>
+
+        <!-- CSV Paste -->
+        <div>
+            <label class="block font-semibold text-stone-700 mb-2">
+                Or Paste CSV Text <span class="font-normal text-stone-500">(optional — used if no CSV file is uploaded; overrides Bulk Recipients above)</span>
+            </label>
+            <textarea
+                name="recipients_csv_text"
+                rows="4"
+                placeholder="email,name&#10;one@example.com,Sarah&#10;two@example.com,Raj"
+                class="w-full rounded-2xl border border-white/50 bg-white/50 p-4 resize-none font-mono text-sm focus:ring-2 focus:ring-cyan-500 outline-none"></textarea>
+            <p class="text-stone-500 text-sm mt-2">
+                Paste CSV content directly (e.g. copied from a spreadsheet) instead of uploading a file — parsed the
+                same way as the CSV upload above, including automatic header-row detection.
             </p>
         </div>
 
