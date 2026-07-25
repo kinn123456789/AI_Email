@@ -31,7 +31,17 @@ for account in EMAIL_ACCOUNTS:
 
     try:
         mail = oauth_login(account["email"], account["token"])
-        mail.select("INBOX")
+
+        # Sent Mail, not INBOX — this table is used to teach the AI Coral
+        # Academy's own writing style. Pulling from INBOX would store
+        # customer-authored emails (with their personal details), which
+        # could then get surfaced as "style examples" while drafting a
+        # reply to a *different* customer.
+        status, _ = mail.select('"[Gmail]/Sent Mail"')
+
+        if status != "OK":
+            print(f"Could not open Sent Mail for {account['source']}")
+            continue
 
         status, messages = mail.search(None, '(SINCE "01-Jul-2025")')
         if status != "OK":
@@ -81,7 +91,7 @@ for account in EMAIL_ACCOUNTS:
                 body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
 
             # Filter Check
-            skip, category, reason = is_automated_email(msg)
+            skip, category, reason, mailbox = is_automated_email(msg)
             if skip:
                 print(f"Skipping automated: {subject[:30]}... ({reason})")
                 continue
@@ -110,6 +120,15 @@ for account in EMAIL_ACCOUNTS:
                 sent_at = parsedate_to_datetime(date_header) if date_header else None
             except Exception:
                 sent_at = None
+
+            # Belt-and-suspenders: only ever store emails actually sent BY
+            # a Coral Academy staff address, even though we're now reading
+            # from Sent Mail — guards against forwarded/odd messages ending
+            # up in this folder and leaking customer content as "style".
+            staff_addresses = {a["email"] for a in EMAIL_ACCOUNTS if a["email"]}
+            if sender not in staff_addresses:
+                print(f"Skipping non-staff sender in Sent Mail: {sender}")
+                continue
 
             try:# Save to DB
                 email_id = save_historical_email(
