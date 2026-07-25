@@ -5,6 +5,7 @@ from email.utils import parseaddr, parsedate_to_datetime
 from email.header import decode_header
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
 import socket
 
 # Your custom modules
@@ -15,6 +16,9 @@ from email_reader import oauth_login
 load_dotenv()
 
 socket.setdefaulttimeout(60)
+
+IMPORT_WINDOW_DAYS = 90
+since_date = (datetime.now() - timedelta(days=IMPORT_WINDOW_DAYS)).strftime("%d-%b-%Y")
 
 EMAIL_ACCOUNTS = [
     {"email": os.getenv("EMAIL_1"), "token": "token_support.json", "source": "support@coralacademy.com"},
@@ -43,7 +47,7 @@ for account in EMAIL_ACCOUNTS:
             print(f"Could not open Sent Mail for {account['source']}")
             continue
 
-        status, messages = mail.search(None, '(SINCE "01-Jul-2025")')
+        status, messages = mail.search(None, f'(SINCE "{since_date}")')
         if status != "OK":
             print("Search failed")
             continue
