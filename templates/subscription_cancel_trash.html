@@ -1,0 +1,125 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancelled Subscriptions — Trash</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
+
+{% if restored %}
+<div id="restore-message" class="mb-6 rounded-xl border border-emerald-300 bg-emerald-100 px-5 py-3 text-emerald-900 font-semibold shadow">
+    ✔️ {{ restored }} row(s) restored.
+</div>
+{% endif %}
+
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">🗑️ Cancelled Subscriptions — Trash</h1>
+<div class="flex items-center gap-3">
+
+<form method="post" action="/subscription-cancel/trash/restore" id="restore-form">
+<button
+    id="restore-btn"
+    type="submit"
+    disabled
+    class="bg-emerald-600 text-white px-5 py-4 rounded-3xl font-bold hover:bg-emerald-700 transition shadow-lg border border-white/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+    <span>♻️</span> Restore Selected
+</button>
+</form>
+
+<a href="/subscription-cancel"
+   class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    ← Back
+</a>
+</div>
+</div>
+
+<!-- Table -->
+<div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
+<table class="w-full table-fixed border-collapse min-w-[900px]">
+<thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
+<tr>
+<th class="w-12 p-4 text-center">
+    <input type="checkbox" id="select-all">
+</th>
+<th class="w-1/6 p-4 text-left">Parent</th>
+<th class="w-1/6 p-4 text-left">Learner</th>
+<th class="w-1/4 p-4 text-left">Email</th>
+<th class="w-1/6 p-4 text-left">Subscription</th>
+<th class="w-1/6 p-4 text-left">Cancelled</th>
+<th class="w-1/6 p-4 text-left">Dismissed At</th>
+</tr>
+</thead>
+<tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
+{% for d in dismissed %}
+<tr class="hover:bg-cyan-300/40 transition-colors">
+<td class="p-4 text-center">
+    <input
+        type="checkbox"
+        name="row_keys"
+        value="{{ d.row_key }}"
+        form="restore-form"
+        class="row-checkbox">
+</td>
+<td class="p-4 truncate font-semibold text-gray-950">{{ d.parent_name or "-" }}</td>
+<td class="p-4 truncate text-gray-950">{{ d.learner_name or "-" }}</td>
+<td class="p-4 truncate text-xs font-medium text-cyan-950">{{ d.parent_email or "-" }}</td>
+<td class="p-4">
+    <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">{{ d.subscription_type }}</span>
+</td>
+<td class="p-4 text-cyan-950 text-xs font-bold">{{ d.canceled_at_display or "-" }}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold">{{ d.dismissed_at }}</td>
+</tr>
+{% endfor %}
+
+{% if not dismissed %}
+<tr>
+    <td colspan="7" class="text-center py-12 text-cyan-950 font-bold">Trash is empty.</td>
+</tr>
+{% endif %}
+</tbody>
+</table>
+</div>
+
+</body>
+<script>
+const restoreMessage = document.getElementById("restore-message");
+
+if (restoreMessage) {
+    setTimeout(() => {
+        restoreMessage.remove();
+    }, 3000);
+}
+
+const selectAll = document.getElementById("select-all");
+const restoreBtn = document.getElementById("restore-btn");
+
+function updateRestoreButton() {
+    const checked = document.querySelectorAll(".row-checkbox:checked").length;
+    restoreBtn.disabled = checked === 0;
+}
+
+document.querySelectorAll(".row-checkbox").forEach(cb => {
+    cb.addEventListener("change", function () {
+        const all = document.querySelectorAll(".row-checkbox");
+        selectAll.checked =
+            all.length > 0 &&
+            document.querySelectorAll(".row-checkbox:checked").length === all.length;
+
+        updateRestoreButton();
+    });
+});
+
+selectAll.addEventListener("change", function () {
+    document.querySelectorAll(".row-checkbox").forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+    updateRestoreButton();
+});
+
+updateRestoreButton();
+</script>
+</html>

@@ -510,12 +510,80 @@ def attachment_exists(message_id, filename):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_contact_forms():
+def get_contact_forms(search=None, date_from=None, date_to=None, page=1, page_size=50, status=None):
+
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
+
     try:
-        cursor.execute("SELECT * FROM messages WHERE mailbox = 'contact_form' ORDER BY created_at DESC")
-        return cursor.fetchall()
+
+        params = []
+        filters = ""
+
+        if date_from:
+            filters += " AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata')::date >= %s"
+            params.append(date_from)
+
+        if date_to:
+            filters += " AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'Asia/Kolkata')::date <= %s"
+            params.append(date_to)
+
+        if status:
+            filters += " AND status = %s"
+            params.append(status)
+
+        if search:
+            filters += " AND (contact_name ILIKE %s OR sender ILIKE %s OR phone ILIKE %s OR body ILIKE %s)"
+            like = f"%{search}%"
+            params.extend([like, like, like, like])
+
+        own_accounts = (
+            "support@coralacademy.com",
+            "lucy@coralacademy.com",
+            "engineering@coralacademy.com"
+        )
+
+        cursor.execute(f"""
+            SELECT COUNT(*) AS total
+            FROM messages
+            WHERE mailbox = 'contact_form'
+            AND sender NOT IN %s
+            {filters}
+        """, [own_accounts] + params)
+
+        total = cursor.fetchone()["total"]
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = max(1, min(page, total_pages))
+        offset = (page - 1) * page_size
+
+        cursor.execute(f"""
+            SELECT *
+            FROM messages
+            WHERE mailbox = 'contact_form'
+            AND sender NOT IN %s
+            {filters}
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+        """, [own_accounts] + params + [page_size, offset])
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = (
+                    row["created_at"]
+                    .replace(tzinfo=timezone.utc)
+                    .astimezone(ZoneInfo("Asia/Kolkata"))
+                    .strftime("%b %-d, %-I:%M %p")
+                )
+
+        return {
+            "rows": rows,
+            "total": total,
+            "page": page,
+            "total_pages": total_pages,
+        }
+
     finally:
         cursor.close()
         db_pool.putconn(conn)
@@ -548,10 +616,10 @@ def get_thread(thread_id):
     cursor = conn.cursor(cursor_factory=RealDictCursor)
     try:
         query = """
-            SELECT sender, body, created_at 
-            FROM messages 
-            WHERE thread_id = %s 
-            ORDER BY email_date ASC
+            SELECT sender, body, created_at
+            FROM messages
+            WHERE thread_id = %s
+            ORDER BY COALESCE(email_date, created_at) ASC
         """
         cursor.execute(query, (thread_id,))
         return cursor.fetchall()

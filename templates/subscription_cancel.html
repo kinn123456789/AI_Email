@@ -1,0 +1,251 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cancelled Subscriptions</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
+
+{% if trashed %}
+<div id="trash-message" class="mb-6 rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
+    🗑️ {{ trashed }} row(s) moved to Trash.
+</div>
+{% endif %}
+
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight"> Cancelled Subscriptions</h1>
+<div class="flex items-center gap-3">
+
+<form method="post" action="/subscription-cancel/delete-selected" id="delete-form">
+<button
+    id="delete-btn"
+    type="submit"
+    disabled
+    onclick="return confirm('Move selected rows to Trash?')"
+    class="bg-red-600 text-white px-5 py-4 rounded-3xl font-bold hover:bg-red-700 transition shadow-lg border border-white/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+    <span>🗑️</span> Delete Selected
+</button>
+</form>
+
+<a href="/subscription-cancel/trash"
+   class="bg-gray-700 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    <span class="text-xl">🗑️</span> Trash
+</a>
+
+<a href="/subscription-cancel/sent"
+   class="bg-stone-700 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    <span class="text-xl">📤</span> Sent Mails
+</a>
+
+<a href="/"
+   class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    ← Back
+</a>
+</div>
+</div>
+
+<!-- Metrics Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+<div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
+<h3 class="text-cyan-950/70 text-sm font-bold">Total Cancelled</h3>
+<p class="text-3xl font-bold text-gray-950 mt-1">{{ total }}</p>
+</div>
+</div>
+
+<!-- Filter Bar -->
+<form method="get" action="/subscription-cancel" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
+
+<input type="hidden" name="page" value="{{ current_page }}">
+
+<select
+    id="subscriptionFilter"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+<option value="all">All Subscription Types</option>
+{% for t in subscription_types %}
+<option value="{{ t }}">{{ t }}</option>
+{% endfor %}
+</select>
+
+<input
+    type="date"
+    name="date_from"
+    value="{{ selected_date_from or '' }}"
+    onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+<input
+    type="date"
+    name="date_to"
+    value="{{ selected_date_to or '' }}"
+    onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+
+<input
+    type="text"
+    name="q"
+    id="searchInput"
+    value="{{ search_query or '' }}"
+    placeholder="Search parent, email, or subscription type..."
+    class="flex-1 min-w-[240px] bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm text-cyan-950 placeholder-cyan-950/40">
+
+<button type="submit"
+    class="bg-cyan-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
+    Filter
+</button>
+
+{% if search_query or selected_date_from or selected_date_to %}
+<a href="/subscription-cancel" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
+{% endif %}
+
+</form>
+
+<!-- Table -->
+<div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
+<table class="w-full table-fixed border-collapse min-w-[900px]">
+<thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
+<tr>
+<th class="w-12 p-4 text-center">
+    <input type="checkbox" id="select-all">
+</th>
+<th class="w-1/6 p-4 text-left">Parent</th>
+<th class="w-1/6 p-4 text-left">Learner</th>
+<th class="w-1/4 p-4 text-left">Email</th>
+<th class="w-1/6 p-4 text-left">Subscription</th>
+<th class="w-1/12 p-4 text-left">Sessions</th>
+<th class="w-1/6 p-4 text-left">Cancelled</th>
+<th class="w-1/6 p-4 text-left">Status</th>
+</tr>
+</thead>
+<tbody id="subscriptionTable" class="text-sm text-gray-950 divide-y divide-cyan-300/40">
+{% for s in subscriptions %}
+<tr data-type="{{ s.subscription_type }}" onclick="window.location='/subscription-cancel/email/{{ s.row_key }}'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer">
+<td class="p-4 text-center" onclick="event.stopPropagation();">
+    <input
+        type="checkbox"
+        name="row_keys"
+        value="{{ s.row_key }}"
+        form="delete-form"
+        class="row-checkbox"
+        onclick="event.stopPropagation();">
+</td>
+<td class="p-4 truncate font-semibold text-gray-950">{{ s.parent_name or "-" }}</td>
+<td class="p-4 truncate text-gray-950">{{ s.learner_name or "-" }}</td>
+<td class="p-4 truncate text-xs font-medium text-cyan-950">{{ s.parent_email or "-" }}</td>
+<td class="p-4">
+    <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">{{ s.subscription_type }}</span>
+</td>
+<td class="p-4 font-bold text-cyan-950">{{ s.sessions_attended }}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold">{{ s.canceled_at_display or "-" }}</td>
+<td class="p-4">
+    {% if s.subscription_status == "trial_expired" %}
+    <span class="bg-amber-300/60 text-amber-950 px-3 py-1 rounded-full text-xs font-bold border border-amber-400/50">Trial Expired</span>
+    {% else %}
+    <span class="bg-red-300/60 text-red-950 px-3 py-1 rounded-full text-xs font-bold border border-red-400/50">Cancelled</span>
+    {% endif %}
+</td>
+</tr>
+{% endfor %}
+
+{% if not subscriptions %}
+<tr>
+    <td colspan="8" class="text-center py-12 text-cyan-950 font-bold">🎉 No cancelled subscriptions found.</td>
+</tr>
+{% endif %}
+</tbody>
+</table>
+<div class="bg-cyan-900/10 border-t border-cyan-300/50 px-6 py-3 text-xs font-bold text-cyan-950 uppercase tracking-widest">
+{% if total > 0 %}
+Showing {{ ((current_page - 1) * page_size) + 1 }}-{{ [current_page * page_size, total]|min }} of {{ total }} cancelled subscriptions
+{% else %}
+Showing 0 cancelled subscriptions
+{% endif %}
+</div>
+</div>
+
+<!-- Pagination -->
+{% set base_qs = {
+    'q': search_query or '',
+    'date_from': selected_date_from or '',
+    'date_to': selected_date_to or ''
+} %}
+<div class="flex items-center justify-center gap-4 mt-6">
+<a href="/subscription-cancel?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"
+   class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page <= 1 %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+   ← Previous
+</a>
+<span class="text-sm font-bold text-cyan-950">Page {{ current_page }} of {{ total_pages }}</span>
+<a href="/subscription-cancel?{{ base_qs|urlencode }}&page={{ current_page + 1 }}"
+   class="px-4 py-2 rounded-xl font-bold text-sm bg-white/60 border border-cyan-200 text-cyan-950 {% if current_page >= total_pages %}opacity-40 pointer-events-none{% else %}hover:bg-white/90{% endif %}">
+   Next →
+</a>
+</div>
+
+</body>
+<script>
+const trashMessage = document.getElementById("trash-message");
+
+if (trashMessage) {
+    setTimeout(() => {
+        trashMessage.remove();
+    }, 3000);
+}
+
+const selectAll = document.getElementById("select-all");
+const deleteBtn = document.getElementById("delete-btn");
+
+function updateDeleteButton() {
+    const checked = document.querySelectorAll(".row-checkbox:checked").length;
+    deleteBtn.disabled = checked === 0;
+}
+
+document.querySelectorAll(".row-checkbox").forEach(cb => {
+    cb.addEventListener("change", function () {
+        const all = document.querySelectorAll(".row-checkbox");
+        selectAll.checked =
+            all.length > 0 &&
+            document.querySelectorAll(".row-checkbox:checked").length === all.length;
+
+        updateDeleteButton();
+    });
+});
+
+selectAll.addEventListener("change", function () {
+    document.querySelectorAll(".row-checkbox").forEach(cb => {
+        cb.checked = this.checked;
+    });
+
+    updateDeleteButton();
+});
+
+updateDeleteButton();
+</script>
+<script>
+const filter = document.getElementById("subscriptionFilter");
+
+filter.addEventListener("change", function () {
+    const value = this.value;
+
+    document.querySelectorAll("#subscriptionTable tr").forEach(function (row) {
+        if (value === "all" || row.dataset.type === value) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+});
+</script>
+<script>
+const searchInput = document.getElementById("searchInput");
+let searchDebounce;
+
+searchInput.addEventListener("input", function () {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        document.getElementById("filterForm").submit();
+    }, 600);
+});
+</script>
+</html>

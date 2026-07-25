@@ -509,7 +509,7 @@ def get_active_campaign_count():
         cursor.close()
         db_pool.putconn(conn)
 
-def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, page_size=50):
+def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, page_size=50, status=None):
 
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -532,6 +532,10 @@ def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, p
             filters += " AND COALESCE(sent_at, scheduled_at)::date <= %s"
             params.append(date_to)
 
+        if status:
+            filters += " AND status = %s"
+            params.append(status)
+
         # Exclude future-scheduled "pending" rows so they don't appear on the
         # dashboard until their scheduled_at time arrives. Drafts (status='draft')
         # and already-sent rows remain visible immediately.
@@ -546,6 +550,7 @@ def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, p
                     id, email_number
                 FROM trial_followup_email_logs
                 WHERE NOT (status = 'pending' AND scheduled_at > NOW())
+                AND is_trashed = FALSE
                 {filters}
                 ORDER BY learner_id, email_number, id DESC
             ) latest
@@ -576,6 +581,7 @@ def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, p
                     scheduled_at
                 FROM trial_followup_email_logs
                 WHERE NOT (status = 'pending' AND scheduled_at > NOW())
+                AND is_trashed = FALSE
                 {filters}
                 ORDER BY learner_id, email_number, id DESC
             ) latest
@@ -892,6 +898,70 @@ def update_followup_schedule(email_id, scheduled_at):
         ))
 
         conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def move_followup_to_trash(email_ids):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_email_logs
+            SET is_trashed = TRUE
+            WHERE id = ANY(%s)
+        """, (email_ids,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def restore_followup_from_trash(email_ids):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_email_logs
+            SET is_trashed = FALSE
+            WHERE id = ANY(%s)
+        """, (email_ids,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_trashed_followup_email_logs():
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT
+                id,
+                learner_name,
+                parent_name,
+                email_number,
+                recipient_email,
+                subject,
+                status,
+                sent_at,
+                scheduled_at
+            FROM trial_followup_email_logs
+            WHERE is_trashed = TRUE
+            ORDER BY id DESC
+        """)
+
+        return cursor.fetchall()
 
     finally:
         cursor.close()

@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Win-back Email</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen p-6 md:p-12 font-sans text-stone-800 bg-cyan-50"
+      style="background: url('/static/background.png') center/cover no-repeat fixed;">
+
+    <div class="max-w-3xl mx-auto bg-cyan-200/40 backdrop-blur-xl p-8 rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] border border-cyan-100/50">
+
+        <div class="flex items-center gap-2 mb-6">
+            <span class="text-2xl">💌</span>
+            <h1 class="text-2xl font-bold tracking-tight text-stone-800">Win-back Email</h1>
+        </div>
+
+        <div class="mb-8 p-5 bg-cyan-900/10 border border-cyan-300/50 rounded-2xl shadow-sm">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3 text-sm">
+                <p class="font-semibold text-stone-800 text-base md:col-span-2 flex items-center gap-1.5 border-b border-cyan-300/50 pb-2 mb-1">
+                    👤 <span class="text-stone-500 font-normal">Parent:</span> {{ row.parent_name or 'N/A' }}
+                </p>
+                <p class="flex items-center gap-1.5">🎓 <span class="text-stone-500">Learner:</span> <span class="font-medium text-stone-800">{{ row.learner_name or 'N/A' }}</span></p>
+                <p class="flex items-center gap-1.5">📧 <span class="text-stone-500">Recipient:</span> <span class="font-medium text-stone-800">{{ row.parent_email or 'N/A' }}</span></p>
+                <p class="flex items-center gap-1.5">
+                    📦 <span class="text-stone-500">Type:</span>
+                    <span class="font-medium text-stone-800">{{ row.subscription_type }}</span>
+                </p>
+                {% if row.canceled_at_display %}
+                <p class="flex items-center gap-1.5">🕒 <span class="text-stone-500">
+                    {% if row.subscription_status == "trial_expired" %}Trial Expired:{% else %}Cancelled:{% endif %}
+                </span> <span class="font-medium text-stone-800">{{ row.canceled_at_display }}</span></p>
+                {% endif %}
+                {% if row.sessions_attended is defined %}
+                <p class="flex items-center gap-1.5">📊 <span class="text-stone-500">Sessions Attended:</span> <span class="font-medium text-stone-800">{{ row.sessions_attended }}</span></p>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if request.query_params.get("sent") == "true" %}
+        <div id="send-success" class="mb-4 bg-green-100 border border-green-300 rounded-2xl p-4">
+            <p class="text-green-800 font-semibold">✓ Email sent successfully</p>
+        </div>
+        <script>
+            setTimeout(() => {
+                document.getElementById("send-success")?.remove();
+                const url = new URL(window.location);
+                url.searchParams.delete("sent");
+                window.history.replaceState({}, "", url);
+            }, 3000);
+        </script>
+        {% endif %}
+
+        {% if sent %}
+        <div class="mb-8 p-5 bg-emerald-100/50 border border-emerald-300 rounded-2xl">
+            <p class="font-semibold text-emerald-800 mb-1">✓ Sent {{ sent.sent_at }}</p>
+        </div>
+        <div class="mb-4">
+            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase px-1 mb-2">Subject</h2>
+            <div class="bg-white/60 border border-cyan-300/40 p-4 rounded-2xl text-stone-700 text-sm">{{ subject }}</div>
+        </div>
+        <div class="mb-4">
+            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase px-1 mb-2">✉️ Email Content</h2>
+            <div class="bg-white/60 border border-cyan-300/40 p-5 rounded-2xl whitespace-pre-wrap break-words text-stone-700 text-sm leading-relaxed shadow-inner">{{ body }}</div>
+        </div>
+        {% else %}
+        <h2 class="text-lg font-bold mb-4 text-stone-800">Review AI Draft</h2>
+        <form action="/subscription-cancel/email/{{ row.row_key }}/send" method="post"
+              onsubmit="return confirm('Send this win-back email?')">
+            <label class="block font-semibold mb-2 text-sm text-stone-800">Subject</label>
+            <input
+                type="text"
+                name="subject"
+                value="{{ subject }}"
+                class="w-full border border-cyan-300/50 bg-white/70 rounded-xl p-3 mb-4 text-stone-800">
+            <label class="block font-semibold mb-2 text-sm text-stone-800">Message</label>
+            <textarea
+                name="body"
+                rows="10"
+                class="w-full border border-cyan-300/50 bg-white/70 rounded-xl p-3 text-stone-800">{{ body }}</textarea>
+            <button
+                type="submit"
+                class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl mt-4 font-semibold transition">
+                Send Email
+            </button>
+        </form>
+        {% endif %}
+
+        <div class="border-t border-cyan-300/50 mt-8 pt-6 flex justify-end">
+            <a href="/subscription-cancel" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-900 transition shadow-sm">
+                ← Back to List
+            </a>
+        </div>
+
+    </div>
+</body>
+</html>

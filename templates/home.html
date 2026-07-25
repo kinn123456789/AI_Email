@@ -52,22 +52,6 @@
                 </span>
             </a>
 
-            <!-- Teacher Portal Card -->
-            <a href="/teacher-inbox"
-               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_10px_30px_rgba(176,224,230,0.15)] hover:shadow-[0_20px_40px_rgba(176,224,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                <div class="text-5xl mb-4 p-4 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">🎓</div>
-                <h2 class="text-2xl font-bold text-[#0F5D7A] mb-2">
-                    Teacher Portal
-                </h2>
-                <p class="text-stone-600 text-sm mb-6 font-medium">
-                    Parent-teacher secure conversations
-                </p>
-                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all">
-                    Open Portal 🎒
-                </span>
-            </a>
-
             <!-- Contact Forms Card -->
             <a href="/contact-dashboard"
                class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_10px_30px_rgba(173,216,230,0.15)] hover:shadow-[0_20px_40px_rgba(173,216,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
@@ -92,7 +76,7 @@
                 <h2 class="text-2xl font-bold text-[#0F5D7A] mb-2">
                     Trial Follow-ups
                 </h2>
-                
+
                 {% if due_followups|length > 0 %}
                 {% endif %}
 
@@ -101,6 +85,38 @@
                 </p>
                 <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all">
                     Explore Hub 🚀
+                </span>
+            </a>
+
+            <!-- Cancelled Subscriptions Card -->
+            <a href="/subscription-cancel"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_10px_30px_rgba(244,114,182,0.15)] hover:shadow-[0_20px_40px_rgba(244,114,182,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-400 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-5xl mb-4 p-4 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner"></div>
+                <h2 class="text-2xl font-bold text-[#0F5D7A] mb-2">
+                    Cancelled Subscriptions
+                </h2>
+                <p class="text-stone-600 text-sm mb-6 font-medium">
+                    Win-back follow-ups for lapsed members
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all">
+                    View List 💌
+                </span>
+            </a>
+
+            <!-- Teacher Portal Card -->
+            <a href="/teacher-inbox"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-8 rounded-3xl shadow-[0_10px_30px_rgba(176,224,230,0.15)] hover:shadow-[0_20px_40px_rgba(176,224,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-5xl mb-4 p-4 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">🎓</div>
+                <h2 class="text-2xl font-bold text-[#0F5D7A] mb-2">
+                    Teacher Portal
+                </h2>
+                <p class="text-stone-600 text-sm mb-6 font-medium">
+                    Parent-teacher secure conversations
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-6 py-2.5 rounded-full font-semibold text-sm shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all">
+                    Open Portal 🎒
                 </span>
             </a>
 

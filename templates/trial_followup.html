@@ -13,15 +13,45 @@
 
 <div class="max-w-7xl mx-auto">
 
+    {% if trashed %}
+    <div id="trash-message" class="mb-6 rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
+        🗑️ {{ trashed }} email(s) moved to Trash.
+    </div>
+    {% endif %}
+
     <!-- Header -->
     <div class="flex justify-between items-center mb-8">
         <div>
             <h1 class="text-4xl font-bold text-stone-800">🚀 Trial Follow-up Dashboard</h1>
             <p class="text-stone-500 mt-2">Manage and track automated trial follow-up campaigns.</p>
         </div>
-        {#<a href="/dashboard" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition">
-            ← Dashboard
-        </a>#}
+        <div class="flex items-center gap-3">
+            <form method="post" action="/trial-followup/delete-selected" id="delete-form">
+                <button
+                    id="delete-btn"
+                    type="submit"
+                    disabled
+                    onclick="return confirm('Move selected emails to Trash?')"
+                    class="bg-red-600 text-white px-5 py-3 rounded-xl font-bold hover:bg-red-700 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <span>🗑️</span> Delete Selected
+                </button>
+            </form>
+            <a href="/trial-followup/trash"
+               class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold hover:bg-stone-900 transition flex items-center gap-2">
+                <span>🗑️</span> Trash
+            </a>
+            {% if is_sent_view %}
+            <a href="/trial-followup"
+               class="bg-stone-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-black transition flex items-center gap-2">
+                📋 All Emails
+            </a>
+            {% else %}
+            <a href="/trial-followup/sent"
+               class="bg-stone-700 text-white px-6 py-3 rounded-xl font-semibold hover:bg-black transition flex items-center gap-2">
+                📤 Sent Mails
+            </a>
+            {% endif %}
+        </div>
     </div>
 
     <!-- Summary Cards -->
@@ -103,6 +133,9 @@
         <table class="w-full table-fixed border-collapse min-w-[1000px]">
             <thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
                 <tr>
+                    <th class="w-12 p-4 text-center">
+                        <input type="checkbox" id="select-all">
+                    </th>
                     <th class="p-4 text-left w-16">#</th>
                     <th class="p-4 text-left">Parent</th>
                     <th class="p-4 text-left">Learner</th>
@@ -117,6 +150,14 @@
             <tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
                 {% for row in rows %}
                 <tr class="hover:bg-cyan-300/40 transition-colors">
+                    <td class="p-4 text-center" onclick="event.stopPropagation();">
+                        <input
+                            type="checkbox"
+                            name="email_ids"
+                            value="{{ row.id }}"
+                            form="delete-form"
+                            class="row-checkbox">
+                    </td>
                     <td class="p-4 text-stone-600 font-mono text-sm">{{ loop.index }}</td>
                     <td class="p-4 truncate">{{ row.parent_name or 'N/A' }}</td>
                     <td class="p-4 truncate">{{ row.learner_name or 'N/A' }}</td>
@@ -189,6 +230,46 @@ searchInput.addEventListener("input", function () {
         document.getElementById("filterForm").submit();
     }, 600);
 });
+</script>
+<script>
+const trashMessage = document.getElementById("trash-message");
+
+if (trashMessage) {
+    setTimeout(() => {
+        trashMessage.remove();
+    }, 3000);
+}
+
+const selectAll = document.getElementById("select-all");
+const deleteBtn = document.getElementById("delete-btn");
+
+function updateDeleteButton() {
+    const checked = document.querySelectorAll(".row-checkbox:checked").length;
+    deleteBtn.disabled = checked === 0;
+}
+
+if (selectAll) {
+    document.querySelectorAll(".row-checkbox").forEach(cb => {
+        cb.addEventListener("change", function () {
+            const all = document.querySelectorAll(".row-checkbox");
+            selectAll.checked =
+                all.length > 0 &&
+                document.querySelectorAll(".row-checkbox:checked").length === all.length;
+
+            updateDeleteButton();
+        });
+    });
+
+    selectAll.addEventListener("change", function () {
+        document.querySelectorAll(".row-checkbox").forEach(cb => {
+            cb.checked = this.checked;
+        });
+
+        updateDeleteButton();
+    });
+
+    updateDeleteButton();
+}
 </script>
 
 </body>

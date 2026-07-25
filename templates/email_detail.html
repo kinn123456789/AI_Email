@@ -51,8 +51,8 @@
                     🔄 Sync Gmail Sent
                 </a>
                 
-                <a href="/dashboard" class="px-4 py-2 bg-white border border-cyan-200 text-stone-700 font-bold rounded-2xl hover:bg-cyan-50 transition-all flex items-center gap-2 text-sm shadow-sm whitespace-nowrap">
-                    ← Back to Inbox
+                <a href="{% if email.mailbox == 'contact_form' %}/contact-dashboard{% else %}/dashboard{% endif %}" class="px-4 py-2 bg-white border border-cyan-200 text-stone-700 font-bold rounded-2xl hover:bg-cyan-50 transition-all flex items-center gap-2 text-sm shadow-sm whitespace-nowrap">
+                    ← Back
                 </a>
             </div>
         </div>
@@ -168,10 +168,12 @@
 
     <script>
     window.addEventListener("load", function () {
+        {% if request.query_params.get("sent") %}
         const box = document.getElementById("conversationBox");
         if (box) {
             box.scrollTop = box.scrollHeight;
         }
+        {% endif %}
     });
     </script>
 </body>

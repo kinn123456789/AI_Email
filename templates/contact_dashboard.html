@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <h1 class="text-4xl font-bold mb-8 text-[#0F5D7A]">
-    Contact Form Enquiries
-    </h1>
-        <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <meta charset="UTF-8">
+    <title>Contact Form Enquiries</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 
 
@@ -18,19 +17,93 @@
     "
 >
 
-<a href="/"
-   class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg">
-   ← Back
-</a>
+{% if trashed %}
+<div id="trash-message-contacts"
+     class="mb-6 max-w-3xl mx-auto rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
+    🗑️ {{ trashed }} enquiry(ies) moved to Trash.
+</div>
+{% endif %}
+
 <div class="max-w-3xl mx-auto">
 
-    <h1 class="text-4xl font-bold mb-8 text-[#0F5D7A]">
-         Contact Form Enquiries
-    </h1>
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
+        <h1 class="text-4xl font-bold text-[#0F5D7A]">
+            Contact Form Enquiries
+        </h1>
+
+        <div class="flex items-center gap-3">
+            <form method="post" action="/contact-dashboard/delete-selected" id="delete-form">
+                <button
+                    id="delete-btn"
+                    type="submit"
+                    disabled
+                    onclick="return confirm('Move selected enquiries to Trash?')"
+                    class="bg-red-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-700 disabled:opacity-50">
+                    🗑️ Delete Selected
+                </button>
+            </form>
+
+            <a href="/trash" class="bg-red-800 text-white px-4 py-2 rounded-lg font-semibold hover:bg-red-950 transition">
+                Trash Box
+            </a>
+
+            {% if is_sent_view %}
+            <a href="/contact-dashboard" class="bg-stone-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-black transition">
+                📋 All Enquiries
+            </a>
+            {% else %}
+            <a href="/contact-dashboard/sent" class="bg-stone-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-black transition">
+                📤 Sent Mails
+            </a>
+            {% endif %}
+
+            <a href="/" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg font-semibold hover:bg-black transition">
+                ← Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter Bar -->
+    <form method="get" action="/contact-dashboard" id="filterForm" class="flex flex-wrap items-center gap-3 mb-6">
+
+        <input type="hidden" name="page" value="{{ current_page }}">
+
+        <input
+            type="date"
+            name="date_from"
+            value="{{ selected_date_from or '' }}"
+            onchange="this.form.submit()"
+            class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-[#0F5D7A]">
+
+        <input
+            type="date"
+            name="date_to"
+            value="{{ selected_date_to or '' }}"
+            onchange="this.form.submit()"
+            class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-[#0F5D7A]">
+
+        <input
+            type="text"
+            name="q"
+            id="searchInput"
+            value="{{ search_query or '' }}"
+            placeholder="Search name, email, phone, or message..."
+            class="flex-1 min-w-[240px] bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm text-stone-800 placeholder-stone-400">
+
+        <button type="submit"
+            class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg font-bold hover:bg-black transition">
+            Filter
+        </button>
+
+        {% if search_query or selected_date_from or selected_date_to %}
+        <a href="/contact-dashboard" class="text-[#0F5D7A] text-sm font-bold underline">Clear</a>
+        {% endif %}
+
+    </form>
 
     {% if not contacts %}
     <div class="bg-white rounded-2xl shadow p-6 text-center text-gray-500">
-        No contact form enquiries yet.
+        No contact form enquiries found.
     </div>
     {% endif %}
 
@@ -42,18 +115,27 @@
 
             <div class="flex justify-between items-start gap-4">
 
-                <div>
-                    <h2 class="text-lg font-semibold">
-                        {{ contact.contact_name or "Unknown" }}
-                    </h2>
-                    <p class="text-[#0F5D7A] font-medium">
-                        ✉️ {{ contact.sender }}
-                    </p>
-                    {% if contact.phone %}
-                    <p class="text-gray-500 text-sm">
-                        📞 {{ contact.phone }}
-                    </p>
-                    {% endif %}
+                <div class="flex items-start gap-3">
+                    <input
+                        type="checkbox"
+                        name="email_ids"
+                        value="{{ contact.id }}"
+                        form="delete-form"
+                        class="contact-checkbox mt-1.5">
+
+                    <div>
+                        <h2 class="text-lg font-semibold">
+                            {{ contact.contact_name or "Unknown" }}
+                        </h2>
+                        <p class="text-[#0F5D7A] font-medium">
+                            ✉️ {{ contact.sender }}
+                        </p>
+                        {% if contact.phone %}
+                        <p class="text-gray-500 text-sm">
+                            📞 {{ contact.phone }}
+                        </p>
+                        {% endif %}
+                    </div>
                 </div>
 
                 <div class="flex gap-2 shrink-0">
@@ -91,6 +173,69 @@
         </div>
         {% endfor %}
     </div>
+
+    <div class="text-xs font-bold text-stone-500 uppercase tracking-widest mt-6 text-center">
+        {% if total_count > 0 %}
+            Showing {{ ((current_page - 1) * page_size) + 1 }}-{{ [current_page * page_size, total_count]|min }} of {{ total_count }} enquiries
+        {% else %}
+            Showing 0 enquiries
+        {% endif %}
+    </div>
+
+    <!-- Pagination -->
+    {% set base_qs = {
+        'q': search_query or '',
+        'date_from': selected_date_from or '',
+        'date_to': selected_date_to or ''
+    } %}
+    <div class="flex items-center justify-center gap-4 mt-4">
+        <a href="/contact-dashboard?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"
+           class="px-4 py-2 rounded-xl font-bold text-sm bg-white border border-gray-200 text-[#0F5D7A] {% if current_page <= 1 %}opacity-40 pointer-events-none{% else %}hover:bg-gray-50{% endif %}">
+           ← Previous
+        </a>
+        <span class="text-sm font-bold text-[#0F5D7A]">Page {{ current_page }} of {{ total_pages }}</span>
+        <a href="/contact-dashboard?{{ base_qs|urlencode }}&page={{ current_page + 1 }}"
+           class="px-4 py-2 rounded-xl font-bold text-sm bg-white border border-gray-200 text-[#0F5D7A] {% if current_page >= total_pages %}opacity-40 pointer-events-none{% else %}hover:bg-gray-50{% endif %}">
+           Next →
+        </a>
+    </div>
+
 </div>
 </body>
+<script>
+const trashMessageContacts = document.getElementById("trash-message-contacts");
+
+if (trashMessageContacts) {
+    setTimeout(() => {
+        trashMessageContacts.remove();
+        window.history.replaceState({}, "", "/contact-dashboard");
+    }, 3000);
+}
+
+const checkboxes = document.querySelectorAll(".contact-checkbox");
+const deleteBtn = document.getElementById("delete-btn");
+
+function updateDeleteButton() {
+    if (deleteBtn) {
+        deleteBtn.disabled =
+            document.querySelectorAll(".contact-checkbox:checked").length === 0;
+    }
+}
+
+checkboxes.forEach(cb => {
+    cb.addEventListener("change", updateDeleteButton);
+});
+
+updateDeleteButton();
+
+const searchInput = document.getElementById("searchInput");
+let searchDebounce;
+
+searchInput.addEventListener("input", function () {
+    clearTimeout(searchDebounce);
+    searchDebounce = setTimeout(() => {
+        document.getElementById("filterForm").submit();
+    }, 600);
+});
+</script>
 </html>

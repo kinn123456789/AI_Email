@@ -34,6 +34,18 @@
     <span class="text-xl">🗑️</span> Trash
 </a>
 
+{% if is_sent_view %}
+<a href="/dashboard"
+   class="bg-stone-700 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    <span class="text-xl">📋</span> All Mails
+</a>
+{% else %}
+<a href="/dashboard/sent"
+   class="bg-stone-700 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    <span class="text-xl">📤</span> Sent Mails
+</a>
+{% endif %}
+
 <a href="/compose"
    class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
     <span class="text-xl">✉️</span> Compose Email

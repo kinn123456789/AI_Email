@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subscription Cancel — Sent Mails</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
+
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">📤 Sent Mails</h1>
+<div class="flex items-center gap-3">
+<a href="/subscription-cancel"
+   class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    📋 All Cancellations
+</a>
+</div>
+</div>
+
+<div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
+<table class="w-full table-fixed border-collapse min-w-[900px]">
+<thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
+<tr>
+<th class="w-1/6 p-4 text-left">Parent</th>
+<th class="w-1/6 p-4 text-left">Learner</th>
+<th class="w-1/4 p-4 text-left">Email</th>
+<th class="w-1/6 p-4 text-left">Subscription</th>
+<th class="w-1/4 p-4 text-left">Sent At</th>
+</tr>
+</thead>
+<tbody class="text-sm text-gray-950 divide-y divide-cyan-300/40">
+{% for r in rows %}
+<tr onclick="window.location='/subscription-cancel/email/{{ r.row_key }}'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer">
+<td class="p-4 truncate font-semibold text-gray-950">{{ r.parent_name or "-" }}</td>
+<td class="p-4 truncate text-gray-950">{{ r.learner_name or "-" }}</td>
+<td class="p-4 truncate text-xs font-medium text-cyan-950">{{ r.parent_email or "-" }}</td>
+<td class="p-4">
+    <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">{{ r.subscription_type }}</span>
+</td>
+<td class="p-4 text-cyan-950 text-xs font-bold">{{ r.sent_at }}</td>
+</tr>
+{% endfor %}
+
+{% if not rows %}
+<tr>
+    <td colspan="5" class="text-center py-12 text-cyan-950 font-bold">No win-back emails sent yet.</td>
+</tr>
+{% endif %}
+</tbody>
+</table>
+</div>
+
+</body>
+</html>

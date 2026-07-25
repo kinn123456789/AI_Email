@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 import csv
 import io
+from urllib.parse import urlencode
 from ai_classifier import ai_triage
 from database import db_pool,get_latest_thread_ai
 from fastapi import Request
@@ -25,10 +26,28 @@ from trial_followup import (
     save_followup_reply,
     get_followup_replies,
     get_due_followups,
-    update_followup_schedule
-    
-)
+    update_followup_schedule,
+    move_followup_to_trash,
+    restore_followup_from_trash,
+    get_trashed_followup_email_logs
 
+)
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+
+from subscription_cancel import (
+    get_cancelled_subscriptions,
+    get_subscription_types,
+    dismiss_subscription_rows,
+    get_dismissed_subscriptions,
+    restore_subscription_rows,
+    get_subscription_row,
+    get_or_generate_winback_email,
+    save_sent_subscription_email,
+    get_sent_subscription_email,
+    get_sent_subscriptions
+)
+from followup_email import send_email as winback_send_email
 #from database import delete_teacher_message_db
 import sync_sent_gmail
 from fastapi import BackgroundTasks
@@ -414,8 +433,26 @@ def dashboard(request: Request, source: str = None, q: str = None, status: str =
             "current_page": page,
             "total_pages": total_pages,
             "total_count": total_count,
-            "page_size": page_size
+            "page_size": page_size,
+            "is_sent_view": status == "Replied"
         }
+    )
+
+@app.get("/dashboard/sent")
+def dashboard_sent(source: str = None, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+
+    params = {
+        "status": "Replied",
+        "source": source or "",
+        "q": q or "",
+        "date_from": date_from or "",
+        "date_to": date_to or "",
+        "page": page
+    }
+
+    return RedirectResponse(
+        url=f"/dashboard?{urlencode(params)}",
+        status_code=303
     )
 
 @app.get("/dashboard-data")
@@ -500,16 +537,42 @@ def submit_enquiry(data: dict):
         "priority": result["priority"]
     }
 @app.get("/contact-dashboard")
-def contact_dashboard(request: Request):
+def contact_dashboard(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1, status: str = None):
 
-    contacts = get_contact_forms()
+    page_size = 50
+    result = get_contact_forms(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size, status=status)
 
     return templates.TemplateResponse(
         "contact_dashboard.html",
         {
             "request": request,
-            "contacts": contacts
+            "contacts": result["rows"],
+            "trashed": request.query_params.get("trashed"),
+            "search_query": q,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "current_page": result["page"],
+            "total_pages": result["total_pages"],
+            "total_count": result["total"],
+            "page_size": page_size,
+            "is_sent_view": status == "Replied"
         }
+    )
+
+@app.get("/contact-dashboard/sent")
+def contact_dashboard_sent(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+    return contact_dashboard(request, q=q, date_from=date_from, date_to=date_to, page=page, status="Replied")
+
+@app.post("/contact-dashboard/delete-selected")
+def delete_contact_forms(email_ids: list[int] = Form(...)):
+    count = len(email_ids)
+
+    for email_id in email_ids:
+        move_to_trash(email_id)
+
+    return RedirectResponse(
+        url=f"/contact-dashboard?trashed={count}",
+        status_code=303
     )
 
 @app.get("/category/{category}")
@@ -530,10 +593,10 @@ def category_view(
     )
 
 @app.get("/trial-followup", response_class=HTMLResponse)
-def trial_followups(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+def trial_followups(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1, status: str = None):
 
     page_size = 50
-    result = get_followup_email_logs(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+    result = get_followup_email_logs(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size, status=status)
     completed_campaigns = get_completed_campaign_count()
 
     due_followups = get_due_followups()
@@ -544,6 +607,7 @@ def trial_followups(request: Request, q: str = None, date_from: str = None, date
             "rows": result["rows"],
             "completed_campaigns": completed_campaigns,
             "due_followups": due_followups,
+            "trashed": request.query_params.get("trashed"),
             "total_count": result["total"],
             "followup1_count": result["followup1_count"],
             "followup2_count": result["followup2_count"],
@@ -553,9 +617,49 @@ def trial_followups(request: Request, q: str = None, date_from: str = None, date
             "selected_date_to": date_to,
             "current_page": result["page"],
             "total_pages": result["total_pages"],
-            "page_size": page_size
+            "page_size": page_size,
+            "is_sent_view": status == "sent"
         }
     )
+
+@app.get("/trial-followup/sent", response_class=HTMLResponse)
+def trial_followups_sent(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+    return trial_followups(request, q=q, date_from=date_from, date_to=date_to, page=page, status="sent")
+
+@app.post("/trial-followup/delete-selected")
+def trial_followup_delete_selected(email_ids: list[int] = Form(...)):
+
+    move_followup_to_trash(email_ids)
+
+    return RedirectResponse(
+        url=f"/trial-followup?trashed={len(email_ids)}",
+        status_code=303
+    )
+
+@app.get("/trial-followup/trash", response_class=HTMLResponse)
+def trial_followup_trash(request: Request):
+
+    rows = get_trashed_followup_email_logs()
+
+    return templates.TemplateResponse(
+        "trial_followup_trash.html",
+        {
+            "request": request,
+            "rows": rows,
+            "restored": request.query_params.get("restored")
+        }
+    )
+
+@app.post("/trial-followup/trash/restore")
+def trial_followup_trash_restore(email_ids: list[int] = Form(...)):
+
+    restore_followup_from_trash(email_ids)
+
+    return RedirectResponse(
+        url=f"/trial-followup/trash?restored={len(email_ids)}",
+        status_code=303
+    )
+
 @app.get("/trial-followup/email/{email_id}")
 def view_followup_email(
     request: Request,
@@ -1324,4 +1428,133 @@ def delete_notifications(email_ids: list[int] = Form(...)):
     return RedirectResponse(
         url=f"/notifications?trashed={count}",
         status_code=303
+    )
+
+
+
+
+@app.get("/subscription-cancel", response_class=HTMLResponse)
+async def subscription_cancel_dashboard(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+
+    page_size = 50
+    result = get_cancelled_subscriptions(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+    subscription_types = get_subscription_types()
+
+    return templates.TemplateResponse(
+        "subscription_cancel.html",
+        {
+            "request": request,
+            "subscriptions": result["rows"],
+            "subscription_types": subscription_types,
+            "trashed": request.query_params.get("trashed"),
+            "search_query": q,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "current_page": result["page"],
+            "total_pages": result["total_pages"],
+            "total": result["total"],
+            "page_size": page_size
+        }
+    )
+
+@app.post("/subscription-cancel/delete-selected")
+async def subscription_cancel_delete_selected(row_keys: list[str] = Form(...)):
+
+    all_rows = get_cancelled_subscriptions(page_size=100000)["rows"]
+    selected = [r for r in all_rows if r["row_key"] in set(row_keys)]
+
+    dismiss_subscription_rows(selected)
+
+    return RedirectResponse(
+        url=f"/subscription-cancel?trashed={len(selected)}",
+        status_code=303
+    )
+
+@app.get("/subscription-cancel/trash", response_class=HTMLResponse)
+async def subscription_cancel_trash(request: Request):
+
+    dismissed = get_dismissed_subscriptions()
+
+    return templates.TemplateResponse(
+        "subscription_cancel_trash.html",
+        {
+            "request": request,
+            "dismissed": dismissed,
+            "restored": request.query_params.get("restored")
+        }
+    )
+
+@app.post("/subscription-cancel/trash/restore")
+async def subscription_cancel_trash_restore(row_keys: list[str] = Form(...)):
+
+    restore_subscription_rows(row_keys)
+
+    return RedirectResponse(
+        url=f"/subscription-cancel/trash?restored={len(row_keys)}",
+        status_code=303
+    )
+
+@app.get("/subscription-cancel/email/{row_key}", response_class=HTMLResponse)
+async def subscription_cancel_email(request: Request, row_key: str):
+
+    sent = get_sent_subscription_email(row_key)
+
+    if sent:
+        return templates.TemplateResponse(
+            "subscription_cancel_email.html",
+            {
+                "request": request,
+                "row": sent,
+                "sent": sent,
+                "subject": sent["subject"],
+                "body": sent["body"]
+            }
+        )
+
+    row = get_subscription_row(row_key)
+
+    if not row:
+        return Response(content="Not found", status_code=404)
+
+    subject, body = generate_winback_email(row)
+
+    return templates.TemplateResponse(
+        "subscription_cancel_email.html",
+        {
+            "request": request,
+            "row": row,
+            "sent": None,
+            "subject": subject,
+            "body": body
+        }
+    )
+
+@app.post("/subscription-cancel/email/{row_key}/send")
+async def subscription_cancel_email_send(row_key: str, subject: str = Form(...), body: str = Form(...)):
+
+    row = get_subscription_row(row_key)
+
+    if not row or not row.get("parent_email"):
+        return RedirectResponse(url=f"/subscription-cancel/email/{row_key}", status_code=303)
+
+    gmail_message_id = winback_send_email(row["parent_email"], subject, body)
+
+    save_sent_subscription_email(row, subject, body, gmail_message_id)
+
+    return RedirectResponse(
+        url=f"/subscription-cancel/email/{row_key}?sent=true",
+        status_code=303
+    )
+
+@app.get("/subscription-cancel/sent", response_class=HTMLResponse)
+async def subscription_cancel_sent(request: Request):
+
+    rows = get_sent_subscriptions()
+
+    return templates.TemplateResponse(
+        "subscription_cancel_sent.html",
+        {
+            "request": request,
+            "rows": rows
+        }
     )
