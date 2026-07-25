@@ -114,7 +114,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 
-from fastapi.responses import HTMLResponse, RedirectResponse, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from database import get_attachments, get_attachment_by_id, find_recipient_name
 
 app = FastAPI()
@@ -553,8 +553,43 @@ def category_view(
     )
 
 
+# In-memory rate limit for the public contact form — this endpoint calls
+# ai_triage() (a paid AI request) on every single submission with no auth,
+# so an unthrottled flood of fake submissions could run up an unbounded AI
+# bill. Simple per-IP sliding window; resets on process restart, which is
+# fine here since the goal is stopping a burst, not perfect long-term
+# tracking.
+_contact_form_submission_times = {}
+_CONTACT_FORM_RATE_LIMIT = 5
+_CONTACT_FORM_RATE_WINDOW_SECONDS = 600  # 10 minutes
+
+
+def _contact_form_rate_limited(client_ip):
+    now = time.time()
+    timestamps = _contact_form_submission_times.setdefault(client_ip, [])
+
+    timestamps[:] = [
+        t for t in timestamps
+        if now - t < _CONTACT_FORM_RATE_WINDOW_SECONDS
+    ]
+
+    if len(timestamps) >= _CONTACT_FORM_RATE_LIMIT:
+        return True
+
+    timestamps.append(now)
+    return False
+
+
 @app.post("/submit-enquiry")
-def submit_enquiry(data: dict):
+def submit_enquiry(request: Request, data: dict):
+
+    client_ip = request.client.host if request.client else "unknown"
+
+    if _contact_form_rate_limited(client_ip):
+        return JSONResponse(
+            status_code=429,
+            content={"message": "Too many submissions. Please try again later."}
+        )
 
     result = ai_triage(
         data.get("subject", "Website Enquiry"),
@@ -569,7 +604,14 @@ def submit_enquiry(data: dict):
         category=result["category"],
         priority=result["priority"],
         ai_summary=result["summary"],
-        ai_draft_reply=result["draft_reply"],
+        # ai_triage() never returns a "draft_reply" key (confirmed by
+        # reading every return path in ai_classifier.py) — this was a
+        # KeyError crashing every single contact-form submission with a
+        # 500 error, unrelated to the rate limiting added above. Contact
+        # form doesn't run the full generate_reply() pipeline (that needs
+        # thread history/knowledge/historical-email lookups too), so this
+        # just stops the crash rather than fabricating a draft.
+        ai_draft_reply=result.get("draft_reply", ""),
 
         message_id=None,
         source="contact_form",
