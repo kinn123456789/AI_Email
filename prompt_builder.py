@@ -169,6 +169,12 @@ least 2–3 of them agree with each other? If they disagree, or there is
 only one relevant example, treat the question as unanswered — do not
 use that single example as if it were policy.
 
+Agreement alone is not enough — also check the guidance is clear. If
+the historical emails are inconsistent, uncertain, vague, hedged, or
+open to more than one interpretation, even if 2-3 of them technically
+agree, treat the question as unanswered rather than acting on shaky
+ground.
+
 Never copy exact wording, names, dates, or promises from a historical
 email even when using it as supporting guidance — restate it in your
 own words.
@@ -500,9 +506,11 @@ Never use these for Policy, Pricing, Refund, or Schedule questions —
 those come from the Knowledge Base only. For Operational or General
 questions, they may only be used as supporting guidance if the
 Knowledge Base does not answer the question AND at least 2-3 of these
-examples independently agree AND that agreement does not contradict
-the Knowledge Base — see QUESTION TYPE and HISTORICAL EMAILS in your
-instructions. Otherwise, treat them as style reference only, and never
+examples independently and clearly agree AND that agreement does not
+contradict the Knowledge Base — see QUESTION TYPE and HISTORICAL
+EMAILS in your instructions. If the examples are inconsistent,
+uncertain, vague, or open to interpretation, that does not count as
+agreement. Otherwise, treat them as style reference only, and never
 copy exact wording, names, dates, or promises from them.
 
 """
@@ -659,10 +667,13 @@ historical emails never answer these regardless of Step 2's outcome.
 If the question is Operational or General and the Knowledge Base did
 not answer it in Step 2, check whether at least 2-3 of the historical
 email examples independently agree on the same guidance, and whether
-that guidance contradicts the Knowledge Base or Current Email. Only if
-there is genuine agreement and no contradiction, use it as supporting
-information. Otherwise, treat the question as unanswered and follow
-the WHEN NOTHING ANSWERS THE QUESTION instructions.
+that guidance contradicts the Knowledge Base or Current Email. Also
+check that the guidance itself is clear — if it's inconsistent,
+uncertain, vague, hedged, or open to more than one interpretation, that
+does not count as agreement even if 2-3 examples technically match.
+Only if there is genuine, clear agreement and no contradiction, use it
+as supporting information. Otherwise, treat the question as unanswered
+and follow the WHEN NOTHING ANSWERS THE QUESTION instructions.
 
 Never copy exact wording, names, dates, or promises from a historical
 email, even when using one as supporting evidence.
