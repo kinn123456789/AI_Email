@@ -150,31 +150,35 @@ def process_email(msg, account):
         (msg.get("References") or "").split()
     )
 
-    if in_reply_to:
+    parent = None
 
+    if in_reply_to:
         parent = get_message_by_message_id(
             in_reply_to, account["source"]
         )
 
-        if not parent and references_header:
+    # Checked whenever the In-Reply-To lookup didn't find a parent — whether
+    # that's because In-Reply-To pointed to something we don't have, or
+    # because In-Reply-To was missing entirely but References was still
+    # present (happens with some mail clients/forwarded threads). Previously
+    # this only ran nested inside the `if in_reply_to:` branch, so a message
+    # with References but no In-Reply-To at all skipped it completely and
+    # got fragmented into a disconnected new thread.
+    if not parent and references_header:
 
-            for ref in reversed(
-                references_header.split()
-            ):
+        for ref in reversed(
+            references_header.split()
+        ):
 
-                parent = get_message_by_message_id(ref, account["source"])
+            parent = get_message_by_message_id(ref, account["source"])
 
-                if parent:
-                    break
+            if parent:
+                break
 
-        if parent:
+    if parent:
 
-            thread_id = parent["thread_id"]
-            reopen_thread(thread_id)
-
-        else:
-
-            thread_id = message_id
+        thread_id = parent["thread_id"]
+        reopen_thread(thread_id)
 
     else:
 
