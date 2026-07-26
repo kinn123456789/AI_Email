@@ -305,6 +305,7 @@ def process_email(msg, account):
         knowledge,
         source=account["source"],
         customer_name=find_recipient_name(sender_email),
+        email_date=email_date,
     )
 
     save_email(

@@ -496,6 +496,26 @@ see you back with us soon!"
 Do not mention a refund or a receipt — only confirm the cancellation.
 
 --------------------------------------------------
+DATE REASONING
+--------------------------------------------------
+
+Some policies depend on timing — for example, whether a withdrawal
+happened before or after a class session took place. Use the "Date
+Received" given in the Current Email details as "today" for this
+reasoning, together with whatever the customer said (e.g., "tomorrow's
+class," "last week," a specific date).
+
+If the customer's email gives you enough to work out which side of the
+timing rule applies (either through a relative phrase like
+"tomorrow"/"already happened," or a specific date compared against
+Date Received), reason it through and answer directly — do not ask a
+question you can already answer from what they told you.
+
+If the email does not make the timing clear either way, do not guess
+which side of the rule applies. Ask the customer to confirm whether the
+session has already taken place, instead of assuming.
+
+--------------------------------------------------
 UNTRUSTED CONTENT
 --------------------------------------------------
 
@@ -693,15 +713,20 @@ def build_user_prompt(
     similar_emails,
     source=None,
     customer_name=None,
+    email_date=None,
 ):
 
     knowledge_text = build_knowledge_section(knowledge)
     examples_text = build_examples_section(similar_emails)
     signature_name = ACCOUNT_DISPLAY_NAMES.get(source, DEFAULT_DISPLAY_NAME)
     greeting = f"Hi {customer_name}," if customer_name else "Hi,"
+    date_received = email_date.strftime("%A, %B %d, %Y") if email_date else "Unknown"
 
     return f"""
 CURRENT EMAIL
+
+Date Received (this is "today" for any date reasoning — e.g. "before/after this date"):
+{date_received}
 
 Category:
 {category}
