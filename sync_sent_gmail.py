@@ -1,6 +1,7 @@
 import os
 import email
 import imaplib
+from datetime import datetime, timedelta, timezone
 from email.utils import parseaddr
 from email.header import decode_header, make_header
 from bs4 import BeautifulSoup
@@ -15,9 +16,11 @@ from database import (
     get_message_by_message_id,
 )
 from email.utils import parsedate_to_datetime
-from database import set_sent_time
+from database import set_sent_time, save_sync_log
 
 load_dotenv()
+
+SYNC_WINDOW_DAYS = 7
 
 EMAIL_ACCOUNTS = [
     {
@@ -73,20 +76,31 @@ def main():
     for account in EMAIL_ACCOUNTS:
         logger.info(f"Checking sent mail for {account['source']}")
         mail = None
+        started_at = datetime.now(timezone.utc)
+        imported, skipped, error_count = 0, 0, 0
+        error_message = None
+
         try:
             mail = oauth_login(account["email"], account["token"])
             status, _ = mail.select('"[Gmail]/Sent Mail"')
             if status != "OK":
                 logger.error(f"Could not open Sent Mail for {account['source']}")
+                error_count += 1
+                error_message = "Could not open Sent Mail"
                 continue
 
-            status, search_data = mail.search(None, '(SINCE "20-Jul-2026")')
+            # Rolling window (was a fixed hardcoded date that would have
+            # only ever grown stale) — recalculated fresh on every call so
+            # a gap of several missed hourly runs still gets caught up on
+            # the next one, instead of silently falling outside the window
+            # with no persistent checkpoint to recover from.
+            since_date = (datetime.now() - timedelta(days=SYNC_WINDOW_DAYS)).strftime("%d-%b-%Y")
+            status, search_data = mail.search(None, f'(SINCE "{since_date}")')
             
             if status != "OK": continue
 
             
             message_ids = search_data[0].split()[-50:]
-            imported, skipped = 0, 0
 
             for sent_id in message_ids:
                 try:
@@ -181,18 +195,36 @@ def main():
                     logger.info(f"Imported: {message_id}")
                     mail.store(sent_id, '+FLAGS', '\\Seen')
 
-                except Exception:
+                except Exception as e:
                     logger.exception(f"Failed processing sent email {sent_id}")
+                    error_count += 1
+                    error_message = str(e)
                     continue
 
             logger.info(f"{account['source']} sync complete. Imported={imported}, Skipped={skipped}")
 
-        except Exception:
+        except Exception as e:
             logger.exception(f"Failed to process {account['source']}")
+            error_count += 1
+            error_message = str(e)
         finally:
             if mail:
                 try: mail.logout()
                 except Exception: pass
+
+            try:
+                save_sync_log(
+                    job_name="sync_sent_gmail",
+                    account=account["source"],
+                    started_at=started_at,
+                    finished_at=datetime.now(timezone.utc),
+                    imported_count=imported,
+                    skipped_count=skipped,
+                    error_count=error_count,
+                    error_message=error_message,
+                )
+            except Exception as e:
+                logger.error(f"Failed to save sync_log for {account['source']}: {e}")
 
 if __name__ == "__main__":
     main()

@@ -1845,3 +1845,56 @@ def get_ai_log_by_message_id(gmail_message_id):
     finally:
         cursor.close()
         db_pool.putconn(conn)
+
+
+HISTORICAL_EMAIL_RETENTION_MONTHS = 18
+
+
+def prune_old_historical_emails():
+    """Deletes historical_emails rows older than
+    HISTORICAL_EMAIL_RETENTION_MONTHS — keeps the AI style-example pool
+    from growing forever. Search speed doesn't meaningfully need this
+    (the vector index stays fast regardless of table size at this scale),
+    this is purely to bound storage/maintenance-script cost long-term.
+    Returns the number of rows deleted."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "DELETE FROM historical_emails WHERE sent_at < NOW() - INTERVAL %s",
+            (f"{HISTORICAL_EMAIL_RETENTION_MONTHS} months",)
+        )
+        deleted = cursor.rowcount
+        conn.commit()
+        return deleted
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def save_sync_log(job_name, account, started_at, finished_at, imported_count, skipped_count, error_count, error_message=None):
+    """Durable, host-independent record of a sync job run — replaces
+    relying on file/stdout logging (which depends on whichever platform
+    happens to be capturing it) for basic "what happened during this run"
+    visibility. Queryable regardless of hosting."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            """
+            INSERT INTO sync_log
+            (job_name, account, started_at, finished_at, imported_count, skipped_count, error_count, error_message)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """,
+            (job_name, account, started_at, finished_at, imported_count, skipped_count, error_count, error_message)
+        )
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
