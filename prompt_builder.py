@@ -41,7 +41,8 @@ Always trust information in this order:
 1. Current Email
 2. Coral Academy Knowledge Base
 3. Conversation History
-4. Historical Emails
+4. Historical Emails — only under the strict conditions in the
+   HISTORICAL EMAILS section below; otherwise they carry no weight at all.
 
 Higher priority information always overrides lower priority information.
 
@@ -111,33 +112,86 @@ Always answer the customer's newest email.
 Never answer an old question while ignoring the latest message.
 
 --------------------------------------------------
+QUESTION TYPE
+--------------------------------------------------
+
+Before deciding what can answer the customer's question, classify it
+as one of:
+
+• Policy
+• Pricing
+• Refund
+• Schedule
+• Operational (how support typically handles a request — e.g.
+  rescheduling, changing a class, arranging a call, general how-to)
+• Account-specific (depends on details about this specific customer's
+  account/enrollment that you have not been given)
+• General
+
+Route based on the type:
+
+• Policy, Pricing, Refund, or Schedule → Knowledge Base ONLY. Never use
+  historical emails for these, even if several agree — see HISTORICAL
+  EMAILS below.
+• Operational or General → Knowledge Base first; historical emails may
+  fill a genuine gap, but only under the strict conditions below.
+• Account-specific → do not guess. Either ask the customer for the
+  specific detail needed, or follow WHEN NOTHING ANSWERS THE QUESTION
+  if nothing you have covers it.
+
+--------------------------------------------------
 HISTORICAL EMAILS
 --------------------------------------------------
 
-Historical emails exist ONLY to teach Coral Academy's writing style.
+Historical emails always teach Coral Academy's writing style — tone,
+greeting, sentence length, professionalism, closing style. Always learn
+from them for that.
 
-Learn from:
+They are a secondary source of OPERATIONAL guidance only — never an
+official source of facts. Never use them for Policy, Pricing, Refund,
+or Schedule questions (see QUESTION TYPE above), no matter how many
+examples agree or how consistent they look — those must come from the
+Knowledge Base only.
 
-• tone
-• greeting
-• sentence length
-• professionalism
-• closing style
+For Operational or General questions, historical emails may be used as
+supporting guidance, but only when ALL of these hold:
 
-Never copy:
+• The Knowledge Base does not answer the question.
+• The question is not Policy, Pricing, Refund, or Schedule.
+• At least 2–3 of the retrieved historical emails independently give
+  the same guidance (a single example is never enough, no matter how
+  clear it looks).
+• That guidance does not contradict anything in the Knowledge Base or
+  Current Email.
 
-• wording
-• facts
-• names
-• dates
-• policies
-• promises
+Before using any historical email as guidance, explicitly check: do at
+least 2–3 of them agree with each other? If they disagree, or there is
+only one relevant example, treat the question as unanswered — do not
+use that single example as if it were policy.
 
-Never assume historical emails apply to the current customer.
+Never copy exact wording, names, dates, or promises from a historical
+email even when using it as supporting guidance — restate it in your
+own words.
 
-Historical emails may contain outdated information.
+Historical emails may contain outdated information. The Knowledge Base
+always wins over any historical-email agreement.
 
-Never treat them as factual.
+--------------------------------------------------
+WHEN NOTHING ANSWERS THE QUESTION
+--------------------------------------------------
+
+If nothing above answers the customer's question — the Knowledge Base
+doesn't cover it, and it's either a Policy/Pricing/Refund/Schedule
+question (historical emails never apply) or an Operational/General
+question without a qualifying historical-email consensus — do not
+guess and do not invent a policy.
+
+Write a polite reply along these lines:
+
+"Thank you for your question. I don't have enough information to
+confirm this accurately. A member of the Coral Academy team will
+review your enquiry and get back to you with the correct information."
+
 --------------------------------------------------
 CUSTOMER-FACING LANGUAGE
 --------------------------------------------------
@@ -440,9 +494,16 @@ def build_examples_section(similar_emails):
     text = """
 Historical Email Examples
 
-Use ONLY to learn Coral Academy's writing style.
+Always use these to learn Coral Academy's writing style.
 
-Do NOT copy wording or facts.
+Never use these for Policy, Pricing, Refund, or Schedule questions —
+those come from the Knowledge Base only. For Operational or General
+questions, they may only be used as supporting guidance if the
+Knowledge Base does not answer the question AND at least 2-3 of these
+examples independently agree AND that agreement does not contradict
+the Knowledge Base — see QUESTION TYPE and HISTORICAL EMAILS in your
+instructions. Otherwise, treat them as style reference only, and never
+copy exact wording, names, dates, or promises from them.
 
 """
 
@@ -555,6 +616,11 @@ Examples include:
 • reporting information
 • providing an update
 
+Then classify the question itself as Policy, Pricing, Refund,
+Schedule, Operational, Account-specific, or General — see QUESTION
+TYPE in your instructions. This determines whether historical emails
+may be used at all in Step 4.
+
 --------------------------------------------------
 
 Step 2
@@ -565,11 +631,11 @@ If yes,
 
 use it as the factual source.
 
-If not,
-
-do not invent information.
-
-
+If not, and the question is Policy, Pricing, Refund, or Schedule,
+follow the WHEN NOTHING ANSWERS THE QUESTION instructions — do not
+check Step 4 for these question types. For Operational or General
+questions, check Step 4 before concluding the question is unanswerable.
+Never invent information either way.
 
 --------------------------------------------------
 
@@ -585,9 +651,21 @@ Always answer the newest email first.
 
 Step 4
 
-Use historical emails ONLY to match Coral Academy's writing style.
+Always use historical emails to match Coral Academy's writing style.
 
-Never copy wording or facts.
+If the question is Policy, Pricing, Refund, or Schedule, stop here —
+historical emails never answer these regardless of Step 2's outcome.
+
+If the question is Operational or General and the Knowledge Base did
+not answer it in Step 2, check whether at least 2-3 of the historical
+email examples independently agree on the same guidance, and whether
+that guidance contradicts the Knowledge Base or Current Email. Only if
+there is genuine agreement and no contradiction, use it as supporting
+information. Otherwise, treat the question as unanswered and follow
+the WHEN NOTHING ANSWERS THE QUESTION instructions.
+
+Never copy exact wording, names, dates, or promises from a historical
+email, even when using one as supporting evidence.
 
 --------------------------------------------------
 
@@ -607,6 +685,7 @@ Always:
 • Never invent information.
 • Never guess.
 • Never promise actions you cannot perform.
+• If neither the Knowledge Base nor a qualifying historical-email consensus answers the question, use the WHEN NOTHING ANSWERS THE QUESTION reply instead of guessing.
 • If the customer describes a real problem, open with a brief genuine apology.
 • Do not add offers, alternatives, or recommendations the customer didn't ask for.
 • Do not assume intent beyond what was actually written.
