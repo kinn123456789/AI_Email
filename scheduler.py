@@ -15,6 +15,7 @@ import threading
 import time
 from teacher_ai_processor1 import process_teacher_messages
 from subscription_cancel import refresh_subscription_cache, prefetch_reengagement_drafts
+from sync_sent_mail_and_embed import sync_sent_mail_and_embed
 # -------------------------------------------------
 # Locks & Queue
 # -------------------------------------------------
@@ -160,6 +161,20 @@ def run_help_center_refresh():
         subscription_cancel_lock.release()
 
 
+def run_sent_mail_sync():
+    """Waits for subscription_cancel_lock before starting — this job logs
+    into 3 Gmail accounts via IMAP and can embed a batch of new emails, so
+    it shouldn't run at the same moment as the once-a-minute dashboard
+    refresh. Blocks rather than skipping since this only runs every 15
+    days and whatever it's waiting on typically finishes within seconds."""
+
+    subscription_cancel_lock.acquire(blocking=True)
+    try:
+        sync_sent_mail_and_embed()
+    finally:
+        subscription_cancel_lock.release()
+
+
 def run_teacher_sync():
     start = time.time()
 
@@ -216,6 +231,20 @@ scheduler.add_job(
     run_help_center_refresh,
     CronTrigger(hour=2, minute=0),
     id="help_center_refresh",
+    replace_existing=True,
+    max_instances=1,
+    coalesce=True,
+    misfire_grace_time=300
+)
+
+# Sent Mail style-example catch-up + embed — every 15 days, for replies
+# sent directly from Gmail instead of through this app (which already
+# saves+embeds automatically on every app-sent reply).
+scheduler.add_job(
+    run_sent_mail_sync,
+    trigger="interval",
+    days=15,
+    id="sent_mail_style_sync",
     replace_existing=True,
     max_instances=1,
     coalesce=True,
@@ -325,3 +354,4 @@ print("Teacher Sync: Every 8 minutes")
 print("Trial Follow-ups: Daily at 9:00 AM")
 print("Subscription Cancel Cache: Every 1 minute")
 print("Subscription Cancel Draft Prefetch: Every 1 minute (batch of 5)")
+print("Historical Email Style Sync: Every 15 days")
