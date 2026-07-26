@@ -16,11 +16,27 @@ from database import (
     get_message_by_message_id,
 )
 from email.utils import parsedate_to_datetime
-from database import set_sent_time, save_sync_log
+from database import set_sent_time, save_sync_log, get_last_successful_sync_time
 
 load_dotenv()
 
-SYNC_WINDOW_DAYS = 7
+# Fallback window used only when there's no prior clean sync recorded yet
+# (first-ever run for this account). Once a checkpoint exists, the actual
+# last-successful-sync time is used instead — see main().
+BOOTSTRAP_WINDOW_DAYS = 7
+
+# IMAP's SINCE search is date-only (no time-of-day precision), so the
+# checkpoint is backed off by a day regardless of the exact finish time —
+# a message from earlier the same calendar day as the last sync would
+# match SINCE anyway, and email_exists() correctly skips it as a
+# duplicate; this just guards against any edge case near a day boundary.
+CHECKPOINT_BUFFER_DAYS = 1
+
+# Sanity cap only — not the primary correctness mechanism anymore (the
+# checkpoint is). Guards against a pathological case (checkpoint broken
+# for a long time, huge backlog) rather than normal operation, where a
+# run typically finds only a handful of genuinely new messages.
+MAX_MESSAGES_PER_RUN = 500
 
 EMAIL_ACCOUNTS = [
     {
@@ -89,18 +105,25 @@ def main():
                 error_message = "Could not open Sent Mail"
                 continue
 
-            # Rolling window (was a fixed hardcoded date that would have
-            # only ever grown stale) — recalculated fresh on every call so
-            # a gap of several missed hourly runs still gets caught up on
-            # the next one, instead of silently falling outside the window
-            # with no persistent checkpoint to recover from.
-            since_date = (datetime.now() - timedelta(days=SYNC_WINDOW_DAYS)).strftime("%d-%b-%Y")
+            # Real checkpoint (the finish time of the last CLEAN run for
+            # this account) instead of a fixed lookback window or a
+            # count-based "last N" slice — either of those could silently
+            # miss messages if volume in the window ever exceeded the
+            # slice size. Falls back to a 7-day bootstrap window only on
+            # the very first run, when there's no prior clean sync yet.
+            last_success = get_last_successful_sync_time("sync_sent_gmail", account["source"])
+
+            if last_success:
+                since_dt = last_success - timedelta(days=CHECKPOINT_BUFFER_DAYS)
+            else:
+                since_dt = datetime.now(timezone.utc) - timedelta(days=BOOTSTRAP_WINDOW_DAYS)
+
+            since_date = since_dt.strftime("%d-%b-%Y")
             status, search_data = mail.search(None, f'(SINCE "{since_date}")')
-            
+
             if status != "OK": continue
 
-            
-            message_ids = search_data[0].split()[-50:]
+            message_ids = search_data[0].split()[-MAX_MESSAGES_PER_RUN:]
 
             for sent_id in message_ids:
                 try:

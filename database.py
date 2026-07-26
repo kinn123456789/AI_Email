@@ -1898,3 +1898,32 @@ def save_sync_log(job_name, account, started_at, finished_at, imported_count, sk
     finally:
         cursor.close()
         db_pool.putconn(conn)
+
+
+def get_last_successful_sync_time(job_name, account):
+    """The finish time of the most recent CLEAN run (error_count = 0) for
+    this job+account — used as a real checkpoint instead of a fixed
+    lookback window or a "last N" count-based slice, either of which can
+    silently miss messages if volume is ever higher than expected between
+    runs. Returns None if there's no prior clean run (first-ever run)."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            """
+            SELECT finished_at
+            FROM sync_log
+            WHERE job_name = %s AND account = %s AND error_count = 0
+            ORDER BY finished_at DESC
+            LIMIT 1
+            """,
+            (job_name, account)
+        )
+        row = cursor.fetchone()
+        return row[0] if row else None
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
