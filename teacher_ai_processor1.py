@@ -8,9 +8,18 @@ from database import (
 )
 
 
+# Caps how much chat history feeds into the AI prompt - a long-running
+# Teacher Portal conversation can otherwise grow unbounded (one thread
+# hit ~443K tokens, over OpenRouter's 400K limit, and failed permanently
+# on every future reply attempt since it could only keep growing). Does
+# not affect get_conversation_messages() itself, which main.py still
+# uses to display the full chat in the UI.
+MAX_THREAD_HISTORY_MESSAGES = 50
+
+
 def build_thread_history(chat_id, teacher_id):
 
-    messages = get_conversation_messages(chat_id)
+    messages = get_conversation_messages(chat_id)[-MAX_THREAD_HISTORY_MESSAGES:]
 
     history = []
 
