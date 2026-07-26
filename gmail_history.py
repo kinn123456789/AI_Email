@@ -192,9 +192,9 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
     if webhook_history_id:
         newest_history_id = max(newest_history_id, int(webhook_history_id))
 
-    update_last_history_id(account["email"], newest_history_id)
-
     service = _build_service(account["token"])
+
+    any_failed = False
 
     for msg_id in added_ids:
         try:
@@ -212,4 +212,18 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
 
         except Exception:
             traceback.print_exc()
+            any_failed = True
             continue
+
+    # Only advance the checkpoint if every message in this batch was
+    # actually processed. If we advanced it unconditionally and one message
+    # failed, the History API would never report that message again on a
+    # future run — it would be permanently skipped. Leaving the checkpoint
+    # behind means this whole batch gets re-fetched next run instead;
+    # already-succeeded messages are cheaply no-op'd by process_email()'s
+    # own message_id dedup check at the top, so only the failed one(s)
+    # actually get retried.
+    if not any_failed:
+        update_last_history_id(account["email"], newest_history_id)
+    else:
+        print(f"[{account['source']}] Not advancing history checkpoint — at least one message failed and will be retried next run.")
