@@ -15,7 +15,7 @@ STAFF_EMAIL_ADDRESSES = [
 ]
 
 
-def search_similar_emails(subject, body, limit=30):
+def search_similar_emails(subject, body, limit=30, embedding_client=None):
 
     clean_body = clean_email_body(body)
 
@@ -24,7 +24,7 @@ def search_similar_emails(subject, body, limit=30):
 
     print("Generating query embedding...")
 
-    query_embedding = generate_embedding(text)
+    query_embedding = generate_embedding(text, client=embedding_client)
 
     print("embedding Generated")
 

@@ -16,6 +16,8 @@ from knowledge_search import search_knowledge_base
 from reply_generator import generate_reply
 from slack_notifications import send_slack_notification
 from email.utils import parsedate_to_datetime
+from concurrent.futures import ThreadPoolExecutor
+from embedding_service import new_embedding_client, close_embedding_client
 
 
 from database import (
@@ -236,17 +238,35 @@ def process_email(msg, account):
         for m in history
     )
 
-    result = ai_triage(
-        subject,
-        body,
-        history=history_text,
-        images=image_data_list
-    )
+    # ai_triage, search_similar_emails, and search_knowledge_base are
+    # independent of each other (none needs another's result), so they run
+    # concurrently instead of one after another — cuts the time before an
+    # email shows up fully processed on the dashboard. The two embedding
+    # calls each get their own isolated client: embedding_service's shared
+    # default client isn't safe to use from two threads at once (same class
+    # of issue already found and fixed for the Supabase client elsewhere in
+    # this app).
+    similar_client = new_embedding_client()
+    knowledge_client = new_embedding_client()
 
-    similar = search_similar_emails(
-        subject,
-        body
-    )
+    try:
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            triage_future = executor.submit(
+                ai_triage, subject, body, history=history_text, images=image_data_list
+            )
+            similar_future = executor.submit(
+                search_similar_emails, subject, body, embedding_client=similar_client
+            )
+            knowledge_future = executor.submit(
+                search_knowledge_base, subject, body, embedding_client=knowledge_client
+            )
+
+            result = triage_future.result()
+            similar = similar_future.result()
+            knowledge = knowledge_future.result()
+    finally:
+        close_embedding_client(similar_client)
+        close_embedding_client(knowledge_client)
 
     reranked = rerank_emails(
         subject,
@@ -263,10 +283,6 @@ def process_email(msg, account):
         for email in similar
         if email[0] in selected_ids
     ]
-    knowledge = search_knowledge_base(
-        subject,
-        body
-    )
     print("Selected IDs:", selected_ids)
     print("Historical Emails Count:", len(historical_emails))
 

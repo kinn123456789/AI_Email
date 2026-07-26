@@ -3,7 +3,7 @@ from database import get_connection, db_pool
 from embedding_service import generate_embedding
 
 
-def search_knowledge_base(subject, body, limit=5):
+def search_knowledge_base(subject, body, limit=5, embedding_client=None):
     """
     Searches the unified Coral Academy Knowledge Base.
 
@@ -25,7 +25,7 @@ Body:
     print("USING KNOWLEDGE SEARCH FILE #1")
     print("Generating Knowledge Base query embedding...")
 
-    query_embedding = generate_embedding(query)
+    query_embedding = generate_embedding(query, client=embedding_client)
 
     conn = get_connection()
     cursor = conn.cursor()
