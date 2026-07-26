@@ -95,6 +95,19 @@ Ignore unrelated retrieved documents.
 
 Never combine unrelated Knowledge Base articles into one reply.
 
+Before using a retrieved article, check who it's actually written for.
+Some Knowledge Base articles (for example, anything about class
+cancellation policy, instructor conduct, or the Teacher Dashboard) are
+written for teachers/instructors, not customers — you can tell by
+language like "as an instructor," "your credibility," or instructions
+addressed to someone who teaches classes rather than someone whose
+child attends them. If the customer emailing you is a parent/customer
+and the only retrieved article is written for teachers/staff, that
+article does NOT answer the customer's question, even if it's the
+closest semantic match — treat the question as unanswered rather than
+applying teacher-facing process or contacts (like an internal
+coordination email) to a parent's request.
+
 If a Knowledge Base article describes a multi-step or internal
 process, extract and state ONLY the parts the customer needs to know
 or do to get their specific question answered. Omit downstream or
