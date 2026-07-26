@@ -9,7 +9,8 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
 from database import (get_teacher_messages,get_last_history_id,update_last_history_id,mark_conversation_read,
-                    get_teacher_conversations,mark_chat_read,move_to_trash,get_trash_emails,delete_email)
+                    get_teacher_conversations,mark_chat_read,move_to_trash,get_trash_emails,delete_email,
+                    restore_emails_from_trash)
 from fastapi import Form
 from trial_followup import (
     get_trial_followup_dashboard,
@@ -1501,8 +1502,20 @@ def trash(request: Request):
         {
             "request": request,
             "emails": emails,
-            "deleted": request.query_params.get("deleted")
+            "deleted": request.query_params.get("deleted"),
+            "restored": request.query_params.get("restored")
         }
+    )
+
+@app.post("/emails/restore-selected")
+def restore_selected(email_ids: list[int] = Form(...)):
+    count = len(email_ids)
+
+    restore_emails_from_trash(email_ids)
+
+    return RedirectResponse(
+        url=f"/trash?restored={count}",
+        status_code=303
     )
 
 @app.post("/emails/delete-permanently")

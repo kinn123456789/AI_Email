@@ -15,11 +15,16 @@
     ✅ Email(s) permanently deleted.
 </div>
 {% endif %}
+{% if restored %}
+<div class="mb-6 rounded-xl bg-green-100 border border-green-300 text-green-800 px-5 py-3 font-semibold">
+    ✅ Email(s) restored.
+</div>
+{% endif %}
 <div class="flex items-center gap-3">
 <form method="post" action="/emails/restore-selected" id="restore-form"></form>
 <form method="post" action="/emails/delete-permanently" id="delete-form"></form>
 
-{#<button
+<button
     form="restore-form"
     id="restore-btn"
     type="submit"
@@ -27,7 +32,7 @@
     onclick="return confirm('Restore selected emails?')"
     class="bg-green-600 text-white px-5 py-4 rounded-3xl font-bold hover:bg-green-700 transition shadow-lg border border-white/20 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
     <span>♻️</span> Restore Selected
-</button>#}
+</button>
 
 <button
     form="delete-form"

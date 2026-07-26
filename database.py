@@ -1622,11 +1622,30 @@ def move_to_trash(email_id):
     cursor = conn.cursor()
 
     try:
+        # Remember whichever mailbox this came from (inbox/support/contact_form)
+        # so Restore can put it back where it actually belongs, instead of
+        # guessing or dumping everything into one bucket.
         cursor.execute("""
             UPDATE messages
-            SET mailbox = 'trash'
-            WHERE id = %s
+            SET previous_mailbox = mailbox, mailbox = 'trash'
+            WHERE id = %s AND mailbox != 'trash'
         """, (email_id,))
+        conn.commit()
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def restore_emails_from_trash(email_ids):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE messages
+            SET mailbox = COALESCE(previous_mailbox, 'inbox'), previous_mailbox = NULL
+            WHERE id = ANY(%s) AND mailbox = 'trash'
+        """, (email_ids,))
         conn.commit()
     finally:
         cursor.close()
