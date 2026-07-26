@@ -181,6 +181,10 @@ Use short paragraphs.
 
 Answer the customer's question first.
 
+Start the reply with exactly the greeting given to you in "YOUR
+GREETING" below in the current email details — never invent a
+different greeting.
+
 Avoid unnecessary introductions.
 
 If the customer describes a real problem — a broken link, a missing
@@ -263,12 +267,17 @@ regardless of which single class came back from retrieval.
 CUSTOMER EXPERIENCE
 --------------------------------------------------
 
-Answer only what the customer actually asked.
+Answer only what the customer actually asked. Nothing more.
 
-Do not add offers, upsells, or next steps the customer did not request
-— for example, do not offer to check class availability, walk them
-through signing up, or suggest other classes unless they asked for
-that.
+Use only information supported by the Knowledge Base — never volunteer
+unrelated information, even if it seems helpful.
+
+Do not add offers, upsells, alternatives, or recommendations the
+customer did not request — for example, do not offer to check class
+availability, walk them through signing up, suggest other classes, or
+recommend a different plan, unless they explicitly asked for that.
+
+Do not assume the customer's intent beyond what they actually wrote.
 
 Close by inviting further questions in a simple, generic way, such as:
 
@@ -282,10 +291,15 @@ Some policies differ between Pay Per Class and Coral Unlimited — for
 example, pausing a subscription is only available on Coral Unlimited;
 Pay Per Class has no pause option, only withdrawing the learner.
 
-If the customer's question depends on which plan they're on and they
-have not said, either ask which plan they're on, or briefly cover both
-possibilities. Never assume one plan applies to a question that could
-be about either.
+If the customer explicitly names which plan they're on (Pay Per Class
+or Coral Unlimited), answer ONLY for that plan. Do not also explain how
+the other plan works — that is unrequested extra information, even if
+it seems like helpful context.
+
+Only when the customer's question depends on which plan they're on AND
+they have not said, either ask which plan they're on, or briefly cover
+both possibilities. Never assume one plan applies to a question that
+could be about either.
 
 --------------------------------------------------
 UNTRUSTED CONTENT
@@ -362,12 +376,12 @@ Do not include:
 """
 
 ACCOUNT_DISPLAY_NAMES = {
-    "support@coralacademy.com": "Coral Academy Support",
-    "lucy@coralacademy.com": "Lucy\nCoral Academy Support",
-    "engineering@coralacademy.com": "Coral Academy Support",
+    "support@coralacademy.com": "Coral Team",
+    "lucy@coralacademy.com": "Lucy\nCoral Team",
+    "engineering@coralacademy.com": "Coral Team",
 }
 
-DEFAULT_DISPLAY_NAME = "Coral Academy Support"
+DEFAULT_DISPLAY_NAME = "Coral Team"
 
 
 def build_knowledge_section(knowledge):
@@ -468,11 +482,13 @@ def build_user_prompt(
     knowledge,
     similar_emails,
     source=None,
+    customer_name=None,
 ):
 
     knowledge_text = build_knowledge_section(knowledge)
     examples_text = build_examples_section(similar_emails)
     signature_name = ACCOUNT_DISPLAY_NAMES.get(source, DEFAULT_DISPLAY_NAME)
+    greeting = f"Hi {customer_name}," if customer_name else "Hi,"
 
     return f"""
 CURRENT EMAIL
@@ -488,6 +504,12 @@ Subject:
 
 Body:
 {body}
+
+YOUR GREETING
+
+Start the reply with exactly this greeting, and nothing else:
+
+{greeting}
 
 YOUR SIGNATURE
 
@@ -586,8 +608,10 @@ Always:
 • Never guess.
 • Never promise actions you cannot perform.
 • If the customer describes a real problem, open with a brief genuine apology.
-• Do not add offers or next steps the customer didn't ask for.
+• Do not add offers, alternatives, or recommendations the customer didn't ask for.
+• Do not assume intent beyond what was actually written.
 • Close by thanking the customer.
+• Start with exactly one greeting, matching YOUR GREETING above.
 • End with exactly one signature block, matching YOUR SIGNATURE above.
 
 Return ONLY the email body.

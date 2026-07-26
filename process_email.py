@@ -29,7 +29,8 @@ from database import (
     reopen_thread,
     get_thread,
     log_event,
-    reopen_thread
+    reopen_thread,
+    find_recipient_name,
 )
 
 
@@ -303,6 +304,7 @@ def process_email(msg, account):
         historical_emails,
         knowledge,
         source=account["source"],
+        customer_name=find_recipient_name(sender_email),
     )
 
     save_email(
