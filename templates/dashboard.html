@@ -437,7 +437,27 @@ function buildRowHtml(email) {
     '</tr>';
 }
 
+// Guards against the auto-refresh replacing table rows (tbody.innerHTML)
+// at the exact moment a user clicks a row - the click could otherwise
+// land on whatever new row ends up in that screen position, opening
+// the wrong email and marking an unintended one as read. Set on
+// mousedown (before the click completes) and cleared shortly after, so
+// a scheduled refresh mid-click is skipped rather than replacing rows
+// out from under the user.
+let rowInteractionInProgress = false;
+
+document.getElementById("tableBody").addEventListener("mousedown", function (e) {
+    if (e.target.closest("tr")) {
+        rowInteractionInProgress = true;
+        setTimeout(function () { rowInteractionInProgress = false; }, 1500);
+    }
+});
+
 function refreshDashboard() {
+    if (rowInteractionInProgress) {
+        return;
+    }
+
     fetch("/dashboard-data" + window.location.search)
         .then(res => res.json())
         .then(data => {
