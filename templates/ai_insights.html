@@ -117,7 +117,7 @@
     </div>
 
     <!-- Recent errors -->
-    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100">
+    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
         <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Recent Errors (last 20)</h2>
         {% if recent_errors %}
         <table class="w-full text-sm">
@@ -140,6 +140,93 @@
         </table>
         {% else %}
         <p class="text-stone-400 text-sm">No errors logged.</p>
+        {% endif %}
+    </div>
+
+    <!-- All AI logs: search, filter, delete -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100">
+        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">All AI Logs</h2>
+
+        <form method="get" action="/ai-insights" class="flex flex-wrap gap-2 mb-4">
+            <input
+                type="text"
+                name="log_q"
+                value="{{ selected_log_q or '' }}"
+                placeholder="Search by message ID"
+                class="flex-1 min-w-[180px] border border-stone-200 rounded-lg px-3 py-2 text-sm"
+            >
+            <select name="category" class="border border-stone-200 rounded-lg px-3 py-2 text-sm">
+                <option value="">All categories</option>
+                {% for c in log_categories %}
+                <option value="{{ c }}" {{ "selected" if c == selected_category else "" }}>{{ c }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="border border-stone-200 rounded-lg px-3 py-2 text-sm">
+                <option value="">All statuses</option>
+                <option value="error" {{ "selected" if selected_status == "error" else "" }}>Errors only</option>
+                <option value="success" {{ "selected" if selected_status == "success" else "" }}>Success only</option>
+            </select>
+            <input type="date" name="date_from" value="{{ selected_date_from or '' }}" class="border border-stone-200 rounded-lg px-3 py-2 text-sm">
+            <input type="date" name="date_to" value="{{ selected_date_to or '' }}" class="border border-stone-200 rounded-lg px-3 py-2 text-sm">
+            <button type="submit" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">
+                Filter
+            </button>
+            {% if selected_log_q or selected_category or selected_status or selected_date_from or selected_date_to %}
+            <a href="/ai-insights" class="text-stone-500 text-sm px-2 py-2 hover:underline">Clear</a>
+            {% endif %}
+        </form>
+
+        <p class="text-xs text-stone-500 mb-3">{{ logs_total }} log(s)</p>
+
+        {% if logs %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
+                    <th class="py-2">When</th>
+                    <th class="py-2">Category</th>
+                    <th class="py-2">Priority</th>
+                    <th class="py-2">Tokens</th>
+                    <th class="py-2">Time</th>
+                    <th class="py-2">Status</th>
+                    <th class="py-2"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in logs %}
+                <tr class="border-b border-stone-50">
+                    <td class="py-2 local-time" data-utc="{{ row.created_at }}"></td>
+                    <td class="py-2">{{ row.category or "—" }}</td>
+                    <td class="py-2">{{ row.priority or "—" }}</td>
+                    <td class="py-2">{{ row.total_tokens or 0 }}</td>
+                    <td class="py-2">{{ row.response_time_ms or 0 }}ms</td>
+                    <td class="py-2 {{ 'text-red-600 font-semibold' if row.error else 'text-emerald-600' }}">
+                        {{ "Error" if row.error else "OK" }}
+                    </td>
+                    <td class="py-2 text-right">
+                        <form method="post" action="/ai-insights/{{ row.id }}/delete?log_q={{ selected_log_q or '' }}&category={{ selected_category or '' }}&status={{ selected_status or '' }}&date_from={{ selected_date_from or '' }}&date_to={{ selected_date_to or '' }}&page={{ logs_page }}"
+                              onsubmit="return confirm('Delete this log entry? This cannot be undone.');">
+                            <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-semibold">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if logs_total_pages > 1 %}
+        <div class="flex justify-center gap-4 mt-6 text-sm">
+            {% if logs_page > 1 %}
+            <a href="/ai-insights?log_q={{ selected_log_q or '' }}&category={{ selected_category or '' }}&status={{ selected_status or '' }}&date_from={{ selected_date_from or '' }}&date_to={{ selected_date_to or '' }}&page={{ logs_page - 1 }}" class="text-[#0F5D7A] font-semibold hover:underline">← Prev</a>
+            {% endif %}
+            <span class="text-stone-400">Page {{ logs_page }} of {{ logs_total_pages }}</span>
+            {% if logs_page < logs_total_pages %}
+            <a href="/ai-insights?log_q={{ selected_log_q or '' }}&category={{ selected_category or '' }}&status={{ selected_status or '' }}&date_from={{ selected_date_from or '' }}&date_to={{ selected_date_to or '' }}&page={{ logs_page + 1 }}" class="text-[#0F5D7A] font-semibold hover:underline">Next →</a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        {% else %}
+        <p class="text-stone-400 text-sm">No logs match these filters.</p>
         {% endif %}
     </div>
 

@@ -1820,6 +1820,102 @@ def get_ai_insights():
         db_pool.putconn(conn)
 
 
+def get_ai_log_categories():
+    """Distinct categories actually present in ai_logs, for the filter
+    dropdown — data-driven instead of a hardcoded list that could drift."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT DISTINCT category FROM ai_logs WHERE category IS NOT NULL ORDER BY category")
+        return [row[0] for row in cursor.fetchall()]
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_ai_logs(category=None, status=None, search=None, date_from=None, date_to=None, page=1, page_size=50):
+    """Paginated, filterable list of ai_logs rows — status is 'error',
+    'success', or None (all). search matches gmail_message_id."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        conditions = []
+        params = []
+
+        if category:
+            conditions.append("category = %s")
+            params.append(category)
+
+        if status == "error":
+            conditions.append("error IS NOT NULL")
+        elif status == "success":
+            conditions.append("error IS NULL")
+
+        if search:
+            conditions.append("gmail_message_id ILIKE %s")
+            params.append(f"%{search}%")
+
+        if date_from:
+            conditions.append("created_at >= %s")
+            params.append(date_from)
+
+        if date_to:
+            conditions.append("created_at < (%s::date + INTERVAL '1 day')")
+            params.append(date_to)
+
+        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+        cursor.execute(f"SELECT COUNT(*) AS total FROM ai_logs {where_clause}", params)
+        total = cursor.fetchone()["total"]
+
+        offset = (page - 1) * page_size
+        cursor.execute(
+            f"""
+            SELECT id, gmail_message_id, category, priority, model, error,
+                   total_tokens, response_time_ms, created_at
+            FROM ai_logs
+            {where_clause}
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+            """,
+            params + [page_size, offset]
+        )
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return {
+            "rows": rows,
+            "total": total,
+            "page": page,
+            "total_pages": max(1, (total + page_size - 1) // page_size),
+        }
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def delete_ai_log(log_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM ai_logs WHERE id = %s", (log_id,))
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
 def get_ai_log_by_message_id(gmail_message_id):
     """Look up the exact AI log entry for one email — what knowledge/
     historical examples it used, tokens, timing, and the raw draft — so a

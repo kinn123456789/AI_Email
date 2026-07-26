@@ -119,6 +119,7 @@ templates = Jinja2Templates(directory="templates")
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from database import get_attachments, get_attachment_by_id, find_recipient_name, save_attachment
 from database import get_ai_insights, get_ai_log_by_message_id
+from database import get_ai_logs, get_ai_log_categories, delete_ai_log
 from database import get_composed_sent_emails
 
 app = FastAPI()
@@ -585,10 +586,29 @@ def category_view(
 
 
 @app.get("/ai-insights")
-def ai_insights(request: Request, q: str = None):
+def ai_insights(
+    request: Request,
+    q: str = None,
+    log_q: str = None,
+    category: str = None,
+    status: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    page: int = 1
+):
 
     data = get_ai_insights()
     searched_logs = get_ai_log_by_message_id(q) if q else None
+
+    logs_result = get_ai_logs(
+        category=category or None,
+        status=status or None,
+        search=log_q or None,
+        date_from=date_from or None,
+        date_to=date_to or None,
+        page=page,
+        page_size=50
+    )
 
     return templates.TemplateResponse(
         "ai_insights.html",
@@ -599,7 +619,32 @@ def ai_insights(request: Request, q: str = None):
             "recent_errors": data["recent_errors"],
             "search_query": q,
             "searched_logs": searched_logs,
+            "logs": logs_result["rows"],
+            "logs_total": logs_result["total"],
+            "logs_page": logs_result["page"],
+            "logs_total_pages": logs_result["total_pages"],
+            "log_categories": get_ai_log_categories(),
+            "selected_log_q": log_q,
+            "selected_category": category,
+            "selected_status": status,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
         }
+    )
+
+
+@app.post("/ai-insights/{log_id}/delete")
+def delete_ai_insight(log_id: int, request: Request):
+
+    delete_ai_log(log_id)
+
+    query_params = dict(request.query_params)
+    query_params.pop("log_id", None)
+    qs = "&".join(f"{k}={v}" for k, v in query_params.items())
+
+    return RedirectResponse(
+        url=f"/ai-insights{'?' + qs if qs else ''}",
+        status_code=303
     )
 
 
