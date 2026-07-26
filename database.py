@@ -44,7 +44,8 @@ def save_email(
     email_date=None,
     is_read=False,
     has_attachment=False,
-    sender_name=None
+    sender_name=None,
+    recipient=None
 ):
     conn = get_connection()
     cursor = conn.cursor()
@@ -56,11 +57,11 @@ def save_email(
                 ai_draft_reply, message_id, thread_id, in_reply_to, source,
                 contact_name, phone, status, requires_review, ai_confidence,
                 knowledge_url, reply_type, mailbox, references_header,email_date,is_read,has_attachment,
-                sender_name
+                sender_name, recipient
             )
             VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             RETURNING id
         """, (
@@ -68,7 +69,7 @@ def save_email(
             ai_draft_reply, message_id, thread_id, in_reply_to, source,
             contact_name, phone, status, requires_review, ai_confidence,
             knowledge_url, reply_type, mailbox, references_header, email_date, is_read , has_attachment,
-            sender_name
+            sender_name, recipient
         ))
         result = cursor.fetchone()
         conn.commit()
@@ -1923,6 +1924,71 @@ def get_last_successful_sync_time(job_name, account):
         )
         row = cursor.fetchone()
         return row[0] if row else None
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_composed_sent_emails(search=None, date_from=None, date_to=None, page=1, page_size=50):
+    """Emails sent via Compose (mailbox='sent') — single sends and bulk
+    sends alike. This is the only place these are viewable after the
+    fact; previously there was no way to look back at what was sent
+    through Compose once the page was navigated away from."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        params = []
+        filters = ""
+
+        if search:
+            filters += " AND (subject ILIKE %s OR recipient ILIKE %s OR body ILIKE %s)"
+            like = f"%{search}%"
+            params.extend([like, like, like])
+
+        if date_from:
+            filters += " AND (created_at AT TIME ZONE 'UTC')::date >= %s"
+            params.append(date_from)
+
+        if date_to:
+            filters += " AND (created_at AT TIME ZONE 'UTC')::date <= %s"
+            params.append(date_to)
+
+        cursor.execute(f"""
+            SELECT COUNT(*) AS total
+            FROM messages
+            WHERE mailbox = 'sent'
+            {filters}
+        """, params)
+
+        total = cursor.fetchone()["total"]
+        total_pages = max(1, (total + page_size - 1) // page_size)
+        page = max(1, min(page, total_pages))
+        offset = (page - 1) * page_size
+
+        cursor.execute(f"""
+            SELECT id, sender, recipient, subject, body, created_at, has_attachment
+            FROM messages
+            WHERE mailbox = 'sent'
+            {filters}
+            ORDER BY created_at DESC
+            LIMIT %s OFFSET %s
+        """, params + [page_size, offset])
+
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return {
+            "rows": rows,
+            "total": total,
+            "page": page,
+            "total_pages": total_pages,
+        }
 
     finally:
         cursor.close()

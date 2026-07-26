@@ -119,6 +119,7 @@ templates = Jinja2Templates(directory="templates")
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from database import get_attachments, get_attachment_by_id, find_recipient_name
 from database import get_ai_insights, get_ai_log_by_message_id
+from database import get_composed_sent_emails
 
 app = FastAPI()
 print("MAIN.PY LOADED")
@@ -577,6 +578,27 @@ def ai_insights(request: Request, q: str = None):
             "recent_errors": data["recent_errors"],
             "search_query": q,
             "searched_logs": searched_logs,
+        }
+    )
+
+
+@app.get("/compose/sent")
+def compose_sent(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+
+    page_size = 50
+    result = get_composed_sent_emails(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+
+    return templates.TemplateResponse(
+        "compose_sent.html",
+        {
+            "request": request,
+            "emails": result["rows"],
+            "search_query": q,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "current_page": result["page"],
+            "total_pages": result["total_pages"],
+            "total_count": result["total"],
         }
     )
 
@@ -1042,10 +1064,56 @@ def parse_csv_recipients(text):
     return recipients
 
 
+def _send_bulk_emails(recipients, subject, body, from_email, token_file, attachment_data):
+    """Runs the actual send loop as a background task instead of inline in
+    the request handler — a 100-recipient send does up to 200 sequential
+    Gmail API calls (send + refetch per recipient) plus 100 DB writes,
+    which could take minutes and risk the request timing out before the
+    browser ever gets a response, even though the sends themselves would
+    still be succeeding. This way the page responds immediately and the
+    sending continues after."""
+
+    sent_count = 0
+
+    for recipient in recipients:
+
+        personalized_subject = subject
+        personalized_body = body
+
+        if recipient["name"]:
+            personalized_subject = personalized_subject.replace("{{name}}", recipient["name"])
+            personalized_body = personalized_body.replace("{{name}}", recipient["name"])
+
+        result = send_new_email(
+            from_email=from_email,
+            token_file=token_file,
+            to_email=recipient["email"],
+            attachments=attachment_data,
+            subject=personalized_subject,
+            body=personalized_body
+        )
+
+        if not result:
+            continue
+
+        sent_count += 1
+
+        msg = get_message(token_file, result["id"])
+        if msg:
+            save_composed_email(msg, from_email)
+            print(msg["Message-ID"])
+            print(msg["Subject"])
+            print(msg["From"])
+
+    print(f"Bulk send complete: {sent_count}/{len(recipients)} sent")
+
+
 @app.post("/compose")
 async def compose_email(
 
     request: Request,
+
+    background_tasks: BackgroundTasks,
 
     from_account: str = Form(...),
 
@@ -1129,55 +1197,26 @@ async def compose_email(
                 (upload.filename, await upload.read(), upload.content_type)
             )
 
-    sent_count = 0
-
-    for recipient in recipients:
-
-        personalized_subject = subject
-        personalized_body = body
-
-        if recipient["name"]:
-            personalized_subject = personalized_subject.replace("{{name}}", recipient["name"])
-            personalized_body = personalized_body.replace("{{name}}", recipient["name"])
-
-        result = send_new_email(
-
-            from_email=from_email,
-            token_file=token_file,
-            to_email=recipient["email"],
-            attachments=attachment_data,
-            subject=personalized_subject,
-            body=personalized_body
-
-        )
-
-        if not result:
-            continue
-
-        sent_count += 1
-
-        msg = get_message(
-            token_file,
-            result["id"]
-        )
-        if msg:
-            save_composed_email(
-                msg,
-                from_email
-
-            )
-            print(msg["Message-ID"])
-            print(msg["Subject"])
-            print(msg["From"])
-
-    if sent_count:
+    # A single recipient sends synchronously — fast (one send + one
+    # refetch), and staff expect an immediate "was it sent" answer. Bulk
+    # sends run as a background task instead — up to 100 recipients means
+    # up to 200 sequential Gmail API calls, which could take minutes and
+    # risk the request itself timing out before the browser gets a
+    # response, even though the sends would still be succeeding server-side.
+    if len(recipients) == 1:
+        _send_bulk_emails(recipients, subject, body, from_email, token_file, attachment_data)
 
         return RedirectResponse(
-            f"/compose?sent=true&count={sent_count}",
+            "/compose?sent=true&count=1",
             status_code=303
         )
+
+    background_tasks.add_task(
+        _send_bulk_emails, recipients, subject, body, from_email, token_file, attachment_data
+    )
+
     return RedirectResponse(
-        "/compose",
+        f"/compose?queued=true&count={len(recipients)}",
         status_code=303
     )
 

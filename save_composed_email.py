@@ -1,12 +1,13 @@
+from email.utils import parseaddr
 from database import save_email
 from database import email_exists
 
 def save_composed_email(
     msg,
     from_email
-    
+
 ):
-    
+
     subject = msg.get("Subject", "")
 
     message_id = msg.get("Message-ID")
@@ -14,6 +15,8 @@ def save_composed_email(
     references = msg.get("References")
 
     in_reply_to = msg.get("In-Reply-To")
+
+    recipient = parseaddr(msg.get("To", ""))[1]
 
     body = ""
 
@@ -73,6 +76,8 @@ def save_composed_email(
 
         mailbox="sent",
 
-        references_header=references
+        references_header=references,
+
+        recipient=recipient
 
     )

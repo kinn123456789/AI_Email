@@ -26,11 +26,18 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
             </p>
         </div>
 
-        <a
-            href="/dashboard"
-            class="bg-cyan-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg border border-white/20">
-            ← Dashboard
-        </a>
+        <div class="flex gap-3">
+            <a
+                href="/compose/sent"
+                class="bg-white text-cyan-800 border border-cyan-800 px-6 py-3 rounded-xl font-bold hover:bg-cyan-50 transition shadow-lg">
+                📤 Sent History
+            </a>
+            <a
+                href="/dashboard"
+                class="bg-cyan-800 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition shadow-lg border border-white/20">
+                ← Dashboard
+            </a>
+        </div>
     </div>
 
     {% if request.query_params.get("sent") %}
@@ -40,12 +47,21 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
         <span class="text-xl">✅</span>
         <div>
             <div class="font-semibold">
-                {% set sent_count = request.query_params.get("count") %}
-                {% if sent_count and sent_count|int > 1 %}
-                {{ sent_count }} emails sent successfully.
-                {% else %}
                 Mail sent successfully.
-                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if request.query_params.get("queued") %}
+    <div
+        id="mail-queued"
+        class="mb-6 bg-cyan-100/50 backdrop-blur-md border border-cyan-200 text-cyan-800 rounded-2xl p-4 flex items-center gap-3">
+        <span class="text-xl">📤</span>
+        <div>
+            <div class="font-semibold">
+                Sending {{ request.query_params.get("count") }} emails now — this runs in the background,
+                so it may take a few minutes to finish. Check the Sent Mail history to confirm they went out.
             </div>
         </div>
     </div>
@@ -213,7 +229,7 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
 
 <script>
 window.addEventListener("load", function () {
-    const badge = document.getElementById("mail-sent");
+    const badge = document.getElementById("mail-sent") || document.getElementById("mail-queued");
     if (badge) {
         badge.scrollIntoView({
             behavior: "smooth",

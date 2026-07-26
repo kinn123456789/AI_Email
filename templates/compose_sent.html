@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sent via Compose</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body
+    class="min-h-screen p-10 font-sans text-stone-800"
+    style="
+        background-image: url('/static/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+>
+
+<div class="max-w-5xl mx-auto">
+
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold text-[#0F5D7A]">
+            Sent via Compose
+        </h1>
+        <a href="/compose" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
+            ← Back to Compose
+        </a>
+    </div>
+
+    <form method="get" action="/compose/sent" class="flex flex-wrap gap-2 mb-6">
+        <input
+            type="text"
+            name="q"
+            value="{{ search_query or '' }}"
+            placeholder="Search subject, recipient, or body"
+            class="flex-1 min-w-[200px] border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white/80"
+        >
+        <input type="date" name="date_from" value="{{ selected_date_from or '' }}" class="border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white/80">
+        <input type="date" name="date_to" value="{{ selected_date_to or '' }}" class="border border-stone-200 rounded-lg px-3 py-2 text-sm bg-white/80">
+        <button type="submit" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">
+            Search
+        </button>
+    </form>
+
+    <p class="text-sm text-stone-500 mb-4">{{ total_count }} email(s) sent via Compose</p>
+
+    {% if emails %}
+    <div class="grid gap-4">
+        {% for email in emails %}
+        <div class="bg-white rounded-2xl shadow p-5 border border-stone-100">
+            <div class="flex justify-between items-start gap-4 mb-2">
+                <div class="font-semibold text-stone-800">{{ email.subject or "(no subject)" }}</div>
+                <div class="text-xs text-stone-400 whitespace-nowrap local-time" data-utc="{{ email.created_at }}"></div>
+            </div>
+            <p class="text-xs text-stone-500 mb-2">
+                From <span class="font-medium">{{ email.sender }}</span>
+                → To <span class="font-medium">{{ email.recipient or "—" }}</span>
+                {% if email.has_attachment %}<span class="ml-2">📎 attachment</span>{% endif %}
+            </p>
+            <p class="text-sm text-stone-600 truncate">{{ email.body[:200] if email.body else "" }}</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="flex justify-center gap-4 mt-8 text-sm">
+        {% if current_page > 1 %}
+        <a href="/compose/sent?page={{ current_page - 1 }}&q={{ search_query or '' }}&date_from={{ selected_date_from or '' }}&date_to={{ selected_date_to or '' }}" class="text-[#0F5D7A] font-semibold hover:underline">← Prev</a>
+        {% endif %}
+        <span class="text-stone-400">Page {{ current_page }} of {{ total_pages }}</span>
+        {% if current_page < total_pages %}
+        <a href="/compose/sent?page={{ current_page + 1 }}&q={{ search_query or '' }}&date_from={{ selected_date_from or '' }}&date_to={{ selected_date_to or '' }}" class="text-[#0F5D7A] font-semibold hover:underline">Next →</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <p class="text-stone-400 text-sm">No emails sent via Compose yet.</p>
+    {% endif %}
+
+</div>
+
+<script src="/static/local-time.js"></script>
+</body>
+</html>
