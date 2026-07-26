@@ -1,6 +1,9 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import time
+
+from ai_logger import save_ai_log
 
 load_dotenv()
 
@@ -140,13 +143,16 @@ Do not include:
 - Explanations
 """
 
+    start_time = time.time()
+    log_id = f"followup:{candidate.get('free_trial_pass_id')}:email{email_number}"
+
     try:
 
         response = client.chat.completions.create(
             model="gpt-5-nano",
             messages=[
                 {
-                    
+
                         "role": "system",
                         "content": """
                     You are Coral Academy's parent communication assistant.
@@ -163,7 +169,7 @@ Do not include:
 
                     Coral Academy
                     """
-                    
+
                 },
                 {
                     "role": "user",
@@ -172,14 +178,51 @@ Do not include:
             ]
         )
 
+        elapsed_ms = int((time.time() - start_time) * 1000)
         body = response.choices[0].message.content.strip()
         body = body.replace(_PARENT_PLACEHOLDER, parent_name).replace(_LEARNER_PLACEHOLDER, learner_name)
+
+        usage = response.usage
+        save_ai_log(
+            gmail_message_id=log_id,
+            model="gpt-5-nano",
+            category="Trial Followup",
+            priority=None,
+            reply_type="automatic",
+            requires_review=False,
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            total_tokens=usage.total_tokens,
+            response_time_ms=elapsed_ms,
+            knowledge_used=[],
+            historical_examples=[],
+            thread_history_length=0,
+            ai_reply=body,
+        )
 
         return subject, body
 
     except Exception as e:
 
         print("AI Error:", e)
+
+        save_ai_log(
+            gmail_message_id=log_id,
+            model="gpt-5-nano",
+            category="Trial Followup",
+            priority=None,
+            reply_type="automatic",
+            requires_review=True,
+            prompt_tokens=0,
+            completion_tokens=0,
+            total_tokens=0,
+            response_time_ms=int((time.time() - start_time) * 1000),
+            knowledge_used=[],
+            historical_examples=[],
+            thread_history_length=0,
+            ai_reply="",
+            error=str(e),
+        )
 
         return subject, f"""
 Hi {parent_name},
