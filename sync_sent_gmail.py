@@ -95,6 +95,7 @@ def main():
         started_at = datetime.now(timezone.utc)
         imported, skipped, error_count = 0, 0, 0
         error_message = None
+        checkpoint_time = datetime.now(timezone.utc)
 
         try:
             mail = oauth_login(account["email"], account["token"])
@@ -123,7 +124,10 @@ def main():
 
             if status != "OK": continue
 
-            message_ids = search_data[0].split()[-MAX_MESSAGES_PER_RUN:]
+            all_ids = search_data[0].split()
+            message_ids = all_ids[-MAX_MESSAGES_PER_RUN:]
+            truncated = len(all_ids) > MAX_MESSAGES_PER_RUN
+            oldest_processed_date = None
 
             for sent_id in message_ids:
                 try:
@@ -137,6 +141,9 @@ def main():
                     msg = email.message_from_bytes(msg_data[0][1])
 
                     email_date = parsedate_to_datetime(msg["Date"])
+
+                    if oldest_processed_date is None or email_date < oldest_processed_date:
+                        oldest_processed_date = email_date
 
                     message_id = " ".join((msg.get("Message-ID") or "").split())
 
@@ -224,6 +231,19 @@ def main():
                     error_message = str(e)
                     continue
 
+            if truncated and oldest_processed_date:
+                # Backlog exceeded MAX_MESSAGES_PER_RUN — cap the checkpoint at the
+                # oldest message actually processed instead of "now", so the next
+                # run's SINCE search picks up right where this one stopped rather
+                # than skipping the untouched older messages forever.
+                checkpoint_time = oldest_processed_date
+                logger.info(
+                    f"{account['source']}: backlog exceeded {MAX_MESSAGES_PER_RUN}, "
+                    f"checkpoint capped at {checkpoint_time} instead of now"
+                )
+            else:
+                checkpoint_time = datetime.now(timezone.utc)
+
             logger.info(f"{account['source']} sync complete. Imported={imported}, Skipped={skipped}")
 
         except Exception as e:
@@ -240,7 +260,7 @@ def main():
                     job_name="sync_sent_gmail",
                     account=account["source"],
                     started_at=started_at,
-                    finished_at=datetime.now(timezone.utc),
+                    finished_at=checkpoint_time,
                     imported_count=imported,
                     skipped_count=skipped,
                     error_count=error_count,
