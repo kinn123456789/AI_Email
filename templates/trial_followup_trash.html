@@ -89,7 +89,7 @@
                         </span>
                     </td>
                     <td class="p-4 text-sm text-stone-700">
-                        {% if row.sent_at %}{{ row.sent_at.strftime("%d %b %Y %I:%M %p") }}{% else %}<span class="text-stone-400 italic">Pending</span>{% endif %}
+                        {% if row.sent_at %}<span class="local-time" data-utc="{{ row.sent_at.isoformat() }}"></span>{% else %}<span class="text-stone-400 italic">Pending</span>{% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -144,6 +144,6 @@ if (selectAll) {
     updateRestoreButton();
 }
 </script>
-
+<script src="/static/local-time.js"></script>
 </body>
 </html>

@@ -163,7 +163,7 @@
             {% endif %}
 
             <div class="mt-4 flex justify-between items-center">
-                <span class="text-xs text-gray-400">{{ contact.created_at }}</span>
+                <span class="text-xs text-gray-400 local-time" data-utc="{{ contact.created_at }}"></span>
                 <a href="/email/{{ contact.id }}"
                    class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-black transition">
                     View & Reply →
@@ -238,4 +238,5 @@ searchInput.addEventListener("input", function () {
     }, 600);
 });
 </script>
+<script src="/static/local-time.js"></script>
 </html>

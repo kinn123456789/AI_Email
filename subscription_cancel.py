@@ -5,7 +5,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from dateutil.relativedelta import relativedelta
-from zoneinfo import ZoneInfo
 from dateutil.parser import isoparse
 from openai import OpenAI
 
@@ -249,16 +248,15 @@ Coral Academy
 """
 
 
-def _format_ist(iso_string):
+def _format_display_timestamp(iso_string):
+    """Returns a raw UTC ISO timestamp — formatting into the viewer's own
+    local timezone happens client-side via static/local-time.js, not fixed
+    to IST server-side anymore."""
 
     if not iso_string:
         return None
 
-    return (
-        isoparse(iso_string)
-        .astimezone(ZoneInfo("Asia/Kolkata"))
-        .strftime("%b %-d, %Y %-I:%M %p")
-    )
+    return isoparse(iso_string).astimezone(timezone.utc).isoformat()
 
 
 def get_subscription_types():
@@ -807,7 +805,7 @@ def _build_rows_from(subscriptions, trial_candidates):
             "subscription_status": s["subscription_status"],
             "subscribed_at": s["subscribed_at"],
             "canceled_at": effective_canceled_at,
-            "canceled_at_display": _format_ist(effective_canceled_at),
+            "canceled_at_display": _format_display_timestamp(effective_canceled_at),
             "parent_id": parent_id,
             "parent_name": parent_info.get("parent_name"),
             "parent_email": parent_info.get("parent_email"),
@@ -830,7 +828,7 @@ def _build_rows_from(subscriptions, trial_candidates):
             "subscription_status": "trial_expired",
             "subscribed_at": None,
             "canceled_at": t["expiry_at"],
-            "canceled_at_display": _format_ist(t["expiry_at"]),
+            "canceled_at_display": _format_display_timestamp(t["expiry_at"]),
             "parent_id": parent_id,
             "parent_name": parent_info.get("parent_name"),
             "parent_email": parent_info.get("parent_email"),
@@ -1087,7 +1085,7 @@ def _build_row(learner_id, parent_id, subscription_id, subscription_type,
         "subscription_status": subscription_status,
         "subscribed_at": subscribed_at,
         "canceled_at": canceled_at,
-        "canceled_at_display": _format_ist(canceled_at),
+        "canceled_at_display": _format_display_timestamp(canceled_at),
         "parent_id": parent_id,
         "parent_name": parent_name,
         "parent_email": parent_email,

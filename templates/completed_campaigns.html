@@ -56,18 +56,18 @@
         <td class="p-4">{{ row.learner_name or 'N/A' }}</td>
         <td class="p-4">{{ row.parent_name or 'N/A' }}</td>
         
-        <!-- Safe Date Rendering -->
+        <!-- Local-time rendering: raw UTC timestamp, formatted client-side -->
         <td class="p-4 font-mono text-sm">
-            {{ row.trial_expiry_at.strftime("%d %b %Y") if row.trial_expiry_at else '---' }}
+            {% if row.trial_expiry_at %}<span class="local-time" data-utc="{{ row.trial_expiry_at.isoformat() }}" data-date-only="true"></span>{% else %}---{% endif %}
         </td>
         <td class="p-4 font-mono text-sm">
-            {{ row.email1_sent_at.strftime("%d %b %Y") if row.email1_sent_at else '---' }}
+            {% if row.email1_sent_at %}<span class="local-time" data-utc="{{ row.email1_sent_at.isoformat() }}" data-date-only="true"></span>{% else %}---{% endif %}
         </td>
         <td class="p-4 font-mono text-sm">
-            {{ row.email2_sent_at.strftime("%d %b %Y") if row.email2_sent_at else '---' }}
+            {% if row.email2_sent_at %}<span class="local-time" data-utc="{{ row.email2_sent_at.isoformat() }}" data-date-only="true"></span>{% else %}---{% endif %}
         </td>
         <td class="p-4 font-mono text-sm">
-            {{ row.email3_sent_at.strftime("%d %b %Y") if row.email3_sent_at else '---' }}
+            {% if row.email3_sent_at %}<span class="local-time" data-utc="{{ row.email3_sent_at.isoformat() }}" data-date-only="true"></span>{% else %}---{% endif %}
         </td>
         
         <td class="p-4">
@@ -91,5 +91,6 @@
 
     </div>
 
+<script src="/static/local-time.js"></script>
 </body>
 </html>

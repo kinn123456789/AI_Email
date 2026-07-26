@@ -73,7 +73,7 @@
                     {% elif email.ai_confidence >= 70 %}<span class="text-cyan-700 font-semibold">{{ email.ai_confidence }}%</span>
                     {% else %}<span class="text-red-600 font-semibold">{{ email.ai_confidence }}%</span>{% endif %}
                 </p>
-                <p class="flex items-center gap-1.5">🕒 <span class="text-stone-500">Received:</span> <span class="font-medium text-gray-900">{{ email.created_at }}</span></p>
+                <p class="flex items-center gap-1.5">🕒 <span class="text-stone-500">Received:</span> <span class="font-medium text-gray-900 local-time" data-utc="{{ email.created_at.isoformat() if email.created_at else '' }}"></span></p>
             </div>
 
             {% if attachments %}
@@ -110,9 +110,7 @@
                                     {{ '🏫 Coral Academy' if is_school else '👤 ' }}
                                 </div>
                                 <div>{{ msg.body }}</div>
-                                <div class="text-xs text-stone-400 mt-3">
-                                    {{ msg.created_at }}
-                                </div>
+                                <div class="text-xs text-stone-400 mt-3 local-time" data-utc="{{ msg.created_at.isoformat() if msg.created_at else '' }}"></div>
                             </div>
                         </div>
                         {% endfor %}
@@ -176,6 +174,7 @@
         {% endif %}
     });
     </script>
+<script src="/static/local-time.js"></script>
 </body>
 </html>
 

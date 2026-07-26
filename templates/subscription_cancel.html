@@ -176,7 +176,7 @@
 </td>
 <td class="p-4 truncate text-cyan-950 text-xs font-medium">{{ s.class_title or "-" }}</td>
 <td class="p-4 font-bold text-cyan-950">{{ s.sessions_attended }}</td>
-<td class="p-4 text-cyan-950 text-xs font-bold">{{ s.canceled_at_display or "-" }}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold">{% if s.canceled_at_display %}<span class="local-time" data-utc="{{ s.canceled_at_display }}"></span>{% else %}-{% endif %}</td>
 <td class="p-4">
     {% set status_styles = {
         "trial_expired": "bg-amber-300/60 text-amber-950 border-amber-400/50",
@@ -295,4 +295,5 @@ searchInput.addEventListener("input", function () {
     }, 600);
 });
 </script>
+<script src="/static/local-time.js"></script>
 </html>

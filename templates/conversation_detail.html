@@ -34,7 +34,7 @@
         <div class="flex justify-start">
             <div class="max-w-[70%] bg-white/40 backdrop-blur-2xl rounded-2xl rounded-bl-none px-6 py-4 border border-white/50 shadow-sm">
                 <p class="text-[14px] text-stone-900 leading-relaxed font-medium">{{ msg.body }}</p>
-                <span class="block text-[9px] font-bold text-stone-500 mt-3 uppercase">{{ msg.created_at }}</span>
+                <span class="block text-[9px] font-bold text-stone-500 mt-3 uppercase local-time" data-utc="{{ msg.created_at.isoformat() if msg.created_at else '' }}"></span>
             </div>
         </div>
         {% else %}
@@ -44,7 +44,7 @@
                     {{ conversation.teacher_name }}
                 </div>
                 <p class="text-[14px] text-stone-900 leading-relaxed font-medium">{{ msg.body }}</p>
-                <span class="block text-[9px] font-bold text-stone-500 mt-3 uppercase text-right">{{ msg.created_at }}</span>
+                <span class="block text-[9px] font-bold text-stone-500 mt-3 uppercase text-right local-time" data-utc="{{ msg.created_at.isoformat() if msg.created_at else '' }}"></span>
             </div>
         </div>
         {% endif %}
@@ -88,6 +88,7 @@
     </div>
 
 </div>
+<script src="/static/local-time.js"></script>
 </body>
 
 </html>

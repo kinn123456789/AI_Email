@@ -41,7 +41,7 @@
     <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">{{ r.subscription_type }}</span>
 </td>
 <td class="p-4 truncate text-cyan-950 text-xs font-medium">{{ r.class_title or "-" }}</td>
-<td class="p-4 text-cyan-950 text-xs font-bold">{{ r.sent_at }}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold local-time" data-utc="{{ r.sent_at.isoformat() if r.sent_at else '' }}"></td>
 </tr>
 {% endfor %}
 
@@ -54,5 +54,6 @@
 </table>
 </div>
 
+<script src="/static/local-time.js"></script>
 </body>
 </html>

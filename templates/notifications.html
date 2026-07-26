@@ -134,7 +134,7 @@
                             {{ email.category }}
                         </span>
                     </td>
-                    <td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
+                    <td class="p-4 text-cyan-950 text-xs font-bold local-time" data-utc="{{ email.created_at }}"></td>
                 </tr>
             {% endfor %}
 
@@ -229,5 +229,6 @@ searchInput.addEventListener("input", function () {
     }, 600);
 });
 </script>
+<script src="/static/local-time.js"></script>
 </html>
 

@@ -267,7 +267,7 @@ Pending
 {% endif %}
 </td>#}
 
-<td class="p-4 text-cyan-950 text-xs font-bold">{{ email.created_at }}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold local-time" data-utc="{{ email.created_at }}"></td>
 </tr>
 {% endfor %}
 </tbody>
@@ -301,6 +301,7 @@ Showing 0 emails
 </a>
 </div>
 </body>
+<script src="/static/local-time.js"></script>
 <script>
 const selectAll = document.getElementById("select-all");
 const deleteBtn = document.getElementById("delete-btn");
@@ -432,7 +433,7 @@ function buildRowHtml(email) {
         '<td class="p-4"><span class="px-3 py-1 rounded text-xs font-bold ' + catClass + '">' + escapeHtml(email.category) + '</span></td>' +
         '<td class="p-4 font-bold">' + priorityHtml(email.priority) + '</td>' +
         '<td class="p-4">' + statusHtml(email.status) + '</td>' +
-        '<td class="p-4 text-cyan-950 text-xs font-bold">' + escapeHtml(email.created_at) + '</td>' +
+        '<td class="p-4 text-cyan-950 text-xs font-bold local-time" data-utc="' + escapeHtml(email.created_at) + '"></td>' +
     '</tr>';
 }
 
@@ -446,6 +447,10 @@ function refreshDashboard() {
 
             const tbody = document.getElementById("tableBody");
             tbody.innerHTML = data.emails.map(buildRowHtml).join("");
+
+            if (window.applyLocalTimes) {
+                window.applyLocalTimes();
+            }
 
             const newCheckboxes = Array.from(document.querySelectorAll(".email-checkbox"));
             newCheckboxes.forEach(cb => {

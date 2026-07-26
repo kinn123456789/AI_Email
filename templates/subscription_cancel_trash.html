@@ -71,8 +71,8 @@
     <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">{{ d.subscription_type }}</span>
 </td>
 <td class="p-4 truncate text-cyan-950 text-xs font-medium">{{ d.class_title or "-" }}</td>
-<td class="p-4 text-cyan-950 text-xs font-bold">{{ d.canceled_at_display or "-" }}</td>
-<td class="p-4 text-cyan-950 text-xs font-bold">{{ d.dismissed_at }}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold">{% if d.canceled_at_display %}<span class="local-time" data-utc="{{ d.canceled_at_display }}"></span>{% else %}-{% endif %}</td>
+<td class="p-4 text-cyan-950 text-xs font-bold local-time" data-utc="{{ d.dismissed_at.isoformat() if d.dismissed_at else '' }}"></td>
 </tr>
 {% endfor %}
 
@@ -124,4 +124,5 @@ selectAll.addEventListener("change", function () {
 
 updateRestoreButton();
 </script>
+<script src="/static/local-time.js"></script>
 </html>

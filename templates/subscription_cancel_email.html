@@ -31,7 +31,7 @@
                 {% if row.canceled_at_display %}
                 <p class="flex items-center gap-1.5">🕒 <span class="text-stone-500">
                     {% if row.subscription_status == "trial_expired" %}Trial Expired:{% else %}Cancelled:{% endif %}
-                </span> <span class="font-medium text-stone-800">{{ row.canceled_at_display }}</span></p>
+                </span> <span class="font-medium text-stone-800 local-time" data-utc="{{ row.canceled_at_display }}"></span></p>
                 {% endif %}
                 {% if row.sessions_attended is defined %}
                 <p class="flex items-center gap-1.5">📊 <span class="text-stone-500">Sessions Attended:</span> <span class="font-medium text-stone-800">{{ row.sessions_attended }}</span></p>
@@ -58,7 +58,7 @@
 
         {% if sent %}
         <div class="mb-8 p-5 bg-emerald-100/50 border border-emerald-300 rounded-2xl">
-            <p class="font-semibold text-emerald-800 mb-1">✓ Sent {{ sent.sent_at }}</p>
+            <p class="font-semibold text-emerald-800 mb-1">✓ Sent <span class="local-time" data-utc="{{ sent.sent_at.isoformat() if sent.sent_at else '' }}"></span></p>
         </div>
         <div class="mb-4">
             <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase px-1 mb-2">Subject</h2>
@@ -98,5 +98,6 @@
         </div>
 
     </div>
+<script src="/static/local-time.js"></script>
 </body>
 </html>

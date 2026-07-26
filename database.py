@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 import re
 from psycopg2.extras import RealDictCursor
 from datetime import timezone
-from zoneinfo import ZoneInfo
 
 load_dotenv()
 
@@ -204,12 +203,10 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             #if row["created_at"]:
                # row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
-                row["created_at"] = (
-                    row["created_at"]
-                    .replace(tzinfo=timezone.utc)
-                    .astimezone(ZoneInfo("Asia/Kolkata"))
-                    .strftime("%b %-d, %-I:%M %p")
-                )
+                # Raw UTC ISO timestamp, formatted client-side into the
+                # viewer's own local timezone by static/local-time.js —
+                # not fixed to IST server-side anymore.
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
             # NEW
             if row["reply_type"] == "automatic":
                 row["handled_by"] = "AI"
@@ -271,12 +268,10 @@ def get_emails_by_category(category):
             #if row["created_at"]:
                 #row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
-                row["created_at"] = (
-                    row["created_at"]
-                    .replace(tzinfo=timezone.utc)
-                    .astimezone(ZoneInfo("Asia/Kolkata"))
-                    .strftime("%b %-d, %-I:%M %p")
-                )
+                # Raw UTC ISO timestamp, formatted client-side into the
+                # viewer's own local timezone by static/local-time.js —
+                # not fixed to IST server-side anymore.
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
 
         return rows
 
@@ -570,12 +565,10 @@ def get_contact_forms(search=None, date_from=None, date_to=None, page=1, page_si
 
         for row in rows:
             if row["created_at"]:
-                row["created_at"] = (
-                    row["created_at"]
-                    .replace(tzinfo=timezone.utc)
-                    .astimezone(ZoneInfo("Asia/Kolkata"))
-                    .strftime("%b %-d, %-I:%M %p")
-                )
+                # Raw UTC ISO timestamp, formatted client-side into the
+                # viewer's own local timezone by static/local-time.js —
+                # not fixed to IST server-side anymore.
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
 
         return {
             "rows": rows,
@@ -1188,12 +1181,10 @@ def get_support_emails(source=None, search=None, date_from=None, date_to=None, p
                 #row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
 
             if row["created_at"]:
-                row["created_at"] = (
-                    row["created_at"]
-                    .replace(tzinfo=timezone.utc)
-                    .astimezone(ZoneInfo("Asia/Kolkata"))
-                    .strftime("%b %-d, %-I:%M %p")
-                )
+                # Raw UTC ISO timestamp, formatted client-side into the
+                # viewer's own local timezone by static/local-time.js —
+                # not fixed to IST server-side anymore.
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
 
         return {
             "rows": rows,
@@ -1679,12 +1670,10 @@ def get_trash_emails():
             #if row["created_at"]:
                # row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
-                row["created_at"] = (
-                    row["created_at"]
-                    .replace(tzinfo=timezone.utc)
-                    .astimezone(ZoneInfo("Asia/Kolkata"))
-                    .strftime("%b %-d, %-I:%M %p")
-                )
+                # Raw UTC ISO timestamp, formatted client-side into the
+                # viewer's own local timezone by static/local-time.js —
+                # not fixed to IST server-side anymore.
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
 
             if row["reply_type"] == "automatic":
                 row["handled_by"] = "AI"
@@ -1754,12 +1743,10 @@ def get_notification_emails():
 
     for row in emails:
         if row["created_at"]:
-            row["created_at"] = (
-                row["created_at"]
-                .replace(tzinfo=timezone.utc)
-                .astimezone(ZoneInfo("Asia/Kolkata"))
-                .strftime("%b %-d, %-I:%M %p")
-            )
+            # Raw UTC ISO timestamp, formatted client-side into the
+            # viewer's own local timezone by static/local-time.js — not
+            # fixed to IST server-side anymore.
+            row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
     
 
     cursor.close()

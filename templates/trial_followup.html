@@ -179,7 +179,7 @@
                         </span>
                     </td>
                     <td class="p-4 text-sm text-stone-700">
-                        {% if row.sent_at %}{{ row.sent_at.strftime("%d %b %Y %I:%M %p") }}{% else %}<span class="text-stone-400 italic">Pending</span>{% endif %}
+                        {% if row.sent_at %}<span class="local-time" data-utc="{{ row.sent_at.isoformat() }}"></span>{% else %}<span class="text-stone-400 italic">Pending</span>{% endif %}
                     </td>
                     <td class="p-4">
                         <a href="/trial-followup/email/{{ row.id }}" class="bg-stone-800 hover:bg-stone-900 text-white px-4 py-1.5 rounded-xl text-sm font-semibold transition inline-block shadow-sm">View</a>
@@ -274,6 +274,7 @@ if (selectAll) {
 }
 </script>
 
+<script src="/static/local-time.js"></script>
 </body>
 </html>
 

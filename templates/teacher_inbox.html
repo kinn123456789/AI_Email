@@ -81,7 +81,7 @@ class="block p-3.5 border-b border-white/10 hover:bg-white/40
 {% if selected_chat == chat.chat_id %}bg-white/50{% endif %}">
 <div class="flex justify-between items-center mb-1">
 <div class="font-bold text-gray-800 text-sm truncate">{{ chat.parent_name }}</div>
-<div class="text-[10px] text-gray-500 font-medium">{{ chat.created_at.strftime('%d %b') }}</div>
+<div class="text-[10px] text-gray-500 font-medium local-time" data-utc="{{ chat.created_at.isoformat() }}" data-date-only="true"></div>
 </div>
 <div class="text-gray-600 text-xs truncate">{{ chat.body }}</div>
 <div class="mt-2 flex gap-1.5">
@@ -128,9 +128,7 @@ bg-white text-gray-800
 {{ message.body }}
 </div>
 
-<div class="text-xs opacity-70 mt-1">
-{{ message.created_at }}
-</div>
+<div class="text-xs opacity-70 mt-1 local-time" data-utc="{{ message.created_at.isoformat() if message.created_at else '' }}"></div>
 
 {% if message.sender == conversation.teacher_id %}
 <form action="/teacher/delete-message" method="POST" class="mt-1 text-right"
@@ -261,6 +259,6 @@ box.scrollTop = box.scrollHeight;
 }
 };
 </script>
-
+<script src="/static/local-time.js"></script>
 </body>
 </html>

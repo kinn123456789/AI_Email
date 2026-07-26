@@ -101,11 +101,7 @@ style="background:url('/static/background.png') center/cover fixed no-repeat;">
 
                     </div>
 
-                    <div class="mt-3 text-xs text-gray-500">
-
-                        {{ convo.created_at.strftime("%d %b • %I:%M %p") }}
-
-                    </div>
+                    <div class="mt-3 text-xs text-gray-500 local-time" data-utc="{{ convo.created_at.isoformat() }}"></div>
 
                 </div>
 
@@ -121,6 +117,7 @@ style="background:url('/static/background.png') center/cover fixed no-repeat;">
 
 </div>
 
+<script src="/static/local-time.js"></script>
 </body>
 
 </html>
