@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Insights</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+
+<body
+    class="min-h-screen p-10 font-sans text-stone-800"
+    style="
+        background-image: url('/static/background.png');
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    "
+>
+
+<div class="max-w-5xl mx-auto">
+
+    <div class="flex justify-between items-center mb-8">
+        <h1 class="text-4xl font-bold text-[#0F5D7A]">
+            AI Insights
+        </h1>
+        <a href="/dashboard" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg hover:opacity-90 transition">
+            ← Back
+        </a>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white rounded-2xl shadow p-5 border border-stone-100">
+            <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Total AI Calls</p>
+            <p class="text-3xl font-bold text-[#0F5D7A] mt-1">{{ summary.total_calls }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-5 border border-stone-100">
+            <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Errors</p>
+            <p class="text-3xl font-bold {{ 'text-red-600' if summary.error_count > 0 else 'text-emerald-600' }} mt-1">{{ summary.error_count }}</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-5 border border-stone-100">
+            <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Total Tokens Used</p>
+            <p class="text-3xl font-bold text-[#0F5D7A] mt-1">{{ "{:,}".format(summary.total_tokens) }}</p>
+            <p class="text-xs text-stone-400 mt-1">{{ "{:,}".format(summary.total_prompt_tokens) }} prompt / {{ "{:,}".format(summary.total_completion_tokens) }} completion</p>
+        </div>
+        <div class="bg-white rounded-2xl shadow p-5 border border-stone-100">
+            <p class="text-xs uppercase tracking-wider text-stone-400 font-bold">Avg Response Time</p>
+            <p class="text-3xl font-bold text-[#0F5D7A] mt-1">{{ (summary.avg_response_time_ms / 1000) | round(1) }}s</p>
+        </div>
+    </div>
+
+    <p class="text-xs text-stone-500 mb-8">
+        Token cost isn't shown here — multiply the totals above by whatever OpenRouter's current published
+        rate is for the model in use, since pricing can change.
+    </p>
+
+    <!-- By category -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
+        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">By Category</h2>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
+                    <th class="py-2">Category</th>
+                    <th class="py-2">Calls</th>
+                    <th class="py-2">Errors</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in by_category %}
+                <tr class="border-b border-stone-50">
+                    <td class="py-2">{{ row.category or "—" }}</td>
+                    <td class="py-2">{{ row.calls }}</td>
+                    <td class="py-2 {{ 'text-red-600 font-semibold' if row.errors > 0 else '' }}">{{ row.errors }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Look up one email's AI log -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
+        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Look Up a Draft's AI Log</h2>
+        <form method="get" action="/ai-insights" class="flex gap-2 mb-4">
+            <input
+                type="text"
+                name="q"
+                value="{{ search_query or '' }}"
+                placeholder="Paste the email's gmail_message_id"
+                class="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm"
+            >
+            <button type="submit" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">
+                Search
+            </button>
+        </form>
+
+        {% if search_query %}
+            {% if searched_logs %}
+                {% for log in searched_logs %}
+                <div class="border border-stone-100 rounded-xl p-4 mb-3 text-sm">
+                    <p><span class="font-semibold">When:</span> <span class="local-time" data-utc="{{ log.created_at }}"></span></p>
+                    <p><span class="font-semibold">Category / Priority:</span> {{ log.category }} / {{ log.priority }}</p>
+                    <p><span class="font-semibold">Model:</span> {{ log.model }}</p>
+                    <p><span class="font-semibold">Tokens:</span> {{ log.prompt_tokens }} prompt + {{ log.completion_tokens }} completion = {{ log.total_tokens }} total</p>
+                    <p><span class="font-semibold">Response time:</span> {{ log.response_time_ms }}ms</p>
+                    <p><span class="font-semibold">Knowledge used:</span> {{ log.knowledge_used }}</p>
+                    <p><span class="font-semibold">Historical examples used:</span> {{ log.historical_examples }}</p>
+                    {% if log.error %}
+                    <p class="text-red-600"><span class="font-semibold">Error:</span> {{ log.error }}</p>
+                    {% endif %}
+                    <p class="mt-2"><span class="font-semibold">Draft:</span></p>
+                    <p class="whitespace-pre-wrap bg-stone-50 rounded-lg p-3 mt-1">{{ log.ai_reply or "—" }}</p>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-stone-400 text-sm">No AI log found for that message ID.</p>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    <!-- Recent errors -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100">
+        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Recent Errors (last 20)</h2>
+        {% if recent_errors %}
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
+                    <th class="py-2">When</th>
+                    <th class="py-2">Category</th>
+                    <th class="py-2">Error</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in recent_errors %}
+                <tr class="border-b border-stone-50">
+                    <td class="py-2 local-time" data-utc="{{ row.created_at }}"></td>
+                    <td class="py-2">{{ row.category or "—" }}</td>
+                    <td class="py-2 text-red-600 truncate max-w-md">{{ row.error }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-stone-400 text-sm">No errors logged.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script src="/static/local-time.js"></script>
+</body>
+</html>

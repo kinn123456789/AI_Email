@@ -1764,3 +1764,84 @@ def has_attachments(message):
             return True
 
     return False
+
+
+def get_ai_insights():
+    """Summary stats + recent errors from ai_logs — cost/performance/error
+    tracking. This table is written on every AI draft attempt but had no
+    reader anywhere in the app until this."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT
+                COUNT(*) AS total_calls,
+                COUNT(*) FILTER (WHERE error IS NOT NULL) AS error_count,
+                COALESCE(SUM(prompt_tokens), 0) AS total_prompt_tokens,
+                COALESCE(SUM(completion_tokens), 0) AS total_completion_tokens,
+                COALESCE(SUM(total_tokens), 0) AS total_tokens,
+                COALESCE(AVG(response_time_ms) FILTER (WHERE error IS NULL), 0) AS avg_response_time_ms
+            FROM ai_logs
+        """)
+        summary = cursor.fetchone()
+
+        cursor.execute("""
+            SELECT category, COUNT(*) AS calls, COUNT(*) FILTER (WHERE error IS NOT NULL) AS errors
+            FROM ai_logs
+            GROUP BY category
+            ORDER BY calls DESC
+        """)
+        by_category = cursor.fetchall()
+
+        cursor.execute("""
+            SELECT id, gmail_message_id, category, error, created_at
+            FROM ai_logs
+            WHERE error IS NOT NULL
+            ORDER BY created_at DESC
+            LIMIT 20
+        """)
+        recent_errors = cursor.fetchall()
+
+        for row in recent_errors:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return {
+            "summary": summary,
+            "by_category": by_category,
+            "recent_errors": recent_errors,
+        }
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_ai_log_by_message_id(gmail_message_id):
+    """Look up the exact AI log entry for one email — what knowledge/
+    historical examples it used, tokens, timing, and the raw draft — so a
+    weird-looking reply can be traced back to why the AI wrote it."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT *
+            FROM ai_logs
+            WHERE gmail_message_id = %s
+            ORDER BY created_at DESC
+        """, (gmail_message_id,))
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return rows
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)

@@ -118,6 +118,7 @@ templates = Jinja2Templates(directory="templates")
 
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from database import get_attachments, get_attachment_by_id, find_recipient_name
+from database import get_ai_insights, get_ai_log_by_message_id
 
 app = FastAPI()
 print("MAIN.PY LOADED")
@@ -557,6 +558,25 @@ def category_view(
             "request": request,
             "category": category,
             "emails": rows
+        }
+    )
+
+
+@app.get("/ai-insights")
+def ai_insights(request: Request, q: str = None):
+
+    data = get_ai_insights()
+    searched_logs = get_ai_log_by_message_id(q) if q else None
+
+    return templates.TemplateResponse(
+        "ai_insights.html",
+        {
+            "request": request,
+            "summary": data["summary"],
+            "by_category": data["by_category"],
+            "recent_errors": data["recent_errors"],
+            "search_query": q,
+            "searched_logs": searched_logs,
         }
     )
 

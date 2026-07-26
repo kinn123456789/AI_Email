@@ -85,7 +85,7 @@ def main():
             if status != "OK": continue
 
             
-            message_ids = search_data[0].split()[-100:]
+            message_ids = search_data[0].split()[-50:]
             imported, skipped = 0, 0
 
             for sent_id in message_ids:
