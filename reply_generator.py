@@ -30,6 +30,7 @@ def generate_reply(
     thread_history,
     historical_emails,
     knowledge=None,
+    source=None,
 ):
     """
     Generates an AI draft reply using:
@@ -54,6 +55,7 @@ def generate_reply(
             thread_history=thread_history,
             knowledge=knowledge or [],
             similar_emails=historical_emails or [],
+            source=source,
         )
 
         print("\n" + "=" * 80)

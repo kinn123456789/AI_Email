@@ -1902,11 +1902,15 @@ def save_sync_log(job_name, account, started_at, finished_at, imported_count, sk
 
 
 def get_last_successful_sync_time(job_name, account):
-    """The finish time of the most recent CLEAN run (error_count = 0) for
-    this job+account — used as a real checkpoint instead of a fixed
-    lookback window or a "last N" count-based slice, either of which can
-    silently miss messages if volume is ever higher than expected between
-    runs. Returns None if there's no prior clean run (first-ever run)."""
+    """The most recent safe checkpoint for this job+account. finished_at is
+    only ever written as a value the caller has already confirmed is safe to
+    resume from (see sync_sent_gmail.py) — it's None for runs that made no
+    confirmed progress at all (e.g. a login failure, or every message in the
+    run failing). error_count is no longer used to gate this: a run can have
+    real errors and still contribute a valid, conservative checkpoint (based
+    on just the messages that did succeed), so one bad message doesn't block
+    every future run's progress forever. Returns None if there's no prior
+    checkpoint (first-ever run)."""
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -1916,7 +1920,7 @@ def get_last_successful_sync_time(job_name, account):
             """
             SELECT finished_at
             FROM sync_log
-            WHERE job_name = %s AND account = %s AND error_count = 0
+            WHERE job_name = %s AND account = %s AND finished_at IS NOT NULL
             ORDER BY finished_at DESC
             LIMIT 1
             """,
@@ -1924,6 +1928,91 @@ def get_last_successful_sync_time(job_name, account):
         )
         row = cursor.fetchone()
         return row[0] if row else None
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def save_failed_sync_message(job_name, account, message_id, error_message):
+    """Records a message that failed processing so it can get one bounded
+    automatic retry later (see sync_sent_gmail.py's retry sweep) instead of
+    either being silently dropped or retried forever. Only the first
+    failure creates a row — ON CONFLICT DO NOTHING avoids piling up
+    duplicate rows if the same message is somehow encountered again before
+    its retry has run."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            """
+            INSERT INTO sync_failed_messages
+            (job_name, account, message_id, error_message)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (job_name, account, message_id) DO NOTHING
+            """,
+            (job_name, account, message_id, error_message)
+        )
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_pending_retry_messages(job_name, account):
+    """Messages still owed their one automatic retry attempt."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute(
+            """
+            SELECT id, message_id, error_message
+            FROM sync_failed_messages
+            WHERE job_name = %s AND account = %s AND status = 'pending_retry'
+            """,
+            (job_name, account)
+        )
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def mark_failed_message_resolved(row_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE sync_failed_messages SET status = 'resolved', last_attempted_at = NOW() WHERE id = %s",
+            (row_id,)
+        )
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def mark_failed_message_exhausted(row_id, error_message):
+    """Both retry attempts (original + one automatic retry) failed — stop
+    trying automatically and leave it for manual follow-up."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "UPDATE sync_failed_messages SET status = 'exhausted', error_message = %s, last_attempted_at = NOW() WHERE id = %s",
+            (error_message, row_id)
+        )
+        conn.commit()
 
     finally:
         cursor.close()

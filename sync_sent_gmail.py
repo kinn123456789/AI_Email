@@ -16,7 +16,15 @@ from database import (
     get_message_by_message_id,
 )
 from email.utils import parsedate_to_datetime
-from database import set_sent_time, save_sync_log, get_last_successful_sync_time
+from database import (
+    set_sent_time,
+    save_sync_log,
+    get_last_successful_sync_time,
+    save_failed_sync_message,
+    get_pending_retry_messages,
+    mark_failed_message_resolved,
+    mark_failed_message_exhausted,
+)
 
 load_dotenv()
 
@@ -88,6 +96,130 @@ def oauth_login(email_address, token_file):
     mail.authenticate("XOAUTH2", lambda x: auth_string.encode())
     return mail
 
+
+def _process_sent_message(mail, sent_id, account):
+    """Fetches, threads, and saves one sent message identified by sent_id
+    (an IMAP sequence number valid for the current mail session — either
+    from the normal SINCE search, or from a fresh Message-ID relocate
+    during a retry). Shared by both the normal sweep and the retry sweep
+    so they can never drift out of sync with each other.
+
+    Returns (outcome, email_date, message_id, error):
+      outcome is "imported", "duplicate", or "error".
+      email_date/message_id are None only if the failure happened before
+      they could even be extracted (so there's nothing to key a retry on).
+    """
+
+    status, msg_data = mail.fetch(sent_id, "(RFC822)")
+    if status != "OK":
+        return "error", None, None, "IMAP fetch returned non-OK status"
+
+    msg = email.message_from_bytes(msg_data[0][1])
+    email_date = parsedate_to_datetime(msg["Date"])
+    message_id = " ".join((msg.get("Message-ID") or "").split())
+
+    try:
+        in_reply_to = " ".join((msg.get("In-Reply-To") or "").split())
+        references = " ".join((msg.get("References") or "").split())
+
+        thread_id, parent = message_id, None
+        if in_reply_to:
+            parent = get_message_by_message_id(in_reply_to, account["source"])
+
+        if not parent and references:
+            for ref in reversed(references.split()):
+                parent = get_message_by_message_id(ref, account["source"])
+                if parent: break
+
+        if parent:
+            thread_id = parent["thread_id"]
+            set_sent_time(parent["id"])
+            logger.info(f"Thread linked: {message_id} -> {thread_id}")
+        else:
+            logger.info(f"New thread: {message_id}")
+
+        if not message_id or email_exists(message_id, account["source"]):
+            logger.info(f"Duplicate skipped: {message_id}")
+            return "duplicate", email_date, message_id, None
+
+        body, html_body = "", ""
+        for part in msg.walk():
+            if part.get_filename(): continue
+            content_type = part.get_content_type()
+            payload = part.get_payload(decode=True)
+            if not payload: continue
+            if content_type == "text/plain": body += payload.decode(errors="ignore")
+            elif content_type == "text/html": html_body += payload.decode(errors="ignore")
+
+        if not body.strip() and html_body:
+            body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
+
+        body = clean_email_body(body)
+
+        has_attachment = any(part.get_filename() for part in msg.walk())
+
+        save_email(
+            sender=parseaddr(msg.get("From", ""))[1],
+            subject=str(make_header(decode_header(msg.get("Subject", "")))),
+            body=body,
+            category="Human Reply",
+            priority="Low",
+            ai_summary="Reply sent manually from Gmail",
+            ai_draft_reply=body,
+            message_id=message_id,
+            thread_id=thread_id,
+            in_reply_to=in_reply_to,
+            source=account["source"],
+            status="Replied",
+            requires_review=False,
+            reply_type="gmail_manual",
+            references_header=references,
+            email_date=email_date,
+            has_attachment=has_attachment
+        )
+        logger.info(f"Imported: {message_id}")
+        mail.store(sent_id, '+FLAGS', '\\Seen')
+
+        return "imported", email_date, message_id, None
+
+    except Exception as e:
+        return "error", email_date, message_id, str(e)
+
+
+def _retry_pending_failures(mail, account):
+    """Gives each previously-failed message one automatic retry, relocating
+    it by Message-ID (stable, unlike the sequence number it failed under
+    originally — sequence numbers drift as new mail arrives). This is the
+    2nd and final attempt: whatever happens here, the row leaves
+    'pending_retry' — resolved on success, exhausted (manual follow-up)
+    on failure. Runs before the normal sweep each hour."""
+
+    pending = get_pending_retry_messages("sync_sent_gmail", account["source"])
+
+    for row in pending:
+        message_id = row["message_id"]
+
+        try:
+            status, search_data = mail.search(None, f'(HEADER Message-ID "{message_id}")')
+            if status != "OK" or not search_data[0]:
+                mark_failed_message_exhausted(row["id"], "Could not relocate message for retry")
+                logger.info(f"Retry could not relocate {message_id}, marked exhausted")
+                continue
+
+            sent_id = search_data[0].split()[-1]
+            outcome, _, _, err = _process_sent_message(mail, sent_id, account)
+
+        except Exception as e:
+            outcome, err = "error", str(e)
+
+        if outcome == "error":
+            mark_failed_message_exhausted(row["id"], err)
+            logger.info(f"Retry failed permanently for {message_id}: {err}")
+        else:
+            mark_failed_message_resolved(row["id"])
+            logger.info(f"Retry succeeded for {message_id} ({outcome})")
+
+
 def main():
     for account in EMAIL_ACCOUNTS:
         logger.info(f"Checking sent mail for {account['source']}")
@@ -95,7 +227,11 @@ def main():
         started_at = datetime.now(timezone.utc)
         imported, skipped, error_count = 0, 0, 0
         error_message = None
-        checkpoint_time = datetime.now(timezone.utc)
+        # None means "no safe progress established yet this run" — only ever
+        # replaced with a real, conservatively-computed value below. Never
+        # defaults to now(), so a total failure before reaching the search
+        # (e.g. login failure) correctly leaves the checkpoint untouched.
+        checkpoint_time = None
 
         try:
             mail = oauth_login(account["email"], account["token"])
@@ -106,12 +242,17 @@ def main():
                 error_message = "Could not open Sent Mail"
                 continue
 
-            # Real checkpoint (the finish time of the last CLEAN run for
-            # this account) instead of a fixed lookback window or a
-            # count-based "last N" slice — either of those could silently
-            # miss messages if volume in the window ever exceeded the
-            # slice size. Falls back to a 7-day bootstrap window only on
-            # the very first run, when there's no prior clean sync yet.
+            try:
+                _retry_pending_failures(mail, account)
+            except Exception:
+                logger.exception(f"Retry sweep failed for {account['source']}")
+
+            # Real checkpoint (the last confirmed-safe progress point for
+            # this account — see checkpoint_time below) instead of a fixed
+            # lookback window or a count-based "last N" slice — either of
+            # those could silently miss messages if volume in the window
+            # ever exceeded the slice size. Falls back to a 7-day bootstrap
+            # window only on the very first run, when there's no checkpoint yet.
             last_success = get_last_successful_sync_time("sync_sent_gmail", account["source"])
 
             if last_success:
@@ -128,108 +269,40 @@ def main():
             message_ids = all_ids[-MAX_MESSAGES_PER_RUN:]
             truncated = len(all_ids) > MAX_MESSAGES_PER_RUN
             oldest_processed_date = None
+            # Newest date among messages this run actually confirmed handled
+            # (imported or recognized as an existing duplicate) — lets the
+            # checkpoint advance on the messages that succeeded even if some
+            # other message in the same run threw an exception, instead of
+            # one bad message blocking every future run's progress forever.
+            latest_success_date = None
 
             for sent_id in message_ids:
                 try:
-                    status, msg_data = mail.fetch(sent_id, "(RFC822)")
-                    if status != "OK": continue
-
-                    
-
-                    
-
-                    msg = email.message_from_bytes(msg_data[0][1])
-
-                    email_date = parsedate_to_datetime(msg["Date"])
-
-                    if oldest_processed_date is None or email_date < oldest_processed_date:
-                        oldest_processed_date = email_date
-
-                    message_id = " ".join((msg.get("Message-ID") or "").split())
-
-                    #if not message_id or email_exists(message_id):
-                       # skipped += 1
-                        #logger.info(f"Duplicate skipped: {message_id}")
-                       # continue#}
-
-                    # Normalization & Threading
-                    in_reply_to = " ".join((msg.get("In-Reply-To") or "").split())
-                    references = " ".join((msg.get("References") or "").split())
-                    
-                    thread_id, parent = message_id, None
-                    if in_reply_to:
-                        parent = get_message_by_message_id(in_reply_to, account["source"])
-
-                    if not parent and references:
-                        for ref in reversed(references.split()):
-                            parent = get_message_by_message_id(ref, account["source"])
-                            if parent: break
-                    
-                    if parent:
-                        thread_id = parent["thread_id"]
-                        set_sent_time(parent["id"])
-                        logger.info(f"Thread linked: {message_id} -> {thread_id}")
-                    else:
-                        logger.info(f"New thread: {message_id}")
-
-                    if not message_id or email_exists(message_id, account["source"]):
-                        skipped += 1
-                        logger.info(f"Duplicate skipped: {message_id}")
-                        continue
-
-
-                    ai_summary = "Reply sent"
-                    reply_type = "human"
-                    
-                    # Body Extraction
-                    body, html_body = "", ""
-                    for part in msg.walk():
-                        if part.get_filename(): continue
-                        content_type = part.get_content_type()
-                        payload = part.get_payload(decode=True)
-                        if not payload: continue
-                        if content_type == "text/plain": body += payload.decode(errors="ignore")
-                        elif content_type == "text/html": html_body += payload.decode(errors="ignore")
-
-                    if not body.strip() and html_body:
-                        body = BeautifulSoup(html_body, "html.parser").get_text(separator=" ", strip=True)
-
-                    # Remove quoted reply history
-                    body = clean_email_body(body)
-                    
-                    has_attachment = any(
-                        part.get_filename()
-                        for part in msg.walk()
-                    )
-                    
-                    save_email(
-                        sender=parseaddr(msg.get("From", ""))[1],
-                        subject=str(make_header(decode_header(msg.get("Subject", "")))),
-                        body=body,
-                        category="Human Reply",
-                        priority="Low",
-                        ai_summary="Reply sent manually from Gmail",
-                        ai_draft_reply=body,
-                        message_id=message_id,
-                        thread_id=thread_id,
-                        in_reply_to=in_reply_to,
-                        source=account["source"],
-                        status="Replied",
-                        requires_review=False,
-                        reply_type="gmail_manual",
-                        references_header=references,
-                        email_date=email_date,
-                        has_attachment=has_attachment
-                    )
-                    imported += 1
-                    logger.info(f"Imported: {message_id}")
-                    mail.store(sent_id, '+FLAGS', '\\Seen')
-
+                    outcome, email_date, message_id, err = _process_sent_message(mail, sent_id, account)
                 except Exception as e:
-                    logger.exception(f"Failed processing sent email {sent_id}")
+                    outcome, email_date, message_id, err = "error", None, None, str(e)
+
+                if email_date and (oldest_processed_date is None or email_date < oldest_processed_date):
+                    oldest_processed_date = email_date
+
+                if outcome == "error":
+                    logger.error(f"Failed processing sent email {sent_id}: {err}")
                     error_count += 1
-                    error_message = str(e)
+                    error_message = err
+                    if message_id:
+                        try:
+                            save_failed_sync_message("sync_sent_gmail", account["source"], message_id, err)
+                        except Exception:
+                            logger.error(f"Failed to record failed sync message {message_id}")
                     continue
+
+                if outcome == "duplicate":
+                    skipped += 1
+                elif outcome == "imported":
+                    imported += 1
+
+                if email_date and (latest_success_date is None or email_date > latest_success_date):
+                    latest_success_date = email_date
 
             if truncated and oldest_processed_date:
                 # Backlog exceeded MAX_MESSAGES_PER_RUN — cap the checkpoint at the
@@ -241,8 +314,20 @@ def main():
                     f"{account['source']}: backlog exceeded {MAX_MESSAGES_PER_RUN}, "
                     f"checkpoint capped at {checkpoint_time} instead of now"
                 )
-            else:
+            elif latest_success_date:
+                # Not truncated, but at least one message failed elsewhere in
+                # this run — advance only as far as what's confirmed handled,
+                # instead of either "now" (would wrongly claim the failed
+                # message is covered) or leaving the checkpoint untouched
+                # (would let one bad message block every future run forever).
+                checkpoint_time = latest_success_date
+            elif not message_ids:
+                # Nothing matched the search at all — nothing to lose by
+                # moving up to now.
                 checkpoint_time = datetime.now(timezone.utc)
+            else:
+                # Every message in this run failed; no safe progress to record.
+                checkpoint_time = None
 
             logger.info(f"{account['source']} sync complete. Imported={imported}, Skipped={skipped}")
 

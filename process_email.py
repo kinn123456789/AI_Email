@@ -301,7 +301,8 @@ def process_email(msg, account):
         #similar,
         #reranked,
         historical_emails,
-        knowledge
+        knowledge,
+        source=account["source"],
     )
 
     save_email(
