@@ -5,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from google.auth.transport.requests import Request
 from googleapiclient.discovery import build
 import os
-def send_email(from_email, token_file, to_email, subject, body, thread_id=None, original_msg_id=None, previous_references=None):
+def send_email(from_email, token_file, to_email, subject, body, thread_id=None, original_msg_id=None, previous_references=None, attachments=None):
     """
     Sends an email using the Gmail API, maintaining thread continuity.
     """
@@ -53,6 +53,15 @@ def send_email(from_email, token_file, to_email, subject, body, thread_id=None, 
             msg["References"] = f"{previous_references} {original_msg_id}".strip()
         elif original_msg_id:
             msg["References"] = original_msg_id
+
+        for filename, file_data, content_type in (attachments or []):
+            maintype, _, subtype = (content_type or "application/octet-stream").partition("/")
+            msg.add_attachment(
+                file_data,
+                maintype=maintype or "application",
+                subtype=subtype or "octet-stream",
+                filename=filename
+            )
 
         # Encode and send
         raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode("utf-8")

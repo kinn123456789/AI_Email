@@ -117,7 +117,7 @@ templates = Jinja2Templates(directory="templates")
 
 
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
-from database import get_attachments, get_attachment_by_id, find_recipient_name
+from database import get_attachments, get_attachment_by_id, find_recipient_name, save_attachment
 from database import get_ai_insights, get_ai_log_by_message_id
 from database import get_composed_sent_emails
 
@@ -304,7 +304,8 @@ def teacher_dashboard(request: Request):
 
 
 
-from fastapi import Form, Request
+from fastapi import Form, Request, File, UploadFile
+from typing import List
 
 
 @app.post("/email/{email_id}/send")
@@ -312,10 +313,19 @@ async def send_reply(
     request: Request,
      background_tasks: BackgroundTasks,
     email_id: int,
-    reply_body: str = Form(...)
+    reply_body: str = Form(...),
+    attachments: List[UploadFile] = File(None)
 ):
-    
+
     original_email = get_email_by_id(email_id)
+
+    attachment_data = []
+    for upload in (attachments or []):
+        if not upload or not upload.filename:
+            continue
+        attachment_data.append(
+            (upload.filename, await upload.read(), upload.content_type)
+        )
 
     source = original_email["source"]
 
@@ -345,7 +355,8 @@ async def send_reply(
         body=reply_body,
        
         original_msg_id=original_email["message_id"],
-        previous_references=original_email.get("references_header")
+        previous_references=original_email.get("references_header"),
+        attachments=attachment_data
     )
     mailbox=original_email["mailbox"]
 
@@ -375,8 +386,18 @@ async def send_reply(
             status="Replied",
             reply_type="human",
             mailbox=mailbox,
-            references_header=original_email.get("references_header")
+            references_header=original_email.get("references_header"),
+            has_attachment=bool(attachment_data)
         )
+
+        for filename, file_data, content_type in attachment_data:
+            save_attachment(
+                message_id=real_message_id,
+                filename=filename,
+                file_type=content_type,
+                file_path="",
+                file_data=file_data
+            )
 
         background_tasks.add_task(sync_sent_gmail.main)
         background_tasks.add_task(
