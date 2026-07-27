@@ -81,15 +81,15 @@ Two old files in this area — `trial_followup_scheduler.py` (an earlier standal
 
 ## 📋 File Reference
 
-| File | Status | Role |
-|---|---|---|
-| `process_trial_followup.py` | Live | Runs daily, finds due candidates, saves drafts |
-| `followup_ai.py` | Live | Writes each of the 3 AI-drafted emails |
-| `trial_followup.py` | Live | Powers the dashboard — viewing, replying, trash/restore |
-| `followup_email.py` | Live | Actually sends the email once staff click Send |
-| `templates/trial_followup*.html` | Live | Dashboard, single-email view, completed campaigns view |
-| `trial_followup_scheduler.py` | Dead | Earlier standalone scheduler prototype, not in use |
-| `trial_email_sender.py` | Dead | Unused duplicate of `followup_email.py` |
+| File | Role |
+|---|---|
+| `process_trial_followup.py` | Runs daily, finds due candidates, saves drafts |
+| `followup_ai.py` | Writes each of the 3 AI-drafted emails |
+| `trial_followup.py` | Powers the dashboard — viewing, replying, trash/restore |
+| `followup_email.py` | Actually sends the email once staff click Send |
+| `templates/trial_followup*.html` | Dashboard, single-email view, completed campaigns view |
+| `trial_followup_scheduler.py` | Earlier standalone scheduler prototype, no longer used |
+| `trial_email_sender.py` | Unused duplicate of `followup_email.py`, no longer used |
 
 ---
 

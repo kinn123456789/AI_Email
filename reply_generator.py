@@ -1,5 +1,6 @@
 #reply_generator.py
 import os
+import re
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -7,6 +8,20 @@ from openai import OpenAI
 import time
 
 from ai_logger import save_ai_log
+
+# Catches teacher/staff-only content leaking into a parent-facing reply —
+# the same red-flag phrases prompt_builder.py's KNOWLEDGE RETRIEVAL section
+# already warns the model away from, kept here as a deterministic backstop.
+# Confirmed this session that the prompt-only instruction does not reliably
+# hold on its own (reproduced live: a "Class Cancellation & Rescheduling"
+# article's internal procedure - "Email teachers@coralacademy.com with the
+# reason for cancellation... Our coordination team will identify a suitable
+# rescheduled time" - leaked near-verbatim into a parent's reschedule reply
+# despite that exact phrase being named as a red flag in the prompt).
+_TEACHER_FACING_LEAK_PATTERNS = re.compile(
+    r"teachers@coralacademy\.com|as an instructor|your credibility|coordination team|post an announcement|platform team will assist",
+    re.IGNORECASE,
+)
 
 from prompt_builder import (
     SYSTEM_PROMPT,
@@ -155,13 +170,18 @@ def generate_reply(
                     "subject": email[2],
                 })
 
+        leaked_teacher_content = bool(reply) and bool(_TEACHER_FACING_LEAK_PATTERNS.search(reply))
+
+        if leaked_teacher_content:
+            print(f"Teacher-facing content leak detected in reply for {gmail_message_id}: {reply!r}")
+
         save_ai_log(
-            gmail_message_id=gmail_message_id,   
+            gmail_message_id=gmail_message_id,
             model="gpt-5-nano",
             category=category,
             priority=priority,
             reply_type="automatic",
-            requires_review=False,
+            requires_review=leaked_teacher_content,
             prompt_tokens=usage.prompt_tokens,
             completion_tokens=usage.completion_tokens,
             total_tokens=usage.total_tokens,
@@ -170,9 +190,10 @@ def generate_reply(
             historical_examples=historical_log,
             thread_history_length=len(thread_history or ""),
             ai_reply=reply,
+            error="Teacher-facing content leak detected; draft blanked" if leaked_teacher_content else None,
         )
 
-        if reply == "NO_REPLY":
+        if reply == "NO_REPLY" or leaked_teacher_content:
             return ""
 
         return reply

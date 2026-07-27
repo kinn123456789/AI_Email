@@ -108,7 +108,7 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy &nbsp;·&nbsp; Project Handover</span>
+    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
     <h1>The Teacher Portal Module</h1>
     <p class="lede">How messages between teachers and parents get synced in, understood by AI, and answered — all from one inbox.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
@@ -238,24 +238,24 @@
       <div class="section-head"><span class="kicker">Appendix</span><h2>File reference</h2><p>Live files power the running app; dead files are safe to ignore or remove.</p></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>File</th><th>Status</th><th>Role</th></tr></thead>
+          <thead><tr><th>File</th><th>Role</th></tr></thead>
           <tbody>
-            <tr><td class="file">teacher_portal_api_reader.py</td><td><span class="badge-live">Live</span></td><td class="role">Reads teachers/chats/messages from the Teacher Portal API</td></tr>
-            <tr><td class="file">teacher_api_sync.py</td><td><span class="badge-live">Live</span></td><td class="role">Syncs conversations/messages into the database every 8 minutes</td></tr>
-            <tr><td class="file">teacher_ai_processor1.py</td><td><span class="badge-live">Live</span></td><td class="role">Classifies parent messages, builds capped thread history</td></tr>
-            <tr><td class="file">teacher_reply_generator1.py</td><td><span class="badge-live">Live</span></td><td class="role">Generates the AI draft reply for a Teacher Portal message</td></tr>
-            <tr><td class="file">teacher_api_sender.py</td><td><span class="badge-live">Live</span></td><td class="role">Sends/deletes messages through the Teacher Portal API</td></tr>
-            <tr><td class="file">teacher_ai_processor.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Old version — actually broken (imports a file that no longer exists)</td></tr>
-            <tr><td class="file">teacher_reply_generator..py</td><td><span class="badge-dead">Dead</span></td><td class="role">Predecessor of teacher_reply_generator1.py</td></tr>
-            <tr><td class="file">teacher_sync.py · teacher_sync_backup.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Old sync logic, unused</td></tr>
-            <tr><td class="file">teacher_portal_reader.py · teacher_portal_sender.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Earlier versions of the reader/sender</td></tr>
-            <tr><td class="file">teacher_db_reader.py · teacher_db_sync.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced</td></tr>
+            <tr><td class="file">teacher_portal_api_reader.py</td><td class="role">Reads teachers/chats/messages from the Teacher Portal API</td></tr>
+            <tr><td class="file">teacher_api_sync.py</td><td class="role">Syncs conversations/messages into the database every 8 minutes</td></tr>
+            <tr><td class="file">teacher_ai_processor1.py</td><td class="role">Classifies parent messages, builds capped thread history</td></tr>
+            <tr><td class="file">teacher_reply_generator1.py</td><td class="role">Generates the AI draft reply for a Teacher Portal message</td></tr>
+            <tr><td class="file">teacher_api_sender.py</td><td class="role">Sends/deletes messages through the Teacher Portal API</td></tr>
+            <tr><td class="file">teacher_ai_processor.py</td><td class="role">Old version — actually broken (imports a file that no longer exists)</td></tr>
+            <tr><td class="file">teacher_reply_generator..py</td><td class="role">Predecessor of teacher_reply_generator1.py, no longer used</td></tr>
+            <tr><td class="file">teacher_sync.py · teacher_sync_backup.py</td><td class="role">Old sync logic, unused</td></tr>
+            <tr><td class="file">teacher_portal_reader.py · teacher_portal_sender.py</td><td class="role">Earlier versions of the reader/sender, no longer used</td></tr>
+            <tr><td class="file">teacher_db_reader.py · teacher_db_sync.py</td><td class="role">Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced</td></tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
-  <footer>Teacher Portal Module &nbsp;·&nbsp; Coral Academy handover documentation</footer>
+  <footer>Teacher Portal Module &nbsp;·&nbsp; Coral Academy</footer>
 </div>
 </body>
 </html>

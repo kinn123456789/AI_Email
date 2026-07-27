@@ -58,16 +58,16 @@ There's a second, more direct API endpoint (`POST /submit-enquiry`) that was cle
 
 ## 📋 File Reference
 
-| File | Status | Role |
-|---|---|---|
-| `email_filter.py` | Live | Recognizes an incoming email as a contact-form enquiry |
-| `process_email.py` | Live | Extracts name/email/phone/message from the form email |
-| `database.py` | Live | Stores and queries contact-form entries |
-| `templates/contact_dashboard.html` | Live | The dedicated dashboard |
-| `main.py` — `/contact-dashboard`, `/contact-dashboard/sent` | Live | Routes powering the dashboard and its sent-history view |
-| `main.py` — `/submit-enquiry` | Broken | Direct-save endpoint, currently non-functional |
-| `contactform.py` | Dev tool | Manual test script for the preprod enquiry API — not part of the live pipeline |
+| File | Role |
+|---|---|
+| `email_filter.py` | Recognizes an incoming email as a contact-form enquiry |
+| `process_email.py` | Extracts name/email/phone/message from the form email |
+| `database.py` | Stores and queries contact-form entries |
+| `templates/contact_dashboard.html` | The dedicated dashboard |
+| `main.py` — `/contact-dashboard`, `/contact-dashboard/sent` | Routes powering the dashboard and its sent-history view |
+| `main.py` — `/submit-enquiry` | Direct-save endpoint, currently non-functional |
+| `contactform.py` | Manual test script for the preprod enquiry API — not part of the live pipeline |
 
 ---
 
-*Document generated as part of project handover — Contact Form module.*
+*Documentation — Contact Form module.*

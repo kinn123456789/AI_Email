@@ -51,18 +51,18 @@ Coral Academy's Teacher Portal REST API (`api.preprod.coralacademy.com`, key-aut
 
 ## 📋 File Reference
 
-| File | Status | Role |
-|---|---|---|
-| `teacher_portal_api_reader.py` | Live | Reads teachers/chats/messages from the Teacher Portal API |
-| `teacher_api_sync.py` | Live | Syncs conversations/messages into the database every 8 minutes |
-| `teacher_ai_processor1.py` | Live | Classifies parent messages, builds capped thread history |
-| `teacher_reply_generator1.py` | Live | Generates the AI draft reply |
-| `teacher_api_sender.py` | Live | Sends/deletes messages through the Teacher Portal API |
-| `teacher_ai_processor.py` | Dead | Old version — actually broken, imports a file that no longer exists |
-| `teacher_reply_generator..py` | Dead | Predecessor of `teacher_reply_generator1.py` |
-| `teacher_sync.py` · `teacher_sync_backup.py` | Dead | Old sync logic, unused |
-| `teacher_portal_reader.py` · `teacher_portal_sender.py` | Dead | Earlier versions of the reader/sender |
-| `teacher_db_reader.py` · `teacher_db_sync.py` | Dead | Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced |
+| File | Role |
+|---|---|
+| `teacher_portal_api_reader.py` | Reads teachers/chats/messages from the Teacher Portal API |
+| `teacher_api_sync.py` | Syncs conversations/messages into the database every 8 minutes |
+| `teacher_ai_processor1.py` | Classifies parent messages, builds capped thread history |
+| `teacher_reply_generator1.py` | Generates the AI draft reply |
+| `teacher_api_sender.py` | Sends/deletes messages through the Teacher Portal API |
+| `teacher_ai_processor.py` | Old version — actually broken, imports a file that no longer exists |
+| `teacher_reply_generator..py` | Predecessor of `teacher_reply_generator1.py`, no longer used |
+| `teacher_sync.py` · `teacher_sync_backup.py` | Old sync logic, unused |
+| `teacher_portal_reader.py` · `teacher_portal_sender.py` | Earlier versions of the reader/sender, no longer used |
+| `teacher_db_reader.py` · `teacher_db_sync.py` | Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced |
 
 ---
 

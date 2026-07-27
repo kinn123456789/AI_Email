@@ -146,9 +146,9 @@
                 </div>
                 {% endif %}
 
-                {% if email.knowledge_used or email.historical_examples %}
+                <!-- Swapped Box: AI Suggested Reply Info / Details -->
                 <div class="p-4 bg-white/50 border border-cyan-100 rounded-3xl">
-                    <h3 class="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5">🔎 What the AI Used</h3>
+                    <h3 class="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5">💡 AI Suggested Reply Context</h3>
                     {% if email.knowledge_used %}
                     <div class="text-xs text-stone-500 font-semibold uppercase tracking-wide mb-1">Knowledge Base</div>
                     <ul class="text-sm text-stone-700 mb-3 list-disc list-inside">
@@ -165,8 +165,10 @@
                         {% endfor %}
                     </ul>
                     {% endif %}
+                    {% if not email.knowledge_used and not email.historical_examples %}
+                    <p class="text-xs text-stone-400 italic">No specific external knowledge or historical examples were injected into this draft.</p>
+                    {% endif %}
                 </div>
-                {% endif %}
 
                 <!-- Reply Form -->
                 {% if email.status != "Closed" %}
