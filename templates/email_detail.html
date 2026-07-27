@@ -125,12 +125,13 @@
                 </div>
             </div>
 
-            <!-- Right Column: AI Summary on top of Reply Form (40%) -->
+            <!-- Right Column: Enhanced UI Layout (40%) -->
             <div class="flex flex-col gap-6 lg:col-span-2">
                 
-                <div>
-                    <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5 px-1 mb-2">📝 AI Quick Summary</h2>
-                    <div class="bg-cyan-100/40 border border-cyan-100 p-5 rounded-3xl text-stone-700 text-sm leading-relaxed break-words">
+                <!-- Enhanced AI Quick Summary Box -->
+                <div class="bg-white/70 border border-cyan-200/80 p-5 rounded-3xl shadow-sm">
+                    <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5 mb-2">📝 AI Quick Summary</h2>
+                    <div class="text-stone-700 text-sm leading-relaxed break-words">
                         {% if email.ai_summary and email.ai_summary != "Error" %}{{ email.ai_summary }}
                         {% elif email.ai_summary == "Error" %}<span class="text-red-600 italic">⚠️ Error processing.</span>
                         {% else %}<span class="italic text-stone-400">No AI summary available.</span>{% endif %}
@@ -177,16 +178,16 @@
                 <div class="p-4 bg-white/50 border border-cyan-100 rounded-3xl">
                     <h3 class="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5">🔎 What the AI Used</h3>
                     {% if email.knowledge_used %}
-                    <div class="text-xs text-stone-500 font-semibold uppercase tracking-wide mb-1">Knowledge Base</div>
-                    <ul class="text-sm text-stone-700 mb-3 list-disc list-inside">
+                    <div class="text-xs text-stone-600 font-bold uppercase tracking-wide mb-1">Knowledge Base</div>
+                    <ul class="text-sm text-stone-800 mb-3 list-disc list-inside">
                         {% for item in email.knowledge_used %}
-                        <li>{{ item.title or "Untitled article" }}{% if item.similarity %} <span class="text-stone-400">({{ (item.similarity * 100) | round(0) }}% match)</span>{% endif %}</li>
+                        <li>{{ item.title or "Untitled article" }}{% if item.similarity %} <span class="text-stone-500 font-medium">({{ (item.similarity * 100) | round(0) }}% match)</span>{% endif %}</li>
                         {% endfor %}
                     </ul>
                     {% endif %}
                     {% if email.historical_examples %}
-                    <div class="text-xs text-stone-500 font-semibold uppercase tracking-wide mb-1">Historical Emails</div>
-                    <ul class="text-sm text-stone-700 list-disc list-inside">
+                    <div class="text-xs text-stone-600 font-bold uppercase tracking-wide mb-1">Historical Emails</div>
+                    <ul class="text-sm text-stone-800 list-disc list-inside">
                         {% for item in email.historical_examples %}
                         <li>{{ item.subject or "No subject" }}</li>
                         {% endfor %}
@@ -212,3 +213,4 @@
 <script src="/static/local-time.js"></script>
 </body>
 </html>
+

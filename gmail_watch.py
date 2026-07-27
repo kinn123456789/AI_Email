@@ -1,37 +1,12 @@
 #gmail_watch.py
-import os
-
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
+from gmail_auth import get_gmail_service
 
 TOPIC = "projects/lively-lock-500515-e4/topics/gmail-notifications"
 
-SCOPES = ["https://mail.google.com/"]
 
+def register_watch(email_address):
 
-def register_watch(token_file):
-
-    token_path = os.path.join("/etc/secrets", token_file)
-
-    # Local fallback
-    if not os.path.exists(token_path):
-        token_path = token_file
-
-    creds = Credentials.from_authorized_user_file(
-        token_path,
-        SCOPES
-    )
-
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-
-        # Save refreshed token locally only
-        if not token_path.startswith("/etc/secrets"):
-            with open(token_path, "w") as f:
-                f.write(creds.to_json())
-
-    service = build("gmail", "v1", credentials=creds)
+    service = get_gmail_service(email_address)
 
     result = service.users().watch(
         userId="me",
@@ -50,17 +25,13 @@ def register_watch(token_file):
 
 def renew_all_gmail_watches():
 
-    tokens = [
-        "token_support.json",
-        "token_lucy.json",
-        "token_engineering.json"
-    ]
+    from email_reader import EMAIL_ACCOUNTS
 
-    for token in tokens:
+    for account in EMAIL_ACCOUNTS:
         try:
-            register_watch(token)
+            register_watch(account["email"])
         except Exception as e:
-            print(f"Failed to renew {token}: {e}")
+            print(f"Failed to renew watch for {account['email']}: {e}")
 
 if __name__ == "__main__":
     renew_all_gmail_watches()

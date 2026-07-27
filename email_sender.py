@@ -1,40 +1,18 @@
 import traceback
 import base64
 from email.message import EmailMessage
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
-import os
+from gmail_auth import get_gmail_service
+
 def send_email(from_email, token_file, to_email, subject, body, thread_id=None, original_msg_id=None, previous_references=None, attachments=None):
     """
     Sends an email using the Gmail API, maintaining thread continuity.
+
+    token_file is unused now (kept only so existing callers don't need to
+    change) - auth is via domain-wide delegation, impersonating from_email
+    directly. See gmail_auth.py.
     """
     try:
-        # Load credentials
-    
-       
-        
-
-        token_path = os.path.join("/etc/secrets", token_file)
-
-        # Local fallback
-        if not os.path.exists(token_path):
-            token_path = token_file
-
-        creds = Credentials.from_authorized_user_file(
-            token_path,
-            ["https://mail.google.com/"]
-        )
-
-        if creds.expired and creds.refresh_token:
-            creds.refresh(Request())
-            
-            # Save refreshed token only when running locally
-            if not token_path.startswith("/etc/secrets"):
-                with open(token_path, "w") as token:
-                    token.write(creds.to_json())
-
-        service = build("gmail", "v1", credentials=creds)
+        service = get_gmail_service(from_email)
 
         # Create message
         msg = EmailMessage()

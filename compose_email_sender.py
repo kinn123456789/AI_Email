@@ -5,9 +5,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
 
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
+from gmail_auth import get_gmail_service
 
 
 def send_new_email(
@@ -18,23 +16,10 @@ def send_new_email(
     body,
     attachments=None
 ):
-
-    creds = Credentials.from_authorized_user_file(
-        token_file,
-        ["https://www.googleapis.com/auth/gmail.send"]
-    )
-
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-
-        with open(token_file, "w") as token:
-            token.write(creds.to_json())
-
-    service = build(
-        "gmail",
-        "v1",
-        credentials=creds
-    )
+    # token_file is unused now (kept only so existing callers don't need to
+    # change) - auth is via domain-wide delegation, impersonating
+    # from_email directly. See gmail_auth.py.
+    service = get_gmail_service(from_email)
 
     if attachments:
 

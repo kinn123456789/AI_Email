@@ -428,7 +428,7 @@
           <li>Checks it isn't a duplicate — keyed on the email's own Message-ID header.</li>
           <li>Finds the parent message for threading — first via <code>In-Reply-To</code>, then falling back to the <code>References</code> header, so replies from clients that only set <code>References</code> still join the right conversation instead of starting a disconnected new thread. If neither turns up a parent, the message's own Message-ID becomes the thread's anchor, so later replies still have something to attach to.</li>
           <li>Runs classification and content-retrieval <b>in parallel</b> (<code>ThreadPoolExecutor</code>) — <span class="filepill">ai_classifier.py</span>, <span class="filepill">vector_search.py</span>, and <span class="filepill">knowledge_search.py</span> all fire at once rather than one after another, so an email shows up fully processed faster.</li>
-          <li>Each parallel embedding lookup gets its <b>own isolated client</b> (<code>new_embedding_client()</code> / <code>close_embedding_client()</code>) — the shared default client isn't safe to call from two threads at the same time.</li>
+          <li>Each parallel embedding lookup gets its <b>own isolated client</b> (<code>new_embedding_client()</code> / <code>close_embedding_client()</code>) — the shared default client isn't safe to call from two threads at the same time. This covers both the 2 parallel lookups within one email <i>and</i> two different emails being processed at the same time, since each call creates and closes its own fresh clients either way.</li>
           <li>Reranks retrieved historical emails (<span class="filepill">rag_reranker.py</span>) to drop anything that only matched loosely.</li>
           <li>Hands everything to <span class="filepill">reply_generator.py</span>, then saves the result via <span class="filepill">database.py</span>.</li>
         </ul>
@@ -439,7 +439,7 @@
         <h4>Classification <span class="filepill">ai_classifier.py</span></h4>
         <p class="desc"><code>ai_triage()</code> sends the subject and body to <b>gpt-5-nano</b> and gets back category, priority, a one-line summary, a confidence score, and whether AI can safely draft a reply.</p>
         <ul>
-          <li>A few rules sit in Python on top of the model's own judgment: Teacher Portal notifications are always forced to category <b>Teacher</b>; keywords like "complaint," "refund," or "legal" always force human review, no matter what the model decided.</li>
+          <li>A few rules sit in Python on top of the model's own judgment: Teacher Portal notifications are always forced to category <b>Teacher</b>; a fixed keyword list ("complaint," "refund," "legal," "lawyer," "sue," "waiver," "scholarship," "bullying," "harassment") sets <code>requires_review</code>/<code>reply_type="human"</code>. In practice every email already sits in a human-reviewed queue before it can send, so those two fields don't currently change what staff sees — the one override with a real visible effect is that these keywords also bump priority up to "High," which does show as a colored badge on the dashboard.</li>
           <li>Now fully logged to <code>ai_logs</code> under category <b>Classification</b> — previously only reply-drafting was logged, so a wrong classification left no trail at all.</li>
         </ul>
       </div>
@@ -449,10 +449,10 @@
         <p class="desc">The full rulebook the AI follows when writing a reply — the most heavily refined part of this project.</p>
         <ul>
           <li><b>Source priority:</b> Current Email &gt; Knowledge Base &gt; Historical Emails, and historical emails only count if 2–3 clearly agree with each other and don't contradict the Knowledge Base.</li>
-          <li><b>Question-type routing:</b> Pricing, Refund, Policy, and Schedule questions must come from the Knowledge Base only — never historical emails, no matter how consistent they look.</li>
+          <li><b>Question-type routing (simplified this session):</b> every question type now checks the Knowledge Base first, with historical emails allowed to fill a gap under the same strict conditions (3–5 similar examples, 2-3 agreeing, no contradiction, genuinely parent-facing). The only distinction left that actually changes behavior is <b>Account-specific</b> (about this one customer's own account — ask for the detail or admit it isn't known) vs. <b>everything else</b>.</li>
           <li><b>Audience checks:</b> some Knowledge Base articles and historical emails are written for teachers, not parents — checked before use, so internal staff process details don't leak into a parent's reply.</li>
           <li><b>Plan-specific accuracy:</b> Pay Per Class and Coral Unlimited have different rules (only Coral Unlimited has a pause feature) — one plan's mechanics never get blended into an answer about the other.</li>
-          <li><b>Date-aware reasoning:</b> the email's actual received date is passed in, so timing questions (like refund eligibility) are reasoned about correctly instead of guessed.</li>
+          <li><b>Date-aware reasoning:</b> the email's actual received date is passed in, so timing questions (like refund eligibility) are reasoned about correctly instead of guessed. Written in <code>prompt_builder.py</code>'s "DATE REASONING" section, fed by the real <code>email_date</code>, never the current server time.</li>
           <li><b>Tone:</b> apologizes only when something genuinely went wrong, always closes with thanks, stays direct without being blunt.</li>
           <li><b>Signature &amp; greeting:</b> matched to the actual sending account, using the customer's name when it's on file.</li>
           <li><b>Prompt-injection guard:</b> the customer's email is always treated as data to respond to, never as instructions to follow.</li>
@@ -483,7 +483,7 @@
         <ul>
           <li>If a backlog exceeds the 500-message safety cap, the checkpoint advances only to the <b>oldest processed</b> message — never to "now" — so nothing older is silently skipped.</li>
           <li>If some messages fail but others succeed, the checkpoint advances to the <b>newest successfully-handled</b> message, so one bad message can't block every future run forever.</li>
-          <li>Failed messages get <b>one bounded automatic retry</b> (<code>sync_failed_messages</code>), relocated by Message-ID since IMAP sequence numbers aren't stable over time — a second failure leaves it for manual review, via a small panel right on the main dashboard with one-click Retry/Delete per message.</li>
+          <li>Failed messages get <b>one bounded automatic retry</b> (<code>sync_failed_messages</code>), relocated by Message-ID since IMAP sequence numbers aren't stable over time — a second failure leaves it for manual review, via a small panel right on the main dashboard with one-click Retry/Delete per message. In code: <code>_retry_pending_failures()</code> (automatic, every cycle) and <code>retry_one_now(row_id)</code> (manual button) in <code>sync_sent_gmail.py</code>, backed by <code>database.py</code> and the <code>/dashboard/failed-sync/{row_id}/retry</code>+<code>/delete</code> routes in <code>main.py</code>.</li>
           <li>⚠️ Known issue: on the rare truncated-run path (backlog &gt; 500), the code currently grabs the newest 500 messages instead of the oldest 500 — confirmed live against a real mailbox that IMAP results come back oldest-first, so "last 500" is the wrong end. Flagged, not yet fixed.</li>
         </ul>
       </div>
@@ -492,7 +492,7 @@
         <h4>Knowledge &amp; style pipeline <span class="filepill">vector_search.py</span> <span class="filepill">learn_email_style.py</span> <span class="filepill">embed_classes.py</span></h4>
         <ul>
           <li><code>vector_search.py</code> / <code>knowledge_search.py</code> find similar past emails and relevant Help Center content by meaning, not just keyword match.</li>
-          <li><code>learn_email_style.py</code> builds the historical-style library, automatically redacting emails and phone numbers before anything is stored (<span class="filepill">historical_email_redaction.py</span>).</li>
+          <li><code>learn_email_style.py</code> builds the historical-style library, automatically redacting emails and phone numbers before anything is stored (<span class="filepill">historical_email_redaction.py</span>). This is additive: <code>prompt_builder.py</code>'s fixed "WRITING STYLE" baseline (short paragraphs, no corporate language, apologize only when warranted, always close with thanks) applies to every reply regardless of historical examples — the 2-3 selected historical examples layer on top of that baseline, they don't replace it.</li>
           <li><code>sync_classes.py</code> / <code>embed_classes.py</code> keep Class Knowledge in sync with the real, live class catalog pulled directly from <code>api.coralacademy.com</code>.</li>
           <li><code>embed_knowledge_base.py</code> / <code>refresh_knowledge_base.py</code> keep Help Center content in sync and embedded for search.</li>
         </ul>
@@ -527,6 +527,23 @@
           <li><b>Scheduled background jobs</b> (APScheduler) — work with no human trigger at all, just its own timer, staggered so heavy jobs don't collide.</li>
           <li><b>One isolated resource per thread, never shared</b> — when several threads each need to talk to an external service, each gets its own client instance rather than sharing one. This exact bug class caused two real incidents fixed this session: a Supabase client race, and an OpenAI-library import deadlock on the first request after a restart.</li>
         </ul>
+      </div>
+
+      <div class="tech-block">
+        <h4>Possible future enhancement: manageable email accounts <span class="filepill">not yet built</span></h4>
+        <p class="desc">The three monitored mailboxes are hardcoded today — the same <code>EMAIL_ACCOUNTS</code> list repeated in <code>email_reader.py</code>, <code>sync_sent_gmail.py</code>, and <code>learn_email_style.py</code>. Adding or removing a mailbox currently means editing code and redeploying. A simple settings page could fix this:</p>
+        <pre style="background:var(--surface-2,rgba(0,0,0,0.04));border-radius:10px;padding:14px 16px;font-size:0.85em;overflow-x:auto;line-height:1.6;">Settings
+   ↓
+Email Accounts
+------------------------------------
+Email Address            Status
+admin@company.com        Active
+sales@company.com        Active
+hr@company.com           Active
+
+[ + Add Email ]</pre>
+        <p class="desc" style="margin-top:10px;">Admin clicks "+ Add Email" → address is saved to a new <code>email_accounts</code> table → the app starts polling/watching it next scheduler cycle, no restart needed. "Delete" stops polling and marks it inactive.</p>
+        <p class="desc" style="margin-top:10px;"><b>Why it's realistic now, and wasn't before:</b> this session's move to Domain-Wide Delegation (<code>service-account.json</code>, <span class="filepill">gmail_auth.py</span>) means a brand-new mailbox needs no separate OAuth consent — any address the service account can impersonate just works, since <code>get_gmail_service(email)</code>/<code>imap_login(email)</code> take a plain email address. Under the old per-account token-file system, adding a mailbox meant a manual one-time consent flow per address, which is why this UI wasn't practical to build before. This is a proposal, not implemented — the hardcoded <code>EMAIL_ACCOUNTS</code> lists would need consolidating into the new table first.</p>
       </div>
     </section>
 

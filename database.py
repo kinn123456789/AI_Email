@@ -216,12 +216,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
         """, params + [page_size, offset])
 
         rows = cursor.fetchall()
-        # ... (rest of your existing logic for date formatting and handled_by)
         for row in rows:
-            print(row["id"], row["is_read"])
-
-            #if row["created_at"]:
-               # row["created_at"] = row["created_at"].strftime("%b %-d, %-I:%M %p")
             if row["created_at"]:
                 # Raw UTC ISO timestamp, formatted client-side into the
                 # viewer's own local timezone by static/local-time.js —
@@ -1911,6 +1906,110 @@ def get_ai_log_by_message_id(gmail_message_id):
                 row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
 
         return rows
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_ai_log_categories():
+    """Distinct categories actually present in ai_logs, for the filter
+    dropdown — data-driven instead of a hardcoded list that could drift."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("SELECT DISTINCT category FROM ai_logs WHERE category IS NOT NULL ORDER BY category")
+        return [row[0] for row in cursor.fetchall()]
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_ai_logs(category=None, status=None, search=None, date_from=None, date_to=None, page=1, page_size=50):
+    """Paginated, filterable list of ai_logs rows — status is 'error',
+    'success', or None (all). search matches gmail_message_id or the
+    original email's subject (joined from messages, since ai_logs alone
+    has no human-identifiable field like subject/sender)."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        conditions = []
+        params = []
+
+        if category:
+            conditions.append("ai_logs.category = %s")
+            params.append(category)
+
+        if status == "error":
+            conditions.append("ai_logs.error IS NOT NULL")
+        elif status == "success":
+            conditions.append("ai_logs.error IS NULL")
+
+        if search:
+            conditions.append("(ai_logs.gmail_message_id ILIKE %s OR messages.subject ILIKE %s)")
+            params.append(f"%{search}%")
+            params.append(f"%{search}%")
+
+        if date_from:
+            conditions.append("ai_logs.created_at >= %s")
+            params.append(date_from)
+
+        if date_to:
+            conditions.append("ai_logs.created_at < (%s::date + INTERVAL '1 day')")
+            params.append(date_to)
+
+        where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+        join_clause = "LEFT JOIN messages ON messages.message_id = ai_logs.gmail_message_id"
+
+        cursor.execute(f"SELECT COUNT(*) AS total FROM ai_logs {join_clause} {where_clause}", params)
+        total = cursor.fetchone()["total"]
+
+        offset = (page - 1) * page_size
+        cursor.execute(
+            f"""
+            SELECT
+                ai_logs.id, ai_logs.gmail_message_id, ai_logs.category,
+                ai_logs.priority, ai_logs.model, ai_logs.error,
+                ai_logs.total_tokens, ai_logs.response_time_ms, ai_logs.created_at,
+                messages.subject, messages.sender
+            FROM ai_logs
+            {join_clause}
+            {where_clause}
+            ORDER BY ai_logs.created_at DESC
+            LIMIT %s OFFSET %s
+            """,
+            params + [page_size, offset]
+        )
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return {
+            "rows": rows,
+            "total": total,
+            "page": page,
+            "total_pages": max(1, (total + page_size - 1) // page_size),
+        }
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def delete_ai_log(log_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM ai_logs WHERE id = %s", (log_id,))
+        conn.commit()
 
     finally:
         cursor.close()

@@ -86,14 +86,14 @@ Coral Academy gets emails from parents every day — questions about classes, bi
    - `ai_classifier.py` → category, priority, whether a reply is needed
    - `vector_search.py` → similar past emails (style examples)
    - `knowledge_search.py` → relevant Help Center / Class Knowledge content
-   - Each of the two embedding lookups gets its own isolated embedding client (`new_embedding_client()`/`close_embedding_client()`) rather than sharing one — the shared default client isn't safe to call from two threads at once, so each concurrent lookup needs its own
+   - Each of the two embedding lookups gets its own isolated embedding client (`new_embedding_client()`/`close_embedding_client()`) rather than sharing one — the shared default client isn't safe to call from two threads at once. This covers two separate concurrency cases with the same fix: the 2 parallel lookups *within* processing one email, **and** two different emails (e.g. from different mailboxes) being processed at the same time — each call to `process_email()` creates and closes its own fresh clients, so nothing is ever shared across threads either way
 4. Reranks the retrieved similar emails (`rag_reranker.py`) to keep only the genuinely relevant ones, dropping ones that only matched loosely
 5. Calls `reply_generator.py` to draft the reply
 6. Saves everything to the database (`database.py`)
 
 *Contact Form enquiries branch off this same pipeline but are their own module from there — see the dedicated Contact Form Module document.*
 
-**`ai_classifier.py`** — `ai_triage()` sends the subject/body to `gpt-5-nano` and gets back category, priority, a one-line summary, a confidence score, and whether AI can safely draft a reply or needs a human. A few rules are hardcoded in Python on top of the AI's own judgment (e.g., Teacher Portal notifications are always forced to category "Teacher"; certain sensitive keywords like "complaint," "refund," or "legal" always force human review, regardless of what the AI decided). **This step is now logged to `ai_logs`** (category `"Classification"`) — previously only the reply-drafting step was logged, so a wrong classification had no visible trail at all.
+**`ai_classifier.py`** — `ai_triage()` sends the subject/body to `gpt-5-nano` and gets back category, priority, a one-line summary, a confidence score, and whether AI can safely draft a reply or needs a human. A few rules are hardcoded in Python on top of the AI's own judgment: Teacher Portal notifications are always forced to category "Teacher"; a fixed keyword list (`complaint`, `refund`, `legal`, `lawyer`, `sue`, `waiver`, `scholarship`, `bullying`, `harassment`, `teacher behaviour/behavior`) sets `requires_review=True` and `reply_type="human"` (lines 393–430). **In practice, every single email already sits in a human-reviewed queue before it can be sent — there's no code path that auto-sends anything** — so `requires_review`/`reply_type` don't currently change what staff sees (neither field is rendered in any template right now). The one override with a real, visible effect is that these keywords also bump `priority` up to "High" if it was Low/Medium, which *does* show as a colored badge on the dashboard. **This step is now logged to `ai_logs`** (category `"Classification"`) — previously only the reply-drafting step was logged, so a wrong classification had no visible trail at all.
 
 **`reply_generator.py`** + **`prompt_builder.py`** — the actual reply-writing step. There are two parallel retrieval pipelines feeding into it (verified against the actual retrieval code, not assumed):
 
@@ -113,7 +113,7 @@ Knowledge Base articles go straight from vector search into the prompt (top 5, n
 - If historical emails exist for a gap the Knowledge Base left open, but they're inconsistent, contradictory, or low-confidence, the reply falls back to the same honest "I don't have enough information" non-answer as when nothing at all is available — a dedicated human-review escalation for this specific case was tried and then reverted this session, since every email already sits in a human-reviewed queue before anything is sent (no code path auto-sends without a person clicking Send), so the extra flag added no real behavioral difference.
 - **Audience checks**: some Knowledge Base articles and historical emails are written for teachers/staff, not parents — the AI checks who content was actually written for before using it, so teacher-facing process details (like internal coordination emails) don't leak into a parent's reply
 - **Plan-specific accuracy**: Pay Per Class and Coral Unlimited have different rules (e.g. only Coral Unlimited has a pause feature); the AI won't blend one plan's specific mechanics into an answer about the other
-- **Date-aware reasoning**: the email's actual received date is given to the AI so it can correctly reason about "before/after" timing questions (e.g. refund eligibility) instead of guessing
+- **Date-aware reasoning**: the email's actual received date is given to the AI so it can correctly reason about "before/after" timing questions (e.g. refund eligibility) instead of guessing — written in `prompt_builder.py`'s "DATE REASONING" section (~line 569), fed by the `date_received` value computed from the real `email_date` (~line 791), not the current server time
 - **Tone rules**: genuine apology only when something actually went wrong, always closes with thanks, never over-apologizes for routine questions, direct answers stay polite rather than blunt
 - **Signature/greeting**: matched to the actual sending account (support@/lucy@/engineering@), with the customer's name if it's on file, otherwise a plain "Hi,"
 - **Safety**: never invents policies/pricing/schedules, never claims an action was completed unless it genuinely was (the one exception: subscription cancellations, where staff has already processed it before the reply is sent)
@@ -144,13 +144,13 @@ Every reply-generation call is logged to **`ai_logs`** via `ai_logger.py` — mo
 - **The 500-message safety cap, in plain terms:** imagine the sync job checks a mailbox every hour — almost always there are just a few new sent emails. But suppose it broke for two weeks; now there might be 2,000 emails waiting. The cap exists so one single run can't try to swallow all 2,000 at once (slow, or could crash). So it takes a bite of at most 500 and is supposed to remember where it left off, so it can come back for the rest next time. **Worst case, and how rare it is:** this only ever matters if a mailbox's backlog genuinely exceeds 500 unsynced messages in one go — at normal hourly-checked volume that basically never happens; it would take something like the sync being broken for an extended stretch. When it *is* used, the run only ever processes **at most 500 messages, never more** — the cap is a hard ceiling, not a target.
 - ⚠️ **Known issue, found while verifying this:** the current code takes the *last* 500 IDs from IMAP's search results. Confirmed live against a real mailbox that these results come back oldest-first — so "last 500" is actually **the newest 500**, the opposite of what's intended (it should grab the oldest 500, so the checkpoint crawls forward through the backlog from the beginning). This only matters in that same rare "backlog exceeded 500" case, but when it does happen, it currently risks permanently skipping the truly old messages instead of catching up on them. Flagged for a fix, not yet applied.
 - If some messages in a run fail but others succeed, the checkpoint advances to the newest *successfully* handled message — so one bad message can no longer block every future run indefinitely.
-- Failed messages get **one bounded automatic retry** (tracked in `sync_failed_messages`, relocated by Message-ID since IMAP sequence numbers aren't stable across time) — if it fails twice, it's left for manual review. There's now a small manual-review panel for this right on the main dashboard (above the inbox table), with one-click "Retry Now" / "Delete" per message.
+- Failed messages get **one bounded automatic retry** (tracked in `sync_failed_messages`, relocated by Message-ID since IMAP sequence numbers aren't stable across time) — if it fails twice, it's left for manual review. In code: `sync_sent_gmail.py`'s `_retry_pending_failures()` runs the automatic pass every sync cycle, and `retry_one_now(row_id)` powers the manual "Retry Now" button; both share the same relocate-by-Message-ID + `_process_sent_message()` logic. The database side (`save_failed_sync_message`, `get_failed_sync_messages`, `mark_failed_message_resolved`, `mark_failed_message_exhausted`) lives in `database.py`. There's now a small manual-review panel for this right on the main dashboard (above the inbox table), with one-click "Retry Now" / "Delete" per message — the routes are `main.py`'s `/dashboard/failed-sync/{row_id}/retry` and `/delete`.
 
 ### Knowledge & Style Pipeline
 
 **`vector_search.py`** — finds similar past emails by meaning (embeddings), not just keyword matching.
 **`knowledge_search.py`** — same idea, but against the Help Center / Class Knowledge content.
-**`learn_email_style.py`** — pulls real sent emails into the historical-style library, with PII (emails/phone numbers) automatically redacted before storage.
+**`learn_email_style.py`** — pulls real sent emails into the historical-style library, with PII (emails/phone numbers) automatically redacted before storage. This is *additive*, not the only source of style: `prompt_builder.py`'s "WRITING STYLE" section (a fixed baseline — short paragraphs, no corporate language, apologize only when something genuinely went wrong, always close with thanks, etc.) applies to every single reply regardless of whether any historical examples were found; the 2-3 selected historical examples (when available) layer on top of that baseline as extra style reference, they don't replace it.
 **`embed_classes.py` / `sync_classes.py`** — keeps Class Knowledge in sync with Coral Academy's real live class catalog (pulled directly from `api.coralacademy.com`).
 **`embed_knowledge_base.py` / `sync_help_center.py`** (via `refresh_knowledge_base.py`) — keeps Help Center content in sync and embedded for search.
 **`historical_email_redaction.py`** — the redaction logic itself (email/phone regex masking, applied both going-forward and in the one-time retroactive backfill of the existing historical archive).
@@ -209,6 +209,33 @@ Running things at the same time (above) is one lever. The other is simply **doin
 ### Database
 
 **`database.py`** — the data layer for everything above: `messages` (every email, its AI draft, category, status, mailbox), `attachments`, `historical_emails` (18-month retention, auto-pruned), `ai_logs`, `sync_log`, `sync_failed_messages`, `email_filter_rules`, `knowledge_base`, `classes`.
+
+---
+
+## 💡 Possible Future Enhancement: Manageable Email Accounts
+
+Right now the three monitored mailboxes (support@/lucy@/engineering@coralacademy.com) are hardcoded — each `EMAIL_ACCOUNTS` list, repeated across `email_reader.py`, `sync_sent_gmail.py`, and `learn_email_style.py`, plus the `EMAIL_1`/`EMAIL_2`/`EMAIL_3` env vars. Adding or removing a mailbox today means editing code and redeploying.
+
+A simple settings-page design for this, if it's ever wanted:
+
+```
+Settings
+   ↓
+Email Accounts
+------------------------------------
+Email Address            Status
+admin@company.com        Active
+sales@company.com        Active
+hr@company.com           Active
+
+[ + Add Email ]
+```
+
+**Add Email flow**: admin clicks "+ Add Email" → enters the address → it's saved to a new `email_accounts` table (address, status, added_at) → the app starts polling/watching it the next scheduler cycle, no restart needed. A "Delete" action would stop polling that mailbox and mark it inactive (not necessarily drop its historical data).
+
+**Why this is now realistic to build, and wasn't before**: this session's migration to Domain-Wide Delegation (`service-account.json`, see `gmail_auth.py`) means a brand-new mailbox needs *no separate OAuth consent flow* — any `@coralacademy.com` address the service account is allowed to impersonate just works the moment it's added, since `gmail_auth.get_gmail_service(email)`/`imap_login(email)` take a plain email address. Under the old per-account token-file system, adding a mailbox meant a manual one-time consent flow (`generate_oauthtoken.py`) per address — this UI wouldn't have been practical to build before the migration.
+
+This is a proposal, not implemented — the hardcoded `EMAIL_ACCOUNTS` lists would need consolidating into one shared source (the new table) before a Settings page could manage them.
 
 ---
 

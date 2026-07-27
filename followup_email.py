@@ -5,13 +5,9 @@ from dotenv import load_dotenv
 
 from email.mime.text import MIMEText
 
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
+from gmail_auth import get_gmail_service
 
 load_dotenv()
-
-SCOPES = ["https://mail.google.com/"]
 
 EMAIL_ACCOUNT = {
     "email": os.getenv("EMAIL_1"),
@@ -23,23 +19,7 @@ def send_email(to_email, subject, body):
 
     try:
 
-        creds = Credentials.from_authorized_user_file(
-            EMAIL_ACCOUNT["token"],
-            SCOPES
-        )
-
-        if creds.expired and creds.refresh_token:
-
-            creds.refresh(Request())
-
-            with open(EMAIL_ACCOUNT["token"], "w") as token:
-                token.write(creds.to_json())
-
-        service = build(
-            "gmail",
-            "v1",
-            credentials=creds
-        )
+        service = get_gmail_service(EMAIL_ACCOUNT["email"])
 
         message = MIMEText(
             body,

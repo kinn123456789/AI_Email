@@ -64,38 +64,12 @@ EMAIL_ACCOUNTS = [
         "source": "engineering@coralacademy.com",
     },
 ]
-import os
-
-def oauth_login(email_address, token_file):
-    from google.oauth2.credentials import Credentials
-    from google.auth.transport.requests import Request
-
-    token_path = os.path.join("/etc/secrets", token_file)
-
-    # Local fallback
-    if not os.path.exists(token_path):
-        token_path = token_file
-
-    creds = Credentials.from_authorized_user_file(
-        token_path,
-        ["https://mail.google.com/"]
-    )
-
-    
-    
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-
-        # Save refreshed token only when running locally
-        if not token_path.startswith("/etc/secrets"):
-            with open(token_path, "w") as token:
-                token.write(creds.to_json())
-
-  
-    auth_string = f"user={email_address}\1auth=Bearer {creds.token}\1\1"
-    mail = imaplib.IMAP4_SSL("imap.gmail.com")
-    mail.authenticate("XOAUTH2", lambda x: auth_string.encode())
-    return mail
+def oauth_login(email_address, token_file=None):
+    # token_file is unused now (kept only so existing callers don't need to
+    # change) - auth is via domain-wide delegation, impersonating
+    # email_address directly. See gmail_auth.py.
+    from gmail_auth import imap_login
+    return imap_login(email_address)
 
 
 def _process_sent_message(mail, sent_id, account):
@@ -223,7 +197,7 @@ def _retry_pending_failures(mail, account):
 
 def retry_one_now(row_id):
     """On-demand retry for a single failed-sync row, triggered manually
-    from the AI Insights page — as opposed to _retry_pending_failures(),
+    from the dashboard's failed-sync panel — as opposed to _retry_pending_failures(),
     which the hourly job runs automatically for every pending row on an
     account. Same relocate-by-Message-ID + _process_sent_message logic,
     just scoped to the one row a staff member clicked "Retry" on.

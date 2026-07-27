@@ -5,14 +5,10 @@ import email
 import threading
 import traceback
 
-from google.oauth2.credentials import Credentials
-from google.auth.transport.requests import Request
-from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from gmail_auth import get_gmail_service
 from database import get_last_history_id, update_last_history_id
-
-SCOPES = ["https://mail.google.com/"]
 
 _locks_guard = threading.Lock()
 _reader_locks = {}
@@ -31,36 +27,14 @@ def _get_lock(email_address):
         return _reader_locks[email_address]
 
 
-def _build_service(token_file):
+def _build_service(email_address):
 
-    token_path = os.path.join("/etc/secrets", token_file)
-
-    # Local fallback
-    if not os.path.exists(token_path):
-        token_path = token_file
-
-    creds = Credentials.from_authorized_user_file(
-        token_path,
-        SCOPES
-    )
-
-    if creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-
-        if not token_path.startswith("/etc/secrets"):
-            with open(token_path, "w") as f:
-                f.write(creds.to_json())
-
-    return build(
-        "gmail",
-        "v1",
-        credentials=creds
-    )
+    return get_gmail_service(email_address)
 
 
-def get_gmail_history(token_file, history_id, page_token=None):
+def get_gmail_history(email_address, history_id, page_token=None):
 
-    service = _build_service(token_file)
+    service = _build_service(email_address)
 
     kwargs = {
         "userId": "me",
@@ -91,7 +65,7 @@ def _resync_from_scratch(account):
 
     imap_full_sync(account["email"])
 
-    service = _build_service(account["token"])
+    service = _build_service(account["email"])
     profile = service.users().getProfile(userId="me").execute()
 
     update_last_history_id(account["email"], profile["historyId"])
@@ -161,7 +135,7 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
     try:
         while True:
             response = get_gmail_history(
-                account["token"],
+                account["email"],
                 last_history_id,
                 page_token=page_token
             )
