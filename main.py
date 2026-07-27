@@ -3,6 +3,7 @@ import csv
 import io
 from urllib.parse import urlencode
 import scheduler
+from scheduler import _run_logged_job
 from ai_classifier import ai_triage
 from database import db_pool,get_latest_thread_ai
 from fastapi import Request
@@ -423,14 +424,17 @@ async def send_reply(
 
         background_tasks.add_task(sync_sent_gmail.main)
         background_tasks.add_task(
-            _save_reply_to_historical_emails,
-            message_id=real_message_id,
-            thread_id=original_email["thread_id"],
-            in_reply_to=original_email["message_id"],
-            sender=source,
-            recipient=original_email["sender"],
-            subject=original_email["subject"],
-            body=reply_body
+            _run_logged_job,
+            "save_reply_to_historical_emails",
+            lambda: _save_reply_to_historical_emails(
+                message_id=real_message_id,
+                thread_id=original_email["thread_id"],
+                in_reply_to=original_email["message_id"],
+                sender=source,
+                recipient=original_email["sender"],
+                subject=original_email["subject"],
+                body=reply_body
+            )
         )
 
         return RedirectResponse(
@@ -1082,9 +1086,9 @@ async def gmail_webhook(
         print("Scheduling background task...")
 
         background_tasks.add_task(
-            run_history_reader,
-            email_address,
-            history_id
+            _run_logged_job,
+            "gmail_history_webhook",
+            lambda: run_history_reader(email_address, history_id)
         )
 
         return {"success": True}
@@ -1299,7 +1303,9 @@ async def compose_email(
         )
 
     background_tasks.add_task(
-        _send_bulk_emails, recipients, subject, body, from_email, token_file, attachment_data
+        _run_logged_job,
+        "send_bulk_emails",
+        lambda: _send_bulk_emails(recipients, subject, body, from_email, token_file, attachment_data)
     )
 
     return RedirectResponse(
