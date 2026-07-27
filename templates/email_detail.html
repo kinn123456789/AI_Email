@@ -146,6 +146,28 @@
                 </div>
                 {% endif %}
 
+                {% if email.knowledge_used or email.historical_examples %}
+                <div class="p-4 bg-white/50 border border-cyan-100 rounded-3xl">
+                    <h3 class="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-1.5">🔎 What the AI Used</h3>
+                    {% if email.knowledge_used %}
+                    <div class="text-xs text-stone-500 font-semibold uppercase tracking-wide mb-1">Knowledge Base</div>
+                    <ul class="text-sm text-stone-700 mb-3 list-disc list-inside">
+                        {% for item in email.knowledge_used %}
+                        <li>{{ item.title or "Untitled article" }}{% if item.similarity %} <span class="text-stone-400">({{ (item.similarity * 100) | round(0) }}% match)</span>{% endif %}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if email.historical_examples %}
+                    <div class="text-xs text-stone-500 font-semibold uppercase tracking-wide mb-1">Historical Emails</div>
+                    <ul class="text-sm text-stone-700 list-disc list-inside">
+                        {% for item in email.historical_examples %}
+                        <li>{{ item.subject or "No subject" }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endif %}
+
                 <!-- Reply Form -->
                 {% if email.status != "Closed" %}
                 <form action="/email/{{ email.id }}/send" method="POST" enctype="multipart/form-data" class="bg-white/50 p-6 rounded-3xl border border-cyan-100 flex flex-col flex-1"

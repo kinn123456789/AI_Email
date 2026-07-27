@@ -5,7 +5,7 @@ from urllib.parse import urlencode
 import scheduler
 from scheduler import _run_logged_job
 from ai_classifier import ai_triage
-from database import db_pool,get_latest_thread_ai
+from database import db_pool,get_latest_thread_ai,get_latest_reply_sources
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 from email_sender import send_email
@@ -268,6 +268,12 @@ def view_email(request: Request, email_id: int):
 
     #if latest_summary:
       #  email_data["ai_summary"] = latest_summary
+
+    reply_sources = get_latest_reply_sources(email_data.get("message_id"))
+
+    if reply_sources:
+        email_data["knowledge_used"] = reply_sources["knowledge_used"]
+        email_data["historical_examples"] = reply_sources["historical_examples"]
 
     conversation = get_thread(thread_id) if thread_id else []
     school_email = email_data["source"]

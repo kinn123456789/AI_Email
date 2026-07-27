@@ -13,6 +13,23 @@ client = OpenAI(
     base_url="https://openrouter.ai/api/v1"
 )
 
+# Force Python to fully import the OpenAI SDK's lazily-loaded chat/
+# embeddings submodules once here, single-threaded, at app startup.
+# process_email.py runs classification and two embedding searches
+# concurrently for every email — if that's the very first time any of
+# them touch the OpenAI client (e.g. right after a deploy/restart),
+# multiple threads can race to trigger the same lazy import at once,
+# which Python's import-lock machinery detects as a deadlock and
+# refuses rather than actually hanging ("deadlock detected by
+# _ModuleLock('openai.resources.embeddings')"). Touching both
+# attributes here — before any concurrent request ever runs — pre-
+# loads the modules so that race can't happen.
+try:
+    client.chat
+    client.embeddings
+except Exception as warmup_err:
+    print("OpenAI client warm-up failed:", warmup_err)
+
 
 def ai_triage(subject, body, history=None, images=None, gmail_message_id=None):
 
