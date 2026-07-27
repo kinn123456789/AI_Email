@@ -9,7 +9,8 @@ def generate_teacher_reply(
     body,
     category,
     priority,
-    thread_history=""
+    thread_history="",
+    message_id=None
 ):
     """
     Generates an AI reply for Teacher Portal conversations.
@@ -21,7 +22,7 @@ def generate_teacher_reply(
     )
 
     return generate_reply(
-        gmail_message_id="teacher_portal",
+        gmail_message_id=f"teacher_portal:{message_id}" if message_id else "teacher_portal",
         subject=subject,
         body=body,
         category=category,

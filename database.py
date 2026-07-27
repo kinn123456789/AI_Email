@@ -1838,7 +1838,9 @@ def get_ai_log_categories():
 
 def get_ai_logs(category=None, status=None, search=None, date_from=None, date_to=None, page=1, page_size=50):
     """Paginated, filterable list of ai_logs rows — status is 'error',
-    'success', or None (all). search matches gmail_message_id."""
+    'success', or None (all). search matches gmail_message_id or the
+    original email's subject (joined from messages, since ai_logs alone
+    has no human-identifiable field like subject/sender)."""
 
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -1848,39 +1850,45 @@ def get_ai_logs(category=None, status=None, search=None, date_from=None, date_to
         params = []
 
         if category:
-            conditions.append("category = %s")
+            conditions.append("ai_logs.category = %s")
             params.append(category)
 
         if status == "error":
-            conditions.append("error IS NOT NULL")
+            conditions.append("ai_logs.error IS NOT NULL")
         elif status == "success":
-            conditions.append("error IS NULL")
+            conditions.append("ai_logs.error IS NULL")
 
         if search:
-            conditions.append("gmail_message_id ILIKE %s")
+            conditions.append("(ai_logs.gmail_message_id ILIKE %s OR messages.subject ILIKE %s)")
+            params.append(f"%{search}%")
             params.append(f"%{search}%")
 
         if date_from:
-            conditions.append("created_at >= %s")
+            conditions.append("ai_logs.created_at >= %s")
             params.append(date_from)
 
         if date_to:
-            conditions.append("created_at < (%s::date + INTERVAL '1 day')")
+            conditions.append("ai_logs.created_at < (%s::date + INTERVAL '1 day')")
             params.append(date_to)
 
         where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+        join_clause = "LEFT JOIN messages ON messages.message_id = ai_logs.gmail_message_id"
 
-        cursor.execute(f"SELECT COUNT(*) AS total FROM ai_logs {where_clause}", params)
+        cursor.execute(f"SELECT COUNT(*) AS total FROM ai_logs {join_clause} {where_clause}", params)
         total = cursor.fetchone()["total"]
 
         offset = (page - 1) * page_size
         cursor.execute(
             f"""
-            SELECT id, gmail_message_id, category, priority, model, error,
-                   total_tokens, response_time_ms, created_at
+            SELECT
+                ai_logs.id, ai_logs.gmail_message_id, ai_logs.category,
+                ai_logs.priority, ai_logs.model, ai_logs.error,
+                ai_logs.total_tokens, ai_logs.response_time_ms, ai_logs.created_at,
+                messages.subject, messages.sender
             FROM ai_logs
+            {join_clause}
             {where_clause}
-            ORDER BY created_at DESC
+            ORDER BY ai_logs.created_at DESC
             LIMIT %s OFFSET %s
             """,
             params + [page_size, offset]

@@ -91,7 +91,8 @@ def process_teacher_messages():
                     body=body,
                     category=result["category"],
                     priority=result["priority"],
-                    thread_history=thread_history
+                    thread_history=thread_history,
+                    message_id=message_id
                 )
 
             # ------------------------

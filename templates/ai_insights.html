@@ -152,7 +152,7 @@
                 type="text"
                 name="log_q"
                 value="{{ selected_log_q or '' }}"
-                placeholder="Search by message ID"
+                placeholder="Search by subject or message ID"
                 class="flex-1 min-w-[180px] border border-stone-200 rounded-lg px-3 py-2 text-sm"
             >
             <select name="category" class="border border-stone-200 rounded-lg px-3 py-2 text-sm">
@@ -183,6 +183,7 @@
             <thead>
                 <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
                     <th class="py-2">When</th>
+                    <th class="py-2">Subject / Sender</th>
                     <th class="py-2">Category</th>
                     <th class="py-2">Priority</th>
                     <th class="py-2">Tokens</th>
@@ -195,6 +196,10 @@
                 {% for row in logs %}
                 <tr class="border-b border-stone-50">
                     <td class="py-2 local-time" data-utc="{{ row.created_at }}"></td>
+                    <td class="py-2 max-w-xs truncate" title="{{ row.subject or '' }}">
+                        {{ row.subject or "(no matching email — Teacher Portal or system entry)" }}
+                        {% if row.sender %}<div class="text-xs text-stone-400">{{ row.sender }}</div>{% endif %}
+                    </td>
                     <td class="py-2">{{ row.category or "—" }}</td>
                     <td class="py-2">{{ row.priority or "—" }}</td>
                     <td class="py-2">{{ row.total_tokens or 0 }}</td>
