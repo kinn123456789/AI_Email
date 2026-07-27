@@ -1,0 +1,253 @@
+<title>The Teacher Portal Module — Coral Academy</title>
+<style>
+  :root{
+    --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
+    --text: #1E3436; --text-muted: #5B7371;
+    --accent: #E85A46; --accent-ink: #B5382A; --accent-soft: #FDE4DD;
+    --secondary: #1F7A72; --secondary-soft: #DCF0EA; --border: #E4DCC8;
+    --warn-soft: #FBEBD1; --warn-ink: #8A5A12;
+    --shadow: 0 1px 2px rgba(30,52,54,0.04), 0 8px 24px -12px rgba(30,52,54,0.12);
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg: #0D2023; --bg-elevated: #122A2D; --bg-sunken: #0A1A1C;
+      --text: #E9F2EF; --text-muted: #8FADA9;
+      --accent: #FF8770; --accent-ink: #FFC1B0; --accent-soft: #33221E;
+      --secondary: #5FC9B8; --secondary-soft: #163431; --border: #1E3E40;
+      --warn-soft: #3A2C14; --warn-ink: #F0C674;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0D2023; --bg-elevated: #122A2D; --bg-sunken: #0A1A1C;
+    --text: #E9F2EF; --text-muted: #8FADA9;
+    --accent: #FF8770; --accent-ink: #FFC1B0; --accent-soft: #33221E;
+    --secondary: #5FC9B8; --secondary-soft: #163431; --border: #1E3E40;
+    --warn-soft: #3A2C14; --warn-ink: #F0C674;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"]{
+    --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
+    --text: #1E3436; --text-muted: #5B7371;
+    --accent: #E85A46; --accent-ink: #B5382A; --accent-soft: #FDE4DD;
+    --secondary: #1F7A72; --secondary-soft: #DCF0EA; --border: #E4DCC8;
+    --warn-soft: #FBEBD1; --warn-ink: #8A5A12;
+    --shadow: 0 1px 2px rgba(30,52,54,0.04), 0 8px 24px -12px rgba(30,52,54,0.12);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  h1,h2,h3,h4{ font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; color: var(--text); }
+  a{ color: var(--secondary); }
+  code, .mono{ font-family: var(--font-mono); }
+  .layout{ max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 48px; }
+  @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }
+  .hero{ grid-column: 1 / -1; padding: 64px 0 40px; position: relative; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .hero-eyebrow{ display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--secondary); font-weight: 600; margin-bottom: 18px; }
+  .hero-eyebrow .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .hero h1{ font-size: clamp(2.4rem, 5vw, 3.4rem); letter-spacing: -0.01em; max-width: 18ch; }
+  .hero p.lede{ margin-top: 18px; max-width: 56ch; font-size: 1.15rem; color: var(--text-muted); }
+  .wave{ position: absolute; right: 0; top: 40px; width: 220px; height: 140px; opacity: 0.9; pointer-events: none; }
+  @media (max-width: 700px){ .wave{ display:none; } }
+  .toc{ position: sticky; top: 24px; align-self: start; padding-top: 40px; }
+  .toc-title{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; }
+  .toc ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap: 2px;}
+  .toc a{ display: block; padding: 7px 10px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.92rem; }
+  .toc a:hover{ color: var(--text); background: var(--bg-sunken); }
+  @media (max-width: 900px){ .toc{ position: static; padding-top: 24px; overflow-x: auto; } .toc ul{ flex-direction: row; gap: 6px; padding-bottom: 8px; } .toc a{ white-space: nowrap; background: var(--bg-elevated); border: 1px solid var(--border); } }
+  main{ min-width: 0; padding-top: 40px; }
+  section{ margin-bottom: 72px; scroll-margin-top: 20px; }
+  .section-head{ margin-bottom: 28px; }
+  .section-head .kicker{ font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-ink); font-weight: 700; margin-bottom: 8px; display:block; }
+  .section-head h2{ font-size: 1.9rem; }
+  .section-head p{ color: var(--text-muted); margin-top: 10px; max-width: 68ch; }
+  .lead-box{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; box-shadow: var(--shadow); font-size: 1.05rem; }
+  .lead-box strong{ color: var(--accent-ink); }
+  .group{ margin-bottom: 36px; } .group:last-child{ margin-bottom: 0; }
+  .group-title{ display:flex; align-items:baseline; gap: 10px; margin-bottom: 16px; }
+  .group-title h3{ font-size: 1.15rem; color: var(--secondary); }
+  .group-title .rule{ flex:1; height:1px; background: var(--border); }
+  .card-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.15s ease; }
+  .card:hover{ transform: translateY(-2px); }
+  .card-icon{ width: 34px; height: 34px; border-radius: 9px; background: var(--accent-soft); display: flex; align-items:center; justify-content:center; margin-bottom: 12px; }
+  .card-icon svg{ width: 18px; height: 18px; stroke: var(--accent-ink); fill:none; }
+  .card h4{ font-size: 1.02rem; margin-bottom: 6px; font-family: var(--font-body); font-weight: 700; }
+  .card p{ margin:0; color: var(--text-muted); font-size: 0.93rem; }
+  .tech-block{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .tech-block h4{ font-size: 1.05rem; margin-bottom: 10px; display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
+  .filepill{ font-family: var(--font-mono); font-size: 0.78rem; background: var(--secondary-soft); color: var(--secondary); padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+  .tech-block ul{ margin: 10px 0 0; padding-left: 20px; color: var(--text); }
+  .tech-block ul li{ margin-bottom: 7px; font-size: 0.95rem; }
+  .tech-block ul li::marker{ color: var(--accent); }
+  .tech-block p.desc{ color: var(--text-muted); margin: 0 0 4px; font-size: 0.95rem; }
+  .tech-block b{ color: var(--text); }
+  .callout{ display:flex; gap:12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn-ink) 30%, transparent); border-radius: 12px; padding: 16px 18px; margin-top: 14px; font-size: 0.92rem; }
+  .callout .flag{ color: var(--warn-ink); font-weight: 700; flex-shrink:0; }
+  .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); }
+  th, td{ text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+  th{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-sunken); }
+  tr:last-child td{ border-bottom: none; }
+  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: nowrap; }
+  td.role{ color: var(--text-muted); }
+  .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
+  .badge-dead{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--bg-sunken); color: var(--text-muted); }
+  footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
+  @media (prefers-reduced-motion: reduce){ .card{ transition: none; } }
+</style>
+
+<div class="layout">
+  <div class="hero">
+    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy &nbsp;·&nbsp; Project Handover</span>
+    <h1>The Teacher Portal Module</h1>
+    <p class="lede">How messages between teachers and parents get synced in, understood by AI, and answered — all from one inbox.</p>
+    <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
+      <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
+      <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
+      <circle cx="196" cy="34" r="16" fill="var(--accent-soft)"/><circle cx="196" cy="34" r="6" fill="var(--accent)"/>
+    </svg>
+  </div>
+
+  <nav class="toc">
+    <div class="toc-title">On this page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#technical">Technical details</a></li>
+      <li><a href="#reference">File reference</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
+      <div class="lead-box">
+        Parents can message their child's teacher directly through Coral Academy's Teacher Portal. This module pulls
+        those conversations into the same kind of unified inbox as regular email — every new parent message gets
+        <strong>automatically classified</strong> by AI (what's it about, how urgent is it) and, where it's safe to,
+        gets a <strong>draft reply ready to review</strong>. A staff member opens the Teacher Inbox, reads the
+        conversation, and sends the reply straight back to the parent through the Teacher Portal.
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="section-head">
+        <span class="kicker">Demo walkthrough</span><h2>Features</h2>
+        <p>What a staff member can actually do today at <code>/teacher-inbox</code>.</p>
+      </div>
+
+      <div class="group">
+        <div class="group-title"><h3>Getting messages in</h3><div class="rule"></div></div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <h4>Teacher Inbox</h4>
+            <p>Pick a teacher, see their list of parent conversations sorted by unread first, then priority, then recency. Open any chat to see the full message thread.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0114-5.3M20 12a8 8 0 01-14 5.3" stroke-width="1.7" stroke-linecap="round"/><path d="M18 3v5h-5M6 21v-5h5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h4>Auto-Sync Every 8 Minutes</h4>
+            <p>New parent messages are pulled in from the Teacher Portal automatically — nobody has to manually check for new messages.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+            <h4>Manual "Sync Now"</h4>
+            <p>A one-click trigger to pull the very latest messages immediately, instead of waiting for the next 8-minute cycle.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title"><h3>Understanding &amp; answering</h3><div class="rule"></div></div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 015 5c0 2-1 3-2 4s-1 2-1 3H10c0-1 0-2-1-3s-2-2-2-4a5 5 0 015-5z" stroke-width="1.6"/><path d="M10 19h4M11 21h2" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <h4>AI Classification</h4>
+            <p>Every parent message gets a category, a priority, and a one-sentence summary — so a busy staff member can scan what matters most at a glance.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 11h6M9 14h6M9 8h3" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            <h4>AI Draft Replies</h4>
+            <p>Where it's safe to, a suggested reply is pre-written and ready to edit — grounded in Coral Academy's Help Center content, same as the main email assistant.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="group">
+        <div class="group-title"><h3>Managing conversations</h3><div class="rule"></div></div>
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-3-7-7-3z" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+            <h4>Sending Replies</h4>
+            <p>Edit the draft (or write your own) and send — it goes straight back to the parent through the Teacher Portal, and the sent reply is saved into the thread.</p>
+          </div>
+          <div class="card">
+            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h4>Deleting a Message</h4>
+            <p>Remove a message from a chat — it's deleted both from the Teacher Portal itself and from the local copy shown here.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="technical">
+      <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2><p>How the pieces above are actually built.</p></div>
+
+      <div class="tech-block">
+        <h4>Data flow <span class="filepill">teacher_portal_api_reader.py</span> <span class="filepill">teacher_api_sync.py</span></h4>
+        <p class="desc">Coral Academy's Teacher Portal REST API (<code>api.preprod.coralacademy.com</code>, key-authenticated) → pulled and upserted into <code>conversations</code> / <code>conversation_messages</code> → classified and drafted by AI → shown in <code>/teacher-inbox</code>. Sending goes the other way: app → Teacher Portal API → success saved locally too.</p>
+        <ul>
+          <li><b>Checkpoint/dedup:</b> a chat's messages are only re-fetched if its latest message isn't already stored (<code>conversation_message_exists</code>); inserts also use <code>ON CONFLICT DO NOTHING</code> as a second safety net — keeps each sync run cheap and idempotent.</li>
+          <li><b>Sync cadence:</b> every 8 minutes, offset 70 seconds from other jobs so it doesn't collide with them; only one run at a time, and a missed run is simply skipped rather than queued.</li>
+          <li>Every run is logged (success/failure/duration) so a silent failure is never invisible.</li>
+        </ul>
+        <div class="callout"><span class="flag">Note</span><span>Teacher Portal data lives in the <b>same</b> main Postgres database as the rest of the app (not a separate Supabase project) — worth knowing since some other modules genuinely do use a separate Supabase project for their own data.</span></div>
+      </div>
+
+      <div class="tech-block">
+        <h4>Classification &amp; drafting <span class="filepill">teacher_ai_processor1.py</span> <span class="filepill">teacher_reply_generator1.py</span></h4>
+        <ul>
+          <li>Uses the exact same classifier (<code>ai_triage</code>) and reply engine (<code>reply_generator.generate_reply</code>) as regular email — just fed Teacher Portal content instead. Draft replies do <i>not</i> use historical-email style examples, only Help Center knowledge.</li>
+          <li><b>Context cap:</b> only the last 50 messages of a chat are given to the AI (fixed a real incident where one long-running thread grew to ~443,000 tokens and failed permanently against OpenRouter's 400,000 limit). This cap only affects what the AI sees — the full chat is still shown to staff in the UI.</li>
+          <li><b>Safety override:</b> messages containing words like "complaint," "refund," "legal," or "bullying" are always forced to human review and bumped to at least High priority, regardless of what the AI itself decided.</li>
+          <li>Every classification and draft attempt is logged for debugging, tagged as <code>teacher_portal:&lt;message_id&gt;</code>.</li>
+        </ul>
+      </div>
+
+      <div class="tech-block">
+        <h4>Known limitations worth flagging</h4>
+        <ul>
+          <li>The Teacher Portal API is only ever read one page at a time (<code>page=0</code>) — an extremely long chat history beyond that first page is never pulled from the source, separate from the local 50-message AI cap.</li>
+          <li>Two older routes/templates (<code>/teacher-dashboard</code>, <code>/teacher/{teacher_id}</code>) still work but are no longer linked from the main navigation — <code>/teacher-inbox</code> is the one screen actually used day to day. One of their "back" links even points to a route that no longer exists.</li>
+          <li>Several duplicate/backup files from earlier versions of this feature (<code>teacher_ai_processor.py</code>, <code>teacher_sync.py</code>, <code>teacher_db_reader.py</code>, and others) still sit in the repo but are not used by the running app — safe candidates for cleanup, not to be confused with the live files below.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="reference">
+      <div class="section-head"><span class="kicker">Appendix</span><h2>File reference</h2><p>Live files power the running app; dead files are safe to ignore or remove.</p></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Status</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td class="file">teacher_portal_api_reader.py</td><td><span class="badge-live">Live</span></td><td class="role">Reads teachers/chats/messages from the Teacher Portal API</td></tr>
+            <tr><td class="file">teacher_api_sync.py</td><td><span class="badge-live">Live</span></td><td class="role">Syncs conversations/messages into the database every 8 minutes</td></tr>
+            <tr><td class="file">teacher_ai_processor1.py</td><td><span class="badge-live">Live</span></td><td class="role">Classifies parent messages, builds capped thread history</td></tr>
+            <tr><td class="file">teacher_reply_generator1.py</td><td><span class="badge-live">Live</span></td><td class="role">Generates the AI draft reply for a Teacher Portal message</td></tr>
+            <tr><td class="file">teacher_api_sender.py</td><td><span class="badge-live">Live</span></td><td class="role">Sends/deletes messages through the Teacher Portal API</td></tr>
+            <tr><td class="file">teacher_ai_processor.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Old version — actually broken (imports a file that no longer exists)</td></tr>
+            <tr><td class="file">teacher_reply_generator..py</td><td><span class="badge-dead">Dead</span></td><td class="role">Predecessor of teacher_reply_generator1.py</td></tr>
+            <tr><td class="file">teacher_sync.py · teacher_sync_backup.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Old sync logic, unused</td></tr>
+            <tr><td class="file">teacher_portal_reader.py · teacher_portal_sender.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Earlier versions of the reader/sender</td></tr>
+            <tr><td class="file">teacher_db_reader.py · teacher_db_sync.py</td><td><span class="badge-dead">Dead</span></td><td class="role">Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer>Teacher Portal Module &nbsp;·&nbsp; Coral Academy handover documentation</footer>
+</div>

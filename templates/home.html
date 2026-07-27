@@ -18,7 +18,7 @@
     <div class="absolute -top-16 -left-16 w-72 h-72 bg-sky-200/50 rounded-full blur-3xl pointer-events-none"></div>
     <div class="absolute -bottom-16 -right-16 w-72 h-72 bg-blue-200/50 rounded-full blur-3xl pointer-events-none"></div>
 
-    <div class="max-w-4xl w-full mx-auto relative z-10">
+    <div class="max-w-6xl w-full mx-auto relative z-10">
         
         <!-- Header -->
         <div class="text-center mb-12">
@@ -33,121 +33,111 @@
             </p>
         </div>
 
-        <!-- Dashboard Cards Container -->
-        <div class="flex flex-col items-center gap-6">
+        <!-- Dashboard Cards Grid (All 6 cards in a single responsive grid layout) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
 
-            <!-- First Row: 3 Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
+            <!-- Emails Card -->
+            <a href="/dashboard"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(135,206,250,0.15)] hover:shadow-[0_20px_40px_rgba(135,206,250,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">✉️</div>
+                <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
+                    Emails
+                </h2>
+                <p class="text-stone-600 text-xs mb-4 font-medium">
+                    View all incoming and organized messages
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
+                    Open Inbox 📧
+                </span>
+            </a>
 
-                <!-- Emails Card -->
-                <a href="/dashboard"
-                   class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(135,206,250,0.15)] hover:shadow-[0_20px_40px_rgba(135,206,250,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-sky-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">✉️</div>
-                    <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
-                        Emails
-                    </h2>
-                    <p class="text-stone-600 text-xs mb-4 font-medium">
-                        View all incoming and organized messages
-                    </p>
-                    <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
-                        Open Inbox 📧
-                    </span>
-                </a>
+            <!-- Contact Forms Card -->
+            <a href="/contact-dashboard"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(173,216,230,0.15)] hover:shadow-[0_20px_40px_rgba(173,216,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">📝</div>
+                <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
+                    Contact Forms
+                </h2>
+                <p class="text-stone-600 text-xs mb-4 font-medium">
+                    Website inquiries 
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
+                    View Forms ✨
+                </span>
+            </a>
 
-                <!-- Contact Forms Card -->
-                <a href="/contact-dashboard"
-                   class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(173,216,230,0.15)] hover:shadow-[0_20px_40px_rgba(173,216,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-indigo-400 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">📝</div>
-                    <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
-                        Contact Forms
-                    </h2>
-                    <p class="text-stone-600 text-xs mb-4 font-medium">
-                        Website inquiries 
-                    </p>
-                    <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
-                        View Forms ✨
-                    </span>
-                </a>
+            <!-- Trial Follow-ups Card -->
+            <a href="/trial-followup"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(100,149,237,0.15)] hover:shadow-[0_20px_40px_rgba(100,149,237,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                {% if due_followups is defined and due_followups | length > 0 %}
+                <span class="absolute top-3 right-3 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse">
+                    {{ due_followups | length }} Due
+                </span>
+                {% endif %}
 
-                <!-- Trial Follow-ups Card -->
-                <a href="/trial-followup"
-                   class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(100,149,237,0.15)] hover:shadow-[0_20px_40px_rgba(100,149,237,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    
-                    {% if due_followups is defined and due_followups | length > 0 %}
-                    <span class="absolute top-3 right-3 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-md animate-pulse">
-                        {{ due_followups | length }} Due
-                    </span>
-                    {% endif %}
+                <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">⏰</div>
+                <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
+                    Trial Follow-ups
+                </h2>
+                <p class="text-stone-600 text-xs mb-4 font-medium">
+                    Automated trial follow-up campaigns
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
+                    Explore Hub 🚀
+                </span>
+            </a>
 
-                    <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">⏰</div>
-                    <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
-                        Trial Follow-ups
-                    </h2>
-                    <p class="text-stone-600 text-xs mb-4 font-medium">
-                        Automated trial follow-up campaigns
-                    </p>
-                    <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
-                        Explore Hub 🚀
-                    </span>
-                </a>
+            <!-- Cancelled Subscriptions Card -->
+            <a href="/subscription-cancel"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(244,114,182,0.15)] hover:shadow-[0_20px_40px_rgba(244,114,182,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-400 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">📋</div>
+                <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
+                    Cancelled Subscriptions
+                </h2>
+                <p class="text-stone-600 text-xs mb-4 font-medium">
+                    Follow-ups for lapsed members
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
+                    View List 
+                </span>
+            </a>
 
-            </div>
+            <!-- Teacher Portal Card -->
+            <a href="/teacher-inbox"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(176,224,230,0.15)] hover:shadow-[0_20px_40px_rgba(176,224,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">🎓</div>
+                <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
+                    Teacher Portal
+                </h2>
+                <p class="text-stone-600 text-xs mb-4 font-medium">
+                    Parent-teacher secure conversations
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
+                    Open Portal 🎒
+                </span>
+            </a>
 
-            <!-- Second Row: 2 Cards centered -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
-
-                <!-- Cancelled Subscriptions Card -->
-                <a href="/subscription-cancel"
-                   class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(244,114,182,0.15)] hover:shadow-[0_20px_40px_rgba(244,114,182,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-rose-400 to-red-500 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">📋</div>
-                    <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
-                        Cancelled Subscriptions
-                    </h2>
-                    <p class="text-stone-600 text-xs mb-4 font-medium">
-                        Follow-ups for lapsed members
-                    </p>
-                    <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
-                        View List 
-                    </span>
-                </a>
-
-                <!-- Teacher Portal Card -->
-                <a href="/teacher-inbox"
-                   class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(176,224,230,0.15)] hover:shadow-[0_20px_40px_rgba(176,224,230,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-cyan-400 to-teal-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">🎓</div>
-                    <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
-                        Teacher Portal
-                    </h2>
-                    <p class="text-stone-600 text-xs mb-4 font-medium">
-                        Parent-teacher secure conversations
-                    </p>
-                    <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
-                        Open Portal 🎒
-                    </span>
-                </a>
-
-                <!-- AI Insights Card -->
-                <a href="/ai-insights"
-                   class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(147,197,253,0.15)] hover:shadow-[0_20px_40px_rgba(147,197,253,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">📊</div>
-                    <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
-                        AI Insights
-                    </h2>
-                    <p class="text-stone-600 text-xs mb-4 font-medium">
-                        Token usage, errors, and draft lookup
-                    </p>
-                    <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
-                        View Insights 📊
-                    </span>
-                </a>
-
-            </div>
+            <!-- AI Insights Card -->
+            <a href="/ai-insights"
+               class="group bg-white/40 hover:bg-white/60 backdrop-blur-xl p-6 rounded-3xl shadow-[0_10px_30px_rgba(147,197,253,0.15)] hover:shadow-[0_20px_40px_rgba(147,197,253,0.25)] border border-white/60 transition-all duration-300 transform hover:-translate-y-1.5 flex flex-col items-center text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-400 to-indigo-400 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                <div class="text-4xl mb-3 p-3 bg-white/30 backdrop-blur-md rounded-2xl group-hover:scale-110 transition-transform duration-300 shadow-inner">📊</div>
+                <h2 class="text-xl font-bold text-[#0F5D7A] mb-1">
+                    AI Insights
+                </h2>
+                <p class="text-stone-600 text-xs mb-4 font-medium">
+                    Token usage, errors, and draft lookup
+                </p>
+                <span class="inline-block bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-5 py-2 rounded-full font-semibold text-xs shadow-md shadow-orange-500/20 group-hover:scale-105 transition-all mt-auto">
+                    View Insights 📊
+                </span>
+            </a>
 
         </div>
 

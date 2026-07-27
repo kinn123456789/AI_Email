@@ -1,0 +1,233 @@
+<title>The Contact Form Module — Coral Academy</title>
+<style>
+  :root{
+    --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
+    --text: #1E3436; --text-muted: #5B7371;
+    --accent: #E85A46; --accent-ink: #B5382A; --accent-soft: #FDE4DD;
+    --secondary: #1F7A72; --secondary-soft: #DCF0EA; --border: #E4DCC8;
+    --warn-soft: #FBEBD1; --warn-ink: #8A5A12;
+    --shadow: 0 1px 2px rgba(30,52,54,0.04), 0 8px 24px -12px rgba(30,52,54,0.12);
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg: #0D2023; --bg-elevated: #122A2D; --bg-sunken: #0A1A1C;
+      --text: #E9F2EF; --text-muted: #8FADA9;
+      --accent: #FF8770; --accent-ink: #FFC1B0; --accent-soft: #33221E;
+      --secondary: #5FC9B8; --secondary-soft: #163431; --border: #1E3E40;
+      --warn-soft: #3A2C14; --warn-ink: #F0C674;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0D2023; --bg-elevated: #122A2D; --bg-sunken: #0A1A1C;
+    --text: #E9F2EF; --text-muted: #8FADA9;
+    --accent: #FF8770; --accent-ink: #FFC1B0; --accent-soft: #33221E;
+    --secondary: #5FC9B8; --secondary-soft: #163431; --border: #1E3E40;
+    --warn-soft: #3A2C14; --warn-ink: #F0C674;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"]{
+    --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
+    --text: #1E3436; --text-muted: #5B7371;
+    --accent: #E85A46; --accent-ink: #B5382A; --accent-soft: #FDE4DD;
+    --secondary: #1F7A72; --secondary-soft: #DCF0EA; --border: #E4DCC8;
+    --warn-soft: #FBEBD1; --warn-ink: #8A5A12;
+    --shadow: 0 1px 2px rgba(30,52,54,0.04), 0 8px 24px -12px rgba(30,52,54,0.12);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  h1,h2,h3,h4{ font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; color: var(--text); }
+  a{ color: var(--secondary); }
+  code, .mono{ font-family: var(--font-mono); }
+  .layout{ max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 48px; }
+  @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }
+  .hero{ grid-column: 1 / -1; padding: 64px 0 40px; position: relative; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .hero-eyebrow{ display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--secondary); font-weight: 600; margin-bottom: 18px; }
+  .hero-eyebrow .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .hero h1{ font-size: clamp(2.4rem, 5vw, 3.4rem); letter-spacing: -0.01em; max-width: 18ch; }
+  .hero p.lede{ margin-top: 18px; max-width: 56ch; font-size: 1.15rem; color: var(--text-muted); }
+  .wave{ position: absolute; right: 0; top: 40px; width: 220px; height: 140px; opacity: 0.9; pointer-events: none; }
+  @media (max-width: 700px){ .wave{ display:none; } }
+  .toc{ position: sticky; top: 24px; align-self: start; padding-top: 40px; }
+  .toc-title{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; }
+  .toc ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap: 2px;}
+  .toc a{ display: block; padding: 7px 10px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.92rem; }
+  .toc a:hover{ color: var(--text); background: var(--bg-sunken); }
+  @media (max-width: 900px){ .toc{ position: static; padding-top: 24px; overflow-x: auto; } .toc ul{ flex-direction: row; gap: 6px; padding-bottom: 8px; } .toc a{ white-space: nowrap; background: var(--bg-elevated); border: 1px solid var(--border); } }
+  main{ min-width: 0; padding-top: 40px; }
+  section{ margin-bottom: 72px; scroll-margin-top: 20px; }
+  .section-head{ margin-bottom: 28px; }
+  .section-head .kicker{ font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-ink); font-weight: 700; margin-bottom: 8px; display:block; }
+  .section-head h2{ font-size: 1.9rem; }
+  .section-head p{ color: var(--text-muted); margin-top: 10px; max-width: 68ch; }
+  .lead-box{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; box-shadow: var(--shadow); font-size: 1.05rem; }
+  .lead-box strong{ color: var(--accent-ink); }
+  .group{ margin-bottom: 36px; } .group:last-child{ margin-bottom: 0; }
+  .group-title{ display:flex; align-items:baseline; gap: 10px; margin-bottom: 16px; }
+  .group-title h3{ font-size: 1.15rem; color: var(--secondary); }
+  .group-title .rule{ flex:1; height:1px; background: var(--border); }
+  .card-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.15s ease; }
+  .card:hover{ transform: translateY(-2px); }
+  .card-icon{ width: 34px; height: 34px; border-radius: 9px; background: var(--accent-soft); display: flex; align-items:center; justify-content:center; margin-bottom: 12px; }
+  .card-icon svg{ width: 18px; height: 18px; stroke: var(--accent-ink); fill:none; }
+  .card h4{ font-size: 1.02rem; margin-bottom: 6px; font-family: var(--font-body); font-weight: 700; }
+  .card p{ margin:0; color: var(--text-muted); font-size: 0.93rem; }
+  .tech-block{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .tech-block h4{ font-size: 1.05rem; margin-bottom: 10px; display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
+  .filepill{ font-family: var(--font-mono); font-size: 0.78rem; background: var(--secondary-soft); color: var(--secondary); padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+  .tech-block ul{ margin: 10px 0 0; padding-left: 20px; color: var(--text); }
+  .tech-block ul li{ margin-bottom: 7px; font-size: 0.95rem; }
+  .tech-block ul li::marker{ color: var(--accent); }
+  .tech-block p.desc{ color: var(--text-muted); margin: 0 0 4px; font-size: 0.95rem; }
+  .tech-block b{ color: var(--text); }
+  .callout{ display:flex; gap:12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn-ink) 30%, transparent); border-radius: 12px; padding: 16px 18px; margin-top: 14px; font-size: 0.92rem; }
+  .callout .flag{ color: var(--warn-ink); font-weight: 700; flex-shrink:0; }
+  .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); }
+  th, td{ text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+  th{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-sunken); }
+  tr:last-child td{ border-bottom: none; }
+  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: nowrap; }
+  td.role{ color: var(--text-muted); }
+  .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
+  .badge-dead{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--bg-sunken); color: var(--text-muted); }
+  code.snippet{ display:block; background: var(--bg-sunken); border-radius: 8px; padding: 10px 14px; margin: 6px 0; font-size: 0.85rem; overflow-x:auto; }
+  footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
+  @media (prefers-reduced-motion: reduce){ .card{ transition: none; } }
+</style>
+
+<div class="layout">
+  <div class="hero">
+    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy &nbsp;·&nbsp; Project Handover</span>
+    <h1>The Contact Form Module</h1>
+    <p class="lede">How a website enquiry quietly becomes a reply-ready message in its own dashboard.</p>
+    <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
+      <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
+      <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
+      <circle cx="196" cy="34" r="16" fill="var(--accent-soft)"/><circle cx="196" cy="34" r="6" fill="var(--accent)"/>
+    </svg>
+  </div>
+
+  <nav class="toc">
+    <div class="toc-title">On this page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#technical">Technical details</a></li>
+      <li><a href="#reference">File reference</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
+      <div class="lead-box">
+        When someone fills out the contact form on Coral Academy's website, it doesn't need a separate system —
+        it arrives as a normal email, gets automatically recognized, and has its name, email, phone, and message
+        <strong>neatly pulled apart</strong> from the raw form text. It then shows up in its own dedicated dashboard,
+        completely separate from the regular inbox, ready for a staff member to reply to directly.
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="section-head"><span class="kicker">Demo walkthrough</span><h2>Features</h2></div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.7" stroke-linecap="round"/><path d="M18 16l3 3-3 3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Automatic Recognition</h4>
+          <p>Enquiry emails from the website are recognized the moment they arrive — no manual sorting needed.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 9l5 5 5-5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v3h16v-3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Clean Field Extraction</h4>
+          <p>Name, email, phone number, and the actual message are separated out of the form's plain-text layout — the raw template text never shows up in the reply thread.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M4 6h16v12H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <h4>Its Own Dashboard</h4>
+          <p>A dedicated view, entirely separate from the main inbox, listing every enquiry with search across name, email, phone, and message.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-3-7-7-3z" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h4>Reply Like Any Email</h4>
+          <p>Replying works exactly like a normal email reply — it goes straight to the visitor's real email address.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" stroke-width="1.6"/><path d="M4 6l8 7 8-7" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h4>Sent History</h4>
+          <p>A filtered view shows only the enquiries that have already been replied to — easy to see what's still outstanding.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="technical">
+      <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2></div>
+
+      <div class="tech-block">
+        <h4>Detection rule <span class="filepill">email_filter.py</span></h4>
+        <p class="desc">An email is recognized as a contact-form enquiry when both are true:</p>
+        <ul>
+          <li>The sender is <code>no-reply@coralacademy.com</code></li>
+          <li>The subject starts with <code>"New Contact Form Enquiry"</code> (not case-sensitive)</li>
+        </ul>
+        <p class="desc">When matched, it's tagged with category <code>"Contact Form Enquiry"</code> and mailbox <code>"contact_form"</code> — which is what routes it to its own dashboard instead of the main inbox.</p>
+      </div>
+
+      <div class="tech-block">
+        <h4>Field extraction <span class="filepill">process_email.py</span></h4>
+        <p class="desc">The raw form email looks like a simple labeled template. Each label is pulled out individually:</p>
+        <code class="snippet">Name: ...
+Email: ...
+Phone: ...
+Message: ...
+Submitted at: ...</code>
+        <ul>
+          <li><b>Name</b> — replaces the sender's display name if found; otherwise keeps the original.</li>
+          <li><b>Email</b> — replaces the sender address only if a valid-looking (contains "@") value is found; otherwise the original envelope address is kept.</li>
+          <li><b>Phone</b> — stored if present, left blank otherwise.</li>
+          <li><b>Message</b> — everything between "Message:" and "Submitted at:" becomes the actual email body shown to staff; if this pattern isn't found, the whole raw email is shown instead as a fallback.</li>
+        </ul>
+      </div>
+
+      <div class="tech-block">
+        <h4>Where the data lives <span class="filepill">database.py</span></h4>
+        <ul>
+          <li>Contact name and phone are stored in their own dedicated columns on the messages table.</li>
+          <li>The dashboard query specifically excludes Coral Academy's own internal addresses, so only real visitor enquiries ever show up.</li>
+        </ul>
+      </div>
+
+      <div class="tech-block">
+        <h4>Known issue worth flagging</h4>
+        <div class="callout">
+          <span class="flag">Heads up</span>
+          <span>There's a second, more direct API endpoint in the code (<code>POST /submit-enquiry</code>) that was clearly meant to save a contact-form submission straight to the database without going through email at all. As it stands today it doesn't work — it's missing two required pieces of information the save step needs, so calling it currently causes an error, and even if that were fixed it still wouldn't set the right flag to make the entry show up on the dashboard. The email-based flow described above is the one that actually works end to end; this second path would need finishing if anyone wants to use it instead.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="reference">
+      <div class="section-head"><span class="kicker">Appendix</span><h2>File reference</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Status</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td class="file">email_filter.py</td><td><span class="badge-live">Live</span></td><td class="role">Recognizes an incoming email as a contact-form enquiry</td></tr>
+            <tr><td class="file">process_email.py</td><td><span class="badge-live">Live</span></td><td class="role">Extracts name/email/phone/message from the form email</td></tr>
+            <tr><td class="file">database.py</td><td><span class="badge-live">Live</span></td><td class="role">Stores and queries contact-form entries</td></tr>
+            <tr><td class="file">templates/contact_dashboard.html</td><td><span class="badge-live">Live</span></td><td class="role">The dedicated dashboard staff use day to day</td></tr>
+            <tr><td class="file">main.py — <code>/contact-dashboard</code>, <code>/contact-dashboard/sent</code></td><td><span class="badge-live">Live</span></td><td class="role">Routes powering the dashboard and its sent-history view</td></tr>
+            <tr><td class="file">main.py — <code>/submit-enquiry</code></td><td><span class="badge-dead">Broken</span></td><td class="role">Direct-save endpoint, currently non-functional (see callout above)</td></tr>
+            <tr><td class="file">contactform.py</td><td><span class="badge-dead">Dev tool</span></td><td class="role">Manual test script for hitting the preprod enquiry API — not part of the live pipeline</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer>Contact Form Module &nbsp;·&nbsp; Coral Academy handover documentation</footer>
+</div>

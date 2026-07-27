@@ -1255,6 +1255,37 @@ def get_latest_thread_ai(thread_id):
         cur.close()
         db_pool.putconn(conn)
 
+def get_latest_reply_sources(gmail_message_id):
+    """The Knowledge Base articles / historical emails the AI actually
+    used when drafting this message's reply — pulled from ai_logs.
+    Excludes the "Classification" log row (same gmail_message_id can
+    have both a Classification and a reply-generation entry) since only
+    the reply-generation entry has knowledge_used/historical_examples
+    populated."""
+
+    if not gmail_message_id:
+        return None
+
+    conn = get_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+
+        cur.execute("""
+            SELECT knowledge_used, historical_examples
+            FROM ai_logs
+            WHERE gmail_message_id = %s
+              AND category != 'Classification'
+            ORDER BY created_at DESC
+            LIMIT 1
+        """, (gmail_message_id,))
+
+        return cur.fetchone()
+
+    finally:
+        cur.close()
+        db_pool.putconn(conn)
+
 def get_last_history_id(email_address):
 
     conn = get_connection()
