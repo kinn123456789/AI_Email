@@ -184,6 +184,31 @@
       </div>
 
       <div class="tech-block">
+        <h4>Tables used</h4>
+        <p class="desc">Confirmed by directly tracing the live code and querying the actual database schema — not inferred from variable names or guessed.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Source</th><th>What it's for</th></tr></thead>
+            <tbody>
+              <tr><td class="file">Subscriptions</td><td>Supabase (separate project)</td><td>Which subscriptions were cancelled and when</td></tr>
+              <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Which free trials expired without converting</td></tr>
+              <tr><td class="file">Enrollments → Batches → Classes</td><td>Supabase</td><td>Resolves a learner to their class name(s) for display</td></tr>
+              <tr><td class="file">Learners, Users</td><td>Supabase</td><td>Learner/parent names</td></tr>
+              <tr><td class="file">EmailDeliveryStatus</td><td>Supabase</td><td>Parent contact/email info</td></tr>
+              <tr><td class="file">SessionInteraction</td><td>Supabase</td><td>Whether the learner actually attended sessions (used in the draft's context)</td></tr>
+              <tr><td class="file">subscription_cancel_dismissed</td><td>Main app Postgres</td><td>Rows staff have dismissed</td></tr>
+              <tr><td class="file">subscription_cancel_sent</td><td>Main app Postgres</td><td>Record of every re-engagement email actually sent</td></tr>
+              <tr><td class="file">subscription_cancel_drafts</td><td>Main app Postgres</td><td>Cached AI drafts, so opening a row is instant</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout">
+          <span class="flag">Note</span>
+          <span>The 3 main-Postgres tables (<code>subscription_cancel_dismissed</code>, <code>subscription_cancel_sent</code>, <code>subscription_cancel_drafts</code>) have no <code>CREATE TABLE</code> statement checked into the repo — they're only ever referenced via raw <code>INSERT</code>/<code>SELECT</code> in <code>subscription_cancel.py</code>. No external Coral Academy REST API is involved anywhere in this module — everything above comes straight from these tables.</span>
+        </div>
+      </div>
+
+      <div class="tech-block">
         <h4>Cadence</h4>
         <ul>
           <li><b>Every 1 minute:</b> the list of cancelled subscriptions/expired trials is refreshed.</li>
@@ -201,14 +226,14 @@
           <li>If the AI call fails for any reason, a safe, pre-written fallback email is used instead so a draft is never simply missing.</li>
         </ul>
         <div class="callout">
-          <span class="flag">Known gap</span>
-          <span>The swap-back of real names is currently a simple find-and-replace with no check afterward. If the AI ever rewords or drops a placeholder instead of repeating it exactly, nothing today would catch a leftover placeholder before someone hits send. Adding that check is on the list of things still to do.</span>
+          <span class="flag">Fixed this session</span>
+          <span>The swap-back used to be a simple find-and-replace with no check afterward. Now, after swap-back, the body is checked for any leftover bracketed placeholder-shaped text (not just the 2 exact tokens — catches wrong casing/spacing too). If one's still there, the draft is discarded and the safe hardcoded fallback template is used instead — a leaked placeholder can no longer reach Send.</span>
         </div>
       </div>
 
       <div class="tech-block">
         <h4>Sending</h4>
-        <p class="desc">Sending uses the same Gmail-based sending mechanism as the rest of the app, and every sent re-engagement email is logged so there's a record of exactly who was reached out to and when.</p>
+        <p class="desc">Sends via <code>followup_email.py</code>, authenticated through Domain-Wide Delegation (<code>gmail_auth.get_gmail_service()</code> — no per-account OAuth token file, same mechanism the rest of the app uses), and every sent re-engagement email is logged so there's a record of exactly who was reached out to and when.</p>
       </div>
     </section>
 

@@ -209,6 +209,25 @@
       </div>
 
       <div class="tech-block">
+        <h4>Tables used</h4>
+        <p class="desc">Confirmed by directly tracing the live code and querying the actual database schema — not inferred from variable names or guessed.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Source</th><th>What it's for</th></tr></thead>
+            <tbody>
+              <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Trials that expired "today" (filtered by expiry date)</td></tr>
+              <tr><td class="file">Enrollments</td><td>Supabase</td><td>Resolves a trial to its learner</td></tr>
+              <tr><td class="file">Subscriptions</td><td>Supabase</td><td>Excludes learners who already converted to a paid subscription</td></tr>
+              <tr><td class="file">Users</td><td>Supabase</td><td>Learner/parent names</td></tr>
+              <tr><td class="file">Class titles lookup</td><td>Supabase (shared with the Subscription module)</td><td>Resolves a learner to their class name</td></tr>
+              <tr><td class="file">trial_followup_campaigns</td><td>Main app Postgres</td><td>Tracks each candidate's own progress — which of the 3 emails have been sent, and campaign status</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="desc" style="margin-top:10px;">No external Coral Academy REST API is involved — candidates are pulled from these Supabase tables, same as the Subscription module.</p>
+      </div>
+
+      <div class="tech-block">
         <h4>AI drafting <span class="filepill">followup_ai.py</span></h4>
         <ul>
           <li>Each of the 3 emails has its own separately written prompt matching its day's tone (thank-you / nudge / last-reminder).</li>
@@ -216,8 +235,8 @@
           <li>Every attempt (success or failure) is logged for later debugging; a safe fallback template is used if the AI call fails.</li>
         </ul>
         <div class="callout">
-          <span class="flag">Known gap</span>
-          <span>Just like the Subscription module, there's currently no check that the placeholder swap-back actually worked before a draft is shown to staff — if the AI ever rewords the placeholder instead of repeating it exactly, a stray placeholder could sit unnoticed in a draft. Fixing this is on the list of upcoming safety work.</span>
+          <span class="flag">Fixed this session</span>
+          <span>Just like the Subscription module, the placeholder swap-back is now checked afterward: if any leftover bracketed placeholder-shaped text is found in the body, the draft is discarded and the safe fallback template is used instead — a stray placeholder can no longer sit unnoticed in a draft shown to staff.</span>
         </div>
       </div>
 
