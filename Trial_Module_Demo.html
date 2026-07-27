@@ -201,9 +201,12 @@
 
       <div class="tech-block">
         <h4>Cadence &amp; candidate logic <span class="filepill">process_trial_followup.py</span></h4>
+        <p class="desc">Runs once a day at <b>9:00 AM</b> (<code>scheduler.py</code>, <code>CronTrigger(hour=9, minute=0)</code>, confirmed directly in the scheduler registration). Each candidate's own progress is compared against <code>trial_expiry_at</code> vs. right now — exact thresholds, traced directly in the code:</p>
         <ul>
-          <li>Runs once a day, every morning at <b>9:00 AM</b>.</li>
-          <li>Finds free trials that expired that calendar day, then checks each one's own follow-up history to work out whether email 1, 2, or 3 is the one that's due — and skips anyone who's already converted to a paid subscription.</li>
+          <li><b>Email 1:</b> sent once at least 1 day has passed since the trial expired, and email 1 hasn't gone out yet.</li>
+          <li><b>Email 2:</b> sent once at least 3 days have passed since expiry — but only if email 1 already went out and email 2 hasn't.</li>
+          <li><b>Email 3:</b> sent once at least 7 days have passed since expiry — but only if emails 1 <i>and</i> 2 already went out and email 3 hasn't; this also marks the whole campaign complete.</li>
+          <li>Anyone who already converted to a paid subscription is skipped entirely, regardless of where they are in the sequence.</li>
           <li>Each candidate's progress (which emails have already been sent) is tracked in its own record, created the first time that trial is seen.</li>
         </ul>
       </div>
