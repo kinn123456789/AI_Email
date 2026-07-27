@@ -68,6 +68,17 @@
 <h3 class="text-cyan-950/70 text-sm font-bold">Needs Review</h3>
 <p id="metric-needs-review" class="text-3xl font-bold text-red-950 mt-1">{{ needs_review_count }}</p>
 </div>
+<div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl">
+<h3 class="text-cyan-950/70 text-sm font-bold mb-2">By Category</h3>
+<div class="space-y-0.5">
+{% for category, count in counts %}
+<div class="flex justify-between text-xs">
+<span class="text-cyan-950/70">{{ category or "Uncategorized" }}</span>
+<span class="font-bold text-cyan-950">{{ count }}</span>
+</div>
+{% endfor %}
+</div>
+</div>
 </div>
 <!-- Actions Bar -->
 <div class="grid grid-cols-2 gap-6 mb-8">
@@ -128,6 +139,13 @@ Response Metrics
 <option value="Replied" {% if selected_status == "Replied" %}selected{% endif %}>Replied</option>
 </select>
 
+<select name="read_status" onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+<option value="" {% if not selected_read_status %}selected{% endif %}>Unread &amp; Read</option>
+<option value="unread" {% if selected_read_status == "unread" %}selected{% endif %}>Unread Only</option>
+<option value="read" {% if selected_read_status == "read" %}selected{% endif %}>Read Only</option>
+</select>
+
 <input
     type="date"
     name="date_from"
@@ -155,11 +173,59 @@ Response Metrics
     Filter
 </button>
 
-{% if selected_source or search_query or selected_status or selected_date_from or selected_date_to %}
+{% if selected_source or search_query or selected_status or selected_date_from or selected_date_to or selected_read_status %}
 <a href="/dashboard" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
 {% endif %}
 
 </form>
+
+{% if failed_syncs %}
+<!-- Failed Sync Messages (temporary review panel) -->
+<div class="bg-white/70 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 p-6 mb-6 overflow-x-auto">
+    <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">⚠️ Failed Sync Messages</h2>
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
+                <th class="py-2">First Failed</th>
+                <th class="py-2">Job</th>
+                <th class="py-2">Account</th>
+                <th class="py-2">Status</th>
+                <th class="py-2">Message ID</th>
+                <th class="py-2">Error</th>
+                <th class="py-2"></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in failed_syncs %}
+            <tr class="border-b border-stone-50">
+                <td class="py-2 local-time" data-utc="{{ row.first_failed_at }}"></td>
+                <td class="py-2">{{ row.job_name }}</td>
+                <td class="py-2">{{ row.account }}</td>
+                <td class="py-2">
+                    <span class="px-2 py-0.5 rounded text-xs font-semibold {{ 'bg-red-100 text-red-700' if row.status == 'exhausted' else ('bg-amber-100 text-amber-700' if row.status == 'pending_retry' else 'bg-emerald-100 text-emerald-700') }}">{{ row.status }}</span>
+                </td>
+                <td class="py-2 text-stone-400 truncate max-w-xs">{{ row.message_id }}</td>
+                <td class="py-2 text-red-600 truncate max-w-md">{{ row.error_message }}</td>
+                <td class="py-2">
+                    <div class="flex gap-2">
+                        {% if row.status != "resolved" %}
+                        <form method="post" action="/dashboard/failed-sync/{{ row.id }}/retry"
+                              onsubmit="return confirm('Retry this message now?');">
+                            <button type="submit" class="text-emerald-600 hover:text-emerald-800 text-xs font-semibold">Retry Now</button>
+                        </form>
+                        {% endif %}
+                        <form method="post" action="/dashboard/failed-sync/{{ row.id }}/delete"
+                              onsubmit="return confirm('Delete this failed-sync entry? This cannot be undone.');">
+                            <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-semibold">Delete</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
 
 <!-- Table -->
 <div class="bg-cyan-200/40 backdrop-blur-xl rounded-3xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_20px_50px_-10px_rgba(0,0,0,0.15)] w-full border border-cyan-100/50 overflow-x-auto">
@@ -461,6 +527,16 @@ function refreshDashboard() {
     fetch("/dashboard-data" + window.location.search)
         .then(res => res.json())
         .then(data => {
+            // Re-checked here, not just at the top of refreshDashboard() -
+            // this fetch may have already been in flight when the user
+            // started clicking a row moments ago. Without this second
+            // check, an in-flight refresh would still replace the rows
+            // out from under an in-progress click even though the flag
+            // was set immediately after the fetch started.
+            if (rowInteractionInProgress) {
+                return;
+            }
+
             const checkedIds = new Set(
                 Array.from(document.querySelectorAll(".email-checkbox:checked")).map(cb => cb.value)
             );

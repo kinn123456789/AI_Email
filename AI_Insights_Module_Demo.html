@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Subscription & Re-engagement Module — Coral Academy</title>
+<title>The AI Insights Module — Coral Academy</title>
 <style>
   :root{
     --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
@@ -53,7 +53,7 @@
   .hero{ grid-column: 1 / -1; padding: 64px 0 40px; position: relative; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
   .hero-eyebrow{ display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--secondary); font-weight: 600; margin-bottom: 18px; }
   .hero-eyebrow .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
-  .hero h1{ font-size: clamp(2.2rem, 5vw, 3.2rem); letter-spacing: -0.01em; max-width: 20ch; }
+  .hero h1{ font-size: clamp(2.4rem, 5vw, 3.4rem); letter-spacing: -0.01em; max-width: 18ch; }
   .hero p.lede{ margin-top: 18px; max-width: 56ch; font-size: 1.15rem; color: var(--text-muted); }
   .wave{ position: absolute; right: 0; top: 40px; width: 220px; height: 140px; opacity: 0.9; pointer-events: none; }
   @media (max-width: 700px){ .wave{ display:none; } }
@@ -71,10 +71,6 @@
   .section-head p{ color: var(--text-muted); margin-top: 10px; max-width: 68ch; }
   .lead-box{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; box-shadow: var(--shadow); font-size: 1.05rem; }
   .lead-box strong{ color: var(--accent-ink); }
-  .group{ margin-bottom: 36px; } .group:last-child{ margin-bottom: 0; }
-  .group-title{ display:flex; align-items:baseline; gap: 10px; margin-bottom: 16px; }
-  .group-title h3{ font-size: 1.15rem; color: var(--secondary); }
-  .group-title .rule{ flex:1; height:1px; background: var(--border); }
   .card-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
   .card{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.15s ease; }
   .card:hover{ transform: translateY(-2px); }
@@ -108,8 +104,8 @@
 <div class="layout">
   <div class="hero">
     <span class="hero-eyebrow"><span class="dot"></span>Coral Academy &nbsp;·&nbsp; Project Handover</span>
-    <h1>The Subscription &amp; Re-engagement Module</h1>
-    <p class="lede">Reaching out automatically when a subscription is cancelled or a free trial runs out — without ever guessing who someone is.</p>
+    <h1>The AI Insights Module</h1>
+    <p class="lede">A window into what the AI is actually doing — every call, every token, every error, all in one place.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
       <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
@@ -131,46 +127,40 @@
     <section id="overview">
       <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
       <div class="lead-box">
-        When a family's subscription is cancelled, or their free trial runs out without converting, this module
-        <strong>automatically notices</strong> — no one has to go looking for these families manually. It quietly
-        writes a personalized "we'd love to have you back" draft in the background, ahead of time, so that when
-        a staff member opens it up, the email is already there, already sounds right, and just needs a quick read
-        and a click to send.
+        Every time the AI classifies or drafts a reply — anywhere in the app, not just regular email — it's logged:
+        which model, how many tokens, how long it took, and whether it succeeded. This module is the page where
+        that record actually gets read. Before it existed, this table was being <strong>written to constantly and
+        read by nobody</strong> — a real gap found and fixed this session.
       </div>
     </section>
 
     <section id="features">
-      <div class="section-head"><span class="kicker">Demo walkthrough</span><h2>Features</h2><p>What happens at <code>/subscription-cancel</code>.</p></div>
+      <div class="section-head"><span class="kicker">Demo walkthrough</span><h2>Features</h2><p>What's on the <code>/ai-insights</code> page today.</p></div>
       <div class="card-grid">
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0114-5.3M20 12a8 8 0 01-14 5.3" stroke-width="1.7" stroke-linecap="round"/><path d="M18 3v5h-5M6 21v-5h5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Automatic Detection</h4>
-          <p>Every minute, the latest cancelled subscriptions and expired free trials are pulled directly from Coral Academy's live records — nothing is entered by hand.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h4>Summary Stats</h4>
+          <p>Total AI calls, how many failed, total tokens used, and average response time — a quick health check at a glance.</p>
         </div>
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 015 5c0 2-1 3-2 4s-1 2-1 3H10c0-1 0-2-1-3s-2-2-2-4a5 5 0 015-5z" stroke-width="1.6"/><path d="M10 19h4M11 21h2" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>Drafts Ready Before You Open Them</h4>
-          <p>A background job writes up to 5 win-back drafts every minute, so when staff open a row, the AI's suggestion is already sitting there — no waiting.</p>
+          <h4>Broken Down by Category</h4>
+          <p>Calls and error counts split by category (Classification, Billing, Admissions, Teacher, Reengagement, Trial Followup, etc.) — makes it easy to spot if one particular area is failing more than others.</p>
         </div>
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M8 8V6a3 3 0 016 0v9a4 4 0 01-8 0V8a2 2 0 014 0v8" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>Personalized, But Safe</h4>
-          <p>The real names of the parent and child are deliberately kept hidden while the AI is writing — the real names are only added back in afterward, once the draft is otherwise finished.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.7" stroke-linecap="round"/><path d="M18 16l3 3-3 3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Recent Errors</h4>
+          <p>The last 20 AI failures, with full error text — the fastest way to notice something's actively going wrong.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M4 6h16v12H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <h4>Look Up One Draft's Log</h4>
+          <p>Paste a specific email's Message-ID to see exactly what happened when its reply was generated — also reachable with one click from any email's detail page via "View AI Log."</p>
         </div>
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>Review, Edit, Send</h4>
-          <p>Open any row, read or tweak the draft, and send it straight away when it's ready.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Dismiss &amp; Restore</h4>
-          <p>Rows that don't need a follow-up can be dismissed out of the list, and brought right back if that turns out to be the wrong call.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.6"/><path d="M12 7v5l4 2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Recent &amp; All-Time Views</h4>
-          <p>A fast rolling 3-month view for everyday use, plus a slower full-history view for looking further back.</p>
+          <h4>Full Searchable Log</h4>
+          <p>Every AI call, paginated, with search by subject or Message-ID, filter by category, filter by success/error, and a date range — plus the ability to delete a log entry.</p>
         </div>
       </div>
     </section>
@@ -179,36 +169,30 @@
       <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2></div>
 
       <div class="tech-block">
-        <h4>Data source <span class="filepill">subscription_cancel.py</span> <span class="filepill">supabase_client.py</span></h4>
-        <p class="desc">Reads directly from Coral Academy's own database tables (subscriptions, free trials, enrollments, class/batch info, learners, users, email-delivery status, and session activity) — there's no external API involved, and no manually maintained list to keep up to date.</p>
-      </div>
-
-      <div class="tech-block">
-        <h4>Cadence</h4>
+        <h4>Where the logic actually lives <span class="filepill">database.py</span> <span class="filepill">main.py</span></h4>
         <ul>
-          <li><b>Every 1 minute:</b> the list of cancelled subscriptions/expired trials is refreshed.</li>
-          <li><b>Every 1 minute (offset by 20 seconds):</b> up to 5 AI drafts are pre-written for rows that don't have one yet, so the two jobs never run at the exact same moment and collide.</li>
-          <li>The cache is also warmed once immediately on startup, so the very first page load after a deploy isn't slow.</li>
+          <li><code>get_ai_insights()</code> (<code>database.py</code>) — three queries: overall totals (calls/errors/tokens/avg response time), a per-category breakdown, and the last 20 errors. All three read straight from <code>ai_logs</code>.</li>
+          <li><code>get_ai_logs()</code> — the paginated, filterable full log list (category/status/search/date range).</li>
+          <li><code>get_ai_log_by_message_id()</code> — powers the single-message lookup box.</li>
+          <li><code>get_latest_reply_sources()</code> — newly added this session; pulls which specific Knowledge Base articles and historical emails were actually used for a given reply, now shown directly on the email detail page next to the AI summary, not just here.</li>
+          <li>The route (<code>@app.get("/ai-insights")</code> in <code>main.py</code>) ties all of this together and also handles deleting a single log row.</li>
         </ul>
       </div>
 
       <div class="tech-block">
-        <h4>AI drafting &amp; the name-hiding technique</h4>
-        <p class="desc">The draft is written using Coral Academy's real subscription/trial details (plan type, sessions attended, cancelled vs. trial-expired) with a fixed, warm closing signature — it is not grounded in Help Center articles or past sent emails the way regular email replies are.</p>
+        <h4>What actually gets logged, and by what</h4>
         <ul>
-          <li>Before the AI writes anything, the real parent and learner names are swapped out for generic placeholder tokens — the AI only ever sees the placeholders, never the real names, while writing.</li>
-          <li>Once the draft comes back, the real names are substituted back in locally, so the final email reads naturally.</li>
-          <li>If the AI call fails for any reason, a safe, pre-written fallback email is used instead so a draft is never simply missing.</li>
+          <li><b>Classification</b> (<code>ai_classifier.py</code>) — logs on both success and failure, category always recorded as <code>"Classification"</code>.</li>
+          <li><b>Reply generation</b> (<code>reply_generator.py</code>) — logs with the email's real category (Billing, Admissions, etc.), plus which Knowledge Base articles and historical examples were used.</li>
+          <li><b>Teacher Portal</b> messages — same classifier/generator, tagged <code>teacher_portal:&lt;message_id&gt;</code> so they're identifiable in the log.</li>
+          <li><b>Subscription re-engagement</b> and <b>Trial follow-up</b> drafts — logged under their own categories (<code>"Reengagement"</code>, <code>"Trial Followup"</code>).</li>
+          <li>A logging failure itself can never crash the calling function — <code>save_ai_log()</code> catches its own errors and just prints, so a broken log write never destroys an already-generated draft.</li>
         </ul>
-        <div class="callout">
-          <span class="flag">Known gap</span>
-          <span>The swap-back of real names is currently a simple find-and-replace with no check afterward. If the AI ever rewords or drops a placeholder instead of repeating it exactly, nothing today would catch a leftover placeholder before someone hits send. Adding that check is on the list of things still to do.</span>
-        </div>
       </div>
 
       <div class="tech-block">
-        <h4>Sending</h4>
-        <p class="desc">Sending uses the same Gmail-based sending mechanism as the rest of the app, and every sent re-engagement email is logged so there's a record of exactly who was reached out to and when.</p>
+        <h4>Known gap, now partly addressed</h4>
+        <p class="desc">A separate table, <code>sync_log</code> (every scheduled job's success/failure/duration), still has no dashboard at all — only reachable via a direct database query. A related table, <code>sync_failed_messages</code>, did get a small review panel added this session — but it now lives on the main Email Dashboard, not here, since it's specifically about individual failed sync attempts rather than AI activity.</p>
       </div>
     </section>
 
@@ -218,16 +202,16 @@
         <table>
           <thead><tr><th>File</th><th>Status</th><th>Role</th></tr></thead>
           <tbody>
-            <tr><td class="file">subscription_cancel.py</td><td><span class="badge-live">Live</span></td><td class="role">Refreshes the cancelled/expired list and pre-writes AI drafts</td></tr>
-            <tr><td class="file">followup_email.py</td><td><span class="badge-live">Live</span></td><td class="role">Sends the finished re-engagement email via Gmail</td></tr>
-            <tr><td class="file">supabase_client.py</td><td><span class="badge-live">Live</span></td><td class="role">Connects to the database tables this module reads from</td></tr>
-            <tr><td class="file">templates/subscription_cancel*.html</td><td><span class="badge-live">Live</span></td><td class="role">Dashboard, trash, and history views</td></tr>
+            <tr><td class="file">database.py</td><td><span class="badge-live">Live</span></td><td class="role">All AI Insights queries — summary, by-category, errors, full log, single lookup, reply sources</td></tr>
+            <tr><td class="file">ai_logger.py</td><td><span class="badge-live">Live</span></td><td class="role">Writes every AI call attempt to <code>ai_logs</code>, never lets a logging failure crash the caller</td></tr>
+            <tr><td class="file">main.py — <code>/ai-insights</code></td><td><span class="badge-live">Live</span></td><td class="role">The route and delete-log endpoint</td></tr>
+            <tr><td class="file">templates/ai_insights.html</td><td><span class="badge-live">Live</span></td><td class="role">The page itself</td></tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
-  <footer>Subscription &amp; Re-engagement Module &nbsp;·&nbsp; Coral Academy handover documentation</footer>
+  <footer>AI Insights Module &nbsp;·&nbsp; Coral Academy handover documentation</footer>
 </div>
 </body>
 </html>

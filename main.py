@@ -102,7 +102,6 @@ from database import (
     set_first_reply_time,
     set_resolved_time,
     get_avg_first_response_time,
-    get_avg_resolution_time,
     get_conversation,
     get_conversation_messages,
     get_contact_forms,
@@ -120,7 +119,7 @@ templates = Jinja2Templates(directory="templates")
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from database import get_attachments, get_attachment_by_id, find_recipient_name, save_attachment
 from database import get_ai_insights, get_ai_log_by_message_id
-from database import get_ai_logs, get_ai_log_categories, delete_ai_log
+from database import get_ai_logs, get_ai_log_categories, delete_ai_log, get_failed_sync_messages, delete_failed_sync_message
 from database import get_composed_sent_emails
 
 app = FastAPI()
@@ -487,10 +486,10 @@ def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender,
 
 
 @app.get("/dashboard")
-def dashboard(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+def dashboard(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1, read_status: str = None):
 
     page_size = 50
-    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size, read_status=read_status)
     rows = result["rows"]
     total_count = result["total"]
     needs_review_count = result["needs_review_count"]
@@ -501,7 +500,6 @@ def dashboard(request: Request, source: str = None, q: str = None, status: str =
     counts = get_category_counts()
 
     avg_minutes = get_avg_first_response_time()
-    avg_resolution = get_avg_resolution_time()
 
     if avg_minutes is not None:
         avg_minutes = float(avg_minutes)
@@ -533,18 +531,19 @@ def dashboard(request: Request, source: str = None, q: str = None, status: str =
             "needs_review_count": needs_review_count,
             "auto_reply_count": auto_reply_count,
             "avg_response": avg_response,
-            "avg_resolution": avg_resolution,
             "trashed": request.query_params.get("trashed"),
             "selected_source": source,
             "search_query": q,
             "selected_status": status,
             "selected_date_from": date_from,
             "selected_date_to": date_to,
+            "selected_read_status": read_status,
             "current_page": page,
             "total_pages": total_pages,
             "total_count": total_count,
             "page_size": page_size,
-            "is_sent_view": status == "Replied"
+            "is_sent_view": status == "Replied",
+            "failed_syncs": get_failed_sync_messages(),
         }
     )
 
@@ -566,10 +565,10 @@ def dashboard_sent(source: str = None, q: str = None, date_from: str = None, dat
     )
 
 @app.get("/dashboard-data")
-def dashboard_data(source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1):
+def dashboard_data(source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1, read_status: str = None):
 
     page_size = 50
-    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size)
+    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size, read_status=read_status)
 
     emails = [
         {
@@ -675,6 +674,30 @@ def delete_ai_insight(log_id: int, request: Request):
 
     return RedirectResponse(
         url=f"/ai-insights{'?' + qs if qs else ''}",
+        status_code=303
+    )
+
+
+@app.post("/dashboard/failed-sync/{row_id}/delete")
+def delete_failed_sync(row_id: int):
+
+    delete_failed_sync_message(row_id)
+
+    return RedirectResponse(
+        url="/dashboard",
+        status_code=303
+    )
+
+
+@app.post("/dashboard/failed-sync/{row_id}/retry")
+def retry_failed_sync(row_id: int):
+
+    from sync_sent_gmail import retry_one_now
+    outcome = retry_one_now(row_id)
+    print(f"Manual retry for failed-sync row {row_id}: {outcome}")
+
+    return RedirectResponse(
+        url="/dashboard",
         status_code=303
     )
 

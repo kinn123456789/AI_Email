@@ -1,3 +1,8 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The Email Module — Coral Academy</title>
 <style>
   :root{
@@ -269,7 +274,8 @@
     .card{ transition: none; }
   }
 </style>
-
+</head>
+<body>
 <div class="layout">
 
   <div class="hero">
@@ -477,7 +483,8 @@
         <ul>
           <li>If a backlog exceeds the 500-message safety cap, the checkpoint advances only to the <b>oldest processed</b> message — never to "now" — so nothing older is silently skipped.</li>
           <li>If some messages fail but others succeed, the checkpoint advances to the <b>newest successfully-handled</b> message, so one bad message can't block every future run forever.</li>
-          <li>Failed messages get <b>one bounded automatic retry</b> (<code>sync_failed_messages</code>), relocated by Message-ID since IMAP sequence numbers aren't stable over time — a second failure leaves it for manual review.</li>
+          <li>Failed messages get <b>one bounded automatic retry</b> (<code>sync_failed_messages</code>), relocated by Message-ID since IMAP sequence numbers aren't stable over time — a second failure leaves it for manual review, via a small panel right on the main dashboard with one-click Retry/Delete per message.</li>
+          <li>⚠️ Known issue: on the rare truncated-run path (backlog &gt; 500), the code currently grabs the newest 500 messages instead of the oldest 500 — confirmed live against a real mailbox that IMAP results come back oldest-first, so "last 500" is the wrong end. Flagged, not yet fixed.</li>
         </ul>
       </div>
 
@@ -497,6 +504,28 @@
           <li>Every background job runs on a staggered schedule so heavy jobs never collide (a past cause of an out-of-memory crash).</li>
           <li>Every scheduled job now durably logs success/failure to <code>sync_log</code> via a shared <code>_run_logged_job()</code> helper — previously only sent-mail sync did this; everything else only ever printed to a log that Render eventually rotated away.</li>
           <li><code>main.py</code> logs any unhandled error from a live request globally, and background tasks (bulk sends, the push-notification handler, saving a reply into the style library) are wrapped the same way — since FastAPI runs background tasks <i>after</i> the response is sent, a request-level error handler alone can never see their failures.</li>
+        </ul>
+      </div>
+
+      <div class="tech-block">
+        <h4>How errors are handled — four different safety nets</h4>
+        <p class="desc">There isn't one single error-logging system — each kind of code fails differently, so each gets its own net:</p>
+        <ul>
+          <li><b>An AI call</b> (classification/drafting) → its own try/except → logged to <code>ai_logs</code> → visible on the AI Insights page.</li>
+          <li><b>A scheduled job</b> (runs on a timer) → <code>_run_logged_job()</code> → logged to <code>sync_log</code> → no dashboard yet, direct query only.</li>
+          <li><b>A live web request</b> → the global exception handler → a local log file (<code>logs/app.log</code>) + stdout — <i>not</i> the database, and typically wiped on every deploy/restart.</li>
+          <li><b>A background task</b> (continues after the page already responded) → individually wrapped in <code>_run_logged_job()</code> → also logged to <code>sync_log</code>.</li>
+        </ul>
+        <p class="desc" style="margin-top:10px;">The global handler is scoped to live requests only — by the time a background task runs, the response is already sent and that handler is no longer in the call stack, so it structurally can't see background-task errors. That's why background tasks need their own wrapping rather than being automatically covered. As of this session every <code>background_tasks.add_task(...)</code> call is accounted for: three explicitly wrapped, one (<code>sync_sent_gmail.main</code>) already self-logging.</p>
+      </div>
+
+      <div class="tech-block">
+        <h4>How the app stays fast — background work &amp; concurrency</h4>
+        <ul>
+          <li><b>Running independent things at once</b> (<code>ThreadPoolExecutor</code>) — classification, similar-email search, and Knowledge Base search don't depend on each other, so they fire simultaneously instead of one after another — the biggest speed win in the pipeline.</li>
+          <li><b>Background tasks</b> (FastAPI <code>BackgroundTasks</code>) — sent-mail re-sync, saving a reply into the style library, and reacting to a push notification all happen <i>after</i> the page has already responded, so nobody waits on them.</li>
+          <li><b>Scheduled background jobs</b> (APScheduler) — work with no human trigger at all, just its own timer, staggered so heavy jobs don't collide.</li>
+          <li><b>One isolated resource per thread, never shared</b> — when several threads each need to talk to an external service, each gets its own client instance rather than sharing one. This exact bug class caused two real incidents fixed this session: a Supabase client race, and an OpenAI-library import deadlock on the first request after a restart.</li>
         </ul>
       </div>
     </section>
@@ -546,3 +575,5 @@
 
   <footer>Email Module &nbsp;·&nbsp; Coral Academy handover documentation</footer>
 </div>
+</body>
+</html>

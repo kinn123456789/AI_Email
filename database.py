@@ -1,4 +1,5 @@
 import os
+import time
 import psycopg2
 from psycopg2.pool import SimpleConnectionPool
 from psycopg2.extras import RealDictCursor
@@ -116,7 +117,7 @@ def email_exists(message_id, source):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_emails(source=None, search=None, status=None, date_from=None, date_to=None, page=1, page_size=50):
+def get_emails(source=None, search=None, status=None, date_from=None, date_to=None, page=1, page_size=50, read_status=None):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -133,6 +134,15 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             filters += " AND status = %s"
             params.append(status)
 
+        # Unread-first sorting means already-read emails drift onto later,
+        # shifting pages as new unread mail keeps landing on top - this lets
+        # someone deliberately browse just the read (or just the unread)
+        # subset instead, where pagination is actually stable.
+        if read_status == "unread":
+            filters += " AND is_read = FALSE"
+        elif read_status == "read":
+            filters += " AND is_read = TRUE"
+
         if date_from:
             filters += " AND created_at::date >= %s"
             params.append(date_from)
@@ -146,6 +156,15 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             like = f"%{search}%"
             params.extend([like, like, like])
 
+        # The main "needs action" inbox view deliberately hides replies sent
+        # directly from Gmail (reply_type='gmail_manual', from sync_sent_gmail.py)
+        # since they're already handled. But the Sent Mails view (status="Replied")
+        # is meant to be a complete send history regardless of channel, so this
+        # exclusion is dropped specifically for that view.
+        gmail_manual_filter = (
+            "" if status == "Replied" else "AND reply_type IS DISTINCT FROM 'gmail_manual'"
+        )
+
         cursor.execute(f"""
             SELECT
                 COUNT(*) AS total,
@@ -154,7 +173,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             FROM messages
             WHERE mailbox = 'inbox'
             AND status != 'Resolved'
-            AND reply_type IS DISTINCT FROM 'gmail_manual'
+            {gmail_manual_filter}
             {filters}
         """, params)
 
@@ -173,7 +192,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             FROM messages
             WHERE mailbox = 'inbox'
             AND status != 'Resolved'
-            AND reply_type IS DISTINCT FROM 'gmail_manual'
+            {gmail_manual_filter}
             {filters}
             ORDER BY
                 is_read ASC,
@@ -231,15 +250,41 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
         cursor.close()
         db_pool.putconn(conn)
 
+# Small TTL cache for the dashboard's summary stats (category counts, avg
+# response/resolution time) — these ran as a full unbounded scan over the
+# entire messages table on every single dashboard load AND every 8-second
+# auto-refresh, even though the answer barely changes second to second.
+# Unlike the Subscription cache, this doesn't need scheduler-driven warming
+# (these are cheap single-table queries, not 8-table joins) — a short TTL,
+# refreshed lazily whenever it's actually next requested, is enough to cut
+# the repeated cost without meaningfully staling the numbers.
+_dashboard_stats_cache = {}
+_DASHBOARD_STATS_TTL_SECONDS = 30
+
+
+def _cached_stat(key, compute_fn):
+    entry = _dashboard_stats_cache.get(key)
+
+    if entry and (time.time() - entry["computed_at"]) < _DASHBOARD_STATS_TTL_SECONDS:
+        return entry["value"]
+
+    value = compute_fn()
+    _dashboard_stats_cache[key] = {"value": value, "computed_at": time.time()}
+    return value
+
+
 def get_category_counts():
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT category, COUNT(*) FROM messages GROUP BY category")
-        return cursor.fetchall()
-    finally:
-        cursor.close()
-        db_pool.putconn(conn)
+    def _compute():
+        conn = get_connection()
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT category, COUNT(*) FROM messages GROUP BY category")
+            return cursor.fetchall()
+        finally:
+            cursor.close()
+            db_pool.putconn(conn)
+
+    return _cached_stat("category_counts", _compute)
 
 def get_emails_by_category(category):
     conn = get_connection()
@@ -692,35 +737,28 @@ def resolve_thread(thread_id):
         db_pool.putconn(conn)
 
 def get_avg_first_response_time():
-    conn = get_connection()
-    cursor = conn.cursor()
+    def _compute():
+        conn = get_connection()
+        cursor = conn.cursor()
 
-    try:
-        cursor.execute("""
-            SELECT AVG(
-                EXTRACT(EPOCH FROM (sent_at - created_at)) / 60
-            )
-            FROM messages
-            WHERE sent_at IS NOT NULL
-        """)
+        try:
+            cursor.execute("""
+                SELECT AVG(
+                    EXTRACT(EPOCH FROM (sent_at - created_at)) / 60
+                )
+                FROM messages
+                WHERE sent_at IS NOT NULL
+            """)
 
-        result = cursor.fetchone()
-        return result[0] if result else None
+            result = cursor.fetchone()
+            return result[0] if result else None
 
-    finally:
-        cursor.close()
-        db_pool.putconn(conn)
+        finally:
+            cursor.close()
+            db_pool.putconn(conn)
 
-def get_avg_resolution_time():
-    conn = get_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("SELECT AVG(resolved_at - created_at) FROM messages WHERE resolved_at IS NOT NULL")
-        result = cursor.fetchone()
-        return result[0] if result else None
-    finally:
-        cursor.close()
-        db_pool.putconn(conn)
+    return _cached_stat("avg_first_response_time", _compute)
+
 def get_unclassified_teacher_messages():
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -2097,6 +2135,26 @@ def save_failed_sync_message(job_name, account, message_id, error_message):
         db_pool.putconn(conn)
 
 
+def get_failed_sync_message_by_id(row_id):
+    """Single row lookup for a manual, on-demand retry triggered from the
+    UI — as opposed to get_pending_retry_messages(), which is used by the
+    automatic hourly retry sweep for a whole account at once."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute(
+            "SELECT id, job_name, account, message_id, status FROM sync_failed_messages WHERE id = %s",
+            (row_id,)
+        )
+        return cursor.fetchone()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
 def get_pending_retry_messages(job_name, account):
     """Messages still owed their one automatic retry attempt."""
 
@@ -2147,6 +2205,43 @@ def mark_failed_message_exhausted(row_id, error_message):
             "UPDATE sync_failed_messages SET status = 'exhausted', error_message = %s, last_attempted_at = NOW() WHERE id = %s",
             (error_message, row_id)
         )
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_failed_sync_messages():
+    """Every row in sync_failed_messages regardless of status (pending_retry,
+    resolved, exhausted) — there's no dashboard for this table yet, so this
+    backs a temporary read-only list on the AI Insights page. Only
+    message_id/error is available here, not subject/sender, since a failed
+    message was never actually saved to the messages table."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT id, job_name, account, message_id, error_message, status,
+                   first_failed_at, last_attempted_at
+            FROM sync_failed_messages
+            ORDER BY first_failed_at DESC
+        """)
+        return cursor.fetchall()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def delete_failed_sync_message(row_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM sync_failed_messages WHERE id = %s", (row_id,))
         conn.commit()
 
     finally:

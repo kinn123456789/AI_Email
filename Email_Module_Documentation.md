@@ -1,6 +1,6 @@
 # ✉️ Email Module — Full Documentation
 
-*A simple guide to what the Email module does, and how it works under the hood.*
+*A simple document on what the Email module does, and how it works under the hood.*
 
 ---
 
@@ -95,9 +95,22 @@ Coral Academy gets emails from parents every day — questions about classes, bi
 
 **`ai_classifier.py`** — `ai_triage()` sends the subject/body to `gpt-5-nano` and gets back category, priority, a one-line summary, a confidence score, and whether AI can safely draft a reply or needs a human. A few rules are hardcoded in Python on top of the AI's own judgment (e.g., Teacher Portal notifications are always forced to category "Teacher"; certain sensitive keywords like "complaint," "refund," or "legal" always force human review, regardless of what the AI decided). **This step is now logged to `ai_logs`** (category `"Classification"`) — previously only the reply-drafting step was logged, so a wrong classification had no visible trail at all.
 
-**`reply_generator.py`** + **`prompt_builder.py`** — the actual reply-writing step. `prompt_builder.py` holds the entire rulebook the AI follows — this grew substantially over this project:
+**`reply_generator.py`** + **`prompt_builder.py`** — the actual reply-writing step. There are two parallel retrieval pipelines feeding into it (verified against the actual retrieval code, not assumed):
+
+```
+Knowledge Base path:
+Email → Embedding → pgvector search → Top 5 articles ────────────┐
+                                                                    ├──→ LLM → Draft Reply
+Historical Emails path:
+Email → Embedding → pgvector search → Top 30 candidates → LLM Reranker → ~2-3 selected examples ──┘
+```
+
+Knowledge Base articles go straight from vector search into the prompt (top 5, no reranking step). Historical emails get a wider net (top 30 by similarity) specifically *because* they then go through a second LLM pass that re-judges them for genuine relevance and writing-style fit — similarity score alone isn't trusted to pick the final examples.
+
+`prompt_builder.py` holds the entire rulebook the AI follows for writing the actual reply — this grew substantially over this project:
 - **Source priority**: Current Email > Knowledge Base > Historical Emails (and historical emails only count if 2–3 of them clearly agree *and* don't contradict the Knowledge Base — a single example is never enough)
-- **Question-type routing**: Pricing/Refund/Policy/Schedule questions must come from the Knowledge Base only, never historical emails, no matter how consistent they look
+- **Question-type routing (changed this session)**: previously, Pricing/Refund/Policy/Schedule questions could *only* come from the Knowledge Base — historical emails were never checked for these, even if the Knowledge Base had nothing. That blanket restriction has been deliberately relaxed: **all** question types now check the Knowledge Base first, and if it doesn't answer, historical emails may fill the gap under the same strict conditions as before (3–5 similar examples, at least 2-3 agreeing, no contradiction, genuinely parent-facing).
+- If historical emails exist for a gap the Knowledge Base left open, but they're inconsistent, contradictory, or low-confidence, the reply falls back to the same honest "I don't have enough information" non-answer as when nothing at all is available — a dedicated human-review escalation for this specific case was tried and then reverted this session, since every email already sits in a human-reviewed queue before anything is sent (no code path auto-sends without a person clicking Send), so the extra flag added no real behavioral difference.
 - **Audience checks**: some Knowledge Base articles and historical emails are written for teachers/staff, not parents — the AI checks who content was actually written for before using it, so teacher-facing process details (like internal coordination emails) don't leak into a parent's reply
 - **Plan-specific accuracy**: Pay Per Class and Coral Unlimited have different rules (e.g. only Coral Unlimited has a pause feature); the AI won't blend one plan's specific mechanics into an answer about the other
 - **Date-aware reasoning**: the email's actual received date is given to the AI so it can correctly reason about "before/after" timing questions (e.g. refund eligibility) instead of guessing
@@ -127,9 +140,11 @@ Every reply-generation call is logged to **`ai_logs`** via `ai_logger.py` — mo
 ### Sent-Mail Sync (the most heavily reworked piece this project)
 
 **`sync_sent_gmail.py`** — runs hourly, pulls in anything sent directly from Gmail (not through this app). Originally used a hardcoded date and a "last 50" slice — both replaced with a **real checkpoint**: only advances past messages it's actually confirmed handled, tracked in a `sync_log` table. Key correctness details:
-- If a backlog ever exceeds the per-run safety cap (500 messages), the checkpoint advances only to the oldest message actually processed this run — not to "now" — so the next run picks up exactly where this one stopped, instead of silently skipping the untouched older messages forever.
+- The checkpoint itself is just **one saved timestamp** per mailbox (in `sync_log.finished_at`) — nothing fancier than "the last time we know for sure we made real progress, was this exact moment." Each run reads that one value back, uses it as its starting point, and (if it made progress) writes a new one when it finishes. It is deliberately **not** a Message-ID — those aren't ordered, so they can't tell you "how far along" a sync is; a timestamp can.
+- **The 500-message safety cap, in plain terms:** imagine the sync job checks a mailbox every hour — almost always there are just a few new sent emails. But suppose it broke for two weeks; now there might be 2,000 emails waiting. The cap exists so one single run can't try to swallow all 2,000 at once (slow, or could crash). So it takes a bite of at most 500 and is supposed to remember where it left off, so it can come back for the rest next time. **Worst case, and how rare it is:** this only ever matters if a mailbox's backlog genuinely exceeds 500 unsynced messages in one go — at normal hourly-checked volume that basically never happens; it would take something like the sync being broken for an extended stretch. When it *is* used, the run only ever processes **at most 500 messages, never more** — the cap is a hard ceiling, not a target.
+- ⚠️ **Known issue, found while verifying this:** the current code takes the *last* 500 IDs from IMAP's search results. Confirmed live against a real mailbox that these results come back oldest-first — so "last 500" is actually **the newest 500**, the opposite of what's intended (it should grab the oldest 500, so the checkpoint crawls forward through the backlog from the beginning). This only matters in that same rare "backlog exceeded 500" case, but when it does happen, it currently risks permanently skipping the truly old messages instead of catching up on them. Flagged for a fix, not yet applied.
 - If some messages in a run fail but others succeed, the checkpoint advances to the newest *successfully* handled message — so one bad message can no longer block every future run indefinitely.
-- Failed messages get **one bounded automatic retry** (tracked in `sync_failed_messages`, relocated by Message-ID since IMAP sequence numbers aren't stable across time) — if it fails twice, it's left for manual review rather than retried forever.
+- Failed messages get **one bounded automatic retry** (tracked in `sync_failed_messages`, relocated by Message-ID since IMAP sequence numbers aren't stable across time) — if it fails twice, it's left for manual review. There's now a small manual-review panel for this right on the main dashboard (above the inbox table), with one-click "Retry Now" / "Delete" per message.
 
 ### Knowledge & Style Pipeline
 
@@ -146,9 +161,66 @@ Every reply-generation call is logged to **`ai_logs`** via `ai_logger.py` — mo
 
 **`main.py`** — also has a global exception handler that logs any unhandled error from a live request, and background tasks (bulk sends, the Gmail push-notification handler, saving a reply into the style library) are wrapped with the same logging helper — background tasks run *after* the response is sent, so a global request-level exception handler alone can't see their errors; this closes that gap specifically.
 
+### How Errors Are Handled
+
+There isn't one single error-logging system — there are four, each covering a different *kind* of code, because each kind fails in a different way and needs a different safety net:
+
+| Where the code runs | What catches a failure | Where it's visible |
+|---|---|---|
+| An AI call (classification or reply drafting) | Its own internal try/except, in `ai_classifier.py` / `reply_generator.py` | `ai_logs` table → AI Insights page |
+| A scheduled job (`scheduler.py`, runs on a timer) | `_run_logged_job()` wrapper — never lets a job's exception kill the scheduler | `sync_log` table → *no dashboard yet* (direct query only) |
+| A live web request (someone loading a page or clicking a button) | The global `@app.exception_handler(Exception)` in `main.py` | A local log file (`logs/app.log`) + stdout — **not** the database |
+| A background task (work that continues after the page has already responded — bulk sends, saving a reply into the style library, the push-notification handler) | Individually wrapped, on a case-by-case basis, in `_run_logged_job()` | `sync_log` table (same as scheduled jobs) |
+
+The important nuance: the global exception handler is scoped to *live requests only* — by the time a background task runs, the response has already been sent and that handler is no longer in the call stack, so it structurally cannot see background-task errors no matter what. That's why background tasks need their own, separate wrapping rather than being automatically covered. As of this session, every `background_tasks.add_task(...)` call in the app is accounted for: three are explicitly wrapped, and the fourth (`sync_sent_gmail.main`) already does its own internal logging to `sync_log`, so nothing currently runs unprotected — but any *new* background task added later would need the same wrapping applied deliberately, since it doesn't happen automatically.
+
+Also worth knowing: the exception-handler log file lives on the server's local disk, which typically doesn't survive a deploy/restart — so it's only reliable for catching something *during* the current running session, not as a permanent record. `ai_logs` and `sync_log`, being in the database, are the durable ones.
+
+### How the App Stays Fast (Background Work & Concurrency)
+
+A few different techniques are used, for different reasons:
+
+| Mechanism | Where | What it's for |
+|---|---|---|
+| `ThreadPoolExecutor` (3 workers) | `process_email.py` | Classification + similar-email search + Knowledge Base search run **simultaneously** for one incoming email — the biggest speed win in the pipeline, since an email finishes in roughly the time of the *slowest* of the three instead of the sum of all three |
+| Per-thread isolated clients | `embedding_service.py`'s `new_embedding_client()`, `supabase_client.py` | Each concurrent thread gets its own client instead of sharing one — a shared client isn't thread-safe (root cause of two real bugs fixed this session) |
+| One-time single-threaded warm-up | `ai_classifier.py` | Forces the OpenAI SDK's lazy imports to finish before any concurrent thread can race on them (this session's import-deadlock fix) |
+| FastAPI `BackgroundTasks` | `main.py` — 4 total call sites | Work that continues *after* the page has already responded: `sync_sent_gmail.main` (after a manual reply), saving a reply into the style library, reacting to a Gmail push notification, sending a bulk batch |
+| APScheduler background jobs | `scheduler.py` | Independent timers, not tied to any request: email polling (5 min), Teacher Portal sync (8 min), sent-mail sync (hourly), subscription cache + draft prefetch (1 min, offset so they never overlap each other), trial follow-ups (daily 9am), class/knowledge refresh, Gmail watch renewal — each staggered so heavy ones don't collide, and each capped at one running instance at a time |
+| On-demand routes (`/sync-teacher`, `/sync-sent/{id}`) | `main.py` | *Under review — see note below.* These are simply buttons: instead of waiting 8 minutes (Teacher sync) or an hour (Sent-Mail sync) for the next scheduled run, a user clicks "Sync Now" and the exact same sync logic runs immediately. |
+
+The common thread across all of these: never make a person wait for something that doesn't need to happen before they can move on, and never let two things that aren't safe to run together actually run together.
+
+> **Note on the on-demand routes:** these were flagged as unexpected/unwanted during this session — the intent is for everything to run purely on the scheduler, with no manual trigger needed. Whether to remove `/sync-teacher` and `/sync-sent/{id}` entirely (since their scheduled equivalents already run independently regardless of whether anyone clicks them) is a pending decision — not yet acted on.
+
+### How Speed Was Increased — Beyond Just Concurrency
+
+Running things at the same time (above) is one lever. The other is simply **doing less work in the first place**. Several places in the app were changed this way, each for a real, concrete reason:
+
+| Technique | Where | Why it mattered |
+|---|---|---|
+| Incremental cache refresh instead of full rebuild | Subscription cache (`subscription_cancel.py`), refreshed every 1 minute | Most cycles now only fetch+join rows that **changed since the last cycle** (tracked via a saved timestamp, `last_change_cutoff`) instead of re-fetching the entire 3-month window every single time. This was a real fix for repeated out-of-memory crashes on Render's 512Mi tier — the old full-rebuild-every-60-seconds approach was expensive enough to contribute to them. |
+| Time-boxed, on-demand-only caching | Subscription All-Time view | Never proactively refreshed (unlike the 3-month view) — only fetched when someone actually clicks it, then held briefly so repeated clicks in the same session don't re-pay the full-history fetch cost. |
+| Partial JS refresh instead of full page reload | Dashboard (`templates/dashboard.html`) | `setInterval(refreshDashboard, 8000)` calls a lightweight `/dashboard-data` route and swaps just the table body — not a full page reload every 8 seconds. |
+| Narrowing before the expensive step | Historical-email retrieval (`vector_search.py` → `rag_reranker.py`) | Casts a wide net cheaply first (pgvector similarity search, top 30), then only sends the reranker's chosen ~2-3 into the final reply-writing prompt — keeps the expensive, per-reply LLM call's prompt small instead of stuffing it with 30 candidates. |
+| Hard cap on prompt size | Teacher Portal thread history (`teacher_ai_processor1.py`) | Capped at the last 50 messages specifically because one real conversation grew past OpenRouter's 400,000-token limit and started failing on every attempt, permanently, since it could only keep growing. |
+| Do the expensive thing once, not per-request | OpenAI client warm-up (`ai_classifier.py`) | The lazy-import fix from this session doubles as a speed detail — without it, the *first* concurrent request after a restart would pay an extra, unpredictable cost (or hit the deadlock) that every later request wouldn't. |
+
 ### Database
 
 **`database.py`** — the data layer for everything above: `messages` (every email, its AI draft, category, status, mailbox), `attachments`, `historical_emails` (18-month retention, auto-pruned), `ai_logs`, `sync_log`, `sync_failed_messages`, `email_filter_rules`, `knowledge_base`, `classes`.
+
+---
+
+## 📖 Terms You'll See in This Doc
+
+**`email_date` vs `created_at`** — two different timestamps stored on every message, easy to mix up:
+- `email_date` is the *real* date the email was actually sent/received — taken straight from the email's own `Date:` header. This is the one used for anything that needs to reason about "when did this actually happen" (sorting, refund-timing rules, etc.).
+- `created_at` is simply *when our own database inserted the row* — normally that's within a second or two of the email arriving, so the two usually match closely. They can genuinely differ, though — for example, during a one-time historical backfill, `created_at` would be "whenever the backfill ran," while `email_date` still correctly reflects the email's real original date.
+
+**`ai_logs` table vs. the exception-handler's log file** — these are easy to conflate since both are "logs," but they're not related:
+- `ai_logs` is a real database table, specifically for AI calls (classification + reply drafting) — tokens used, model, category, any error. Durable, queryable, and it's what powers the AI Insights page.
+- The global exception handler (for errors during a live page load/click) is a completely separate thing — it writes to a plain text file (`logs/app.log`) using Python's standard logging, not the database. There's no table backing it today, and since it's a local file, it typically doesn't survive a deploy/restart. It *could* be upgraded to also write into a database table (similar to how `sync_log` works for scheduled jobs) if durable request-error history becomes important — just not built yet.
 
 ---
 
@@ -184,5 +256,3 @@ Every reply-generation call is logged to **`ai_logs`** via `ai_logger.py` — mo
 | `main.py` | Routes, background task handling, global error logging |
 
 ---
-
-*Document generated as part of project handover — covers the Email module as of this session's changes.*

@@ -1,6 +1,7 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import re
 import time
 
 from ai_logger import save_ai_log
@@ -15,6 +16,36 @@ client = OpenAI(
 
 _PARENT_PLACEHOLDER = "[PARENT_NAME]"
 _LEARNER_PLACEHOLDER = "[STUDENT_NAME]"
+
+# Same leak-detection pattern as subscription_cancel.py's reengagement
+# emails — catches a leftover placeholder-shaped token (wrong case/spacing,
+# or a differently-worded bracket phrase) if the swap-back below didn't
+# fully work, so it never reaches a real parent.
+_PLACEHOLDER_LEAK_PATTERN = re.compile(r"\[[A-Za-z_ ]{2,40}\]")
+
+
+def _safe_fallback_email(parent_name, learner_name):
+    """Used both when the AI call itself fails, and when a placeholder-leak
+    check catches the swap-back not having fully worked — same safe,
+    template-only text either way, never anything the model wrote."""
+
+    return f"""
+Hi {parent_name},
+
+We hope {learner_name} enjoyed the free trial at Coral Academy.
+
+We'd love to have {learner_name} continue learning with us.
+
+Please reply to this email if you have any questions.
+
+Write naturally as if written by a real member of the Coral Academy team.
+
+Do not sound like AI.
+
+Warm regards,
+
+Coral Academy
+"""
 
 
 def generate_followup_email(candidate, parent_name, email_number):
@@ -183,6 +214,33 @@ Do not include:
         body = body.replace(_PARENT_PLACEHOLDER, parent_name).replace(_LEARNER_PLACEHOLDER, learner_name)
 
         usage = response.usage
+
+        if _PLACEHOLDER_LEAK_PATTERN.search(body):
+            # Swap-back didn't fully work — a placeholder-shaped token is
+            # still sitting in the text (wrong case/spacing, or a different
+            # bracket phrase entirely). Never let that reach a real parent.
+            print(f"Placeholder leak detected in trial-followup email ({log_id}): {body!r}")
+
+            save_ai_log(
+                gmail_message_id=log_id,
+                model="gpt-5-nano",
+                category="Trial Followup",
+                priority=None,
+                reply_type="automatic",
+                requires_review=True,
+                prompt_tokens=usage.prompt_tokens,
+                completion_tokens=usage.completion_tokens,
+                total_tokens=usage.total_tokens,
+                response_time_ms=elapsed_ms,
+                knowledge_used=[],
+                historical_examples=[],
+                thread_history_length=0,
+                ai_reply=body,
+                error="Placeholder leak detected after swap-back; used fallback template",
+            )
+
+            return subject, _safe_fallback_email(parent_name, learner_name)
+
         save_ai_log(
             gmail_message_id=log_id,
             model="gpt-5-nano",
@@ -224,20 +282,4 @@ Do not include:
             error=str(e),
         )
 
-        return subject, f"""
-Hi {parent_name},
-
-We hope {learner_name} enjoyed the free trial at Coral Academy.
-
-We'd love to have {learner_name} continue learning with us.
-
-Please reply to this email if you have any questions.
-
-Write naturally as if written by a real member of the Coral Academy team.
-
-Do not sound like AI.
-
-Warm regards,
-
-Coral Academy
-"""
+        return subject, _safe_fallback_email(parent_name, learner_name)

@@ -1,6 +1,7 @@
 # subscription_cancel.py
 
 import os
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
@@ -149,6 +150,32 @@ def _new_ai_client():
 _PARENT_PLACEHOLDER = "[PARENT_NAME]"
 _LEARNER_PLACEHOLDER = "[STUDENT_NAME]"
 
+# Catches a leftover placeholder-shaped token after the real-name swap-back
+# below — not just the two exact tokens above, but any bracketed
+# all-caps/title-case phrase (e.g. "[Parent Name]", "[STUDENT_NAME]" typo'd
+# with a space), in case the model reproduces it with different casing or
+# spacing instead of exactly as given. A match here means the swap-back
+# silently failed, so the draft must not be shown/sent as-is.
+_PLACEHOLDER_LEAK_PATTERN = re.compile(r"\[[A-Za-z_ ]{2,40}\]")
+
+
+def _safe_fallback_email(parent_name, learner_name, redacted_context):
+    """Used both when the AI call itself fails, and when a placeholder-leak
+    check catches the swap-back not having fully worked — same safe,
+    template-only text either way, never anything the model wrote."""
+
+    return f"""
+Hi {parent_name},
+
+{redacted_context.replace(_LEARNER_PLACEHOLDER, learner_name)} We'd love to have {learner_name} continue learning with us.
+
+If anything didn't work well for you, please reply and let us know — we're happy to help.
+
+Warm regards,
+
+Coral Academy
+"""
+
 
 def generate_reengagement_email(row, ai_client=None):
 
@@ -236,6 +263,36 @@ Do not include:
         body = body.replace(_PARENT_PLACEHOLDER, parent_name).replace(_LEARNER_PLACEHOLDER, learner_name)
 
         usage = response.usage
+
+        if _PLACEHOLDER_LEAK_PATTERN.search(body):
+            # The swap-back above didn't fully work — the model reproduced
+            # the placeholder differently than expected (wrong case/spacing,
+            # or a different bracketed phrase entirely) so a literal
+            # placeholder-shaped token is still sitting in the text. Never
+            # let that reach a real parent — log it as an error (not a
+            # silent success) and use the safe fallback template instead.
+            print(f"Placeholder leak detected in reengagement email for {row.get('row_key')}: {body!r}")
+
+            save_ai_log(
+                gmail_message_id=row.get("row_key"),
+                model="gpt-5-nano",
+                category="Reengagement",
+                priority=None,
+                reply_type="automatic",
+                requires_review=True,
+                prompt_tokens=usage.prompt_tokens,
+                completion_tokens=usage.completion_tokens,
+                total_tokens=usage.total_tokens,
+                response_time_ms=elapsed_ms,
+                knowledge_used=[],
+                historical_examples=[],
+                thread_history_length=0,
+                ai_reply=body,
+                error="Placeholder leak detected after swap-back; used fallback template",
+            )
+
+            return subject, _safe_fallback_email(parent_name, learner_name, redacted_context)
+
         save_ai_log(
             gmail_message_id=row.get("row_key"),
             model="gpt-5-nano",
@@ -276,17 +333,7 @@ Do not include:
             error=str(e),
         )
 
-        return subject, f"""
-Hi {parent_name},
-
-{redacted_context.replace(_LEARNER_PLACEHOLDER, learner_name)} We'd love to have {learner_name} continue learning with us.
-
-If anything didn't work well for you, please reply and let us know — we're happy to help.
-
-Warm regards,
-
-Coral Academy
-"""
+        return subject, _safe_fallback_email(parent_name, learner_name, redacted_context)
 
 
 def _format_display_timestamp(iso_string):

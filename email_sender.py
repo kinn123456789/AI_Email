@@ -92,7 +92,7 @@ def send_email(from_email, token_file, to_email, subject, body, thread_id=None, 
         return {
             "gmail_id": sent_msg["id"],
             "thread_id": sent_msg.get("threadId"),
-            "message_id": sent_msg["id"]
+            "gmail_api_id": sent_msg["id"]  # Gmail's own internal id — NOT the RFC-2822 Message-ID header. Callers that need the real Message-ID must fetch the sent message back and read its "Message-ID" header themselves (see main.py's reply route).
 }
 
     except Exception as e:

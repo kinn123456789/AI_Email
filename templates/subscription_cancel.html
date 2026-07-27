@@ -124,6 +124,7 @@
     class="bg-stone-700 text-white px-6 py-3 rounded-xl font-bold hover:bg-black transition">
     Show All-Time
 </a>
+<span class="text-xs text-stone-500 self-center">Shows every cancellation/expired trial ever, from the very start — not just recent ones.</span>
 {% endif %}
 
 {% if search_query or selected_date_from or selected_date_to or selected_status %}
@@ -135,6 +136,10 @@
 {% if show_all_time %}
 <div class="mb-4 -mt-2 text-xs font-bold text-amber-800 bg-amber-100 border border-amber-300 rounded-xl px-4 py-2 inline-block">
     Showing all-time history (may be slower) — cached for 5 minutes
+</div>
+{% else %}
+<div class="mb-4 -mt-2 text-xs font-bold text-cyan-900 bg-cyan-100 border border-cyan-300 rounded-xl px-4 py-2 inline-block">
+    Showing the last 3 months only — click "Show All-Time" above for full history
 </div>
 {% endif %}
 

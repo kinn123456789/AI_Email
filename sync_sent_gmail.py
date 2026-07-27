@@ -22,6 +22,7 @@ from database import (
     get_last_successful_sync_time,
     save_failed_sync_message,
     get_pending_retry_messages,
+    get_failed_sync_message_by_id,
     mark_failed_message_resolved,
     mark_failed_message_exhausted,
 )
@@ -218,6 +219,69 @@ def _retry_pending_failures(mail, account):
         else:
             mark_failed_message_resolved(row["id"])
             logger.info(f"Retry succeeded for {message_id} ({outcome})")
+
+
+def retry_one_now(row_id):
+    """On-demand retry for a single failed-sync row, triggered manually
+    from the AI Insights page — as opposed to _retry_pending_failures(),
+    which the hourly job runs automatically for every pending row on an
+    account. Same relocate-by-Message-ID + _process_sent_message logic,
+    just scoped to the one row a staff member clicked "Retry" on.
+
+    Returns a short status string for the caller to show/log; never
+    raises — any failure just leaves the row as-is (still pending_retry
+    or exhausted) so it can be retried again or reviewed manually."""
+
+    row = get_failed_sync_message_by_id(row_id)
+
+    if not row:
+        return "not_found"
+
+    if row["job_name"] != "sync_sent_gmail":
+        return "unsupported_job"
+
+    account = next(
+        (a for a in EMAIL_ACCOUNTS if a["source"] == row["account"]),
+        None
+    )
+
+    if not account:
+        return "unknown_account"
+
+    mail = None
+
+    try:
+        mail = oauth_login(account["email"], account["token"])
+        status, _ = mail.select('"[Gmail]/Sent Mail"')
+
+        if status != "OK":
+            return "mailbox_error"
+
+        message_id = row["message_id"]
+        status, search_data = mail.search(None, f'(HEADER Message-ID "{message_id}")')
+
+        if status != "OK" or not search_data[0]:
+            mark_failed_message_exhausted(row["id"], "Could not relocate message for manual retry")
+            return "not_relocated"
+
+        sent_id = search_data[0].split()[-1]
+        outcome, _, _, err = _process_sent_message(mail, sent_id, account)
+
+        if outcome == "error":
+            mark_failed_message_exhausted(row["id"], err)
+            return "failed"
+
+        mark_failed_message_resolved(row["id"])
+        return outcome  # "imported" or "duplicate"
+
+    except Exception as e:
+        logger.error(f"Manual retry failed for row {row_id}: {e}")
+        return "error"
+
+    finally:
+        if mail:
+            try: mail.logout()
+            except Exception: pass
 
 
 def main():

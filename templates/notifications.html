@@ -26,7 +26,7 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <form method="post" action="/notifications/delete-selected" id="delete-form">
+            <form method="post" action="/notifications/delete-selected" id="delete-form" autocomplete="off">
                 <button
                     id="delete-btn"
                     type="submit"
@@ -99,7 +99,7 @@
             <thead class="bg-cyan-900/10 border-b border-cyan-300 text-cyan-950 text-sm font-bold">
                 <tr>
                     <th class="w-12 p-4 text-center">
-                        <input type="checkbox" id="select-all">
+                        <input type="checkbox" id="select-all" autocomplete="off">
                     </th>
                     <th class="w-4/12 p-4 text-left">Subject</th>
                     <th class="w-3/12 p-4 text-left">Source</th>
@@ -118,6 +118,7 @@
                             value="{{ email.id }}"
                             form="delete-form"
                             class="email-checkbox"
+                            autocomplete="off"
                             onclick="event.stopPropagation();"
                             onchange="event.stopPropagation();">
                     </td>
