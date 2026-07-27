@@ -21,10 +21,12 @@ def save_ai_log(
     error=None
 ):
 
-    conn = get_connection()
-    cursor = conn.cursor()
+    conn = None
+    cursor = None
 
     try:
+        conn = get_connection()
+        cursor = conn.cursor()
 
         cursor.execute(
             """
@@ -79,7 +81,19 @@ def save_ai_log(
 
         conn.commit()
 
+    except Exception as log_err:
+        # A failure here (bad connection, constraint violation, etc.) must
+        # never propagate to the caller - generate_reply() and friends
+        # call this AFTER already successfully producing a draft, so
+        # letting a logging error crash the whole function would throw
+        # away a perfectly good draft over a problem with the log entry
+        # itself. Print so it's still visible in Render's stdout capture,
+        # but never re-raise.
+        print(f"Failed to save ai_log for {gmail_message_id}:", log_err)
+
     finally:
 
-        cursor.close()
-        db_pool.putconn(conn)
+        if cursor:
+            cursor.close()
+        if conn:
+            db_pool.putconn(conn)

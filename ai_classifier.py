@@ -2,6 +2,9 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import json
+import time
+
+from ai_logger import save_ai_log
 
 load_dotenv()
 
@@ -11,7 +14,7 @@ client = OpenAI(
 )
 
 
-def ai_triage(subject, body, history=None, images=None):
+def ai_triage(subject, body, history=None, images=None, gmail_message_id=None):
 
     history = history or ""
 
@@ -328,6 +331,8 @@ Return ONLY this JSON
 }}
 """
 
+    start_time = time.time()
+
     try:
 
         response = client.chat.completions.create(
@@ -351,6 +356,7 @@ Return only valid JSON.
             ]
         )
 
+        elapsed_ms = int((time.time() - start_time) * 1000)
         result = json.loads(response.choices[0].message.content)
 
         # Validate AI output
@@ -408,11 +414,50 @@ Return only valid JSON.
 
         print(json.dumps(result, indent=2))
 
+        usage = response.usage
+        save_ai_log(
+            gmail_message_id=gmail_message_id,
+            model="gpt-5-nano",
+            category="Classification",
+            priority=result.get("priority"),
+            reply_type=result.get("reply_type"),
+            requires_review=result.get("requires_review", False),
+            prompt_tokens=usage.prompt_tokens,
+            completion_tokens=usage.completion_tokens,
+            total_tokens=usage.total_tokens,
+            response_time_ms=elapsed_ms,
+            knowledge_used=[],
+            historical_examples=[],
+            thread_history_length=len(history or ""),
+            ai_reply=json.dumps(result),
+        )
+
         return result
 
     except Exception as e:
 
         print("AI Error:", e)
+
+        try:
+            save_ai_log(
+                gmail_message_id=gmail_message_id,
+                model="gpt-5-nano",
+                category="Classification",
+                priority=None,
+                reply_type=None,
+                requires_review=True,
+                prompt_tokens=0,
+                completion_tokens=0,
+                total_tokens=0,
+                response_time_ms=int((time.time() - start_time) * 1000),
+                knowledge_used=[],
+                historical_examples=[],
+                thread_history_length=len(history or ""),
+                ai_reply="",
+                error=str(e),
+            )
+        except Exception as log_err:
+            print("Failed to save classification error log:", log_err)
 
         return {
             "category": "General",

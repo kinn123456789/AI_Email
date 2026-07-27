@@ -66,7 +66,8 @@ def process_teacher_messages():
 
             result = ai_triage(
                 subject="Teacher Portal Message",
-                body=body
+                body=body,
+                gmail_message_id=f"teacher_portal:{message_id}"
             )
 
             # ------------------------

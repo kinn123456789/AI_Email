@@ -257,7 +257,7 @@ def process_email(msg, account):
     try:
         with ThreadPoolExecutor(max_workers=3) as executor:
             triage_future = executor.submit(
-                ai_triage, subject, body, history=history_text, images=image_data_list
+                ai_triage, subject, body, history=history_text, images=image_data_list, gmail_message_id=message_id
             )
             similar_future = executor.submit(
                 search_similar_emails, subject, body, embedding_client=similar_client
