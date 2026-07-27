@@ -20,11 +20,14 @@ socket.setdefaulttimeout(60)
 
 IMPORT_WINDOW_DAYS = 90
 
-EMAIL_ACCOUNTS = [
-    {"email": os.getenv("EMAIL_1"), "token": "token_support.json", "source": "support@coralacademy.com"},
-    {"email": os.getenv("EMAIL_2"), "token": "token_lucy.json", "source": "lucy@coralacademy.com"},
-    {"email": os.getenv("EMAIL_3"), "token": "token_engineering.json", "source": "engineering@coralacademy.com"}
-]
+
+def get_email_accounts():
+    """The 3 core mailboxes plus anything added via the Settings page -
+    fetched fresh on every call so a newly added account is picked up the
+    next time this runs, no restart needed."""
+
+    from database import get_all_email_accounts
+    return get_all_email_accounts()
 
 
 def sync_sent_mail_style_examples():
@@ -44,15 +47,17 @@ def sync_sent_mail_style_examples():
     # first imported.
     since_date = (datetime.now() - timedelta(days=IMPORT_WINDOW_DAYS)).strftime("%d-%b-%Y")
 
-    for account in EMAIL_ACCOUNTS:
-        if not account["email"] or not account["token"]:
+    accounts = get_email_accounts()
+
+    for account in accounts:
+        if not account["email"]:
             continue
 
         print(f"\n===== {account['source']} =====")
         mail = None  # Initialize mail as None to handle in finally block
 
         try:
-            mail = oauth_login(account["email"], account["token"])
+            mail = oauth_login(account["email"])
 
             # Sent Mail, not INBOX — this table is used to teach the AI Coral
             # Academy's own writing style. Pulling from INBOX would store
@@ -147,7 +152,7 @@ def sync_sent_mail_style_examples():
                 # a Coral Academy staff address, even though we're now reading
                 # from Sent Mail — guards against forwarded/odd messages ending
                 # up in this folder and leaking customer content as "style".
-                staff_addresses = {a["email"] for a in EMAIL_ACCOUNTS if a["email"]}
+                staff_addresses = {a["email"] for a in accounts if a["email"]}
                 if sender not in staff_addresses:
                     print(f"Skipping non-staff sender in Sent Mail: {sender}")
                     continue

@@ -2307,3 +2307,104 @@ def get_composed_sent_emails(search=None, date_from=None, date_to=None, page=1, 
     finally:
         cursor.close()
         db_pool.putconn(conn)
+
+
+# --------------------------------------------------------------------------
+# Email Accounts (Settings) — the 3 mailboxes below (support/lucy/engineering)
+# are "core": always present, tied to the EMAIL_1/2/3 env vars, not deletable
+# from the Settings page. Anything added via Settings is stored in the
+# email_accounts table and merged in alongside them — this is what makes a
+# newly added mailbox actually get polled/watched, no redeploy needed, since
+# every reader of the combined list (email_reader.py, sync_sent_gmail.py,
+# learn_email_style.py, gmail_watch.py, gmail_history.py) calls
+# get_all_email_accounts() fresh each time rather than caching it.
+# --------------------------------------------------------------------------
+
+CORE_EMAIL_ACCOUNTS = [
+    {"email": os.getenv("EMAIL_1"), "source": "support@coralacademy.com", "core": True},
+    {"email": os.getenv("EMAIL_2"), "source": "lucy@coralacademy.com", "core": True},
+    {"email": os.getenv("EMAIL_3"), "source": "engineering@coralacademy.com", "core": True},
+]
+
+
+def get_additional_email_accounts():
+    """Mailboxes added via the Settings page, on top of the 3 core ones."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute(
+            "SELECT id, email, source_label, created_at FROM email_accounts "
+            "WHERE status = 'active' ORDER BY created_at"
+        )
+        rows = cursor.fetchall()
+
+        for row in rows:
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return rows
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_all_email_accounts():
+    """Every mailbox the app currently reads/sends from: the 3 core ones
+    plus anything added via Settings. Each dict has "email", "source",
+    "core" (True for the 3 that can't be deleted here), and "id" (only
+    present for Settings-added rows, used for the delete button)."""
+
+    accounts = [dict(a) for a in CORE_EMAIL_ACCOUNTS if a["email"]]
+
+    for row in get_additional_email_accounts():
+        accounts.append({
+            "id": row["id"],
+            "email": row["email"],
+            "source": row["source_label"],
+            "core": False,
+        })
+
+    return accounts
+
+
+def add_email_account(email, source_label=None):
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute(
+            """
+            INSERT INTO email_accounts (email, source_label)
+            VALUES (%s, %s)
+            ON CONFLICT (email) DO UPDATE SET status = 'active'
+            RETURNING id
+            """,
+            (email, source_label or email)
+        )
+        row = cursor.fetchone()
+        conn.commit()
+        return row["id"]
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def delete_email_account(account_id):
+    """Removes a Settings-added mailbox. Core mailboxes (support/lucy/
+    engineering) aren't rows in this table at all, so this can never
+    touch them regardless of what id is passed in."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("DELETE FROM email_accounts WHERE id = %s", (account_id,))
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)

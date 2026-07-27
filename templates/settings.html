@@ -1,0 +1,86 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings</title>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
+
+<div class="flex items-center justify-between mb-6">
+<h1 class="text-3xl font-bold text-gray-900 tracking-tight">⚙️ Settings</h1>
+<a href="/"
+   class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
+    ← Back
+</a>
+</div>
+
+{% if added %}
+<div class="mb-6 rounded-xl border border-green-300 bg-green-100 px-5 py-3 text-green-900 font-semibold shadow">
+    ✅ {{ added }} added — it'll be picked up on the next scheduled check (within 5 minutes).
+</div>
+{% endif %}
+
+{% if error %}
+<div class="mb-6 rounded-xl border border-red-300 bg-red-100 px-5 py-3 text-red-900 font-semibold shadow">
+    ⚠️ {{ error }}
+</div>
+{% endif %}
+
+<div class="max-w-3xl">
+
+    <div class="bg-white/50 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] rounded-3xl p-6 mb-8">
+        <h2 class="text-lg font-bold text-gray-900 mb-1">📧 Email Accounts</h2>
+        <p class="text-stone-500 text-sm mb-5">Mailboxes this app reads, watches, and sends replies from.</p>
+
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-stone-500 uppercase text-xs tracking-wide border-b border-cyan-200/60">
+                    <th class="py-2 pr-4">Email Address</th>
+                    <th class="py-2 pr-4">Status</th>
+                    <th class="py-2 pr-4"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for account in accounts %}
+                <tr class="border-b border-cyan-100/40">
+                    <td class="py-3 pr-4 font-semibold text-gray-800">{{ account.email }}</td>
+                    <td class="py-3 pr-4">
+                        <span class="bg-cyan-200/60 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold border border-cyan-300/50">Active</span>
+                        {% if account.core %}
+                        <span class="text-stone-400 text-xs ml-2">(core, can't be removed here)</span>
+                        {% endif %}
+                    </td>
+                    <td class="py-3 pr-4 text-right">
+                        {% if not account.core %}
+                        <form method="post" action="/settings/accounts/{{ account.id }}/delete"
+                              onsubmit="return confirm('Stop reading/replying from {{ account.email }}? Its saved emails stay, only new mail stops being picked up.')">
+                            <button type="submit"
+                                    class="bg-red-600 text-white px-4 py-2 rounded-full font-bold text-xs hover:bg-red-700 transition shadow">
+                                Delete
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <form method="post" action="/settings/accounts/add" class="flex items-center gap-3 mt-6 pt-5 border-t border-cyan-200/60">
+            <input type="email" name="email" required placeholder="newaccount@coralacademy.com"
+                   class="flex-1 px-4 py-3 rounded-2xl border border-cyan-200 bg-white/70 text-sm focus:outline-none focus:ring-2 focus:ring-cyan-400">
+            <button type="submit"
+                    class="bg-[#F76B2A] hover:bg-[#e05a1d] text-white px-6 py-3 rounded-2xl font-bold text-sm shadow-md shadow-orange-500/20 transition whitespace-nowrap">
+                + Add Email
+            </button>
+        </form>
+        <p class="text-stone-400 text-xs mt-2">Must be a real @coralacademy.com mailbox the service account can access — checked live before it's saved.</p>
+    </div>
+
+</div>
+
+</body>
+</html>

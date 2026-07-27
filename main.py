@@ -121,6 +121,7 @@ from database import get_attachments, get_attachment_by_id, find_recipient_name,
 from database import get_ai_insights, get_ai_log_by_message_id
 from database import get_ai_logs, get_ai_log_categories, delete_ai_log, get_failed_sync_messages, delete_failed_sync_message
 from database import get_composed_sent_emails
+from database import get_all_email_accounts, add_email_account, delete_email_account
 
 app = FastAPI()
 
@@ -357,19 +358,16 @@ async def send_reply(
 
     source = original_email["source"]
 
-    if source == "support@coralacademy.com":
-        from_email = os.getenv("EMAIL_1")
-        token_file = "token_support.json"
+    # source is always the actual mailbox address itself (for the 3 core
+    # accounts and anything added via Settings alike) - no longer a
+    # hardcoded 3-way lookup, so newly added mailboxes work here without
+    # touching this route. "@" check preserves the old behavior of
+    # redirecting instead of attempting to send for a non-mailbox source
+    # (e.g. "contact_form", handled by its own separate route).
+    from_email = source
+    token_file = None
 
-    elif source == "lucy@coralacademy.com":
-        from_email = os.getenv("EMAIL_2")
-        token_file = "token_lucy.json"
-
-    elif source == "engineering@coralacademy.com":
-        from_email = os.getenv("EMAIL_3")
-        token_file = "token_engineering.json"
-
-    else:
+    if not from_email or "@" not in from_email:
         return RedirectResponse(
             "/dashboard",
             status_code=303
@@ -674,6 +672,72 @@ def delete_ai_insight(log_id: int, request: Request):
 
     return RedirectResponse(
         url=f"/ai-insights{'?' + qs if qs else ''}",
+        status_code=303
+    )
+
+
+@app.get("/settings")
+def settings_page(request: Request, error: str = None, added: str = None):
+
+    return templates.TemplateResponse(
+        "settings.html",
+        {
+            "request": request,
+            "accounts": get_all_email_accounts(),
+            "error": error,
+            "added": added,
+        }
+    )
+
+
+@app.post("/settings/accounts/add")
+def add_settings_account(email: str = Form(...)):
+
+    from gmail_auth import get_gmail_service
+    from gmail_watch import register_watch
+
+    email = email.strip().lower()
+
+    if not email or "@" not in email:
+        return RedirectResponse(
+            url="/settings?error=Enter a valid email address",
+            status_code=303
+        )
+
+    # Validate the mailbox is real and actually reachable under domain-wide
+    # delegation *before* saving it - otherwise "Add" would silently save a
+    # typo'd or non-Workspace address that then fails every time it's polled.
+    try:
+        get_gmail_service(email).users().getProfile(userId="me").execute()
+    except Exception as e:
+        return RedirectResponse(
+            url=f"/settings?error=Could not access {email} - {str(e)[:150]}",
+            status_code=303
+        )
+
+    add_email_account(email)
+
+    # Best-effort: start push notifications immediately instead of waiting
+    # for the daily watch-renewal job. The 5-minute polling backup already
+    # covers this mailbox regardless, so a failure here isn't fatal.
+    try:
+        register_watch(email)
+    except Exception as e:
+        print(f"Could not register watch for new account {email}: {e}")
+
+    return RedirectResponse(
+        url=f"/settings?added={email}",
+        status_code=303
+    )
+
+
+@app.post("/settings/accounts/{account_id}/delete")
+def delete_settings_account(account_id: int):
+
+    delete_email_account(account_id)
+
+    return RedirectResponse(
+        url="/settings",
         status_code=303
     )
 

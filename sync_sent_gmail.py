@@ -47,23 +47,15 @@ CHECKPOINT_BUFFER_DAYS = 1
 # run typically finds only a handful of genuinely new messages.
 MAX_MESSAGES_PER_RUN = 500
 
-EMAIL_ACCOUNTS = [
-    {
-        "email": os.getenv("EMAIL_1"),
-        "token": "token_support.json",
-        "source": "support@coralacademy.com",
-    },
-    {
-        "email": os.getenv("EMAIL_2"),
-        "token": "token_lucy.json",
-        "source": "lucy@coralacademy.com",
-    },
-    {
-        "email": os.getenv("EMAIL_3"),
-        "token": "token_engineering.json",
-        "source": "engineering@coralacademy.com",
-    },
-]
+def get_email_accounts():
+    """The 3 core mailboxes plus anything added via the Settings page -
+    fetched fresh on every call so an account added/removed in Settings
+    takes effect on the next hourly run, no restart needed."""
+
+    from database import get_all_email_accounts
+    return get_all_email_accounts()
+
+
 def oauth_login(email_address, token_file=None):
     # token_file is unused now (kept only so existing callers don't need to
     # change) - auth is via domain-wide delegation, impersonating
@@ -215,7 +207,7 @@ def retry_one_now(row_id):
         return "unsupported_job"
 
     account = next(
-        (a for a in EMAIL_ACCOUNTS if a["source"] == row["account"]),
+        (a for a in get_email_accounts() if a["source"] == row["account"]),
         None
     )
 
@@ -225,7 +217,7 @@ def retry_one_now(row_id):
     mail = None
 
     try:
-        mail = oauth_login(account["email"], account["token"])
+        mail = oauth_login(account["email"])
         status, _ = mail.select('"[Gmail]/Sent Mail"')
 
         if status != "OK":
@@ -259,7 +251,7 @@ def retry_one_now(row_id):
 
 
 def main():
-    for account in EMAIL_ACCOUNTS:
+    for account in get_email_accounts():
         logger.info(f"Checking sent mail for {account['source']}")
         mail = None
         started_at = datetime.now(timezone.utc)
@@ -272,7 +264,7 @@ def main():
         checkpoint_time = None
 
         try:
-            mail = oauth_login(account["email"], account["token"])
+            mail = oauth_login(account["email"])
             status, _ = mail.select('"[Gmail]/Sent Mail"')
             if status != "OK":
                 logger.error(f"Could not open Sent Mail for {account['source']}")

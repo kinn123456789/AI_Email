@@ -25,9 +25,9 @@ def register_watch(email_address):
 
 def renew_all_gmail_watches():
 
-    from email_reader import EMAIL_ACCOUNTS
+    from email_reader import get_email_accounts
 
-    for account in EMAIL_ACCOUNTS:
+    for account in get_email_accounts():
         try:
             register_watch(account["email"])
         except Exception as e:

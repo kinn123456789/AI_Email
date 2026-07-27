@@ -33,24 +33,18 @@ ATTACHMENT_DIR = "attachments"
 if not os.path.exists(ATTACHMENT_DIR):
     os.makedirs(ATTACHMENT_DIR)
 
-EMAIL_ACCOUNTS = [
-    
-    {
-        "email": os.getenv("EMAIL_1"),
-        "token": "token_support.json",
-        "source": "support@coralacademy.com",
-    },
-    {
-        "email": os.getenv("EMAIL_2"),
-        "token": "token_lucy.json",
-        "source": "lucy@coralacademy.com",
-    },
-    {
-        "email": os.getenv("EMAIL_3"),
-        "token": "token_engineering.json",
-        "source": "engineering@coralacademy.com",
-    }
-]
+def get_email_accounts():
+    """The 3 core mailboxes plus anything added via the Settings page -
+    fetched fresh on every call, never cached at import time, so an
+    account added/removed in Settings takes effect on the very next
+    scheduled run in this same long-running process, no restart needed.
+    See database.get_all_email_accounts(). Deliberately a function, not a
+    module-level list - a list snapshotted once at import time would never
+    see accounts added later in the process's lifetime."""
+
+    from database import get_all_email_accounts
+    return get_all_email_accounts()
+
 
 def oauth_login(email_address, token_file=None):
     # token_file is unused now (kept only so existing callers don't need to
@@ -60,24 +54,23 @@ def oauth_login(email_address, token_file=None):
     return imap_login(email_address)
 
 def main(target_email=None):
-    for account in EMAIL_ACCOUNTS:
+    for account in get_email_accounts():
         if (
             target_email
             and account["email"] != target_email
         ):
             continue
-        
+
         print("=" * 60)
         print("Checking:", account["source"])
-        print("Token:", account["token"])
         print("=" * 60)
-        if not account.get("email") or not account.get("token"):
+        if not account.get("email"):
             continue
 
         mail = None
-        
+
         try:
-            mail = oauth_login(account["email"], account["token"])
+            mail = oauth_login(account["email"])
             mail.select("INBOX", readonly=True)
 
             since_date = (datetime.now() - timedelta(days=2)).strftime("%d-%b-%Y")

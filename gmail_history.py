@@ -110,11 +110,11 @@ def run_history_reader(email_address, webhook_history_id=None):
 
 def _run_history_reader_once(email_address, webhook_history_id=None):
 
-    from email_reader import EMAIL_ACCOUNTS
+    from email_reader import get_email_accounts
     from process_email import process_email
 
     account = next(
-        (a for a in EMAIL_ACCOUNTS if a["email"] == email_address),
+        (a for a in get_email_accounts() if a["email"] == email_address),
         None
     )
 
@@ -166,7 +166,7 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
     if webhook_history_id:
         newest_history_id = max(newest_history_id, int(webhook_history_id))
 
-    service = _build_service(account["token"])
+    service = _build_service(account["email"])
 
     any_failed = False
 
