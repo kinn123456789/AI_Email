@@ -16,7 +16,8 @@ Every time the AI classifies or drafts a reply — anywhere in the app, not just
 2. **Broken Down by Category** — calls and error counts split by category (Classification, Billing, Admissions, Teacher, Reengagement, Trial Followup, etc.).
 3. **Recent Errors** — the last 20 AI failures, with full error text.
 4. **Look Up One Draft's Log** — paste a Message-ID to see exactly what happened for that reply; also reachable via "View AI Log" from any email's detail page.
-5. **Full Searchable Log** — every AI call, paginated, searchable by subject/Message-ID, filterable by category/status/date, deletable.
+
+> The full searchable/paginated/deletable log table that used to sit below this was removed this session — it showed raw internal entries (many labeled "no matching email — Teacher Portal or system entry") that weren't meaningful to staff. The underlying `ai_logs` table and its per-message lookup are untouched; only that bulk table view is gone.
 
 ---
 
@@ -25,8 +26,8 @@ Every time the AI classifies or drafts a reply — anywhere in the app, not just
 ### Where the Logic Lives
 
 - `get_ai_insights()` (`database.py`) — three queries: overall totals, per-category breakdown, last 20 errors — all from `ai_logs`.
-- `get_ai_logs()` — the paginated, filterable full log list.
 - `get_ai_log_by_message_id()` — powers the single-message lookup box.
+- (`get_ai_logs()`, `get_ai_log_categories()`, `delete_ai_log()` — removed this session along with the full-log-table UI, since nothing else called them.)
 - `get_latest_reply_sources()` — added this session; pulls which specific Knowledge Base articles and historical emails were actually used for a given reply, now shown directly on the email detail page too, not just here.
 - The route (`@app.get("/ai-insights")` in `main.py`) ties all of this together and handles deleting a log row.
 

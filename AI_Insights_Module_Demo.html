@@ -157,11 +157,10 @@
           <h4>Look Up One Draft's Log</h4>
           <p>Paste a specific email's Message-ID to see exactly what happened when its reply was generated — also reachable with one click from any email's detail page via "View AI Log."</p>
         </div>
-        <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>Full Searchable Log</h4>
-          <p>Every AI call, paginated, with search by subject or Message-ID, filter by category, filter by success/error, and a date range — plus the ability to delete a log entry.</p>
-        </div>
+      </div>
+      <div class="callout" style="margin-top:16px;">
+        <span class="flag">Removed this session</span>
+        <span>The full searchable/paginated/deletable log table that used to sit below this section was removed — it showed raw internal entries (many labeled "no matching email — Teacher Portal or system entry") that weren't meaningful to staff. The underlying <code>ai_logs</code> table and the per-message lookup above are untouched.</span>
       </div>
     </section>
 
@@ -172,8 +171,8 @@
         <h4>Where the logic actually lives <span class="filepill">database.py</span> <span class="filepill">main.py</span></h4>
         <ul>
           <li><code>get_ai_insights()</code> (<code>database.py</code>) — three queries: overall totals (calls/errors/tokens/avg response time), a per-category breakdown, and the last 20 errors. All three read straight from <code>ai_logs</code>.</li>
-          <li><code>get_ai_logs()</code> — the paginated, filterable full log list (category/status/search/date range).</li>
           <li><code>get_ai_log_by_message_id()</code> — powers the single-message lookup box.</li>
+          <li><code>get_ai_logs()</code>, <code>get_ai_log_categories()</code>, <code>delete_ai_log()</code> — removed this session along with the full-log-table UI, since nothing else called them.</li>
           <li><code>get_latest_reply_sources()</code> — newly added this session; pulls which specific Knowledge Base articles and historical emails were actually used for a given reply, now shown directly on the email detail page next to the AI summary, not just here.</li>
           <li>The route (<code>@app.get("/ai-insights")</code> in <code>main.py</code>) ties all of this together and also handles deleting a single log row.</li>
         </ul>
