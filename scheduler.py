@@ -1,6 +1,8 @@
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+
+from database import save_sync_log
 
 from email_reader import main as email_reader
 from refresh_knowledge_base import refresh_knowledge_base
@@ -27,6 +29,40 @@ subscription_cancel_lock = threading.Lock()
 pending_mailboxes = set()
 
 
+def _run_logged_job(job_name, fn):
+    """Runs fn(), recording success/failure durably in sync_log so job
+    run-history survives restarts/redeploys - previously only
+    sync_sent_gmail logged this way, every other scheduled job only
+    had print() output, which is lost whenever Render's log viewer
+    rotates it out. Exceptions are caught and logged, not re-raised,
+    so one job's failure never affects the scheduler itself."""
+
+    started_at = datetime.now(timezone.utc)
+    error_count = 0
+    error_message = None
+
+    try:
+        fn()
+    except Exception as e:
+        error_count = 1
+        error_message = str(e)
+        print(f"{job_name} FAILED:", e)
+
+    try:
+        save_sync_log(
+            job_name=job_name,
+            account=None,
+            started_at=started_at,
+            finished_at=datetime.now(timezone.utc),
+            imported_count=0,
+            skipped_count=0,
+            error_count=error_count,
+            error_message=error_message,
+        )
+    except Exception as log_err:
+        print(f"Failed to save sync_log for {job_name}:", log_err)
+
+
 # -------------------------------------------------
 # Email Reader
 # -------------------------------------------------
@@ -46,18 +82,11 @@ def run_email_reader(email_address=None):
 
         try:
 
-            start = time.time()
-
             print("=" * 80)
             print("EMAIL READER STARTED (ALL)")
             print("=" * 80)
 
-            email_reader()
-
-            print(
-                f"EMAIL READER TOOK "
-                f"{time.time() - start:.2f} seconds"
-            )
+            _run_logged_job("email_reader", email_reader)
 
         finally:
 
@@ -128,7 +157,7 @@ def run_refresh_subscription_cache():
         return
 
     try:
-        refresh_subscription_cache()
+        _run_logged_job("refresh_subscription_cache", refresh_subscription_cache)
     finally:
         subscription_cancel_lock.release()
 
@@ -141,7 +170,7 @@ def run_prefetch_reengagement_drafts():
         return
 
     try:
-        prefetch_reengagement_drafts()
+        _run_logged_job("prefetch_reengagement_drafts", prefetch_reengagement_drafts)
     finally:
         subscription_cancel_lock.release()
 
@@ -156,7 +185,7 @@ def run_help_center_refresh():
 
     subscription_cancel_lock.acquire(blocking=True)
     try:
-        refresh_knowledge_base()
+        _run_logged_job("help_center_refresh", refresh_knowledge_base)
     finally:
         subscription_cancel_lock.release()
 
@@ -170,33 +199,33 @@ def run_sent_mail_sync():
 
     subscription_cancel_lock.acquire(blocking=True)
     try:
-        sync_sent_mail_and_embed()
+        _run_logged_job("sent_mail_style_sync", sync_sent_mail_and_embed)
     finally:
         subscription_cancel_lock.release()
 
 
 def run_teacher_sync():
-    start = time.time()
-
     print("=" * 80)
     print("TEACHER SYNC STARTED")
     print("=" * 80)
 
-    try:
+    def _do_teacher_sync():
         sync_teacher_portal()
         process_teacher_messages()
 
-        print(
-            f"TEACHER SYNC COMPLETED IN "
-            f"{time.time() - start:.2f} seconds"
-        )
+    _run_logged_job("teacher_sync", _do_teacher_sync)
 
-    except Exception as e:
-        print(
-            f"TEACHER SYNC FAILED AFTER "
-            f"{time.time() - start:.2f} seconds"
-        )
-        print(e)
+
+def run_classes_refresh():
+    _run_logged_job("classes_refresh", refresh_classes)
+
+
+def run_gmail_watch_renewal():
+    _run_logged_job("gmail_watch", renew_all_gmail_watches)
+
+
+def run_trial_followups():
+    _run_logged_job("trial_followups", process_trial_followups)
 
 
 # -------------------------------------------------
@@ -266,7 +295,7 @@ scheduler.add_job(
 
 # Class Refresh
 scheduler.add_job(
-    refresh_classes,
+    run_classes_refresh,
     CronTrigger(hour=3, minute=0),
     id="classes_refresh",
     replace_existing=True,
@@ -277,7 +306,7 @@ scheduler.add_job(
 
 # Gmail Watch Renewal
 scheduler.add_job(
-    renew_all_gmail_watches,
+    run_gmail_watch_renewal,
     trigger="interval",
     days=1,
     id="gmail_watch",
@@ -300,7 +329,7 @@ scheduler.add_job(
 )
 
 scheduler.add_job(
-    process_trial_followups,
+    run_trial_followups,
     CronTrigger(hour=9, minute=0),
     id="trial_followups",
     replace_existing=True,

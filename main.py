@@ -123,6 +123,27 @@ from database import get_ai_logs, get_ai_log_categories, delete_ai_log
 from database import get_composed_sent_emails
 
 app = FastAPI()
+
+from logger import logger
+
+
+@app.exception_handler(Exception)
+async def log_unhandled_exceptions(request: Request, exc: Exception):
+    """Catches anything that isn't already handled by a specific route and
+    logs it via logger.py (file + stdout) - previously an unhandled error
+    here only ever showed up as a bare traceback in Render's stdout
+    capture, with no durable, host-independent record at all. Doesn't
+    change behavior for errors routes already handle themselves; this
+    only fires for genuinely unhandled exceptions."""
+
+    logger.exception(f"Unhandled exception on {request.method} {request.url.path}: {exc}")
+
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"}
+    )
+
+
 print("MAIN.PY LOADED")
 print("########## THIS IS MY MAIN.PY ##########")
 for route in app.routes:
