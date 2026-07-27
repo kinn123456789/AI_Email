@@ -134,8 +134,7 @@
       <div class="lead-box">
         Parents can message their child's teacher directly through Coral Academy's Teacher Portal. This module pulls
         those conversations into the same kind of unified inbox as regular email — every new parent message gets
-        <strong>automatically classified</strong> by AI (what's it about, how urgent is it) and, where it's safe to,
-        gets a <strong>draft reply ready to review</strong>. A staff member opens the Teacher Inbox, reads the
+        <strong>automatically classified</strong> by AI (what's it about, how urgent is it) and, where it's safe to, gets a <strong>draft reply ready to review</strong>. A staff member opens the Teacher Inbox, reads the
         conversation, and sends the reply straight back to the parent through the Teacher Portal.
       </div>
     </section>
@@ -157,12 +156,7 @@
           <div class="card">
             <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0114-5.3M20 12a8 8 0 01-14 5.3" stroke-width="1.7" stroke-linecap="round"/><path d="M18 3v5h-5M6 21v-5h5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             <h4>Auto-Sync Every 8 Minutes</h4>
-            <p>New parent messages are pulled in from the Teacher Portal automatically — nobody has to manually check for new messages.</p>
-          </div>
-          <div class="card">
-            <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-            <h4>Manual "Sync Now"</h4>
-            <p>A one-click trigger to pull the very latest messages immediately, instead of waiting for the next 8-minute cycle.</p>
+            <p>New parent messages are pulled in from the Teacher Portal automatically.</p>
           </div>
         </div>
       </div>
@@ -208,7 +202,7 @@
         <p class="desc">Coral Academy's Teacher Portal REST API (<code>api.preprod.coralacademy.com</code>, key-authenticated) → pulled and upserted into <code>conversations</code> / <code>conversation_messages</code> → classified and drafted by AI → shown in <code>/teacher-inbox</code>. Sending goes the other way: app → Teacher Portal API → success saved locally too.</p>
         <ul>
           <li><b>Checkpoint/dedup:</b> a chat's messages are only re-fetched if its latest message isn't already stored (<code>conversation_message_exists</code>); inserts also use <code>ON CONFLICT DO NOTHING</code> as a second safety net — keeps each sync run cheap and idempotent.</li>
-          <li><b>Sync cadence:</b> every 8 minutes, offset 70 seconds from other jobs so it doesn't collide with them; only one run at a time, and a missed run is simply skipped rather than queued.</li>
+          <li><b>Sync cadence:</b> every 8 minutes, offset 70 seconds from other jobs so it doesn't collide with them; only one run at a time.</li>
           <li>Every run is logged (success/failure/duration) so a silent failure is never invisible.</li>
         </ul>
         <div class="callout"><span class="flag">Note</span><span>Teacher Portal data lives in the <b>same</b> main Postgres database as the rest of the app (not a separate Supabase project) — worth knowing since some other modules genuinely do use a separate Supabase project for their own data.</span></div>
@@ -224,14 +218,6 @@
         </ul>
       </div>
 
-      <div class="tech-block">
-        <h4>Known limitations worth flagging</h4>
-        <ul>
-          <li>The Teacher Portal API is only ever read one page at a time (<code>page=0</code>) — an extremely long chat history beyond that first page is never pulled from the source, separate from the local 50-message AI cap.</li>
-          <li>Two older routes/templates (<code>/teacher-dashboard</code>, <code>/teacher/{teacher_id}</code>) still work but are no longer linked from the main navigation — <code>/teacher-inbox</code> is the one screen actually used day to day. One of their "back" links even points to a route that no longer exists.</li>
-          <li>Several duplicate/backup files from earlier versions of this feature (<code>teacher_ai_processor.py</code>, <code>teacher_sync.py</code>, <code>teacher_db_reader.py</code>, and others) still sit in the repo but are not used by the running app — safe candidates for cleanup, not to be confused with the live files below.</li>
-        </ul>
-      </div>
     </section>
 
     <section id="reference">

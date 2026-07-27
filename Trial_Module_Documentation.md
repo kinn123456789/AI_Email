@@ -67,7 +67,7 @@ Based on `trial_expiry_at` compared to "now":
 - Model: `gpt-5-nano` via OpenRouter (`followup_ai.py`). Each of the 3 emails has its own separately written prompt matching its day's tone.
 - Same name-hiding technique as the Subscription module: the AI only ever sees `[PARENT_NAME]`/`[STUDENT_NAME]` placeholders while writing; real names are swapped back in afterward.
 - Logged to `ai_logs` under category `"Trial Followup"`. Falls back to a hardcoded template on AI failure.
-- ⚠️ **Known gap**: same as Subscription — no verification that the placeholder swap-back actually worked before a draft is shown to staff. Still open.
+- **Placeholder-leak check** (fixed this session, previously an open gap, same fix as the Subscription module): the body is checked for any leftover bracketed placeholder-shaped text after swap-back; if found, the draft is discarded in favor of the safe hardcoded fallback template instead of ever reaching staff.
 
 ### Draft-First By Design
 

@@ -14,11 +14,10 @@ Parents can message their child's teacher directly through Coral Academy's Teach
 
 1. **Teacher Inbox** — pick a teacher, see their list of parent conversations sorted by **unread first**, then **most recent activity**, then **priority as a final tiebreaker**. Open any chat to see the full message thread.
 2. **Auto-Sync Every 8 Minutes** — new parent messages are pulled in automatically.
-3. **Manual "Sync Now"** — a one-click trigger to pull the very latest messages immediately.
-4. **AI Classification** — every parent message gets a category, a priority, and a one-sentence summary.
-5. **AI Draft Replies** — where it's safe to, a suggested reply is pre-written, grounded in Help Center content (same engine as regular email).
-6. **Sending Replies** — edit the draft (or write your own) and send — goes straight back through the Teacher Portal, saved into the thread.
-7. **Deleting a Message** — removes it both from the Teacher Portal itself and the local copy shown here.
+3. **AI Classification** — every parent message gets a category, a priority, and a one-sentence summary.
+4. **AI Draft Replies** — where it's safe to, a suggested reply is pre-written, grounded in Help Center content (same engine as regular email).
+5. **Sending Replies** — edit the draft (or write your own — it's a plain editable text box, not locked to the AI's wording) and send — goes straight back through the Teacher Portal, saved into the thread.
+6. **Deleting a Message** — removes it both from the Teacher Portal itself and the local copy shown here.
 
 ---
 
@@ -33,6 +32,10 @@ Coral Academy's Teacher Portal REST API (`api.preprod.coralacademy.com`, key-aut
 - Every run is logged (success/failure/duration).
 
 > **Note**: Teacher Portal data lives in the **same** main Postgres database as the rest of the app — not a separate Supabase project. (The genuinely separate Supabase project is used by the Subscription and Trial Follow-up modules, for their own data — worth not confusing the two.)
+
+*APIs and tables below confirmed by directly tracing the live code, not guessed:*
+- **Teacher Portal API endpoints used**: `GET /ai-email/teachers`, `GET /ai-email/chats?teacher_id=`, `GET /ai-email/chats/{chat_id}/messages?teacher_id=&page=0`, `POST /ai-email/reply` (sending), `DELETE /ai-email/chats/{chat_id}/messages/{message_id}?teacher_id=` (deleting).
+- **Tables used**: `conversations` (one row per chat) and `conversation_messages` (every message, plus the AI's category/priority/summary/draft columns) — both in the main app Postgres, per the Note above.
 
 ### Classification & Drafting
 

@@ -57,11 +57,11 @@ When a family's subscription is cancelled, or their free trial runs out without 
 - Model: `gpt-5-nano` via OpenRouter. The draft is built from row data (subscription type, sessions attended, cancelled vs. trial-expired) — not grounded in the Knowledge Base or historical sent emails.
 - Real parent/learner names are replaced with placeholder tokens (`[PARENT_NAME]`, `[STUDENT_NAME]`) before the AI ever sees the prompt, then swapped back in locally afterward.
 - Logged to `ai_logs` under category `"Reengagement"`. Falls back to a hardcoded template email if the AI call fails.
-- ⚠️ **Known gap**: the placeholder swap-back is a blind find-and-replace with no verification step — if the AI ever rewords or drops a placeholder instead of reproducing it exactly, nothing today catches a leftover placeholder before it reaches Send. Still open.
+- **Placeholder-leak check** (fixed this session, previously an open gap): after the swap-back, the body is checked with `_PLACEHOLDER_LEAK_PATTERN` for any leftover bracketed placeholder-shaped text (not just the 2 exact tokens — catches wrong casing/spacing too). If one's still there, the draft is discarded and the safe hardcoded fallback template is used instead, logged with `error="Placeholder leak detected after swap-back; used fallback template"` — a leaked placeholder can no longer reach Send.
 
 ### Sending
 
-`followup_email.py`'s `send_email()` — loads Gmail OAuth credentials, sends via the Gmail API, logs the send into `subscription_cancel_sent`.
+`followup_email.py`'s `send_email()` — authenticates via Domain-Wide Delegation (`gmail_auth.get_gmail_service()`, no per-account OAuth token file), sends via the Gmail API, logs the send into `subscription_cancel_sent`.
 
 ---
 
