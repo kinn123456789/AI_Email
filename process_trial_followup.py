@@ -3,14 +3,14 @@ from trial_followup import (
     get_trial_followup_candidates,
     get_followup_history,
     create_followup,
-    update_followup_email1_sent,
-    update_followup_email2_sent,
-    update_followup_email3_sent,
+    update_followup_email1_drafted,
+    update_followup_email2_drafted,
+    update_followup_email3_drafted,
     get_parent_details,
     save_followup_email_log,
     complete_followup_campaign
 
-    
+
 )
 from followup_ai import generate_followup_email
 from followup_email import send_email
@@ -84,16 +84,17 @@ def send_followup_email(candidate, parent_id, learner_id, email_number):
     
 
     print(f"Gmail Message ID: {gmail_message_id}")
-    print(f"✓ Email {email_number} sent successfully")
+    print(f"✓ Draft {email_number} generated and saved for review")
 
-    # Update database
+    # Update database - this only tracks draft generation, not a real send.
+    # Actual sending happens later via main.py's manual-send route, which
+    # sets emailN_sent_at itself once send_email() truly succeeds.
     if email_number == 1:
-        update_followup_email1_sent(learner_id)
+        update_followup_email1_drafted(learner_id)
     elif email_number == 2:
-        update_followup_email2_sent(learner_id)
+        update_followup_email2_drafted(learner_id)
     elif email_number == 3:
-        update_followup_email3_sent(learner_id)
-        complete_followup_campaign(learner_id)
+        update_followup_email3_drafted(learner_id)
 
    
     return True
@@ -143,18 +144,18 @@ def process_trial_followups():
                 )
                 followup = {
                     "status": "active",
-                    "email1_sent_at": None,
-                    "email2_sent_at": None,
-                    "email3_sent_at": None,
+                    "email1_drafted_at": None,
+                    "email2_drafted_at": None,
+                    "email3_drafted_at": None,
                 }
 
             # Skip if campaign closed
             if followup.get('status') != 'active':
                 continue
 
-            email1 = followup.get('email1_sent_at')
-            email2 = followup.get('email2_sent_at')
-            email3 = followup.get('email3_sent_at')
+            email1 = followup.get('email1_drafted_at')
+            email2 = followup.get('email2_drafted_at')
+            email3 = followup.get('email3_drafted_at')
 
             
             if email1 is None and trial_expiry_at <= now - timedelta(days=1):

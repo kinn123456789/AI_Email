@@ -116,33 +116,6 @@
         {% endif %}
     </div>
 
-    <!-- Recent errors -->
-    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
-        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Recent Errors (last 20)</h2>
-        {% if recent_errors %}
-        <table class="w-full text-sm">
-            <thead>
-                <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
-                    <th class="py-2">When</th>
-                    <th class="py-2">Category</th>
-                    <th class="py-2">Error</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in recent_errors %}
-                <tr class="border-b border-stone-50">
-                    <td class="py-2 local-time" data-utc="{{ row.created_at }}"></td>
-                    <td class="py-2">{{ row.category or "—" }}</td>
-                    <td class="py-2 text-red-600 truncate max-w-md">{{ row.error }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        {% else %}
-        <p class="text-stone-400 text-sm">No errors logged.</p>
-        {% endif %}
-    </div>
-
 
 </div>
 

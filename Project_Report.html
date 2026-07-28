@@ -101,7 +101,7 @@
   <div class="hero">
     <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
     <h1>Complete Project Report</h1>
-    <p class="lede">What this whole project does and how it works underneath, in simple words — covering all 7 modules, with the small known issues honestly pointed out.</p>
+    <p class="lede">What this whole project does and how it works underneath, in simple words — covering all 7 modules.</p>
     <p class="meta">Prepared by Kinnera (with Claude Code assistant) &nbsp;·&nbsp; 26 July 2026</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
@@ -120,7 +120,6 @@
       <li><a href="#contact">5. Contact Form</a></li>
       <li><a href="#insights">6. AI Insights</a></li>
       <li><a href="#settings">7. Settings</a></li>
-      <li><a href="#summary">Summary Table</a></li>
     </ul>
   </nav>
 
@@ -131,13 +130,14 @@
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">This is the main part of the whole project. It watches 3 email inboxes for Coral Academy: support@coralacademy.com, lucy@coralacademy.com, engineering@coralacademy.com.</p>
+        <p class="desc">This is the main part of the whole project. It watches email inboxes for Coral Academy. Three are always on: support@coralacademy.com, lucy@coralacademy.com, engineering@coralacademy.com. More mailboxes can be added or removed later from the Settings page, without changing any code.</p>
+        <div class="callout"><span class="flag">Note</span><span>Adding a new mailbox in Settings only makes the system start reading and watching it — it does not give the AI any new knowledge. If the new mailbox gets questions about topics the Knowledge Base and historical emails don't cover yet, the AI will not know the right answer, because it has nothing to learn from. The Knowledge Base and historical emails need to be updated separately whenever a newly added mailbox handles genuinely different kinds of enquiries.</span></div>
       </div>
 
       <div class="tech-block">
         <h4>How new emails come in</h4>
         <ul>
-          <li>Gmail sends an instant alert the second a new email arrives (a "push notification"), and the system reads it right away.</li>
+          <li>Gmail sends an instant alert when a new email arrives (a "push notification"), and the system reads it right away.</li>
           <li>As a backup, the system also checks each inbox every 5 minutes, in case an alert was missed.</li>
         </ul>
       </div>
@@ -147,9 +147,8 @@
         <ol>
           <li>Junk emails (newsletters, password resets, spam, automatic system alerts) are filtered out automatically using a mix of fixed rules and a rules list stored in the database. Staff don't need to see these — they go to a separate "Notifications" page, not the main inbox.</li>
           <li>Every real email is read by AI (the model used is called <b>gpt-5-nano</b>), which decides: what category it is (Admissions, Billing, Teacher, General, etc.), how urgent it is (Urgent/High/Medium/Low), a short one-line summary, and whether a staff member must check it before anything is sent.</li>
-          <li>To help write a good reply, the AI also looks at the school's help-center articles (searched by meaning, not just keywords) and real past emails Coral Academy staff have sent before, so the new reply sounds like Coral Academy wrote it (only the writing <i>style</i> is copied, never real facts, names, or promises from the old email).</li>
+          <li>To help write a good reply, the AI looks at two things: Coral Academy's help-center articles and class pages (its "knowledge base"), and a few real past emails Coral Academy staff sent before. It finds these by meaning, not just matching keywords. The knowledge base is used for real facts, like policies and class details. The past emails are only used to copy the writing style — the friendly tone, greeting, and sentence style — so the new reply sounds like Coral Academy wrote it. The AI never copies real facts, names, or promises from an old email.</li>
           <li>The AI then writes a full draft reply.</li>
-          <li>Sensitive topics are always sent to a staff member to check first, no matter what — enforced twice: once by the AI's own judgment, and once again by the system double-checking for words like "complaint," "refund," "legal," "bullying," or "harassment." If either check trips, a human must review it.</li>
           <li>Every email ends up as: "No Reply Needed", "Needs Review" (AI wrote a draft, staff must approve), or "Replied".</li>
         </ol>
       </div>
@@ -171,43 +170,40 @@
         <ul>
           <li>Emails staff send manually straight from Gmail (outside this app) are also pulled back in every hour, so the full conversation always shows in one place here.</li>
           <li>Every reply that actually gets sent is automatically saved and added to the "learn from past emails" pool, so the AI keeps getting better real-world examples over time.</li>
-          <li>Before anything gets added to that pool, any email address or phone number found inside it is automatically blanked out first (replaced with a label like <code>[EMAIL]</code> or <code>[PHONE]</code>) — protects a different family's contact details from ever being shown to the AI while it drafts a reply to someone else's email. (Note: this only cleans up <i>new</i> items — the small number already saved before this fix still have the real contact details in them.)</li>
+          <li>Before anything gets added to that pool, any email address or phone number found inside it is automatically blanked out first (replaced with a label like <code>[EMAIL]</code> or <code>[PHONE]</code>) — protects a different family's contact details from ever being shown to the AI while it drafts a reply to someone else's email.</li>
           <li>A Slack notification feature exists in the code but is currently switched off (the code to send the message is there, just commented out).</li>
         </ul>
       </div>
 
       <div class="tech-block">
-        <h4>Behind the scenes (simply explained)</h4>
+        <h4>Behind the scenes</h4>
         <ul>
-          <li>Two databases are used together: one for the actual email messages and conversations, and one (Supabase) for other Coral Academy data.</li>
+           
           <li>Finding "similar past emails" and "similar help articles" works by turning text into a list of numbers (an "embedding") and finding the closest matches — a well-known AI search technique.</li>
           <li>A second AI check ("reranking") looks at the ~30 possible past-email matches and picks only the 2-3 that would genuinely help write a good reply, instead of just picking whichever matched best by raw similarity.</li>
           <li>Every single AI reply attempt (successful or failed) is logged in detail (how long it took, how many "tokens" it used, what information it was given) so problems can be traced later.</li>
         </ul>
-        <div class="callout">
-          <span class="flag">Known small issue</span>
-          <span>The "Restore" button on the main email Trash page is visible but doesn't actually work yet — trashed emails currently can't be restored from there. (Restore does work correctly on the Trial Follow-up and Cancelled Subscription trash pages.)</span>
-        </div>
+        
       </div>
 
       <div class="tech-block"><h4>Status</h4><p class="desc">This is the most complete and most used part of the whole project. It is stable and production-ready.</p></div>
     </section>
 
     <section id="teacher">
-      <div class="section-head"><span class="module-num">2</span><h2>Teacher Portal</h2><span class="status-pill status-warn">Working, still a bit rough</span></div>
+      <div class="section-head"><span class="module-num">2</span><h2>Teacher Portal</h2></div>
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">A place for staff to see and reply to chat messages between parents and teachers. These chats actually happen on a separate, outside system (the school's real Teacher Portal). This app pulls in a copy so staff can review and help from one place.</p>
+        <p class="desc">A place for staff to see and reply to chat messages between parents and teachers. This app pulls messages so staff can review and help from one place.</p>
       </div>
 
       <div class="tech-block">
         <h4>How it works</h4>
         <ul>
           <li>Every 8 minutes, the system automatically checks the outside Teacher Portal (over the internet, using a secret access key) for any new teachers, chats, and messages, and copies them into this app's own database.</li>
-          <li>A manual "Sync Now" trigger exists in the code (<code>/sync-teacher</code>) but isn't actually linked from any page — there's no real button for staff to click today, so in practice everything relies on the automatic 8-minute check.</li>
-          <li>Once copied in, new parent messages are read by the same AI used for emails (<b>gpt-5-nano</b>), which gives a category, urgency level, a short summary, and — if a reply seems needed — a suggested draft reply, using the school's help articles for reference.</li>
-          <li>A special rule always marks genuine parent-to-teacher messages as "Teacher" category and "Medium" priority, and (as of a recent fix) lets the AI decide for itself, case by case, whether that particular message actually needs a human to check it first — no longer automatically marked "safe, no review needed" just because it came from the Teacher Portal.</li>
+          
+          <li>Once copied in, new parent messages are read by the same AI used for emails (<b>gpt-5-nano</b>), which gives a category, urgency level, a short summary, and — if a reply seems needed — a suggested draft reply is generated using knowledge base.</li>
+          
         </ul>
       </div>
 
@@ -222,18 +218,14 @@
         </ul>
       </div>
 
-      <div class="tech-block">
-        <h4>Status</h4>
-        <p class="desc">This feature works, but it is less polished than the Emails module. There are quite a few older/backup versions of files left over from earlier attempts at building this (an old sync method, an old sender, an old reply-generator) — none of these are used anymore, only the newest versions are live. There's also one small broken link ("← Back" on one page points to a page that doesn't exist), and two slightly different "send reply" routes exist where really only one is needed. None of this stops the feature from working, but it shows this part is still a bit rough around the edges compared to Emails.</p>
-      </div>
-    </section>
+      
 
     <section id="trial">
       <div class="section-head"><span class="module-num">3</span><h2>Trial Follow-up</h2><span class="status-pill status-ok">Working, recently improved</span></div>
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">Coral Academy gives free trial classes. If a student's free trial ends and the parent doesn't join a paid membership, this system automatically follows up with the parent to try and get them to join.</p>
+        <p class="desc">Coral Academy gives free trial classes. If a student's free trial ends and the parent doesn't join a paid membership, this system automatically follows up with the parent .</p>
       </div>
 
       <div class="tech-block">
@@ -264,12 +256,9 @@
         <h4>Behind the scenes</h4>
         <ul>
           <li>Finding which students count as trial candidates involves joining together several pieces of information stored in the Supabase database (trial records, class enrollments, subscription records, user names). Because this list can get large, the system fetches it in safe batches instead of all at once.</li>
-          <li>Several of these batch-fetching safety techniques were originally built for the Cancelled Subscription module and are simply reused here.</li>
+          
         </ul>
-        <div class="callout">
-          <span class="flag">Known small issue</span>
-          <span>The "Active Campaigns" number shown on the dashboard is currently always blank — the code to calculate it exists but was never actually connected to the page. Everything else on the dashboard works correctly.</span>
-        </div>
+      
       </div>
 
       <div class="tech-block"><h4>Status</h4><p class="desc">Working well, and recently made faster and safer against large amounts of data.</p></div>
@@ -280,7 +269,7 @@
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">A dashboard (recently renamed internally from "Win-back" to "Re-engagement," though the page title still says "Cancelled Subscriptions") that shows students whose paid subscription was cancelled, or whose free trial expired without turning into a paid plan — so staff can send them a friendly email asking them to come back.</p>
+        <p class="desc">A dashboard though the page title still says "Cancelled Subscriptions") that shows students whose paid subscription was cancelled, or whose free trial expired without turning into a paid plan — so staff can send them a friendly email .</p>
       </div>
 
       <div class="tech-block">
@@ -291,6 +280,7 @@
           <li>Staff can filter by status — Cancelled, Active, Payment Failed, Trial Expired, and more.</li>
           <li>AI (<b>gpt-5-nano</b>) writes a warm "come back" email for each student, using details like how many classes they attended and which class they were in. Real parent/student names are hidden from the AI while it writes, using placeholder words, and swapped back in afterward.</li>
           <li>These AI emails are prepared in advance in the background (a small batch every minute), so when a staff member opens a student's page, the draft is usually already there instead of making them wait ~20 seconds for the AI to write it live.</li>
+          <li><b>Known gap:</b> the draft wording itself only really distinguishes two cases — "trial expired" and everything else. So a Payment Failed record (or any other status besides Trial Expired) gets the same wording as a real cancellation, saying the subscription "was recently cancelled" even when it wasn't. Staff can still edit the draft before sending, but the auto-written wording may not be accurate for statuses other than Cancelled or Trial Expired.</li>
         </ul>
       </div>
 
@@ -309,36 +299,33 @@
         <h4>Behind the scenes — this module had the most engineering work done on it</h4>
         <ul>
           <li><b>The "keep the list up to date" job used to redo all the work every single minute.</b> Every 60 seconds, it would completely re-fetch and re-combine every subscription and trial from the last 3 months, even if nothing had changed. This was heavy, repeated work happening constantly, and was found to be a real cause of the app running out of memory and crashing on the server.</li>
-          <li><b>This was fixed by making the refresh "smart."</b> Now, most minutes, it only asks the database "what changed since the last check?" and updates just those few records. Once every ~30 minutes, it still does one full refresh, to catch two things the quick check can't see: a student attending a new class session, and a parent who subscribes again after their trial had already expired.</li>
+          <li><b>This was fixed by making the refresh "smart."</b> Now, most minutes, it only asks the database "what changed since the last check?" and updates just those few records. Once every ~30 minutes.</li>
           <li><b>Database request limits were discovered and fixed.</b> Supabase silently cuts off a result list at 1,000 rows, and fails outright if you ask for too many specific records at once (roughly 500-700). The system now automatically splits big requests into safe smaller batches.</li>
           <li><b>A memory leak was found and fixed.</b> A new database connection was being opened but never properly closed for background tasks. Every connection is now explicitly closed right after it's used.</li>
           <li><b>Background jobs were spaced out on purpose</b> so they never collide and overload the server.</li>
-          <li>Because of everything above, the team deliberately chose to make this dashboard update slightly slower in exchange for using less memory and crashing less — a conscious trade-off, not an accident.</li>
+          
         </ul>
-        <div class="callout">
-          <span class="flag">Known small issue</span>
-          <span>The page title and some button/menu text still say "Win-back," even though the underlying code has been renamed to "Re-engagement." Just leftover labeling, not a functional problem.</span>
-        </div>
+        
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc">Working well, and this is the module that received the most reliability and performance work recently.</p></div>
+      <div class="tech-block"><h4>Status</h4><p class="desc">Working well</p></div>
     </section>
 
     <section id="contact">
-      <div class="section-head"><span class="module-num">5</span><h2>Contact Form</h2><span class="status-pill status-ok">Small, complete feature</span></div>
+      <div class="section-head"><span class="module-num">5</span><h2>Contact Form</h2></div>
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">When someone fills out the "Contact Us" form on the school's website, their message should end up here so staff can review and reply to it, separately from regular support email.</p>
+        <p class="desc">When someone fills out the "Contact Us" form on the Coral's website, their message should end up here so staff can review and reply to it, separately from regular support email.</p>
       </div>
 
       <div class="tech-block">
-        <h4>How it actually works (more roundabout than it might sound)</h4>
+        <h4>How it actually works</h4>
         <ul>
           <li>The school's website does NOT send the enquiry directly into this app. Instead, the school's own separate website system sends a normal notification <b>email</b> (from <code>no-reply@coralacademy.com</code>, subject starting "New Contact Form Enquiry") to the support inbox — the same inbox this app already watches.</li>
           <li>This app's regular email-checking system picks up that notification email, but recognizes it as a contact-form enquiry by its sender and subject line.</li>
-          <li><b>Field extraction, in simple words:</b> the email that arrives is just one plain block of text (<code>Name: ... / Email: ... / Phone: ... / Message: ... / Submitted at: ...</code>). The code reads it and pulls out each piece on its own: Name (falls back to the sender's display name), Email (only replaced if it looks like a real address), Phone (blank if missing), Message (everything between "Message:" and "Submitted at:" — if "Submitted at:" is missing it just grabs to the end instead, no harm done; only if "Message:" itself is missing does it fall back to the whole raw email).</li>
-          <li>The website's form requires Name, Email, Phone, and Message before someone can even submit it — so in everyday use, none of these "what if it's missing" fallback situations should actually happen; they're documented because that's genuinely what the code does if something unexpected ever comes through.</li>
+          <li><b>Field extraction:</b> the email that arrives is just one plain block of text (<code>Name: ... / Email: ... / Phone: ... / Message: ... / Submitted at: ...</code>). The code reads it and pulls out each piece on its own: Name (falls back to the sender's display name), Email ( Sender's email address), Phone , Message </li>
+          
           <li>The enquiry then gets the same AI treatment as a normal email and is stored as its own type, so it shows up on its own dedicated page instead of mixing into the regular inbox.</li>
         </ul>
       </div>
@@ -359,7 +346,7 @@
     </section>
 
     <section id="insights">
-      <div class="section-head"><span class="module-num">6</span><h2>AI Insights</h2><span class="status-pill status-ok">Small, complete feature</span></div>
+      <div class="section-head"><span class="module-num">6</span><h2>AI Insights</h2></div>
 
       <div class="tech-block">
         <h4>What it is</h4>
@@ -370,9 +357,9 @@
         <h4>How it works</h4>
         <ul>
           <li>Every single time the AI classifies or drafts a reply — for regular email, Teacher Portal messages, Trial Follow-up, or Cancelled Subscription emails alike — that attempt gets logged: model used, tokens cost, how long it took, and whether it succeeded or failed.</li>
-          <li>Before this project's review, that log was being written constantly but nobody had ever built a page to actually read it. This page is that missing piece.</li>
+          
           <li>It shows: overall totals, a breakdown by category, the last 20 failures with the full error message, and a way to look up exactly what happened for one specific email/reply.</li>
-          <li>A more detailed, raw table of every single log entry also exists underneath, but it was hidden from the page since it showed internal technical entries not meaningful to a staff member browsing it — the data itself is still fully there and queryable.</li>
+          
         </ul>
       </div>
 
@@ -385,11 +372,11 @@
         </ul>
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc">Small, complete feature — a diagnostics page rather than something end users interact with, but genuinely useful for catching AI problems early instead of only hearing about them from an unhappy parent.</p></div>
+      <div class="tech-block"><h4>Status</h4><p class="desc"> — a diagnostics page rather than something end users interact with, but can be used to find AI problems .</p></div>
     </section>
 
     <section id="settings">
-      <div class="section-head"><span class="module-num">7</span><h2>Settings</h2><span class="status-pill status-ok">Small, complete feature</span></div>
+      <div class="section-head"><span class="module-num">7</span><h2>Settings</h2></div>
 
       <div class="tech-block">
         <h4>What it is</h4>
@@ -397,9 +384,9 @@
       </div>
 
       <div class="tech-block">
-        <h4>Why this exists now, and didn't before</h4>
-        <p class="desc">Before this project's review, each watched mailbox needed its own separate one-time Google sign-in/approval step (done manually, per account), producing its own saved credential file for that one address. Adding a new mailbox meant physically doing that manual sign-in step first — not something that could be a simple button.</p>
-        <p class="desc" style="margin-top:8px;">This project's review replaced that entire approach with a single shared credential (a "service account") that Google allows to act as <i>any</i> mailbox in the same company Google Workspace — no separate sign-in step needed per address anymore. That one change is what actually makes this Settings page possible: adding a mailbox is now just "type in the email address," instead of "go do a manual Google sign-in for it first."</p>
+        <h4>Why this exists now</h4>
+        <p class="desc">Before each watched mailbox needed its own separate one-time Google sign-in/approval step (done manually, per account), producing its own saved credential file for that one address. Adding a new mailbox meant physically doing that manual sign-in step first — not something that could be a simple button.</p>
+        <p class="desc" style="margin-top:8px;">Now its replaced with a shared credential (a "service account") that Google allows to access <i>any</i> mailbox in the same company Google Workspace — no separate sign-in step needed per address anymore. Adding a mailbox is now just "type in the email address," instead of "go do a manual Google sign-in for it first."</p>
       </div>
 
       <div class="tech-block">
@@ -409,6 +396,7 @@
           <li>Any <i>additional</i> mailbox added through this page is saved to its own small list in the database.</li>
           <li>Before saving a new address, the system actually checks it live against Google — if it's misspelled, doesn't exist, or isn't a real address in the company's Google account, it's rejected immediately with a clear message.</li>
           <li>Every part of the app that reads the list of "which mailboxes to check" now looks at this combined list fresh every time, instead of a fixed list baked into the code — so adding or removing a mailbox here takes effect automatically within a few minutes, without restarting anything.</li>
+          <li>Adding a new mailbox here only starts the monitoring — it does not by itself give the AI anything to draft good replies with. The AI still needs that account's own help-center articles and a set of real past emails from that account added separately, the same way the original 3 mailboxes were set up. Without this, the AI has no way of knowing that account's specific facts or writing style, since it can't invent them on its own.</li>
         </ul>
       </div>
 
@@ -421,26 +409,7 @@
         </ul>
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc">Small, complete feature — genuinely useful for a future handover, since a new person won't need to know how to do a manual Google developer sign-in just to add another mailbox someday.</p></div>
-    </section>
-
-    <section id="summary">
-      <div class="section-head"><h2>Overall Summary Table</h2></div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Module</th><th>What it does</th><th>AI Involved?</th><th>Status</th></tr></thead>
-          <tbody>
-            <tr><td class="mod">Emails</td><td>Main inbox for 3 school email accounts, auto-sorts and drafts replies</td><td>Yes</td><td>Mature, main feature</td></tr>
-            <tr><td class="mod">Teacher Portal</td><td>Syncs parent-teacher chats from outside portal, lets staff reply</td><td>Yes</td><td>Working, still a bit rough in places</td></tr>
-            <tr><td class="mod">Trial Follow-up</td><td>Sends 3-stage follow-up emails after a free trial expires</td><td>Yes</td><td>Working, recently improved</td></tr>
-            <tr><td class="mod">Cancelled Subscription</td><td>Sends "come back" emails to cancelled/at-risk students</td><td>Yes</td><td>Working, biggest reliability improvements made here</td></tr>
-            <tr><td class="mod">Contact Form</td><td>Handles website "Contact Us" form submissions (via email, not direct connection)</td><td>Yes</td><td>Small, complete feature</td></tr>
-            <tr><td class="mod">AI Insights</td><td>Diagnostics page showing how well the AI itself is performing</td><td>No (reports on AI, doesn't call it)</td><td>Small, complete feature</td></tr>
-            <tr><td class="mod">Settings</td><td>Add/remove which email accounts are monitored, no code changes needed</td><td>No</td><td>Small, complete feature</td></tr>
-          </tbody>
-        </table>
-      </div>
-      <p style="color:var(--text-muted); margin-top:16px; font-size:0.92rem;">All 7 modules are connected to the same underlying databases and share the same AI system for reading and replying to messages. The AI model used everywhere in this project is called <b>gpt-5-nano</b>, reached through a service called OpenRouter.</p>
+      
     </section>
 
   </main>

@@ -546,7 +546,7 @@ def attachment_exists(message_id, filename):
         cursor.close()
         db_pool.putconn(conn)
 
-def get_contact_forms(search=None, date_from=None, date_to=None, page=1, page_size=50, status=None):
+def get_contact_forms(search=None, date_from=None, date_to=None, page=1, page_size=50, status=None, read_status=None):
 
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -567,6 +567,15 @@ def get_contact_forms(search=None, date_from=None, date_to=None, page=1, page_si
         if status:
             filters += " AND status = %s"
             params.append(status)
+
+        # Same unread-first / filterable read_status behavior as get_emails()
+        # for the main inbox - see that function's comment for why filtering
+        # to just one subset keeps pagination stable instead of rows
+        # constantly drifting between pages as new unread enquiries arrive.
+        if read_status == "unread":
+            filters += " AND is_read = FALSE"
+        elif read_status == "read":
+            filters += " AND is_read = TRUE"
 
         if search:
             filters += " AND (contact_name ILIKE %s OR sender ILIKE %s OR phone ILIKE %s OR body ILIKE %s)"
@@ -598,7 +607,7 @@ def get_contact_forms(search=None, date_from=None, date_to=None, page=1, page_si
             WHERE mailbox = 'contact_form'
             AND sender NOT IN %s
             {filters}
-            ORDER BY created_at DESC
+            ORDER BY is_read ASC, created_at DESC
             LIMIT %s OFFSET %s
         """, [own_accounts] + params + [page_size, offset])
 
@@ -811,6 +820,32 @@ def update_teacher_ai_fields(message_id, category, priority, summary, draft_repl
     finally:
         cursor.close()
         db_pool.putconn(conn)
+def update_contact_form_ai_fields(row_id, category, priority, summary, draft_reply, requires_review, ai_confidence, reply_type):
+    """Fills in the AI draft/status fields for a contact-form row saved before
+    the slower similar-email/knowledge-base/draft generation finished (see
+    /submit-enquiry) - the row starts as 'Needs Review' with no draft, then
+    this updates it in place once the background AI work completes."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE messages
+            SET category = %s,
+                priority = %s,
+                ai_summary = %s,
+                ai_draft_reply = %s,
+                requires_review = %s,
+                ai_confidence = %s,
+                reply_type = %s
+            WHERE id = %s
+        """, (category, priority, summary, draft_reply, requires_review, ai_confidence, reply_type, row_id))
+        conn.commit()
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
 def get_teacher_messages():
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)

@@ -90,12 +90,19 @@
             placeholder="Search name, email, phone, or message..."
             class="flex-1 min-w-[240px] bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm text-stone-800 placeholder-stone-400">
 
+        <select name="read_status" onchange="this.form.submit()"
+            class="bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-semibold text-[#0F5D7A]">
+            <option value="" {% if not selected_read_status %}selected{% endif %}>Unread &amp; Read</option>
+            <option value="unread" {% if selected_read_status == "unread" %}selected{% endif %}>Unread Only</option>
+            <option value="read" {% if selected_read_status == "read" %}selected{% endif %}>Read Only</option>
+        </select>
+
         <button type="submit"
             class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg font-bold hover:bg-black transition">
             Filter
         </button>
 
-        {% if search_query or selected_date_from or selected_date_to %}
+        {% if search_query or selected_date_from or selected_date_to or selected_read_status %}
         <a href="/contact-dashboard" class="text-[#0F5D7A] text-sm font-bold underline">Clear</a>
         {% endif %}
 
@@ -124,6 +131,9 @@
                         class="contact-checkbox mt-1.5">
 
                     <div>
+                        {% if not contact.is_read %}
+                        <span class="block text-[10px] uppercase font-black text-cyan-700 tracking-wider">Unread</span>
+                        {% endif %}
                         <h2 class="text-lg font-semibold">
                             {{ contact.contact_name or "Unknown" }}
                         </h2>
@@ -186,7 +196,8 @@
     {% set base_qs = {
         'q': search_query or '',
         'date_from': selected_date_from or '',
-        'date_to': selected_date_to or ''
+        'date_to': selected_date_to or '',
+        'read_status': selected_read_status or ''
     } %}
     <div class="flex items-center justify-center gap-4 mt-4">
         <a href="/contact-dashboard?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"

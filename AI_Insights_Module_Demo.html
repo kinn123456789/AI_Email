@@ -89,12 +89,12 @@
   .callout{ display:flex; gap:12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn-ink) 30%, transparent); border-radius: 12px; padding: 16px 18px; margin-top: 14px; font-size: 0.92rem; }
   .callout .flag{ color: var(--warn-ink); font-weight: 700; flex-shrink:0; }
   .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
-  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); }
+  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); table-layout: fixed; }
   th, td{ text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
   th{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-sunken); }
   tr:last-child td{ border-bottom: none; }
-  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: nowrap; }
-  td.role{ color: var(--text-muted); }
+  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: normal; word-break: break-word; width: 32%; }
+  td.role{ color: var(--text-muted); white-space: normal; word-break: break-word; }
   .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
   footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
   @media (prefers-reduced-motion: reduce){ .card{ transition: none; } }
@@ -129,13 +129,12 @@
       <div class="lead-box">
         Every time the AI classifies or drafts a reply — anywhere in the app, not just regular email — it's logged:
         which model, how many tokens, how long it took, and whether it succeeded. This module is the page where
-        that record actually gets read. Before it existed, this table was being <strong>written to constantly and
-        read by nobody</strong> — a real gap found and fixed this session.
+        that record actually gets read.
       </div>
     </section>
 
     <section id="features">
-      <div class="section-head"><span class="kicker">Demo walkthrough</span><h2>Features</h2><p>What's on the <code>/ai-insights</code> page today.</p></div>
+      
       <div class="card-grid">
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7" stroke-width="1.8" stroke-linecap="round"/></svg></div>

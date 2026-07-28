@@ -142,6 +142,7 @@
 
     <section id="features">
       <div class="section-head">
+
         <p>What a staff member can actually do today at <code>/settings</code>.</p>
       </div>
       <div class="card-grid">
@@ -168,7 +169,7 @@
 
       <div class="tech-block">
         <h4>Why this is only possible now <span class="filepill">gmail_auth.py</span></h4>
-        <p class="desc">Before this session, each mailbox needed its own separate Google OAuth consent flow — a one-time manual "sign in and approve" step per account (<code>generate_oauthtoken.py</code>), producing its own token file (<code>token_support.json</code>, <code>token_lucy.json</code>, <code>token_engineering.json</code>) that had to be kept refreshed and stored on the server. Adding a new mailbox meant physically running that consent flow for the new address.</p>
+        <p class="desc">Before this session, each mailbox needed its own separate Google OAuth consent flow — a one-time manual "sign in and approve" step per account (<code>generate_oauthtoken.py</code>), producing its own token file (<code>token_support.json</code>, <code>token_lucy.json</code>, <code>token_engineering.json</code>) that had to be kept refreshed and stored on the server. Adding a new mailbox meant physically running that consent flow for the new address first .</p>
         <p class="desc" style="margin-top:10px;">This session migrated the whole app to <b>Domain-Wide Delegation</b> instead: a single service account (<code>service-account.json</code>) that can impersonate <i>any</i> mailbox in the Google Workspace domain it's been granted access to, via <code>get_gmail_service(email)</code> / <code>imap_login(email)</code> — just given a plain email address, no separate consent step, no token file, no per-account setup at all.</p>
         <div class="callout">
           <span class="flag">Why it matters</span>
@@ -196,7 +197,13 @@
         <p class="desc">Deleting just removes the row from <code>email_accounts</code> — it stops future polling/syncing for that address. It does <b>not</b> delete any emails already saved from that mailbox; that data stays as-is.</p>
       </div>
 
-      
+      <div class="tech-block">
+        <h4>A related fix made alongside this <span class="filepill">main.py</span></h4>
+        <p class="desc"><code>/email/{email_id}/send</code> used to hardcode a 3-way lookup (<code>if source == "support@coralacademy.com": from_email = os.getenv("EMAIL_1") ...</code>) to figure out which address to send a reply from. That would have silently failed to reply for any mailbox added through Settings, since it wasn't one of the 3 hardcoded cases.</p>
+        <div class="callout">
+          <span class="flag">Fixed</span>
+          <span>Now uses <code>source</code> directly as the from-address, since <code>source</code> is always the real mailbox address for both core and Settings-added accounts alike.</span>
+        </div>
       </div>
 
       <div class="tech-block">

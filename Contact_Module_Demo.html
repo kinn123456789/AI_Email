@@ -93,12 +93,12 @@
   .callout{ display:flex; gap:12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn-ink) 30%, transparent); border-radius: 12px; padding: 16px 18px; margin-top: 14px; font-size: 0.92rem; }
   .callout .flag{ color: var(--warn-ink); font-weight: 700; flex-shrink:0; }
   .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
-  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); }
+  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); table-layout: fixed; }
   th, td{ text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
   th{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-sunken); }
   tr:last-child td{ border-bottom: none; }
-  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: nowrap; }
-  td.role{ color: var(--text-muted); }
+  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: normal; word-break: break-word; width: 32%; }
+  td.role{ color: var(--text-muted); white-space: normal; word-break: break-word; }
   .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
   .badge-dead{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--bg-sunken); color: var(--text-muted); }
   code.snippet{ display:block; background: var(--bg-sunken); border-radius: 8px; padding: 10px 14px; margin: 6px 0; font-size: 0.85rem; overflow-x:auto; }
@@ -141,7 +141,7 @@
     </section>
 
     <section id="features">
-      <div class="section-head"><span class="kicker">Demo walkthrough</span><h2>Features</h2></div>
+      <div class="section-head"><h2>Features</h2></div>
       <div class="card-grid">
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.7" stroke-linecap="round"/><path d="M18 16l3 3-3 3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>

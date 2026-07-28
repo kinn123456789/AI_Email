@@ -100,12 +100,12 @@
   .callout{ display:flex; gap:12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn-ink) 30%, transparent); border-radius: 12px; padding: 16px 18px; margin-top: 14px; font-size: 0.92rem; }
   .callout .flag{ color: var(--warn-ink); font-weight: 700; flex-shrink:0; }
   .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
-  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); }
+  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); table-layout: fixed; }
   th, td{ text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
   th{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-sunken); }
   tr:last-child td{ border-bottom: none; }
-  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: nowrap; }
-  td.role{ color: var(--text-muted); }
+  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: normal; word-break: break-word; width: 32%; }
+  td.role{ color: var(--text-muted); white-space: normal; word-break: break-word; }
   .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
   .badge-dead{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--bg-sunken); color: var(--text-muted); }
   footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
@@ -117,7 +117,7 @@
   <div class="hero">
     <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
     <h1>The Trial Follow-Up Module</h1>
-    <p class="lede">A gentle 3-email sequence for learners whose free trial just ended — always AI-drafted, never auto-sent.</p>
+    <p class="lede">A gentle 3-email sequence for learners whose free trial just ended.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
       <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
@@ -141,14 +141,14 @@
       <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
       <div class="lead-box">
         When a learner's free trial ends without them enrolling, this module reaches back out — automatically, but
-        never impulsively. Once a day, it checks whose trial reached the 1-day, 3-day, or 7-day mark since expiry,
-        writes a warm, personalized email with AI, and quietly saves it as a <strong>draft</strong>. Nothing goes out to a real family until a staff member
-        actually opens it, reads it, and clicks Send.
+        never impulsively. Once a day, it checks whose trial reached the 1-day, 3-day or 7-day mark since expiry,
+        writes a personalized email with AI and  saves it as a <strong>draft</strong>. Nothing goes out to a real family until a staff member
+        actually opens it, reads it and clicks Send.
       </div>
     </section>
 
     <section id="features">
-      <div class="section-head"><span class="kicker">Demo walkthrough</span><h2>Features</h2><p>What happens at <code>/trial-followup</code>.</p></div>
+      
       <div class="card-grid">
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.6"/><path d="M12 7v5l4 2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -163,12 +163,12 @@
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
           <h4>Smart Enough to Stop</h4>
-          <p>If a family already enrolled after their trial, the sequence recognizes that and doesn't keep nudging them to sign up.</p>
+          <p>If a family already enrolled after their trial, the sequence recognizes that and stops sending follow-ups.</p>
         </div>
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M4 6h16v12H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
           <h4>Dedicated Dashboard</h4>
-          <p>See every draft, what's due, reply to responses, and review completed campaigns — all in one place.</p>
+          <p>See every draft, what's due, reply to responses and review completed campaigns — all in one place.</p>
         </div>
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -187,11 +187,11 @@
         </div>
         <div class="step">
           <div class="day">Day 3<small>Nudge</small></div>
-          <div class="content"><b>"Keep the momentum going"</b><span>Only sent if email 1 already went out — encourages continuing the learning journey.</span></div>
+          <div class="content"><b>"Keep the momentum going"</b><span>Only drafted if email 1 was already drafted — encourages continuing the learning journey.</span></div>
         </div>
         <div class="step">
           <div class="day">Day 7<small>Last reminder</small></div>
-          <div class="content"><b>"Last reminder"</b><span>Only sent if emails 1 and 2 already went out — the final nudge, and it marks the sequence complete either way.</span></div>
+          <div class="content"><b>"Last reminder"</b><span>Only drafted if emails 1 and 2 were already drafted — the final nudge and it marks the sequence complete either way.</span></div>
         </div>
       </div>
     </section>
@@ -200,14 +200,14 @@
       <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2></div>
 
       <div class="tech-block">
-        <h4>Cadence &amp; candidate logic <span class="filepill">process_trial_followup.py</span></h4>
+        <h4>How the Follow-Up Sequence Works <span class="filepill">process_trial_followup.py</span></h4>
         <p class="desc">Runs once a day at <b>9:00 AM</b> (<code>scheduler.py</code>, <code>CronTrigger(hour=9, minute=0)</code>, confirmed directly in the scheduler registration). Each candidate's own progress is compared against <code>trial_expiry_at</code> vs. right now — exact thresholds, traced directly in the code:</p>
         <ul>
-          <li><b>Email 1:</b> sent once at least 1 day has passed since the trial expired, and email 1 hasn't gone out yet.</li>
-          <li><b>Email 2:</b> sent once at least 3 days have passed since expiry — but only if email 1 already went out and email 2 hasn't.</li>
-          <li><b>Email 3:</b> sent once at least 7 days have passed since expiry — but only if emails 1 <i>and</i> 2 already went out and email 3 hasn't; this also marks the whole campaign complete.</li>
+          <li><b>Email 1:</b> drafted once at least 1 day has passed since the trial expired, and email 1 hasn't been drafted yet.</li>
+          <li><b>Email 2:</b> drafted once at least 3 days have passed since expiry — but only if email 1 was already drafted and email 2 hasn't.</li>
+          <li><b>Email 3:</b> drafted once at least 7 days have passed since expiry — but only if emails 1 <i>and</i> 2 were already drafted and email 3 hasn't; this also marks the whole campaign complete.</li>
           <li>Anyone who already converted to a paid subscription is skipped entirely, regardless of where they are in the sequence.</li>
-          <li>Each candidate's progress (which emails have already been sent) is tracked in its own record, created the first time that trial is seen.</li>
+          <li>Each candidate's progress (which emails have already been drafted) is tracked in its own record, created the first time that trial is seen.</li>
         </ul>
       </div>
 
@@ -218,11 +218,11 @@
           <table>
             <thead><tr><th>Table</th><th>Source</th><th>What it's for</th></tr></thead>
             <tbody>
-              <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Trials that expired in the last 30 days (filtered by expiry date) — wide enough to still catch a trial at its day-3/day-7 marks</td></tr>
-              <tr><td class="file">Enrollments</td><td>Supabase</td><td>Resolves a trial to its learner</td></tr>
+              <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Looks at every trial that ended in the last 30 days, not just today. The job runs once a day and checks each of these trials again and again — that is how it knows when day 1, day 3, and day 7 arrive for each one.</td></tr>
+              <tr><td class="file">Enrollments</td><td>Supabase</td><td>Tells us which child (learner) a trial belongs to.</td></tr>
               <tr><td class="file">Subscriptions</td><td>Supabase</td><td>Excludes learners who already converted to a paid subscription</td></tr>
               <tr><td class="file">Users</td><td>Supabase</td><td>Learner/parent names</td></tr>
-              <tr><td class="file">Class titles lookup</td><td>Supabase (shared with the Subscription module)</td><td>Resolves a learner to their class name</td></tr>
+              <tr><td class="file">Class titles lookup</td><td>Supabase (shared with the Subscription module)</td><td>Tells us which class the learner was trying out, so the email can mention it by name.</td></tr>
               <tr><td class="file">trial_followup_campaigns</td><td>Main app Postgres</td><td>Tracks each candidate's own progress — which of the 3 emails have been sent, and campaign status</td></tr>
             </tbody>
           </table>
@@ -232,7 +232,7 @@
 
       <div class="tech-block">
         <h4>How "already converted" is actually checked <span class="filepill">trial_followup.py</span></h4>
-        <p class="desc">"Smart Enough to Stop" isn't detecting a change or an event — it's a simple snapshot check on two timestamps, re-run fresh every single day the job runs, not just once when the campaign starts:</p>
+        <p class="desc">"Smart Enough to Stop" isn't detecting a change or an event — it's a snapshot check on two timestamps, re-run fresh every single day the job runs, not just once when the campaign starts:</p>
         <code class="snippet">if subscribed_at and start:
     subscribed_at = isoparse(subscribed_at)
     if subscribed_at &gt;= start:
@@ -243,10 +243,6 @@
           <li><b>subscribed_at &gt;= start</b> answers a genuine before/after question — "did the subscription start at or after this trial started?" That's what actually matters for "did this trial lead to a conversion," not an equality check like subscribed_at != expiry, which would almost always be True anyway since two independently-recorded timestamps are essentially never identical down to the second.</li>
         </ul>
         <p class="desc" style="margin-top:10px;"><b>Worked example:</b> trial starts July 1, expires July 15, subscription starts July 10 → July 10 &gt;= July 1 → True → correctly counted as converted. If instead the learner had some unrelated old active subscription from back in March → March &gt;= July 1 → False → correctly not counted, since that subscription predates this trial.</p>
-        <div class="callout">
-          <span class="flag">Fixed this session</span>
-          <span>This check re-runs fresh every day, so converting mid-sequence correctly stops later emails. Previously nothing wrote back to the learner's campaign row to mark it "converted" — it just silently sat at status="active" forever. Now mark_followup_converted(learner_id) sets status='converted' at the exact point conversion is detected (only on a still-active row) — a distinct outcome from status='completed' (finishing all 3 emails without converting), so the separate "Completed Campaigns" count stays accurate.</span>
-        </div>
         <div class="callout">
           <span class="flag">Also worth knowing</span>
           <span>The check only looks for subscription_status == "active" — not "anything other than expired." A learner who subscribed and then had that subscription cancelled or a payment fail would not be caught by this, so they'd still be treated as a valid follow-up candidate and keep getting nudged, even though they did convert at some point.</span>
@@ -260,21 +256,14 @@
           <li>Uses the same name-hiding technique as the Subscription &amp; Re-engagement module: the AI only ever sees generic placeholder tokens for the parent and learner's names while writing, and the real names are swapped back in afterward — meant to stop the AI from ever inventing or mixing up a name.</li>
           <li>Every attempt (success or failure) is logged for later debugging; a safe fallback template is used if the AI call fails.</li>
         </ul>
-        <div class="callout">
-          <span class="flag">Fixed this session</span>
-          <span>Just like the Subscription module, the placeholder swap-back is now checked afterward: if any leftover bracketed placeholder-shaped text is found in the body, the draft is discarded and the safe fallback template is used instead — a stray placeholder can no longer sit unnoticed in a draft shown to staff.</span>
-        </div>
       </div>
 
       <div class="tech-block">
         <h4>Draft-first by design</h4>
-        <p class="desc">Sending is deliberately not automatic anywhere in this flow — every generated email is saved as a draft first, and the actual send only happens when a staff member clicks Send from the dashboard. This was a conscious choice in how the feature was built, not a missing step.</p>
+        <p class="desc">Sending is deliberately not automatic anywhere in this flow — every generated email is saved as a draft first, and the actual send only happens when a staff member clicks Send from the dashboard.</p>
       </div>
 
-      <div class="tech-block">
-        <h4>Cleanup note</h4>
-        <p class="desc">Two old files in this area (<code>trial_followup_scheduler.py</code>, an earlier standalone scheduler prototype, and <code>trial_email_sender.py</code>, an unused duplicate of the live sending code) are not used by the running app and are safe candidates for removal.</p>
-      </div>
+     
     </section>
 
     <section id="reference">
@@ -288,8 +277,6 @@
             <tr><td class="file">trial_followup.py</td><td class="role">Powers the dashboard — viewing, replying, trash/restore</td></tr>
             <tr><td class="file">followup_email.py</td><td class="role">Actually sends the email once staff click Send</td></tr>
             <tr><td class="file">templates/trial_followup*.html</td><td class="role">Dashboard, single-email view, and completed campaigns view</td></tr>
-            <tr><td class="file">trial_followup_scheduler.py</td><td class="role">Earlier standalone scheduler prototype, no longer used</td></tr>
-            <tr><td class="file">trial_email_sender.py</td><td class="role">Unused duplicate of followup_email.py, no longer used</td></tr>
           </tbody>
         </table>
       </div>

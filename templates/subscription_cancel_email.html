@@ -30,7 +30,7 @@
                 </p>
                 {% if row.canceled_at_display %}
                 <p class="flex items-center gap-1.5">🕒 <span class="text-stone-500">
-                    {% if row.subscription_status == "trial_expired" %}Trial Expired:{% else %}Cancelled:{% endif %}
+                    {{ row.subscription_status|replace("_", " ")|title }}:
                 </span> <span class="font-medium text-stone-800 local-time" data-utc="{{ row.canceled_at_display }}"></span></p>
                 {% endif %}
                 {% if row.sessions_attended is defined %}
@@ -67,6 +67,11 @@
         <div class="mb-4">
             <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase px-1 mb-2">✉️ Email Content</h2>
             <div class="bg-white/60 border border-cyan-300/40 p-5 rounded-2xl whitespace-pre-wrap break-words text-stone-700 text-sm leading-relaxed shadow-inner">{{ body }}</div>
+        </div>
+        {% elif subject is none %}
+        <div class="mb-4 p-5 bg-amber-100/60 border border-amber-300 rounded-2xl">
+            <p class="text-amber-900 font-semibold">No AI draft available</p>
+            <p class="text-amber-800 text-sm mt-1">Drafts are only auto-written for Cancelled and Trial Expired records, since those are the only cases the AI's wording is written to handle accurately. This record's status is "{{ row.subscription_status|replace("_", " ")|title }}" — write the email manually if one is needed.</p>
         </div>
         {% else %}
         <h2 class="text-lg font-bold mb-4 text-stone-800">Review AI Draft</h2>

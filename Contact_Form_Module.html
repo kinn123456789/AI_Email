@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Settings Module — Coral Academy</title>
+<title>The Contact Form Module — Coral Academy</title>
 <style>
   :root{
     --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
@@ -99,7 +99,9 @@
   tr:last-child td{ border-bottom: none; }
   td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: normal; word-break: break-word; width: 32%; }
   td.role{ color: var(--text-muted); white-space: normal; word-break: break-word; }
-  code.snippet{ display:block; background: var(--bg-sunken); border-radius: 8px; padding: 10px 14px; margin: 6px 0; font-size: 0.85rem; overflow-x:auto; white-space: pre; }
+  .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
+  .badge-dead{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--bg-sunken); color: var(--text-muted); }
+  code.snippet{ display:block; background: var(--bg-sunken); border-radius: 8px; padding: 10px 14px; margin: 6px 0; font-size: 0.85rem; overflow-x:auto; }
   footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
   @media (prefers-reduced-motion: reduce){ .card{ transition: none; } }
 </style>
@@ -108,8 +110,8 @@
 <div class="layout">
   <div class="hero">
     <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
-    <h1>The Settings Module</h1>
-    <p class="lede">Managing which email accounts this app watches, reads, and sends from — without touching code.</p>
+    <h1>The Contact Form Module</h1>
+    <p class="lede">How a website enquiry becomes a reply-ready message in its own dashboard.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
       <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
@@ -130,35 +132,40 @@
   <main>
     <section id="overview">
       <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
-      <div class="lede-box lead-box">
-        This app watches specific mailboxes (support@, lucy@, engineering@coralacademy.com) — reading incoming mail,
-        sending replies, learning writing style from sent mail, all of it. Until this session, which mailboxes were
-        watched was <strong>hardcoded in the code</strong>, repeated across several files — adding or removing one
-        meant editing code and redeploying. The Settings page fixes that: a staff member can add or delete a
-        monitored mailbox from a simple page, and it takes effect automatically within a few minutes — no code
-        change, no redeploy.
+      <div class="lead-box">
+        When someone fills out the contact form on Coral Academy's website, it doesn't need a separate system —
+        it arrives as a normal email, gets automatically recognized, and has its name, email, phone, and message
+        <strong>neatly pulled apart</strong> from the raw form text. It then shows up in its own dedicated dashboard,
+        completely separate from the regular inbox, ready for a staff member to reply to directly.
       </div>
     </section>
 
     <section id="features">
-      <div class="section-head">
-        <p>What a staff member can actually do today at <code>/settings</code>.</p>
-      </div>
       <div class="card-grid">
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>See Every Monitored Mailbox</h4>
-          <p>The 3 "core" accounts (support/lucy/engineering, always present) plus anything added here, each shown with its status.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.7" stroke-linecap="round"/><path d="M18 16l3 3-3 3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Automatic Recognition</h4>
+          <p>Enquiry emails from the website are recognized the moment they arrive — no manual sorting needed.</p>
         </div>
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <h4>Add an Email Account</h4>
-          <p>Type in an address and click "+ Add Email." It's checked live against Gmail before being saved, so a typo or a non-Workspace address is caught immediately with a clear error.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 9l5 5 5-5" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 17v3h16v-3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Clean Field Extraction</h4>
+          <p>Name, email, phone number, and the actual message are separated out of the form's plain-text layout — the raw template text never shows up in the reply thread.</p>
         </div>
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Delete an Email Account</h4>
-          <p>Removes an added mailbox from being monitored. Only accounts added through this page can be deleted here — the 3 core accounts can't be removed from this screen.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M4 6h16v12H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <h4>Its Own Dashboard</h4>
+          <p>A dedicated view, entirely separate from the main inbox, listing every enquiry with search across name, email, phone, and message.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 11l18-8-8 18-3-7-7-3z" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h4>Reply Like Any Email</h4>
+          <p>Replying works exactly like a normal email reply — it goes straight to the visitor's real email address.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16v12H4z" stroke-width="1.6"/><path d="M4 6l8 7 8-7" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+          <h4>Sent History</h4>
+          <p>A filtered view shows only the enquiries that have already been replied to — easy to see what's still outstanding.</p>
         </div>
       </div>
     </section>
@@ -167,53 +174,41 @@
       <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2></div>
 
       <div class="tech-block">
-        <h4>Why this is only possible now <span class="filepill">gmail_auth.py</span></h4>
-        <p class="desc">Before this session, each mailbox needed its own separate Google OAuth consent flow — a one-time manual "sign in and approve" step per account (<code>generate_oauthtoken.py</code>), producing its own token file (<code>token_support.json</code>, <code>token_lucy.json</code>, <code>token_engineering.json</code>) that had to be kept refreshed and stored on the server. Adding a new mailbox meant physically running that consent flow for the new address.</p>
-        <p class="desc" style="margin-top:10px;">This session migrated the whole app to <b>Domain-Wide Delegation</b> instead: a single service account (<code>service-account.json</code>) that can impersonate <i>any</i> mailbox in the Google Workspace domain it's been granted access to, via <code>get_gmail_service(email)</code> / <code>imap_login(email)</code> — just given a plain email address, no separate consent step, no token file, no per-account setup at all.</p>
-        <div class="callout">
-          <span class="flag">Why it matters</span>
-          <span>That one change is what makes this Settings page realistic to build. Adding an account is now just "save the email address," not "run a manual consent flow for it first."</span>
-        </div>
+        <h4>Detection rule <span class="filepill">email_filter.py</span></h4>
+        <p class="desc">An email is recognized as a contact-form enquiry when both are true:</p>
+        <ul>
+          <li>The sender is <code>no-reply@coralacademy.com</code></li>
+          <li>The subject starts with <code>"New Contact Form Enquiry"</code> (not case-sensitive)</li>
+        </ul>
+        <p class="desc">When matched, it's tagged with category <code>"Contact Form Enquiry"</code> and mailbox <code>"contact_form"</code> — which is what routes it to its own dashboard instead of the main inbox.</p>
       </div>
 
       <div class="tech-block">
-        <h4>Where accounts are stored <span class="filepill">database.py</span></h4>
+        <h4>Field extraction <span class="filepill">process_email.py</span></h4>
+        <p class="desc">In simple words: the email that arrives is just one plain block of text. Without any processing, staff would see this whole messy block instead of a clean record:</p>
+        <code class="snippet">Name: ...
+Email: ...
+Phone: ...
+Message: ...
+Submitted at: ...</code>
+        <p class="desc" style="margin-top:10px;">So the code reads it and pulls out each piece on its own:</p>
         <ul>
-          <li><b>CORE_EMAIL_ACCOUNTS</b> — the 3 original mailboxes, still read from the <code>EMAIL_1</code>/<code>EMAIL_2</code>/<code>EMAIL_3</code> environment variables, not stored in a table. This is why they can't be deleted from the Settings page — that would need an env var change and a redeploy anyway, same as before this feature existed.</li>
-          <li><b>email_accounts table</b> (new this session) — every mailbox added through Settings: email, source label, status, created-at.</li>
-          <li><b>get_all_email_accounts()</b> — merges the 3 core accounts with every active row in <code>email_accounts</code>, fetched <b>fresh on every call</b>, never cached. <code>email_reader.py</code>, <code>sync_sent_gmail.py</code>, <code>learn_email_style.py</code>, <code>gmail_watch.py</code>, and <code>gmail_history.py</code> all call this instead of a hardcoded list, so an account added or deleted here is picked up on the very next scheduled run.</li>
+          <li><b>Name</b> — takes the text after "Name:"</li>
+          <li><b>Email</b> — takes the text after "Email:" </li>
+          <li><b>Phone</b> — takes the text after "Phone" </li>
+          <li><b>Message</b> — the actual question the person typed. Grabs everything after "Message</li>
         </ul>
       </div>
 
       <div class="tech-block">
-        <h4>Validation on add <span class="filepill">main.py</span></h4>
-        <p class="desc">Before saving, the route calls <code>get_gmail_service(email).users().getProfile()</code> — a real, live Gmail API call impersonating that exact address.If the address is misspelled, does not exist as a Google Workspace mailbox, or cannot be accessed through Domain-Wide Delegation, validation fails immediately and the account is not saved.</p>
-        <p class="desc" style="margin-top:10px;">On success, it also best-effort registers a push-notification watch right away, so syncing starts immediately instead of waiting for the once-daily renewal job — the 5-minute polling backup covers the mailbox regardless if that specific call fails.</p>
-      </div>
-
-      <div class="tech-block">
-        <h4>Deleting an account</h4>
-        <p class="desc">Deleting just removes the row from <code>email_accounts</code> — it stops future polling/syncing for that address. It does <b>not</b> delete any emails already saved from that mailbox; that data stays as-is.</p>
-      </div>
-
-      
-      </div>
-
-      <div class="tech-block">
-        <h4>Important note — adding new mailboxes</h4>
-        <p class="desc">Adding a new mailbox only enables the app to read, monitor, and send from that email account. It does <b>not</b> automatically teach the AI how to answer new categories of questions that may arrive through that mailbox.</p>
-        <p class="desc" style="margin-top:10px;">If a newly added mailbox serves a different purpose (for example, teacher communication rather than general customer support), the Knowledge Base and historical email library should also be reviewed and expanded to cover those topics. Otherwise, depending on the type of enquiries received, the AI may:</p>
+        <h4>Where the data lives <span class="filepill">database.py</span></h4>
         <ul>
-          <li>not have sufficient information to answer confidently,</li>
-          <li>generate inconsistent responses,</li>
-          <li>or have drafts blanked by the teacher-content(for example, if teacher-facing content is retrieved for a customer-facing reply).</li>
+          <li>Contact name and phone are stored in their own dedicated columns on the messages table.</li>
+          <li>The dashboard query specifically excludes Coral Academy's own internal addresses, so only real visitor enquiries ever show up.</li>
         </ul>
-        <div class="callout">
-          <span class="flag">For best results</span>
-          <span>Ensure the Knowledge Base and representative historical emails are updated whenever a newly monitored mailbox introduces substantially different types of enquiries.</span>
-        </div>
-        <p class="desc" style="margin-top:10px;">The Settings module controls which mailboxes are monitored; the Knowledge Base and historical emails determine what the AI knows about those mailboxes' enquiries.</p>
       </div>
+
+     
     </section>
 
     <section id="reference">
@@ -222,18 +217,17 @@
         <table>
           <thead><tr><th>File</th><th>Role</th></tr></thead>
           <tbody>
-            <tr><td class="file">gmail_auth.py</td><td class="role">Central Domain-Wide Delegation auth — get_gmail_service(email), imap_login(email)</td></tr>
-            <tr><td class="file">database.py</td><td class="role">CORE_EMAIL_ACCOUNTS, get_all_email_accounts(), add_email_account(), delete_email_account()</td></tr>
-            <tr><td class="file">main.py — <code>/settings</code>, <code>/settings/accounts/add</code>, <code>/settings/accounts/{id}/delete</code></td><td class="role">The page and its two actions</td></tr>
-            <tr><td class="file">templates/settings.html</td><td class="role">The Settings page itself</td></tr>
-            <tr><td class="file">templates/home.html</td><td class="role">Has the Settings card linking here</td></tr>
-            <tr><td class="file">gmail_watch.py</td><td class="role">Registers and renews Gmail watches for monitored mailboxes</td></tr>
+            <tr><td class="file">email_filter.py</td><td class="role">Recognizes an incoming email that is a contact-form enquiry</td></tr>
+            <tr><td class="file">process_email.py</td><td class="role">Extracts name/email/phone/message from the form email</td></tr>
+            <tr><td class="file">database.py</td><td class="role">Stores and queries contact-form entries</td></tr>
+            <tr><td class="file">templates/contact_dashboard.html</td><td class="role">The dedicated dashboard staff use day to day</td></tr>
+            <tr><td class="file">main.py — <code>/contact-dashboard</code>, <code>/contact-dashboard/sent</code></td><td class="role">Routes powering the dashboard and its sent-history view</td></tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
-  <footer>Settings Module &nbsp;·&nbsp; Coral Academy</footer>
+  <footer>Contact Form Module &nbsp;·&nbsp; Coral Academy</footer>
 </div>
 </body>
 </html>

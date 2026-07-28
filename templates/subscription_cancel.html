@@ -51,7 +51,7 @@
 <!-- Metrics Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl transition hover:scale-[1.02]">
-<h3 class="text-cyan-950/70 text-sm font-bold">Total Cancelled</h3>
+<h3 class="text-cyan-950/70 text-sm font-bold">{{ "Total (" + selected_status|replace("_", " ")|title + ")" if selected_status else "Total (All Statuses)" }}</h3>
 <p class="text-3xl font-bold text-gray-950 mt-1">{{ total }}</p>
 </div>
 </div>

@@ -106,9 +106,13 @@ def get_trial_followup_candidates():
 
     with ThreadPoolExecutor(max_workers=3) as executor:
         class_titles_future = executor.submit(_build_class_titles_lookup, learner_ids)
+        # Not filtered to subscription_status == "active" - a learner who
+        # converted and then cancelled/had a payment fail still converted
+        # once, which is all this module cares about (subscribed_at is what
+        # actually proves conversion below). Ongoing cancellation/win-back
+        # handling belongs to subscription_cancel.py's module, not here.
         subscriptions_future = executor.submit(
-            _fetch_in_chunks, "Subscriptions", "learner_id, subscription_status, subscribed_at", "learner_id", learner_ids,
-            lambda q: q.eq("subscription_status", "active")
+            _fetch_in_chunks, "Subscriptions", "learner_id, subscription_status, subscribed_at", "learner_id", learner_ids
         )
         user_future = executor.submit(_fetch_in_chunks, "Users", "user_id, name", "user_id", learner_ids)
 
@@ -227,6 +231,9 @@ def get_followup_history(learner_ids):
         email1_sent_at,
         email2_sent_at,
         email3_sent_at,
+        email1_drafted_at,
+        email2_drafted_at,
+        email3_drafted_at,
         status
     FROM trial_followup_campaigns
     WHERE learner_id = ANY(%s::uuid[])
@@ -366,6 +373,67 @@ def update_followup_email3_sent(learner_id):
             SET
                 email3_sent_at=NOW(),
                 status='completed',
+                updated_at=NOW()
+            WHERE learner_id=%s
+        """,(learner_id,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+# emailN_drafted_at tracks when the AI draft for that step was generated -
+# distinct from emailN_sent_at above, which only advances once a staff member
+# actually clicks Send on that draft (see main.py's manual-send route).
+def update_followup_email1_drafted(learner_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_campaigns
+            SET
+                email1_drafted_at = NOW(),
+                updated_at = NOW()
+            WHERE learner_id=%s
+        """,(learner_id,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def update_followup_email2_drafted(learner_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_campaigns
+            SET
+                email2_drafted_at=NOW(),
+                updated_at=NOW()
+            WHERE learner_id = %s
+        """,(learner_id,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+def update_followup_email3_drafted(learner_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_campaigns
+            SET
+                email3_drafted_at=NOW(),
                 updated_at=NOW()
             WHERE learner_id=%s
         """,(learner_id,))

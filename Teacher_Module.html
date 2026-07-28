@@ -141,7 +141,7 @@
 
     <section id="features">
       <div class="section-head">
-        
+       
         <p>What a staff member can actually do today at <code>/teacher-inbox</code>.</p>
       </div>
 
@@ -172,7 +172,7 @@
           <div class="card">
             <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 11h6M9 14h6M9 8h3" stroke-width="1.6" stroke-linecap="round"/></svg></div>
             <h4>AI Draft Replies</h4>
-            <p>Where it's safe to, a suggested reply is pre-written and ready to edit — grounded in Coral Academy's Help Center content.</p>
+            <p>Where it's safe to, a suggested reply is pre-written and ready to edit — grounded in Coral Academy's Help Center content, same as the main email assistant.</p>
           </div>
         </div>
       </div>
@@ -243,7 +243,7 @@
           <li>No code in this repository (<code>teacher_portal_api_reader.py</code>, <code>teacher_api_sync.py</code>, <code>teacher_api_sender.py</code>) has been modified in the days surrounding the onset of this issue — <code>git log</code> shows the last change to the reader/sync files predates the failure by several commits, ruling out a regression on the application side.</li>
         </ul>
         <div class="callout"><span class="flag">Next step</span><span>Confirm with whoever manages the pre-production Teacher Portal API/infrastructure whether the <code>TEACHER_PORTAL_API_KEY</code> currently configured in this app's environment is still valid, and whether any gateway/routing change was deployed to <code>api.preprod.coralacademy.com</code> around 2026-07-26.</span></div>
-        <div class="callout"><span class="flag">Possible fallback</span><span>The permanent API key (<code>TEACHER_PORTAL_API_KEY</code>) is not working consistently — most likely due to a gateway/auth-layer issue on the pre-production side rather than the key itself being revoked (the identical 405 across every method/endpoint points upstream of the actual API logic, not to a per-endpoint restriction). <code>teacher_portal_reader.py</code> and <code>teacher_portal_sender.py</code> are older, still-functional integrations that hit real Teacher Portal endpoints using a short-lived <code>Authorization: Bearer</code> token instead of the API key. That token can only be obtained by logging into the Teacher Portal UI, so it can't be renewed by a plain scheduled script. As a stopgap, Playwright could drive an actual browser session to log in, capture that Bearer token, and call those endpoints directly — automating what a human would otherwise have to do manually every ~30 minutes. This would only be a temporary workaround until the pre-production API key issue is resolved, not a long-term replacement for it.</span></div>
+        <div class="callout"><span class="flag">Possible last-resort fallback (not recommended right now)</span><span>The permanent API key (<code>TEACHER_PORTAL_API_KEY</code>) is not working consistently — most likely due to a gateway/auth-layer issue on the pre-production side rather than the key itself being revoked (the identical 405 across every method/endpoint points upstream of the actual API logic, not to a per-endpoint restriction). <code>teacher_portal_reader.py</code> and <code>teacher_portal_sender.py</code> are older, still-functional integrations that hit real Teacher Portal endpoints using a short-lived <code>Authorization: Bearer</code> token instead of the API key. That token can only be obtained by logging into the Teacher Portal UI, so it can't be renewed by a plain scheduled script — in theory, Playwright could drive a browser session to log in and capture that token automatically. In practice this isn't a good option today: it requires running a headless Chromium browser on a schedule, and this app already runs on a memory-constrained 512MB Render instance that has suffered repeated OOM kills, one of them already tied to Chromium memory usage from an existing feature (<code>sync_help_center.py</code>). Adding a second, heavier Chromium-based job here would risk causing further crashes rather than fixing anything, and it doesn't address the actual root cause. This app is also built as a unified, API-first inbox — Gmail and the Teacher Portal are both integrated via clean REST/API calls, not browser scraping — so a Playwright-based workaround would be an architectural mismatch, not just a resource risk. It's noted here only as a theoretical last resort if the pre-production API issue turns out to be unfixable; the priority right now should stay on getting the API/gateway issue resolved at the source.</span></div>
       </div>
 
     </section>

@@ -1458,17 +1458,31 @@ def _get_draft_row_keys():
         db_pool.putconn(conn)
 
 
+_DRAFTABLE_STATUSES = {"cancelled", "trial_expired"}
+
+
 def prefetch_reengagement_drafts(batch_size=5):
     """Generate+cache AI drafts for non-dismissed rows that don't have one
     yet, so opening a row is instant instead of triggering a ~20s synchronous
     AI call on first click. Meant to be called periodically from
     scheduler.py — bounded by batch_size per call so a large backlog doesn't
-    turn one run into an hours-long block."""
+    turn one run into an hours-long block.
+
+    Only "cancelled" and "trial_expired" rows get an auto-generated draft —
+    generate_reengagement_email() only has accurate wording for those two;
+    every other status (Payment Failed, Active, Past Due, etc.) would get
+    the same "your subscription was recently cancelled" wording whether or
+    not that's actually true, so those are left without a draft rather than
+    generating one that may be wrong."""
 
     rows = get_cancelled_subscriptions(page_size=100000)["rows"]
     existing = _get_draft_row_keys()
 
-    missing = [r for r in rows if r["row_key"] not in existing]
+    missing = [
+        r for r in rows
+        if r["row_key"] not in existing
+        and r["subscription_status"] in _DRAFTABLE_STATUSES
+    ]
 
     for row in missing[:batch_size]:
         try:
@@ -1490,7 +1504,11 @@ def backfill_reengagement_drafts(concurrency=10):
     rows = get_cancelled_subscriptions(page_size=100000)["rows"]
     existing = _get_draft_row_keys()
 
-    missing = [r for r in rows if r["row_key"] not in existing]
+    missing = [
+        r for r in rows
+        if r["row_key"] not in existing
+        and r["subscription_status"] in _DRAFTABLE_STATUSES
+    ]
 
     print(f"Backfilling {len(missing)} drafts with concurrency={concurrency}")
 

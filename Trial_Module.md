@@ -6,13 +6,13 @@
 
 ## 🌟 What This Module Does (Simple Version)
 
-When a learner's free trial ends without them enrolling, this module reaches back out — automatically, but never impulsively. Once a day, it checks whose trial reached the 1-day, 3-day, or 7-day mark since expiry, writes a warm, personalized email with AI, and quietly saves it as a **draft**. Nothing goes out to a real family until a staff member actually opens it, reads it, and clicks Send.
+When a learner's free trial ends without them enrolling, this module reaches back out — automatically. Once a day, it checks whose trial reached the 1-day, 3-day, or 7-day mark since expiry, writes a warm, personalized email with AI, and quietly saves it as a **draft**. Nothing goes out to a real family until a staff member actually opens it, reads it, and clicks Send.
 
 ---
 
 ## 🎬 Features
 
-1. **Automatic Daily Check** — once a day, every free trial that has reached its 1/3/7-day follow-up mark is found automatically (a fixed bug this session: the candidate-fetching window had been temporarily narrowed to "expired today only" for manual testing and never reverted, which meant email 2 and 3 could never actually fire — restored to a 30-day lookback window).
+1. **Automatic Daily Check** — once a day, every free trial that has reached its 1/3/7-day follow-up mark is found automatically.
 2. **AI-Written, Human-Sent** — each email is drafted by AI, but always waits for a staff member's review and click.
 3. **Smart Enough to Stop** — if a learner already enrolled after their trial, the sequence recognizes that and doesn't keep nudging them.
 4. **Dedicated Dashboard** — see every draft, what's due, reply to responses, review completed campaigns.
@@ -23,8 +23,8 @@ When a learner's free trial ends without them enrolling, this module reaches bac
 | Day | Tone |
 |---|---|
 | Day 1 | Thank-you for trying the trial |
-| Day 3 | Nudge to continue the learning journey (only sent if Day 1 already went out) |
-| Day 7 | Last reminder (only sent if Days 1 and 3 already went out; marks the sequence complete either way) |
+| Day 3 | Nudge to continue the learning journey (only drafted if Day 1 was already drafted) |
+| Day 7 | Last reminder (only drafted if Days 1 and 3 were already drafted; marks the sequence complete either way) |
 
 ---
 
@@ -36,12 +36,12 @@ When a learner's free trial ends without them enrolling, this module reaches bac
 
 | Table | Source | What it's for |
 |---|---|---|
-| `FreeTrialPass` | Supabase | Trials that expired in the last 30 days (filtered by `expiry_at`) — wide enough to still catch a trial at its actual day-3/day-7 marks, not just the day it expired |
-| `Enrollments` | Supabase | Resolves a trial to its `learner_id` |
+| `FreeTrialPass` | Supabase | Looks at every trial that ended in the last 30 days, not just today. The job runs once a day and checks each of these trials again and again — that is how it knows when day 1, day 3, and day 7 arrive for each one. |
+| `Enrollments` | Supabase | Tells us which child (learner) a trial belongs to. |
 | `Subscriptions` | Supabase | Used to exclude learners who already converted to a paid subscription after their trial started |
 | `Users` | Supabase | Learner/parent names |
-| Class titles lookup (shared with the Subscription module, from `subscription_cancel.py`) | Supabase | Resolves a learner to their class name |
-| `trial_followup_campaigns` | Main app Postgres (`database.py`) | Tracks each candidate's own progress — `email1_sent_at`, `email2_sent_at`, `email3_sent_at`, `status` — created the first time a candidate is seen |
+| Class titles lookup (shared with the Subscription module, from `subscription_cancel.py`) | Supabase | Tells us which class the learner was trying out, so the email can mention it by name. |
+| `trial_followup_campaigns` | Main app Postgres (`database.py`) | Tracks each candidate's own progress — `email1_drafted_at`, `email2_drafted_at`, `email3_drafted_at`, `status` — created the first time a candidate is seen |
 
 **No external Coral Academy REST API is involved** — candidates are pulled from these Supabase tables, same as the Subscription module.
 

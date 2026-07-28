@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Settings Module — Coral Academy</title>
+<title>The AI Insights Module — Coral Academy</title>
 <style>
   :root{
     --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
@@ -71,10 +71,6 @@
   .section-head p{ color: var(--text-muted); margin-top: 10px; max-width: 68ch; }
   .lead-box{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; box-shadow: var(--shadow); font-size: 1.05rem; }
   .lead-box strong{ color: var(--accent-ink); }
-  .group{ margin-bottom: 36px; } .group:last-child{ margin-bottom: 0; }
-  .group-title{ display:flex; align-items:baseline; gap: 10px; margin-bottom: 16px; }
-  .group-title h3{ font-size: 1.15rem; color: var(--secondary); }
-  .group-title .rule{ flex:1; height:1px; background: var(--border); }
   .card-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
   .card{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.15s ease; }
   .card:hover{ transform: translateY(-2px); }
@@ -99,7 +95,7 @@
   tr:last-child td{ border-bottom: none; }
   td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: normal; word-break: break-word; width: 32%; }
   td.role{ color: var(--text-muted); white-space: normal; word-break: break-word; }
-  code.snippet{ display:block; background: var(--bg-sunken); border-radius: 8px; padding: 10px 14px; margin: 6px 0; font-size: 0.85rem; overflow-x:auto; white-space: pre; }
+  .badge-live{ font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:999px; background: var(--secondary-soft); color: var(--secondary); }
   footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
   @media (prefers-reduced-motion: reduce){ .card{ transition: none; } }
 </style>
@@ -108,8 +104,8 @@
 <div class="layout">
   <div class="hero">
     <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
-    <h1>The Settings Module</h1>
-    <p class="lede">Managing which email accounts this app watches, reads, and sends from — without touching code.</p>
+    <h1>The AI Insights Module</h1>
+    <p class="lede">A window into what the AI is actually doing — every call, every token, every error, all in one place.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
       <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
@@ -130,36 +126,40 @@
   <main>
     <section id="overview">
       <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
-      <div class="lede-box lead-box">
-        This app watches specific mailboxes (support@, lucy@, engineering@coralacademy.com) — reading incoming mail,
-        sending replies, learning writing style from sent mail, all of it. Until this session, which mailboxes were
-        watched was <strong>hardcoded in the code</strong>, repeated across several files — adding or removing one
-        meant editing code and redeploying. The Settings page fixes that: a staff member can add or delete a
-        monitored mailbox from a simple page, and it takes effect automatically within a few minutes — no code
-        change, no redeploy.
+      <div class="lead-box">
+        Every time the AI classifies or drafts a reply — anywhere in the app, not just regular email — it's logged:
+        which model, how many tokens, how long it took, and whether it succeeded. This module is the page where
+        that record actually gets read. 
       </div>
     </section>
 
     <section id="features">
-      <div class="section-head">
-        <p>What a staff member can actually do today at <code>/settings</code>.</p>
-      </div>
+      <div class="section-head"><h2>Features</h2><p>What's on the <code>/ai-insights</code> page today.</p></div>
       <div class="card-grid">
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>See Every Monitored Mailbox</h4>
-          <p>The 3 "core" accounts (support/lucy/engineering, always present) plus anything added here, each shown with its status.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h4>Summary Stats</h4>
+          <p>Total AI calls, how many failed, total tokens used, and average response time — a quick health check at a glance.</p>
         </div>
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round"/></svg></div>
-          <h4>Add an Email Account</h4>
-          <p>Type in an address and click "+ Add Email." It's checked live against Gmail before being saved, so a typo or a non-Workspace address is caught immediately with a clear error.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 015 5c0 2-1 3-2 4s-1 2-1 3H10c0-1 0-2-1-3s-2-2-2-4a5 5 0 015-5z" stroke-width="1.6"/><path d="M10 19h4M11 21h2" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h4>Broken Down by Category</h4>
+          <p>Calls and error counts split by category (Classification, Billing, Admissions, Teacher, Reengagement, Trial Followup, etc.) — makes it easy to spot if one particular area is failing more than others.</p>
         </div>
         <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Delete an Email Account</h4>
-          <p>Removes an added mailbox from being monitored. Only accounts added through this page can be deleted here — the 3 core accounts can't be removed from this screen.</p>
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.7" stroke-linecap="round"/><path d="M18 16l3 3-3 3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Recent Errors</h4>
+          <p>The last 20 AI failures, with full error text — the fastest way to notice something's actively going wrong.</p>
         </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M4 6h16v12H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <h4>Look Up One Draft's Log</h4>
+          <p>Paste a specific email's Message-ID to see exactly what happened when its reply was generated — also reachable with one click from any email's detail page via "View AI Log."</p>
+        </div>
+      </div>
+      <div class="callout" style="margin-top:16px;">
+        <span class="flag">Removed this session</span>
+        <span>The full searchable/paginated/deletable log table that used to sit below this section was removed — it showed raw internal entries (many labeled "no matching email — Teacher Portal or system entry") that weren't meaningful to staff. The underlying <code>ai_logs</code> table and the per-message lookup above are untouched.</span>
       </div>
     </section>
 
@@ -167,53 +167,28 @@
       <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2></div>
 
       <div class="tech-block">
-        <h4>Why this is only possible now <span class="filepill">gmail_auth.py</span></h4>
-        <p class="desc">Before this session, each mailbox needed its own separate Google OAuth consent flow — a one-time manual "sign in and approve" step per account (<code>generate_oauthtoken.py</code>), producing its own token file (<code>token_support.json</code>, <code>token_lucy.json</code>, <code>token_engineering.json</code>) that had to be kept refreshed and stored on the server. Adding a new mailbox meant physically running that consent flow for the new address.</p>
-        <p class="desc" style="margin-top:10px;">This session migrated the whole app to <b>Domain-Wide Delegation</b> instead: a single service account (<code>service-account.json</code>) that can impersonate <i>any</i> mailbox in the Google Workspace domain it's been granted access to, via <code>get_gmail_service(email)</code> / <code>imap_login(email)</code> — just given a plain email address, no separate consent step, no token file, no per-account setup at all.</p>
-        <div class="callout">
-          <span class="flag">Why it matters</span>
-          <span>That one change is what makes this Settings page realistic to build. Adding an account is now just "save the email address," not "run a manual consent flow for it first."</span>
-        </div>
-      </div>
-
-      <div class="tech-block">
-        <h4>Where accounts are stored <span class="filepill">database.py</span></h4>
+        <h4>Where the logic actually lives <span class="filepill">database.py</span> <span class="filepill">main.py</span></h4>
         <ul>
-          <li><b>CORE_EMAIL_ACCOUNTS</b> — the 3 original mailboxes, still read from the <code>EMAIL_1</code>/<code>EMAIL_2</code>/<code>EMAIL_3</code> environment variables, not stored in a table. This is why they can't be deleted from the Settings page — that would need an env var change and a redeploy anyway, same as before this feature existed.</li>
-          <li><b>email_accounts table</b> (new this session) — every mailbox added through Settings: email, source label, status, created-at.</li>
-          <li><b>get_all_email_accounts()</b> — merges the 3 core accounts with every active row in <code>email_accounts</code>, fetched <b>fresh on every call</b>, never cached. <code>email_reader.py</code>, <code>sync_sent_gmail.py</code>, <code>learn_email_style.py</code>, <code>gmail_watch.py</code>, and <code>gmail_history.py</code> all call this instead of a hardcoded list, so an account added or deleted here is picked up on the very next scheduled run.</li>
+          <li><code>get_ai_insights()</code> (<code>database.py</code>) — three queries: overall totals (calls/errors/tokens/avg response time), a per-category breakdown, and the last 20 errors. All three read straight from <code>ai_logs</code>.</li>
+          <li><code>get_ai_log_by_message_id()</code> — powers the single-message lookup box.</li>
+          <li><code>get_ai_logs()</code>, <code>get_ai_log_categories()</code>, <code>delete_ai_log()</code> — removed this session along with the full-log-table UI, since nothing else called them.</li>
+          <li><code>get_latest_reply_sources()</code> — newly added this session; pulls which specific Knowledge Base articles and historical emails were actually used for a given reply, now shown directly on the email detail page next to the AI summary, not just here.</li>
+          <li>The route (<code>@app.get("/ai-insights")</code> in <code>main.py</code>) ties all of this together and also handles deleting a single log row.</li>
         </ul>
       </div>
 
       <div class="tech-block">
-        <h4>Validation on add <span class="filepill">main.py</span></h4>
-        <p class="desc">Before saving, the route calls <code>get_gmail_service(email).users().getProfile()</code> — a real, live Gmail API call impersonating that exact address.If the address is misspelled, does not exist as a Google Workspace mailbox, or cannot be accessed through Domain-Wide Delegation, validation fails immediately and the account is not saved.</p>
-        <p class="desc" style="margin-top:10px;">On success, it also best-effort registers a push-notification watch right away, so syncing starts immediately instead of waiting for the once-daily renewal job — the 5-minute polling backup covers the mailbox regardless if that specific call fails.</p>
-      </div>
-
-      <div class="tech-block">
-        <h4>Deleting an account</h4>
-        <p class="desc">Deleting just removes the row from <code>email_accounts</code> — it stops future polling/syncing for that address. It does <b>not</b> delete any emails already saved from that mailbox; that data stays as-is.</p>
-      </div>
-
-      
-      </div>
-
-      <div class="tech-block">
-        <h4>Important note — adding new mailboxes</h4>
-        <p class="desc">Adding a new mailbox only enables the app to read, monitor, and send from that email account. It does <b>not</b> automatically teach the AI how to answer new categories of questions that may arrive through that mailbox.</p>
-        <p class="desc" style="margin-top:10px;">If a newly added mailbox serves a different purpose (for example, teacher communication rather than general customer support), the Knowledge Base and historical email library should also be reviewed and expanded to cover those topics. Otherwise, depending on the type of enquiries received, the AI may:</p>
+        <h4>What actually gets logged, and by what</h4>
         <ul>
-          <li>not have sufficient information to answer confidently,</li>
-          <li>generate inconsistent responses,</li>
-          <li>or have drafts blanked by the teacher-content(for example, if teacher-facing content is retrieved for a customer-facing reply).</li>
+          <li><b>Classification</b> (<code>ai_classifier.py</code>) — logs on both success and failure, category always recorded as <code>"Classification"</code>.</li>
+          <li><b>Reply generation</b> (<code>reply_generator.py</code>) — logs with the email's real category (Billing, Admissions, etc.), plus which Knowledge Base articles and historical examples were used.</li>
+          <li><b>Teacher Portal</b> messages — same classifier/generator, tagged <code>teacher_portal:&lt;message_id&gt;</code> so they're identifiable in the log.</li>
+          <li><b>Subscription re-engagement</b> and <b>Trial follow-up</b> drafts — logged under their own categories (<code>"Reengagement"</code>, <code>"Trial Followup"</code>).</li>
+          <li>A logging failure itself can never crash the calling function — <code>save_ai_log()</code> catches its own errors and just prints, so a broken log write never destroys an already-generated draft.</li>
         </ul>
-        <div class="callout">
-          <span class="flag">For best results</span>
-          <span>Ensure the Knowledge Base and representative historical emails are updated whenever a newly monitored mailbox introduces substantially different types of enquiries.</span>
-        </div>
-        <p class="desc" style="margin-top:10px;">The Settings module controls which mailboxes are monitored; the Knowledge Base and historical emails determine what the AI knows about those mailboxes' enquiries.</p>
       </div>
+
+     
     </section>
 
     <section id="reference">
@@ -222,18 +197,16 @@
         <table>
           <thead><tr><th>File</th><th>Role</th></tr></thead>
           <tbody>
-            <tr><td class="file">gmail_auth.py</td><td class="role">Central Domain-Wide Delegation auth — get_gmail_service(email), imap_login(email)</td></tr>
-            <tr><td class="file">database.py</td><td class="role">CORE_EMAIL_ACCOUNTS, get_all_email_accounts(), add_email_account(), delete_email_account()</td></tr>
-            <tr><td class="file">main.py — <code>/settings</code>, <code>/settings/accounts/add</code>, <code>/settings/accounts/{id}/delete</code></td><td class="role">The page and its two actions</td></tr>
-            <tr><td class="file">templates/settings.html</td><td class="role">The Settings page itself</td></tr>
-            <tr><td class="file">templates/home.html</td><td class="role">Has the Settings card linking here</td></tr>
-            <tr><td class="file">gmail_watch.py</td><td class="role">Registers and renews Gmail watches for monitored mailboxes</td></tr>
+            <tr><td class="file">database.py</td><td class="role">All AI Insights queries — summary, by-category, errors, full log, single lookup, reply sources</td></tr>
+            <tr><td class="file">ai_logger.py</td><td class="role">Writes every AI call attempt to <code>ai_logs</code>, never lets a logging failure crash the caller</td></tr>
+            <tr><td class="file">main.py — <code>/ai-insights</code></td><td class="role">The route and delete-log endpoint</td></tr>
+            <tr><td class="file">templates/ai_insights.html</td><td class="role">The page itself</td></tr>
           </tbody>
         </table>
       </div>
     </section>
   </main>
-  <footer>Settings Module &nbsp;·&nbsp; Coral Academy</footer>
+  <footer>AI Insights Module &nbsp;·&nbsp; Coral Academy</footer>
 </div>
 </body>
 </html>

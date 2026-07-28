@@ -1,10 +1,17 @@
 from fastapi import FastAPI
 import csv
 import io
+import threading
 from urllib.parse import urlencode
 import scheduler
 from scheduler import _run_logged_job
 from ai_classifier import ai_triage
+from vector_search import search_similar_emails
+from rag_reranker import rerank_emails
+from knowledge_search import search_knowledge_base
+from reply_generator import generate_reply
+from embedding_service import new_embedding_client, close_embedding_client
+from concurrent.futures import ThreadPoolExecutor
 from database import db_pool,get_latest_thread_ai,get_latest_reply_sources
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
@@ -19,6 +26,7 @@ from trial_followup import (
     get_followup_email,
     complete_followup_campaign,
     get_completed_campaign_count,
+    get_active_campaign_count,
     get_completed_campaigns,
     update_followup_email_log,
     update_followup_email_log,
@@ -99,6 +107,7 @@ from database import (
     get_email_by_id,
     update_status,
     save_email,
+    update_contact_form_ai_fields,
     set_first_reply_time,
     set_resolved_time,
     get_avg_first_response_time,
@@ -361,6 +370,19 @@ from fastapi import Form, Request, File, UploadFile
 from typing import List
 
 
+# Guards against a genuinely real email getting sent more than once for the
+# same email_id. This route makes two live, sequential Gmail API calls
+# (send, then fetch-back) plus attachment uploads, which together can take
+# long enough for a proxy/load balancer in front of the app to time out and
+# close the client's connection - the handler itself keeps running and
+# completes the send regardless, so if the user (seeing a failed/hung page)
+# retries, that retry is a brand new request that would otherwise send a
+# second real email. This set tracks which email_ids currently have a send
+# in flight, so an overlapping retry is rejected instead of re-sent.
+_send_in_progress = set()
+_send_in_progress_lock = threading.Lock()
+
+
 @app.post("/email/{email_id}/send")
 async def send_reply(
     request: Request,
@@ -372,6 +394,37 @@ async def send_reply(
 
     original_email = get_email_by_id(email_id)
 
+    # Already sent by an earlier attempt (e.g. the request that actually
+    # completed server-side even though the client saw a closed
+    # connection) - nothing to do, don't send it again.
+    if original_email and original_email["status"] == "Replied":
+        return RedirectResponse(
+            f"/email/{email_id}?already_sent=true",
+            status_code=303
+        )
+
+    with _send_in_progress_lock:
+        if email_id in _send_in_progress:
+            # A send for this exact email is already running right now
+            # (a near-simultaneous retry) - reject instead of sending twice.
+            return RedirectResponse(
+                f"/email/{email_id}?already_sending=true",
+                status_code=303
+            )
+        _send_in_progress.add(email_id)
+
+    try:
+        return await _send_reply_impl(
+            request, background_tasks, email_id, reply_body, attachments, original_email
+        )
+    finally:
+        with _send_in_progress_lock:
+            _send_in_progress.discard(email_id)
+
+
+async def _send_reply_impl(
+    request, background_tasks, email_id, reply_body, attachments, original_email
+):
     attachment_data = []
     for upload in (attachments or []):
         if not upload or not upload.filename:
@@ -385,10 +438,14 @@ async def send_reply(
     # source is always the actual mailbox address itself (for the 3 core
     # accounts and anything added via Settings alike) - no longer a
     # hardcoded 3-way lookup, so newly added mailboxes work here without
-    # touching this route. "@" check preserves the old behavior of
-    # redirecting instead of attempting to send for a non-mailbox source
-    # (e.g. "contact_form", handled by its own separate route).
-    from_email = source
+    # touching this route. A website contact-form enquiry has no real
+    # mailbox as its source ("contact_form" isn't an address) - the first
+    # reply to one is sent from support@coralacademy.com instead, which
+    # gives the enquiry a real email thread for the first time (the parent's
+    # reply then arrives as a normal inbound email and threads automatically
+    # via the usual in_reply_to/thread_id matching in process_email.py).
+    is_contact_form = source == "contact_form"
+    from_email = "support@coralacademy.com" if is_contact_form else source
     token_file = None
 
     if not from_email or "@" not in from_email:
@@ -403,12 +460,12 @@ async def send_reply(
         to_email=original_email["sender"],
         subject=original_email["subject"],   # send_email() adds "Re:" automatically
         body=reply_body,
-       
+
         original_msg_id=original_email["message_id"],
         previous_references=original_email.get("references_header"),
         attachments=attachment_data
     )
-    mailbox=original_email["mailbox"]
+    mailbox = "inbox" if is_contact_form else original_email["mailbox"]
 
     if sent_result:
 
@@ -422,7 +479,7 @@ async def send_reply(
         real_message_id = " ".join((sent_msg.get("Message-ID") or "").split())
 
         save_email(
-            sender=source,
+            sender=from_email,
             subject=original_email["subject"],
             body=reply_body,
             category=original_email["category"],
@@ -432,7 +489,7 @@ async def send_reply(
             message_id=real_message_id,
             thread_id=original_email["thread_id"],
             in_reply_to=original_email["message_id"],
-            source=source,
+            source=from_email,
             status="Replied",
             reply_type="human",
             mailbox=mailbox,
@@ -839,8 +896,63 @@ def _contact_form_rate_limited(client_ip):
     return False
 
 
+def _process_contact_form_enquiry(row_id, subject, body, customer_name):
+    """Runs the slow similar-email/knowledge-base/draft-generation work in
+    the background, then fills in the row saved synchronously by
+    submit_enquiry() — keeps that endpoint fast for the visitor submitting
+    the form instead of blocking on an LLM call plus two embedding searches."""
+
+    similar_client = new_embedding_client()
+    knowledge_client = new_embedding_client()
+
+    try:
+        with ThreadPoolExecutor(max_workers=3) as executor:
+            triage_future = executor.submit(ai_triage, subject, body)
+            similar_future = executor.submit(
+                search_similar_emails, subject, body, embedding_client=similar_client
+            )
+            knowledge_future = executor.submit(
+                search_knowledge_base, subject, body, embedding_client=knowledge_client
+            )
+
+            result = triage_future.result()
+            similar = similar_future.result()
+            knowledge = knowledge_future.result()
+    finally:
+        close_embedding_client(similar_client)
+        close_embedding_client(knowledge_client)
+
+    reranked = rerank_emails(subject, body, similar)
+    selected_ids = {item["id"] for item in reranked["selected"]}
+    historical_emails = [email for email in similar if email[0] in selected_ids]
+
+    draft = generate_reply(
+        None,
+        subject,
+        body,
+        result["category"],
+        result["priority"],
+        "",
+        historical_emails,
+        knowledge,
+        source="contact_form",
+        customer_name=customer_name,
+    )
+
+    update_contact_form_ai_fields(
+        row_id=row_id,
+        category=result["category"],
+        priority=result["priority"],
+        summary=result["summary"],
+        draft_reply=draft,
+        requires_review=result["requires_review"],
+        ai_confidence=result["confidence"],
+        reply_type=result["reply_type"],
+    )
+
+
 @app.post("/submit-enquiry")
-def submit_enquiry(request: Request, data: dict):
+def submit_enquiry(request: Request, data: dict, background_tasks: BackgroundTasks):
 
     client_ip = request.client.host if request.client else "unknown"
 
@@ -850,45 +962,56 @@ def submit_enquiry(request: Request, data: dict):
             content={"message": "Too many submissions. Please try again later."}
         )
 
-    result = ai_triage(
-        data.get("subject", "Website Enquiry"),
-        data["message"]
-    )
+    subject = data.get("subject", "Website Enquiry")
+    body = data["message"]
+    sender_email = data["email"]
 
-    save_email(
-        sender=data["email"],
-        subject=data.get("subject", "Website Enquiry"),
-        body=data["message"],
+    # There's no email Message-ID chain for a website form submission, so
+    # thread_id is keyed on the submitter's email address instead - every
+    # enquiry (and any reply sent to it, see send_reply's contact_form
+    # branch) from the same address shares one thread_id, the same way
+    # get_thread() groups a real email conversation.
+    thread_id = f"contact_form:{sender_email}"
 
-        category=result["category"],
-        priority=result["priority"],
-        ai_summary=result["summary"],
-        # ai_triage() never returns a "draft_reply" key (confirmed by
-        # reading every return path in ai_classifier.py) — this was a
-        # KeyError crashing every single contact-form submission with a
-        # 500 error, unrelated to the rate limiting added above. Contact
-        # form doesn't run the full generate_reply() pipeline (that needs
-        # thread history/knowledge/historical-email lookups too), so this
-        # just stops the crash rather than fabricating a draft.
-        ai_draft_reply=result.get("draft_reply", ""),
+    # Save immediately with placeholder category/priority/summary so this
+    # endpoint doesn't block on the LLM call - ai_triage, the similar-email
+    # search, the knowledge-base search, and draft generation all run in the
+    # background task below and fill in the real values once done.
+    row_id = save_email(
+        sender=sender_email,
+        subject=subject,
+        body=body,
+
+        category="Uncategorized",
+        priority="Medium",
+        ai_summary="",
+        ai_draft_reply="",
 
         message_id=None,
+        thread_id=thread_id,
+        in_reply_to=None,
         source="contact_form",
+        status="Needs Review",
+        requires_review=True,
 
         contact_name=data.get("name"),
         phone=data.get("phone_number")
     )
 
+    background_tasks.add_task(
+        _process_contact_form_enquiry, row_id, subject, body, data.get("name")
+    )
+
     return {
         "message": "Enquiry saved",
-        "category": result["category"],
-        "priority": result["priority"]
+        "category": "Uncategorized",
+        "priority": "Medium"
     }
 @app.get("/contact-dashboard")
-def contact_dashboard(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1, status: str = None):
+def contact_dashboard(request: Request, q: str = None, date_from: str = None, date_to: str = None, page: int = 1, status: str = None, read_status: str = None):
 
     page_size = 50
-    result = get_contact_forms(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size, status=status)
+    result = get_contact_forms(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size, status=status, read_status=read_status)
 
     return templates.TemplateResponse(
         "contact_dashboard.html",
@@ -899,6 +1022,7 @@ def contact_dashboard(request: Request, q: str = None, date_from: str = None, da
             "search_query": q,
             "selected_date_from": date_from,
             "selected_date_to": date_to,
+            "selected_read_status": read_status,
             "current_page": result["page"],
             "total_pages": result["total_pages"],
             "total_count": result["total"],
@@ -946,6 +1070,7 @@ def trial_followups(request: Request, q: str = None, date_from: str = None, date
     page_size = 50
     result = get_followup_email_logs(search=q, date_from=date_from, date_to=date_to, page=page, page_size=page_size, status=status)
     completed_campaigns = get_completed_campaign_count()
+    active_campaigns = get_active_campaign_count()
 
     due_followups = get_due_followups()
     return templates.TemplateResponse(
@@ -954,6 +1079,7 @@ def trial_followups(request: Request, q: str = None, date_from: str = None, date
             "request": request,
             "rows": result["rows"],
             "completed_campaigns": completed_campaigns,
+            "active_campaigns": active_campaigns,
             "due_followups": due_followups,
             "trashed": request.query_params.get("trashed"),
             "total_count": result["total"],
@@ -1904,6 +2030,18 @@ async def subscription_cancel_email(request: Request, row_key: str):
 
     if not row:
         return Response(content="Not found", status_code=404)
+
+    if row["subscription_status"] not in ("cancelled", "trial_expired"):
+        return templates.TemplateResponse(
+            "subscription_cancel_email.html",
+            {
+                "request": request,
+                "row": row,
+                "sent": None,
+                "subject": None,
+                "body": None
+            }
+        )
 
     subject, body = get_or_generate_reengagement_email(row)
 

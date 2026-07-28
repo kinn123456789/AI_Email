@@ -19,6 +19,7 @@ Coral Academy gets emails from parents every day — questions about classes, bi
 - Search by keyword, filter by status or category, and page through results.
 - The list refreshes itself every few seconds automatically, so new emails just appear — no need to hit refresh.
 - Click any email to open it and see the full conversation.
+- Emails are always sorted the same way: unread before read, then by status (Needs Review first), then by priority (Urgent first), then newest first.
 
 ### 2. 🧠 Automatic Sorting (AI Classification)
 - Every email is automatically read by AI and sorted into a category: **Admissions**, **Billing**, **Teacher**, **General**, or flagged **Urgent**.
@@ -144,12 +145,12 @@ Every reply-generation call is logged to **`ai_logs`** via `ai_logger.py` — mo
 - **The 500-message safety cap, in plain terms:** imagine the sync job checks a mailbox every hour — almost always there are just a few new sent emails. But suppose it broke for two weeks; now there might be 2,000 emails waiting. The cap exists so one single run can't try to swallow all 2,000 at once (slow, or could crash). So it takes a bite of at most 500 and is supposed to remember where it left off, so it can come back for the rest next time. **Worst case, and how rare it is:** this only ever matters if a mailbox's backlog genuinely exceeds 500 unsynced messages in one go — at normal hourly-checked volume that basically never happens; it would take something like the sync being broken for an extended stretch. When it *is* used, the run only ever processes **at most 500 messages, never more** — the cap is a hard ceiling, not a target.
 - ⚠️ **Known issue, found while verifying this:** the current code takes the *last* 500 IDs from IMAP's search results. Confirmed live against a real mailbox that these results come back oldest-first — so "last 500" is actually **the newest 500**, the opposite of what's intended (it should grab the oldest 500, so the checkpoint crawls forward through the backlog from the beginning). This only matters in that same rare "backlog exceeded 500" case, but when it does happen, it currently risks permanently skipping the truly old messages instead of catching up on them. Flagged for a fix, not yet applied.
 - If some messages in a run fail but others succeed, the checkpoint advances to the newest *successfully* handled message — so one bad message can no longer block every future run indefinitely.
-- Failed messages get **one bounded automatic retry** (tracked in `sync_failed_messages`, relocated by Message-ID since IMAP sequence numbers aren't stable across time) — if it fails twice, it's left for manual review. In code: `sync_sent_gmail.py`'s `_retry_pending_failures()` runs the automatic pass every sync cycle, and `retry_one_now(row_id)` powers the manual "Retry Now" button; both share the same relocate-by-Message-ID + `_process_sent_message()` logic. The database side (`save_failed_sync_message`, `get_failed_sync_messages`, `mark_failed_message_resolved`, `mark_failed_message_exhausted`) lives in `database.py`. There's now a small manual-review panel for this right on the main dashboard (above the inbox table), with one-click "Retry Now" / "Delete" per message — the routes are `main.py`'s `/dashboard/failed-sync/{row_id}/retry` and `/delete`.
 
 ### Knowledge & Style Pipeline
 
 **`vector_search.py`** — finds similar past emails by meaning (embeddings), not just keyword matching.
 **`knowledge_search.py`** — same idea, but against the Help Center / Class Knowledge content.
+- ⚠️ **Asymmetry worth flagging:** historical-email retrieval goes through a second, LLM-based reranking pass (`rag_reranker.py`) that reviews the top 30 vector-search candidates and keeps only the genuinely relevant ~2-3, dropping ones that only matched loosely. KB/Help Center retrieval (`knowledge_search.py`) has **no equivalent reranking step** — it fetches `limit*3` candidates by raw vector similarity, then just dedupes and truncates to the top 5 by similarity score alone. A KB chunk can be vector-similar (shares keywords/topic) without actually answering the question, and nothing currently filters that out the way it does for historical emails.
 **`learn_email_style.py`** — pulls real sent emails into the historical-style library, with PII (emails/phone numbers) automatically redacted before storage. This is *additive*, not the only source of style: `prompt_builder.py`'s "WRITING STYLE" section (a fixed baseline — short paragraphs, no corporate language, apologize only when something genuinely went wrong, always close with thanks, etc.) applies to every single reply regardless of whether any historical examples were found; the 2-3 selected historical examples (when available) layer on top of that baseline as extra style reference, they don't replace it.
 
 **Why both, when there's already a baseline:** the two rulesets aren't redundant — they solve different problems. The WRITING STYLE baseline is *abstract instructions* ("keep paragraphs short," "no corporate language," "apologize only when something went wrong") — it tells the AI general rules but gives it nothing concrete to imitate. Historical emails are inserted into the prompt as actual real past reply text, subject and body, verbatim (`build_examples_section()` in `prompt_builder.py`, line ~728: *"Always use these to learn Coral Academy's writing style"*) — giving the AI concrete examples of Coral Academy's specific voice: the exact phrases staff actually use, how a particular kind of email is opened/closed, the level of formality, team-specific idioms — things a generic rule like "don't sound robotic" can't encode on its own. The baseline is the floor that applies even with zero qualifying historical examples; historical examples are what make a reply sound like *this specific team* wrote it, not just any generically competent support agent.
@@ -229,30 +230,33 @@ Running things at the same time (above) is one lever. The other is simply **doin
 
 ---
 
-## 💡 Possible Future Enhancement: Manageable Email Accounts
+## 💡 Manageable Email Accounts
 
-Right now the three monitored mailboxes (support@/lucy@/engineering@coralacademy.com) are hardcoded — each `EMAIL_ACCOUNTS` list, repeated across `email_reader.py`, `sync_sent_gmail.py`, and `learn_email_style.py`, plus the `EMAIL_1`/`EMAIL_2`/`EMAIL_3` env vars. Adding or removing a mailbox today means editing code and redeploying.
-
-A simple settings-page design for this, if it's ever wanted:
+Adding or removing a monitored mailbox no longer requires editing code or redeploying. Three mailboxes (support@/lucy@/engineering@coralacademy.com) are "core" — always present, tied to the `EMAIL_1`/`EMAIL_2`/`EMAIL_3` env vars, and not deletable from this page. Anything beyond those three is managed from **Settings → Email Accounts**:
 
 ```
 Settings
    ↓
 Email Accounts
 ------------------------------------
-Email Address            Status
-admin@company.com        Active
-sales@company.com        Active
-hr@company.com           Active
+Email Address                   Status
+support@coralacademy.com        Active (core)
+lucy@coralacademy.com           Active (core)
+engineering@coralacademy.com    Active (core)
+teachers@coralacademy.com       Active            [Delete]
 
 [ + Add Email ]
 ```
 
-**Add Email flow**: admin clicks "+ Add Email" → enters the address → it's saved to a new `email_accounts` table (address, status, added_at) → the app starts polling/watching it the next scheduler cycle, no restart needed. A "Delete" action would stop polling that mailbox and mark it inactive (not necessarily drop its historical data).
+**Add Email flow**: clicking "Add" first checks the address is real and actually reachable, by calling the Gmail API for it (`get_gmail_service(email).users().getProfile()`) before saving anything — a typo'd or non-Workspace address fails this check and is never stored, instead of silently failing every poll afterward. Once saved, it lands in the `email_accounts` table, and the app starts polling/watching it on the very next scheduler cycle — no restart needed. Deleting an account marks it inactive and stops polling; the three core mailboxes can't be deleted here.
 
-**Why this is now realistic to build, and wasn't before**: this session's migration to Domain-Wide Delegation (`service-account.json`, see `gmail_auth.py`) means a brand-new mailbox needs *no separate OAuth consent flow* — any `@coralacademy.com` address the service account is allowed to impersonate just works the moment it's added, since `gmail_auth.get_gmail_service(email)`/`imap_login(email)` take a plain email address. Under the old per-account token-file system, adding a mailbox meant a manual one-time consent flow (`generate_oauthtoken.py`) per address — this UI wouldn't have been practical to build before the migration.
+Every reader of the account list (`email_reader.py`, `sync_sent_gmail.py`, `learn_email_style.py`, `gmail_watch.py`, `gmail_history.py`) calls `get_all_email_accounts()` fresh each time rather than caching it, so a newly added mailbox is picked up immediately by all of them. The dashboard's mailbox filter and source badges are also generated dynamically from this same list, instead of being hardcoded to the three core mailboxes.
 
-This is a proposal, not implemented — the hardcoded `EMAIL_ACCOUNTS` lists would need consolidating into one shared source (the new table) before a Settings page could manage them.
+**Why this is possible at all**: the migration to Domain-Wide Delegation (`service-account.json`, see `gmail_auth.py`) means a brand-new mailbox needs *no separate OAuth consent flow* — any address the service account is allowed to impersonate just works the moment it's added, since `gmail_auth.get_gmail_service(email)`/`imap_login(email)` take a plain email address. Under the old per-account token-file system, adding a mailbox meant a manual one-time consent flow (`generate_oauthtoken.py`) per address, which is why this wasn't practical to build before.
+
+⚠️ **What adding a mailbox does *not* do**: registering a new mailbox only makes the system start reading and watching it — it does not give the AI any new knowledge. If that mailbox starts receiving questions about topics the Knowledge Base and historical emails don't already cover, the AI has nothing to learn from and will not answer correctly. The Knowledge Base and historical-email library need to be updated separately, on their own, whenever a newly added mailbox introduces substantially different types of enquiries.
+
+⚠️ **Also worth knowing**: a mailbox that starts receiving mail without ever going through this Settings flow (for example, added directly at the mail-server/delegation level instead of through "+ Add Email") will not appear in `email_accounts`, and so won't show up in the dashboard's mailbox filter even though its emails are already coming in. It needs to be added here manually to be recognized consistently everywhere.
 
 ---
 
