@@ -210,7 +210,22 @@ Running things at the same time (above) is one lever. The other is simply **doin
 
 ### Database
 
-**`database.py`** — the data layer for everything above: `messages` (every email, its AI draft, category, status, mailbox), `attachments`, `historical_emails` (18-month retention, auto-pruned), `ai_logs`, `sync_log`, `sync_failed_messages`, `email_filter_rules`, `knowledge_base`, `classes`.
+**`database.py`** — the data layer for everything above, all in the app's main Postgres database (not Supabase — that's used by the Subscription/Trial modules for their own separate data).
+
+*Tables used, confirmed by directly tracing the live code — not inferred from names or guessed:*
+
+| Table | What it's for |
+|---|---|
+| `messages` | Every email — sender, subject, body, category, priority, status, mailbox, the AI's draft, and whether it's been read/replied |
+| `attachments` | Incoming and outgoing file attachments, linked back to a `messages` row |
+| `historical_emails` | The style-learning library — real sent replies, PII-redacted, 18-month retention, auto-pruned |
+| `ai_logs` | Every AI call (classification + drafting) — model, tokens, timing, sources used, errors. Powers the AI Insights page |
+| `sync_log` | Every scheduled job's success/failure/duration — no dashboard yet, direct query only |
+| `sync_failed_messages` | Sent-mail-sync messages that failed to import, tracked for the automatic retry + the dashboard's manual Retry/Delete panel |
+| `email_filter_rules` | Database-driven junk/automated-email detection rules — editable without a code change |
+| `knowledge_base` | Help Center articles, embedded for meaning-based search |
+| `classes` | Coral Academy's live class catalog, kept in sync for grounding replies about specific classes |
+| `email_accounts` | Mailboxes added through the Settings page, on top of the 3 core env-var-based accounts — see the Settings module doc |
 
 ---
 

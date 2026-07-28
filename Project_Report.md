@@ -3,13 +3,14 @@
 **Prepared by:** Kinnera (with Claude Code assistant)
 **Date:** 26 July 2026
 
-This report explains, in simple words, what this whole project does and how it works underneath. It covers all 6 main parts (modules):
+This report explains, in simple words, what this whole project does and how it works underneath. It covers all 7 main parts (modules):
 1. Emails
 2. Teacher Portal
 3. Trial Follow-up
 4. Cancelled Subscription
 5. Contact Form
 6. AI Insights
+7. Settings
 
 Every file in the project was checked to write this report, so it also mentions a few small known issues that are honest to point out.
 
@@ -75,7 +76,7 @@ A place for staff to see and reply to chat messages between parents and teachers
 
 **How it works:**
 - Every 8 minutes, the system automatically checks the outside Teacher Portal (over the internet, using a secret access key) for any new teachers, chats, and messages, and copies them into this app's own database.
-- There is also a manual "Sync Now" option if staff want to check immediately instead of waiting.
+- A manual "Sync Now" trigger exists in the code (`/sync-teacher`) but isn't actually linked from any page — there's no real button for staff to click today, so in practice everything relies on the automatic 8-minute check.
 - Once copied in, new parent messages are read by the same AI used for emails (**gpt-5-nano**), which gives a category, urgency level, a short summary, and — if a reply seems needed — a suggested draft reply, using the school's help articles for reference.
 - A special rule always marks genuine parent-to-teacher messages as "Teacher" category and "Medium" priority, and (as of a recent fix) lets the AI decide for itself, case by case, whether that particular message actually needs a human to check it first — it is no longer automatically marked "safe, no review needed" just because it came from the Teacher Portal.
 
@@ -210,6 +211,31 @@ A behind-the-scenes page (not something a parent or teacher ever sees) where sta
 
 ---
 
+## 7. Settings
+
+**What it is:**
+A page for managing which email accounts (support@, lucy@, engineering@, or any new one) this app actually watches, reads, and sends from — without needing to touch code or redeploy.
+
+**Why this exists now, and didn't before:**
+Before this project's review, each watched mailbox needed its own separate one-time Google sign-in/approval step (done manually, per account, by whoever set it up), producing its own saved credential file for that one address. Adding a new mailbox meant physically doing that manual sign-in step first — not something that could be a simple button.
+
+This project's review replaced that entire approach with a single shared credential (called a "service account") that Google allows to act as *any* mailbox in the same company Google Workspace — no separate sign-in step needed per address anymore. That one change is what actually makes this Settings page possible: adding a mailbox is now just "type in the email address," instead of "go do a manual Google sign-in for it first."
+
+**How it works:**
+- The 3 original mailboxes are still configured the same way they always were (via the app's environment settings) — this page doesn't change those, and can't delete them from this screen.
+- Any *additional* mailbox added through this page is saved to its own small list in the database.
+- Before saving a new address, the system actually checks it live against Google — if it's misspelled, doesn't exist, or isn't a real address in the company's Google account, it's rejected immediately with a clear message, instead of silently saving something broken.
+- Every part of the app that reads the list of "which mailboxes to check" (the email checker, the sent-mail sync, the style-learning job, the push-notification renewal) now looks at this combined list fresh every time, instead of a fixed list baked into the code — so adding or removing a mailbox here takes effect automatically within a few minutes, without restarting anything.
+
+**What staff can do:**
+- See every mailbox currently being monitored
+- Add a new one (checked live before being saved)
+- Delete one that was added here (this only stops watching it going forward — any emails already saved from it are not deleted)
+
+**Status:** ✅ Small, complete feature — genuinely useful for a future handover, since a new person won't need to know how to do a manual Google developer sign-in just to add another mailbox someday.
+
+---
+
 ## Overall Summary Table
 
 | Module | What it does | AI Involved? | Status |
@@ -220,5 +246,6 @@ A behind-the-scenes page (not something a parent or teacher ever sees) where sta
 | Cancelled Subscription | Sends "come back" emails to cancelled/at-risk students | Yes | ✅ Working, biggest reliability improvements made here |
 | Contact Form | Handles website "Contact Us" form submissions (via email, not direct connection) | Yes | ✅ Small, complete feature |
 | AI Insights | Diagnostics page showing how well the AI itself is performing | No (reports on AI, doesn't call it) | ✅ Small, complete feature |
+| Settings | Add/remove which email accounts are monitored, no code changes needed | No | ✅ Small, complete feature |
 
-All 6 modules are connected to the same underlying databases and share the same AI system for reading and replying to messages. The AI model used everywhere in this project is called **gpt-5-nano**, reached through a service called OpenRouter.
+All 7 modules are connected to the same underlying databases and share the same AI system for reading and replying to messages. The AI model used everywhere in this project is called **gpt-5-nano**, reached through a service called OpenRouter.
