@@ -117,7 +117,7 @@
   <div class="hero">
     <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
     <h1>The Trial Follow-Up Module</h1>
-    <p class="lede">A gentle 3-email nurture sequence for families whose free trial just ended — always AI-drafted, never auto-sent.</p>
+    <p class="lede">A gentle 3-email sequence for learners whose free trial just ended — always AI-drafted, never auto-sent.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
       <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
@@ -140,9 +140,9 @@
     <section id="overview">
       <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
       <div class="lead-box">
-        When a family's free trial ends without them enrolling, this module reaches back out — automatically, but
-        never impulsively. Once a day, it checks who expired that day, writes a warm, personalized email with AI,
-        and quietly saves it as a <strong>draft</strong>. Nothing goes out to a real family until a staff member
+        When a learner's free trial ends without them enrolling, this module reaches back out — automatically, but
+        never impulsively. Once a day, it checks whose trial reached the 1-day, 3-day, or 7-day mark since expiry,
+        writes a warm, personalized email with AI, and quietly saves it as a <strong>draft</strong>. Nothing goes out to a real family until a staff member
         actually opens it, reads it, and clicks Send.
       </div>
     </section>
@@ -153,7 +153,7 @@
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.6"/><path d="M12 7v5l4 2" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
           <h4>Automatic Daily Check</h4>
-          <p>Once a day, every free trial that expired that day is found automatically — no one has to track expiry dates by hand.</p>
+          <p>Once a day, every free trial that has reached its 1/3/7-day follow-up mark is found automatically — no one has to track expiry dates by hand.</p>
         </div>
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 015 5c0 2-1 3-2 4s-1 2-1 3H10c0-1 0-2-1-3s-2-2-2-4a5 5 0 015-5z" stroke-width="1.6"/><path d="M10 19h4M11 21h2" stroke-width="1.6" stroke-linecap="round"/></svg></div>
@@ -218,7 +218,7 @@
           <table>
             <thead><tr><th>Table</th><th>Source</th><th>What it's for</th></tr></thead>
             <tbody>
-              <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Trials that expired "today" (filtered by expiry date)</td></tr>
+              <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Trials that expired in the last 30 days (filtered by expiry date) — wide enough to still catch a trial at its day-3/day-7 marks</td></tr>
               <tr><td class="file">Enrollments</td><td>Supabase</td><td>Resolves a trial to its learner</td></tr>
               <tr><td class="file">Subscriptions</td><td>Supabase</td><td>Excludes learners who already converted to a paid subscription</td></tr>
               <tr><td class="file">Users</td><td>Supabase</td><td>Learner/parent names</td></tr>
@@ -228,6 +228,29 @@
           </table>
         </div>
         <p class="desc" style="margin-top:10px;">No external Coral Academy REST API is involved — candidates are pulled from these Supabase tables, same as the Subscription module.</p>
+      </div>
+
+      <div class="tech-block">
+        <h4>How "already converted" is actually checked <span class="filepill">trial_followup.py</span></h4>
+        <p class="desc">"Smart Enough to Stop" isn't detecting a change or an event — it's a simple snapshot check on two timestamps, re-run fresh every single day the job runs, not just once when the campaign starts:</p>
+        <code class="snippet">if subscribed_at and start:
+    subscribed_at = isoparse(subscribed_at)
+    if subscribed_at &gt;= start:
+        converted = True</code>
+        <ul>
+          <li><b>start</b> is the trial's own enrollment start timestamp — when this free trial began, not when it expires.</li>
+          <li><b>subscribed_at</b> is when the learner's currently-<i>active</i> subscription began (subscription_status == "active" is filtered before this check even runs).</li>
+          <li><b>subscribed_at &gt;= start</b> answers a genuine before/after question — "did the subscription start at or after this trial started?" That's what actually matters for "did this trial lead to a conversion," not an equality check like subscribed_at != expiry, which would almost always be True anyway since two independently-recorded timestamps are essentially never identical down to the second.</li>
+        </ul>
+        <p class="desc" style="margin-top:10px;"><b>Worked example:</b> trial starts July 1, expires July 15, subscription starts July 10 → July 10 &gt;= July 1 → True → correctly counted as converted. If instead the learner had some unrelated old active subscription from back in March → March &gt;= July 1 → False → correctly not counted, since that subscription predates this trial.</p>
+        <div class="callout">
+          <span class="flag">Fixed this session</span>
+          <span>This check re-runs fresh every day, so converting mid-sequence correctly stops later emails. Previously nothing wrote back to the learner's campaign row to mark it "converted" — it just silently sat at status="active" forever. Now mark_followup_converted(learner_id) sets status='converted' at the exact point conversion is detected (only on a still-active row) — a distinct outcome from status='completed' (finishing all 3 emails without converting), so the separate "Completed Campaigns" count stays accurate.</span>
+        </div>
+        <div class="callout">
+          <span class="flag">Also worth knowing</span>
+          <span>The check only looks for subscription_status == "active" — not "anything other than expired." A learner who subscribed and then had that subscription cancelled or a payment fail would not be caught by this, so they'd still be treated as a valid follow-up candidate and keep getting nudged, even though they did convert at some point.</span>
+        </div>
       </div>
 
       <div class="tech-block">

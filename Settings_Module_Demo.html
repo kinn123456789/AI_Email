@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Settings Module — Coral Academy</title>
+<style>
+  :root{
+    --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
+    --text: #1E3436; --text-muted: #5B7371;
+    --accent: #E85A46; --accent-ink: #B5382A; --accent-soft: #FDE4DD;
+    --secondary: #1F7A72; --secondary-soft: #DCF0EA; --border: #E4DCC8;
+    --warn-soft: #FBEBD1; --warn-ink: #8A5A12;
+    --shadow: 0 1px 2px rgba(30,52,54,0.04), 0 8px 24px -12px rgba(30,52,54,0.12);
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg: #0D2023; --bg-elevated: #122A2D; --bg-sunken: #0A1A1C;
+      --text: #E9F2EF; --text-muted: #8FADA9;
+      --accent: #FF8770; --accent-ink: #FFC1B0; --accent-soft: #33221E;
+      --secondary: #5FC9B8; --secondary-soft: #163431; --border: #1E3E40;
+      --warn-soft: #3A2C14; --warn-ink: #F0C674;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg: #0D2023; --bg-elevated: #122A2D; --bg-sunken: #0A1A1C;
+    --text: #E9F2EF; --text-muted: #8FADA9;
+    --accent: #FF8770; --accent-ink: #FFC1B0; --accent-soft: #33221E;
+    --secondary: #5FC9B8; --secondary-soft: #163431; --border: #1E3E40;
+    --warn-soft: #3A2C14; --warn-ink: #F0C674;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+  :root[data-theme="light"]{
+    --bg: #FBF7EE; --bg-elevated: #FFFFFF; --bg-sunken: #F2ECDD;
+    --text: #1E3436; --text-muted: #5B7371;
+    --accent: #E85A46; --accent-ink: #B5382A; --accent-soft: #FDE4DD;
+    --secondary: #1F7A72; --secondary-soft: #DCF0EA; --border: #E4DCC8;
+    --warn-soft: #FBEBD1; --warn-ink: #8A5A12;
+    --shadow: 0 1px 2px rgba(30,52,54,0.04), 0 8px 24px -12px rgba(30,52,54,0.12);
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{ background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  h1,h2,h3,h4{ font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; color: var(--text); }
+  a{ color: var(--secondary); }
+  code, .mono{ font-family: var(--font-mono); }
+  .layout{ max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; display: grid; grid-template-columns: 220px minmax(0,1fr); gap: 48px; }
+  @media (max-width: 900px){ .layout{ grid-template-columns: 1fr; } }
+  .hero{ grid-column: 1 / -1; padding: 64px 0 40px; position: relative; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .hero-eyebrow{ display: inline-flex; align-items: center; gap: 8px; font-size: 0.78rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--secondary); font-weight: 600; margin-bottom: 18px; }
+  .hero-eyebrow .dot{ width: 7px; height: 7px; border-radius: 50%; background: var(--accent); display: inline-block; }
+  .hero h1{ font-size: clamp(2.4rem, 5vw, 3.4rem); letter-spacing: -0.01em; max-width: 18ch; }
+  .hero p.lede{ margin-top: 18px; max-width: 56ch; font-size: 1.15rem; color: var(--text-muted); }
+  .wave{ position: absolute; right: 0; top: 40px; width: 220px; height: 140px; opacity: 0.9; pointer-events: none; }
+  @media (max-width: 700px){ .wave{ display:none; } }
+  .toc{ position: sticky; top: 24px; align-self: start; padding-top: 40px; }
+  .toc-title{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 12px; font-weight: 700; }
+  .toc ul{ list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap: 2px;}
+  .toc a{ display: block; padding: 7px 10px; border-radius: 8px; color: var(--text-muted); text-decoration: none; font-size: 0.92rem; }
+  .toc a:hover{ color: var(--text); background: var(--bg-sunken); }
+  @media (max-width: 900px){ .toc{ position: static; padding-top: 24px; overflow-x: auto; } .toc ul{ flex-direction: row; gap: 6px; padding-bottom: 8px; } .toc a{ white-space: nowrap; background: var(--bg-elevated); border: 1px solid var(--border); } }
+  main{ min-width: 0; padding-top: 40px; }
+  section{ margin-bottom: 72px; scroll-margin-top: 20px; }
+  .section-head{ margin-bottom: 28px; }
+  .section-head .kicker{ font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-ink); font-weight: 700; margin-bottom: 8px; display:block; }
+  .section-head h2{ font-size: 1.9rem; }
+  .section-head p{ color: var(--text-muted); margin-top: 10px; max-width: 68ch; }
+  .lead-box{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 16px; padding: 28px 32px; box-shadow: var(--shadow); font-size: 1.05rem; }
+  .lead-box strong{ color: var(--accent-ink); }
+  .group{ margin-bottom: 36px; } .group:last-child{ margin-bottom: 0; }
+  .group-title{ display:flex; align-items:baseline; gap: 10px; margin-bottom: 16px; }
+  .group-title h3{ font-size: 1.15rem; color: var(--secondary); }
+  .group-title .rule{ flex:1; height:1px; background: var(--border); }
+  .card-grid{ display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .card{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.15s ease; }
+  .card:hover{ transform: translateY(-2px); }
+  .card-icon{ width: 34px; height: 34px; border-radius: 9px; background: var(--accent-soft); display: flex; align-items:center; justify-content:center; margin-bottom: 12px; }
+  .card-icon svg{ width: 18px; height: 18px; stroke: var(--accent-ink); fill:none; }
+  .card h4{ font-size: 1.02rem; margin-bottom: 6px; font-family: var(--font-body); font-weight: 700; }
+  .card p{ margin:0; color: var(--text-muted); font-size: 0.93rem; }
+  .tech-block{ background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 14px; padding: 24px 28px; box-shadow: var(--shadow); margin-bottom: 18px; }
+  .tech-block h4{ font-size: 1.05rem; margin-bottom: 10px; display:flex; align-items:center; gap:10px; flex-wrap: wrap; }
+  .filepill{ font-family: var(--font-mono); font-size: 0.78rem; background: var(--secondary-soft); color: var(--secondary); padding: 3px 9px; border-radius: 999px; font-weight: 600; }
+  .tech-block ul{ margin: 10px 0 0; padding-left: 20px; color: var(--text); }
+  .tech-block ul li{ margin-bottom: 7px; font-size: 0.95rem; }
+  .tech-block ul li::marker{ color: var(--accent); }
+  .tech-block p.desc{ color: var(--text-muted); margin: 0 0 4px; font-size: 0.95rem; }
+  .tech-block b{ color: var(--text); }
+  .callout{ display:flex; gap:12px; background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn-ink) 30%, transparent); border-radius: 12px; padding: 16px 18px; margin-top: 14px; font-size: 0.92rem; }
+  .callout .flag{ color: var(--warn-ink); font-weight: 700; flex-shrink:0; }
+  .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 14px; box-shadow: var(--shadow); }
+  table{ border-collapse: collapse; width: 100%; min-width: 560px; background: var(--bg-elevated); }
+  th, td{ text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--border); font-size: 0.92rem; }
+  th{ font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); background: var(--bg-sunken); }
+  tr:last-child td{ border-bottom: none; }
+  td.file{ font-family: var(--font-mono); color: var(--accent-ink); white-space: nowrap; }
+  td.role{ color: var(--text-muted); }
+  code.snippet{ display:block; background: var(--bg-sunken); border-radius: 8px; padding: 10px 14px; margin: 6px 0; font-size: 0.85rem; overflow-x:auto; white-space: pre; }
+  footer{ grid-column: 1/-1; text-align:center; color: var(--text-muted); font-size: 0.85rem; padding-top: 32px; border-top: 1px solid var(--border); }
+  @media (prefers-reduced-motion: reduce){ .card{ transition: none; } }
+</style>
+</head>
+<body>
+<div class="layout">
+  <div class="hero">
+    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
+    <h1>The Settings Module</h1>
+    <p class="lede">Managing which email accounts this app watches, reads, and sends from — without touching code.</p>
+    <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
+      <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
+      <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
+      <circle cx="196" cy="34" r="16" fill="var(--accent-soft)"/><circle cx="196" cy="34" r="6" fill="var(--accent)"/>
+    </svg>
+  </div>
+
+  <nav class="toc">
+    <div class="toc-title">On this page</div>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#technical">Technical details</a></li>
+      <li><a href="#reference">File reference</a></li>
+    </ul>
+  </nav>
+
+  <main>
+    <section id="overview">
+      <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
+      <div class="lede-box lead-box">
+        This app watches specific mailboxes (support@, lucy@, engineering@coralacademy.com) — reading incoming mail,
+        sending replies, learning writing style from sent mail, all of it. Until this session, which mailboxes were
+        watched was <strong>hardcoded in the code</strong>, repeated across several files — adding or removing one
+        meant editing code and redeploying. The Settings page fixes that: a staff member can add or delete a
+        monitored mailbox from a simple page, and it takes effect automatically within a few minutes — no code
+        change, no redeploy.
+      </div>
+    </section>
+
+    <section id="features">
+      <div class="section-head">
+        <span class="kicker">Demo walkthrough</span><h2>Features</h2>
+        <p>What a staff member can actually do today at <code>/settings</code>.</p>
+      </div>
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 4h16v13H8l-4 4z" stroke-width="1.6" stroke-linejoin="round"/><path d="M8 9h8M8 12h5" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+          <h4>See Every Monitored Mailbox</h4>
+          <p>The 3 "core" accounts (support/lucy/engineering, always present) plus anything added here, each shown with its status.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round"/></svg></div>
+          <h4>Add an Email Account</h4>
+          <p>Type in an address and click "+ Add Email." It's checked live against Gmail before being saved, so a typo or a non-Workspace address is caught immediately with a clear error.</p>
+        </div>
+        <div class="card">
+          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          <h4>Delete an Email Account</h4>
+          <p>Removes an added mailbox from being monitored. Only accounts added through this page can be deleted here — the 3 core accounts can't be removed from this screen.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="technical">
+      <div class="section-head"><span class="kicker">Under the hood</span><h2>Technical details</h2></div>
+
+      <div class="tech-block">
+        <h4>Why this is only possible now <span class="filepill">gmail_auth.py</span></h4>
+        <p class="desc">Before this session, each mailbox needed its own separate Google OAuth consent flow — a one-time manual "sign in and approve" step per account (<code>generate_oauthtoken.py</code>), producing its own token file (<code>token_support.json</code>, <code>token_lucy.json</code>, <code>token_engineering.json</code>) that had to be kept refreshed and stored on the server. Adding a new mailbox meant physically running that consent flow for the new address first — not something a staff member could just click a button for.</p>
+        <p class="desc" style="margin-top:10px;">This session migrated the whole app to <b>Domain-Wide Delegation</b> instead: a single service account (<code>service-account.json</code>) that can impersonate <i>any</i> mailbox in the Google Workspace domain it's been granted access to, via <code>get_gmail_service(email)</code> / <code>imap_login(email)</code> — just given a plain email address, no separate consent step, no token file, no per-account setup at all.</p>
+        <div class="callout">
+          <span class="flag">Why it matters</span>
+          <span>That one change is what makes this Settings page realistic to build. Adding an account is now just "save the email address," not "run a manual consent flow for it first."</span>
+        </div>
+      </div>
+
+      <div class="tech-block">
+        <h4>Where accounts are stored <span class="filepill">database.py</span></h4>
+        <ul>
+          <li><b>CORE_EMAIL_ACCOUNTS</b> — the 3 original mailboxes, still read from the <code>EMAIL_1</code>/<code>EMAIL_2</code>/<code>EMAIL_3</code> environment variables, not stored in a table. This is why they can't be deleted from the Settings page — that would need an env var change and a redeploy anyway, same as before this feature existed.</li>
+          <li><b>email_accounts table</b> (new this session) — every mailbox added through Settings: email, source label, status, created-at.</li>
+          <li><b>get_all_email_accounts()</b> — merges the 3 core accounts with every active row in <code>email_accounts</code>, fetched <b>fresh on every call</b>, never cached. <code>email_reader.py</code>, <code>sync_sent_gmail.py</code>, <code>learn_email_style.py</code>, <code>gmail_watch.py</code>, and <code>gmail_history.py</code> all call this instead of a hardcoded list, so an account added or deleted here is picked up on the very next scheduled run.</li>
+        </ul>
+      </div>
+
+      <div class="tech-block">
+        <h4>Validation on add <span class="filepill">main.py</span></h4>
+        <p class="desc">Before saving, the route calls <code>get_gmail_service(email).users().getProfile()</code> — a real, live Gmail API call impersonating that exact address. If the address is misspelled, doesn't exist, or isn't in the Workspace domain the service account can impersonate, this fails immediately and the error is shown on the page — the row is never saved.</p>
+        <p class="desc" style="margin-top:10px;">On success, it also best-effort registers a push-notification watch right away, so syncing starts immediately instead of waiting for the once-daily renewal job — the 5-minute polling backup covers the mailbox regardless if that specific call fails.</p>
+      </div>
+
+      <div class="tech-block">
+        <h4>Deleting an account</h4>
+        <p class="desc">Deleting just removes the row from <code>email_accounts</code> — it stops future polling/syncing for that address. It does <b>not</b> delete any emails already saved from that mailbox; that data stays as-is.</p>
+      </div>
+
+      <div class="tech-block">
+        <h4>A related fix made alongside this <span class="filepill">main.py</span></h4>
+        <p class="desc"><code>/email/{email_id}/send</code> used to hardcode a 3-way lookup (<code>if source == "support@coralacademy.com": from_email = os.getenv("EMAIL_1") ...</code>) to figure out which address to send a reply from. That would have silently failed to reply for any mailbox added through Settings, since it wasn't one of the 3 hardcoded cases.</p>
+        <div class="callout">
+          <span class="flag">Fixed</span>
+          <span>Now uses <code>source</code> directly as the from-address, since <code>source</code> is always the real mailbox address for both core and Settings-added accounts alike.</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="reference">
+      <div class="section-head"><span class="kicker">Appendix</span><h2>File reference</h2></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Role</th></tr></thead>
+          <tbody>
+            <tr><td class="file">gmail_auth.py</td><td class="role">Central Domain-Wide Delegation auth — get_gmail_service(email), imap_login(email)</td></tr>
+            <tr><td class="file">database.py</td><td class="role">CORE_EMAIL_ACCOUNTS, get_all_email_accounts(), add_email_account(), delete_email_account()</td></tr>
+            <tr><td class="file">main.py — <code>/settings</code>, <code>/settings/accounts/add</code>, <code>/settings/accounts/{id}/delete</code></td><td class="role">The page and its two actions</td></tr>
+            <tr><td class="file">templates/settings.html</td><td class="role">The Settings page itself</td></tr>
+            <tr><td class="file">templates/home.html</td><td class="role">Has the Settings card linking here</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+  <footer>Settings Module &nbsp;·&nbsp; Coral Academy</footer>
+</div>
+</body>
+</html>

@@ -21,10 +21,15 @@ from database import (
 def get_trial_followup_candidates():
 
     now = datetime.now(timezone.utc)
-    #yesterday = now - timedelta(days=1)
-    
-    #start_date = now - timedelta(days=30)
-    start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # Must be wide enough to still catch a trial at its actual email-2 (3
+    # days) and email-3 (7 days) marks - process_trial_followups() only
+    # ever looks at candidates returned from here, so a window narrower
+    # than 7+ days would let a trial "expire out" of being fetched again
+    # before it ever qualifies for email 2 or 3. (This was temporarily
+    # narrowed to same-day-only for quick manual testing and never
+    # reverted - restored here.)
+    start_date = now - timedelta(days=30)
     # --------------------------------------------------
     # 1. Get trial passes that expired in the last day
     # --------------------------------------------------
@@ -175,6 +180,10 @@ def get_trial_followup_candidates():
                         break
 
             if converted:
+                # No-op if no campaign row exists yet for this learner (e.g.
+                # they converted before ever reaching the day-1 mark) - the
+                # WHERE clause only touches a row that's actually still open.
+                mark_followup_converted(learner_id)
                 continue
 
             expiry = isoparse(trial["expiry_at"])
@@ -279,6 +288,35 @@ def create_followup(
     finally:
         cursor.close()
         db_pool.putconn(conn)
+
+def mark_followup_converted(learner_id):
+    """Closes out a candidate's campaign the moment they're found to have
+    converted (an active subscription starting at/after their trial began)
+    - without this, a converted learner's campaign row just silently sat
+    at status='active' forever, since a converted learner is excluded from
+    get_trial_followup_candidates()'s results and so never gets touched
+    again by anything else. Only updates a row that's still 'active', so
+    it never overwrites an already-completed campaign."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            UPDATE trial_followup_campaigns
+            SET
+                status = 'converted',
+                updated_at = NOW()
+            WHERE learner_id = %s
+              AND status = 'active'
+        """, (learner_id,))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
 
 def update_followup_email1_sent(learner_id):
     conn = get_connection()

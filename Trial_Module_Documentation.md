@@ -6,15 +6,15 @@
 
 ## 🌟 What This Module Does (Simple Version)
 
-When a family's free trial ends without them enrolling, this module reaches back out — automatically, but never impulsively. Once a day, it checks who expired that day, writes a warm, personalized email with AI, and quietly saves it as a **draft**. Nothing goes out to a real family until a staff member actually opens it, reads it, and clicks Send.
+When a learner's free trial ends without them enrolling, this module reaches back out — automatically, but never impulsively. Once a day, it checks whose trial reached the 1-day, 3-day, or 7-day mark since expiry, writes a warm, personalized email with AI, and quietly saves it as a **draft**. Nothing goes out to a real family until a staff member actually opens it, reads it, and clicks Send.
 
 ---
 
 ## 🎬 Features
 
-1. **Automatic Daily Check** — once a day, every free trial that expired that day is found automatically.
+1. **Automatic Daily Check** — once a day, every free trial that has reached its 1/3/7-day follow-up mark is found automatically (a fixed bug this session: the candidate-fetching window had been temporarily narrowed to "expired today only" for manual testing and never reverted, which meant email 2 and 3 could never actually fire — restored to a 30-day lookback window).
 2. **AI-Written, Human-Sent** — each email is drafted by AI, but always waits for a staff member's review and click.
-3. **Smart Enough to Stop** — if a family already enrolled after their trial, the sequence recognizes that and doesn't keep nudging them.
+3. **Smart Enough to Stop** — if a learner already enrolled after their trial, the sequence recognizes that and doesn't keep nudging them.
 4. **Dedicated Dashboard** — see every draft, what's due, reply to responses, review completed campaigns.
 5. **Trash & Restore** — drafts that shouldn't go out can be trashed, and brought back later if needed.
 
@@ -36,7 +36,7 @@ When a family's free trial ends without them enrolling, this module reaches back
 
 | Table | Source | What it's for |
 |---|---|---|
-| `FreeTrialPass` | Supabase | Trials that expired "today" (filtered by `expiry_at`) |
+| `FreeTrialPass` | Supabase | Trials that expired in the last 30 days (filtered by `expiry_at`) — wide enough to still catch a trial at its actual day-3/day-7 marks, not just the day it expired |
 | `Enrollments` | Supabase | Resolves a trial to its `learner_id` |
 | `Subscriptions` | Supabase | Used to exclude learners who already converted to a paid subscription after their trial started |
 | `Users` | Supabase | Learner/parent names |
@@ -44,6 +44,27 @@ When a family's free trial ends without them enrolling, this module reaches back
 | `trial_followup_campaigns` | Main app Postgres (`database.py`) | Tracks each candidate's own progress — `email1_sent_at`, `email2_sent_at`, `email3_sent_at`, `status` — created the first time a candidate is seen |
 
 **No external Coral Academy REST API is involved** — candidates are pulled from these Supabase tables, same as the Subscription module.
+
+### How "Already Converted" Is Actually Checked
+
+The "Smart Enough to Stop" feature (`trial_followup.py`'s `get_trial_followup_candidates()`) isn't detecting a change or an event — it's a simple snapshot check on two timestamps, re-run fresh every single day the job runs (not just once when the campaign starts):
+
+```python
+if subscribed_at and start:
+    subscribed_at = isoparse(subscribed_at)
+    if subscribed_at >= start:
+        converted = True
+```
+
+- `start` is the trial's own `enrollment_start_timestamp` — when *this* free trial began, not when it expires.
+- `subscribed_at` is when the learner's currently-**active** subscription began (`subscription_status == "active"` is filtered at the query level before this check even runs).
+- `subscribed_at >= start` answers a genuine before/after question: **"did the subscription start at or after this trial started?"** That's what actually matters for "did this trial lead to a conversion" — not an equality check like `subscribed_at != expiry`, which would almost always be `True` anyway (two independently-recorded timestamps are essentially never identical down to the second, so that comparison wouldn't tell you anything meaningful).
+
+**Worked example:** trial starts July 1, expires July 15, subscription starts July 10 → `July 10 >= July 1` → `True` → correctly counted as converted (subscribed during the trial, before it even ended). If instead the learner had some unrelated old active subscription from back in March → `March >= July 1` → `False` → correctly *not* counted, since that subscription predates this trial and has nothing to do with it.
+
+Because this check re-runs fresh every day, subscribing partway through the sequence (e.g., between email 1 and email 3) correctly stops later emails from being generated. **Fixed this session**: previously, the exclusion only skipped them from that day's candidate list without writing anything back, so a converted learner's campaign row just silently stayed at `status="active"` forever. Now `mark_followup_converted(learner_id)` is called at the exact point conversion is detected, setting `status='converted'` (only on a still-`active` row, so it never overwrites an already-`completed` campaign) — the same pattern as `update_followup_email3_sent()`'s `status='completed'`, just a distinct outcome. `'converted'` rows are correctly excluded from the separate "Completed Campaigns" count (`get_completed_campaign_count()`, which strictly filters `status = 'completed'`), since converting mid-sequence and finishing all 3 emails without converting are different outcomes worth tracking separately.
+
+⚠️ **Also worth knowing**: the conversion check only looks for `subscription_status == "active"` — not "anything other than expired." A learner who subscribed and then had that subscription cancelled or a payment fail would **not** be caught by this check (their subscription is no longer "active"), so they'd still be treated as a valid follow-up candidate and keep getting nudged, even though they did convert at some point.
 
 ### Cadence & Candidate Logic
 
@@ -67,7 +88,7 @@ Based on `trial_expiry_at` compared to "now":
 - Model: `gpt-5-nano` via OpenRouter (`followup_ai.py`). Each of the 3 emails has its own separately written prompt matching its day's tone.
 - Same name-hiding technique as the Subscription module: the AI only ever sees `[PARENT_NAME]`/`[STUDENT_NAME]` placeholders while writing; real names are swapped back in afterward.
 - Logged to `ai_logs` under category `"Trial Followup"`. Falls back to a hardcoded template on AI failure.
-- **Placeholder-leak check** (fixed this session, previously an open gap, same fix as the Subscription module): the body is checked for any leftover bracketed placeholder-shaped text after swap-back; if found, the draft is discarded in favor of the safe hardcoded fallback template instead of ever reaching staff.
+- **Placeholder-leak check**  the body is checked for any leftover bracketed placeholder-shaped text after swap-back; if found, the draft is discarded in favor of the safe hardcoded fallback template instead of ever reaching staff.
 
 ### Draft-First By Design
 
