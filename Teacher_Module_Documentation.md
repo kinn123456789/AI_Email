@@ -27,6 +27,8 @@ Parents can message their child's teacher directly through Coral Academy's Teach
 
 Coral Academy's Teacher Portal REST API (`api.preprod.coralacademy.com`, key-authenticated) → pulled and upserted into `conversations` / `conversation_messages` → classified and drafted by AI → shown in `/teacher-inbox`. Sending goes the other way: app → Teacher Portal API → success saved locally too.
 
+**Auth:** a single, permanent API key (`TEACHER_PORTAL_API_KEY`, sent as the `x-api-key` header on every request) was generated for this app's access to the preprod Teacher Portal API — unlike Gmail's Domain-Wide Delegation elsewhere in this project, this key doesn't expire or need periodic renewal, so there's no equivalent of `gmail_watch.py`'s renewal job needed here.
+
 - **Checkpoint/dedup**: a chat's messages are only re-fetched if its latest message isn't already stored (`conversation_message_exists`); inserts also use `ON CONFLICT DO NOTHING` as a second safety net.
 - **Sync cadence**: every 8 minutes, offset 70 seconds from other scheduled jobs so it doesn't collide with them; only one run at a time, missed runs are simply skipped.
 - Every run is logged (success/failure/duration).

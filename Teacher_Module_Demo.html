@@ -200,6 +200,7 @@
       <div class="tech-block">
         <h4>Data flow <span class="filepill">teacher_portal_api_reader.py</span> <span class="filepill">teacher_api_sync.py</span></h4>
         <p class="desc">Coral Academy's Teacher Portal REST API (<code>api.preprod.coralacademy.com</code>, key-authenticated) → pulled and upserted into <code>conversations</code> / <code>conversation_messages</code> → classified and drafted by AI → shown in <code>/teacher-inbox</code>. Sending goes the other way: app → Teacher Portal API → success saved locally too.</p>
+        <p class="desc" style="margin-top:10px;"><b>Auth:</b> a single, permanent API key (<code>TEACHER_PORTAL_API_KEY</code>, sent as the <code>x-api-key</code> header) was generated for this app's access to the preprod Teacher Portal API — unlike Gmail's Domain-Wide Delegation elsewhere in this project, this key doesn't expire or need periodic renewal, so there's no equivalent of <code>gmail_watch.py</code>'s renewal job needed here.</p>
         <ul>
           <li><b>Checkpoint/dedup:</b> a chat's messages are only re-fetched if its latest message isn't already stored (<code>conversation_message_exists</code>); inserts also use <code>ON CONFLICT DO NOTHING</code> as a second safety net — keeps each sync run cheap and idempotent.</li>
           <li><b>Sync cadence:</b> every 8 minutes, offset 70 seconds from other jobs so it doesn't collide with them; only one run at a time.</li>
