@@ -295,6 +295,18 @@ def view_email(request: Request, email_id: int):
         }
     )
 
+
+# Sender-supplied MIME type is untrusted, so inline rendering (which lets a
+# browser execute HTML/SVG content) is only allowed for types we verify by
+# sniffing the actual file bytes - never by trusting attachment["file_type"].
+_INLINE_PREVIEW_SNIFFERS = {
+    "image/png": lambda b: b.startswith(b"\x89PNG\r\n\x1a\n"),
+    "image/jpeg": lambda b: b.startswith(b"\xff\xd8\xff"),
+    "image/gif": lambda b: b.startswith(b"GIF87a") or b.startswith(b"GIF89a"),
+    "application/pdf": lambda b: b.startswith(b"%PDF-"),
+}
+
+
 @app.get("/attachments/{attachment_id}")
 def download_attachment(attachment_id: int):
 
@@ -303,12 +315,24 @@ def download_attachment(attachment_id: int):
     if not attachment or not attachment.get("file_data"):
         return Response(content="Attachment not found", status_code=404)
 
+    file_bytes = bytes(attachment["file_data"])
+
+    verified_type = next(
+        (mime for mime, sniff in _INLINE_PREVIEW_SNIFFERS.items() if sniff(file_bytes)),
+        None
+    )
+
+    if verified_type:
+        disposition = f'inline; filename="{attachment["filename"]}"'
+        media_type = verified_type
+    else:
+        disposition = f'attachment; filename="{attachment["filename"]}"'
+        media_type = attachment["file_type"] or "application/octet-stream"
+
     return Response(
-        content=bytes(attachment["file_data"]),
-        media_type=attachment["file_type"] or "application/octet-stream",
-        headers={
-            "Content-Disposition": f'attachment; filename="{attachment["filename"]}"'
-        }
+        content=file_bytes,
+        media_type=media_type,
+        headers={"Content-Disposition": disposition}
     )
 
 @app.get("/teacher-dashboard")
@@ -542,6 +566,7 @@ def dashboard(request: Request, source: str = None, q: str = None, status: str =
             "page_size": page_size,
             "is_sent_view": status == "Replied",
             "failed_syncs": get_failed_sync_messages(),
+            "email_accounts": get_all_email_accounts(),
         }
     )
 

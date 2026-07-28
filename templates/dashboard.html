@@ -127,9 +127,11 @@ Response Metrics
 <select name="source" onchange="this.form.submit()"
     class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
 <option value="" {% if not selected_source %}selected{% endif %}>All Mailboxes</option>
-<option value="support@coralacademy.com" {% if selected_source == "support@coralacademy.com" %}selected{% endif %}>Support</option>
-<option value="lucy@coralacademy.com" {% if selected_source == "lucy@coralacademy.com" %}selected{% endif %}>Lucy</option>
-<option value="engineering@coralacademy.com" {% if selected_source == "engineering@coralacademy.com" %}selected{% endif %}>Engineering</option>
+{% for account in email_accounts %}
+<option value="{{ account.source }}" {% if selected_source == account.source %}selected{% endif %}>
+    {{ account.source }}{% if not account.core %} (new){% endif %}
+</option>
+{% endfor %}
 </select>
 
 <select name="status" onchange="this.form.submit()"
@@ -281,12 +283,17 @@ class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
 </td>
 <td class="p-4 truncate text-xs font-medium text-cyan-950" title="{{ email.sender }}">{{ email.sender }}</td>
 <td class="p-4">
+{% set matched_account = email_accounts | selectattr("source", "equalto", email.source) | first %}
 {% if email.source == "support@coralacademy.com" %}
 <span class="bg-cyan-400/50 text-cyan-950 px-3 py-1 rounded-full text-xs font-bold">📧 Support</span>
 {% elif email.source == "lucy@coralacademy.com" %}
 <span class="bg-pink-300/60 text-pink-950 px-3 py-1 rounded-full text-xs font-bold">👩 Lucy</span>
+{% elif email.source == "engineering@coralacademy.com" %}
+<span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">🛠️ Engineering</span>
+{% elif matched_account and not matched_account.core %}
+<span class="bg-emerald-300/60 text-emerald-950 px-3 py-1 rounded-full text-xs font-bold">🆕 {{ email.source }}</span>
 {% else %}
-<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">Other</span>
+<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">{{ email.source or "Other" }}</span>
 {% endif %}
 </td>
 
@@ -422,6 +429,7 @@ searchInput.addEventListener("input", function () {
 });
 </script>
 <script>
+const emailAccounts = {{ email_accounts | tojson }};
 const catColors = {
     "Admissions": "bg-pink-300/60 text-pink-950",
     "Support": "bg-cyan-300/60 text-cyan-950",
@@ -446,7 +454,14 @@ function sourceBadgeHtml(source) {
     if (source === "lucy@coralacademy.com") {
         return '<span class="bg-pink-300/60 text-pink-950 px-3 py-1 rounded-full text-xs font-bold">👩 Lucy</span>';
     }
-    return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">Other</span>';
+    if (source === "engineering@coralacademy.com") {
+        return '<span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">🛠️ Engineering</span>';
+    }
+    const matched = emailAccounts.find(a => a.source === source);
+    if (matched && !matched.core) {
+        return '<span class="bg-emerald-300/60 text-emerald-950 px-3 py-1 rounded-full text-xs font-bold">🆕 ' + escapeHtml(source) + '</span>';
+    }
+    return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">' + escapeHtml(source || "Other") + '</span>';
 }
 
 function priorityHtml(priority) {
