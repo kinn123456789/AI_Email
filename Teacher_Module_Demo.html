@@ -130,7 +130,7 @@
 
   <main>
     <section id="overview">
-      <div class="section-head"><span class="kicker">Start here</span><h2>What this module does</h2></div>
+      
       <div class="lead-box">
         Parents can message their child's teacher directly through Coral Academy's Teacher Portal. This module pulls
         those conversations into the same kind of unified inbox as regular email — every new parent message gets
@@ -167,7 +167,7 @@
           <div class="card">
             <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 015 5c0 2-1 3-2 4s-1 2-1 3H10c0-1 0-2-1-3s-2-2-2-4a5 5 0 015-5z" stroke-width="1.6"/><path d="M10 19h4M11 21h2" stroke-width="1.6" stroke-linecap="round"/></svg></div>
             <h4>AI Classification</h4>
-            <p>Every parent message gets a category, a priority, and a one-sentence summary — so a busy staff member can scan what matters most at a glance.</p>
+            <p>Every parent message gets a category, a priority, and a one-sentence summary.</p>
           </div>
           <div class="card">
             <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 11h6M9 14h6M9 8h3" stroke-width="1.6" stroke-linecap="round"/></svg></div>
@@ -199,22 +199,22 @@
 
       <div class="tech-block">
         <h4>Data flow <span class="filepill">teacher_portal_api_reader.py</span> <span class="filepill">teacher_api_sync.py</span></h4>
-        <p class="desc">Coral Academy's Teacher Portal REST API (<code>api.preprod.coralacademy.com</code>, key-authenticated) → pulled and upserted into <code>conversations</code> / <code>conversation_messages</code> → classified and drafted by AI → shown in <code>/teacher-inbox</code>. Sending goes the other way: app → Teacher Portal API → success saved locally too.</p>
+        <p class="desc">Coral Academy's Teacher Portal REST API (<code>api.preprod.coralacademy.com</code>, key-authenticated) → pulled and upserted into <code>conversations</code> / <code>conversation_messages</code> → classified and drafted by AI → shown in <code>/teacher-inbox</code>. Sending goes the other way: app → Teacher Portal API → success saved .</p>
         <p class="desc" style="margin-top:10px;"><b>Auth:</b> a single, permanent API key (<code>TEACHER_PORTAL_API_KEY</code>, sent as the <code>x-api-key</code> header) was generated for this app's access to the preprod Teacher Portal API — unlike Gmail's Domain-Wide Delegation elsewhere in this project, this key doesn't expire or need periodic renewal, so there's no equivalent of <code>gmail_watch.py</code>'s renewal job needed here.</p>
         <ul>
           <li><b>Checkpoint/dedup:</b> a chat's messages are only re-fetched if its latest message isn't already stored (<code>conversation_message_exists</code>); inserts also use <code>ON CONFLICT DO NOTHING</code> as a second safety net — keeps each sync run cheap and idempotent.</li>
           <li><b>Sync cadence:</b> every 8 minutes, offset 70 seconds from other jobs so it doesn't collide with them; only one run at a time.</li>
           <li>Every run is logged (success/failure/duration) so a silent failure is never invisible.</li>
         </ul>
-        <div class="callout"><span class="flag">Note</span><span>Teacher Portal data lives in the <b>same</b> main Postgres database as the rest of the app (not a separate Supabase project) — worth knowing since some other modules genuinely do use a separate Supabase project for their own data.</span></div>
+        
       </div>
 
       <div class="tech-block">
         <h4>Classification &amp; drafting <span class="filepill">teacher_ai_processor1.py</span> <span class="filepill">teacher_reply_generator1.py</span></h4>
         <ul>
           <li>Uses the exact same classifier (<code>ai_triage</code>) and reply engine (<code>reply_generator.generate_reply</code>) as regular email — just fed Teacher Portal content instead. Draft replies do <i>not</i> use historical-email style examples, only Help Center knowledge.</li>
-          <li><b>Context cap:</b> only the last 50 messages of a chat are given to the AI (fixed a real incident where one long-running thread grew to ~443,000 tokens and failed permanently against OpenRouter's 400,000 limit). This cap only affects what the AI sees — the full chat is still shown to staff in the UI.</li>
-          <li><b>Safety override:</b> messages containing words like "complaint," "refund," "legal," or "bullying" are always forced to human review and bumped to at least High priority, regardless of what the AI itself decided.</li>
+          
+          
           <li>Every classification and draft attempt is logged for debugging, tagged as <code>teacher_portal:&lt;message_id&gt;</code>.</li>
         </ul>
       </div>
@@ -222,8 +222,8 @@
       <div class="tech-block">
         <h4>⚠️ Current issue: Teacher Portal API returning 405 on all endpoints <span class="filepill">as of 2026-07-28</span></h4>
         <p class="desc">The original Teacher Portal integration used an <code>Authorization: Bearer</code> token obtained from the pre-production Teacher Portal. This authentication method was working successfully, but the bearer token expired approximately every 30 minutes, requiring manual renewal, which made it unsuitable for an automated background service.</p>
-        <p class="desc" style="margin-top:10px;">To eliminate the need for manual token renewal, an API key generated by a user with administrative access to the pre-production environment was provided. The application was updated to authenticate using the <code>x-api-key</code> header instead of the short-lived bearer token. This API key authentication was also working successfully until approximately two days before this document was prepared.</p>
-        <div class="callout"><span class="flag">Known Issue</span><span>At the time of writing, all requests to the pre-production Teacher Portal AI Email API (<code>/ai-email/*</code>) are returning HTTP 405 (Method Not Allowed), including read, reply, and delete operations. Since the same response is returned across all endpoints and HTTP methods, the issue does not appear to be specific to any individual operation in this application and requires further investigation of the pre-production API environment before AI Email functionality can be tested further.</span></div>
+        <p class="desc" style="margin-top:10px;">To eliminate the need for manual token renewal, an API key generated by a user with administrative access to the pre-production environment was provided. The application was updated to authenticate using the <code>x-api-key</code> header instead of the short-lived bearer token. This API key authentication was also working successfully until approximately till a day before this document was prepared.</p>
+        <div class="callout"><span class="flag">Known Issue</span><span>At the time of writing, all requests to the pre-production Teacher Portal AI Email API (<code>/ai-email/*</code>) are returning HTTP 405 (Method Not Allowed), including read, reply, and delete operations. Since the same response is returned across all endpoints and HTTP methods, the issue does not appear to be specific to any individual operation in this application and requires further investigation of the pre-production API environment.</span></div>
         <p class="desc" style="margin-top:14px;"><b>Verification performed (2026-07-28):</b></p>
         <div class="table-wrap">
           <table>
@@ -259,17 +259,15 @@
             <tr><td class="file">teacher_ai_processor1.py</td><td class="role">Classifies parent messages, builds capped thread history</td></tr>
             <tr><td class="file">teacher_reply_generator1.py</td><td class="role">Generates the AI draft reply for a Teacher Portal message</td></tr>
             <tr><td class="file">teacher_api_sender.py</td><td class="role">Sends/deletes messages through the Teacher Portal API</td></tr>
-            <tr><td class="file">teacher_ai_processor.py</td><td class="role">Old version — actually broken (imports a file that no longer exists)</td></tr>
-            <tr><td class="file">teacher_reply_generator..py</td><td class="role">Predecessor of teacher_reply_generator1.py, no longer used</td></tr>
-            <tr><td class="file">teacher_sync.py · teacher_sync_backup.py</td><td class="role">Old sync logic, unused</td></tr>
+
             <tr><td class="file">teacher_portal_reader.py · teacher_portal_sender.py</td><td class="role">Earlier versions of the reader/sender, no longer used</td></tr>
-            <tr><td class="file">teacher_db_reader.py · teacher_db_sync.py</td><td class="role">Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced</td></tr>
+
           </tbody>
         </table>
       </div>
     </section>
   </main>
-  <footer>Teacher Portal Module &nbsp;·&nbsp; Coral Academy</footer>
+  <footer>Teacher Portal Module </footer>
 </div>
 </body>
 </html>

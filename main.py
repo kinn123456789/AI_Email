@@ -526,6 +526,17 @@ async def _send_reply_impl(
             status_code=303
         )
 
+    # send_email() failed (returns None on any exception - see
+    # email_sender.py) - nothing was sent and nothing was saved. Previously
+    # there was no handling here at all, so the request fell through to an
+    # implicit `return None`, which FastAPI serializes as a bare JSON `null`
+    # response with zero indication of what went wrong. Redirect back with
+    # a visible failure banner instead.
+    return RedirectResponse(
+        url=f"/email/{email_id}?send_failed=true",
+        status_code=303
+    )
+
 
 def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender, recipient, subject, body):
     """Every real staff-sent reply feeds back into the RAG example pool used
