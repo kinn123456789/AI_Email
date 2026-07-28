@@ -49,6 +49,20 @@ Deleting just removes the row from `email_accounts` — it stops future polling/
 
 ---
 
+## 📝 Important Note — Adding New Mailboxes
+
+Adding a new mailbox only enables the app to read, monitor, and send from that email account. It does **not** automatically teach the AI how to answer new categories of questions that may arrive through that mailbox.
+
+If a newly added mailbox serves a different purpose (for example, teacher communication rather than general customer support), the Knowledge Base and historical email library should also be reviewed and expanded to cover those topics. Otherwise, the AI may:
+
+- respond that it does not have enough information,
+- produce inconsistent replies,
+- or have drafts blanked by the teacher-content safety checks if only teacher-facing documentation is retrieved.
+
+For best results, ensure the Knowledge Base and representative historical emails are updated whenever a newly monitored mailbox introduces substantially different types of enquiries.
+
+---
+
 ## 📋 File Reference
 
 | File | Role |
