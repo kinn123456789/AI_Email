@@ -188,7 +188,7 @@
 
       <div class="tech-block">
         <h4>Validation on add <span class="filepill">main.py</span></h4>
-        <p class="desc">Before saving, the route calls <code>get_gmail_service(email).users().getProfile()</code> — a real, live Gmail API call impersonating that exact address. If the address is misspelled, doesn't exist, or isn't in the Workspace domain the service account can impersonate, this fails immediately and the error is shown on the page — the row is never saved.</p>
+        <p class="desc">Before saving, the route calls <code>get_gmail_service(email).users().getProfile()</code> — a real, live Gmail API call impersonating that exact address.If the address is misspelled, does not exist as a Google Workspace mailbox, or cannot be accessed through Domain-Wide Delegation, validation fails immediately and the account is not saved.</p>
         <p class="desc" style="margin-top:10px;">On success, it also best-effort registers a push-notification watch right away, so syncing starts immediately instead of waiting for the once-daily renewal job — the 5-minute polling backup covers the mailbox regardless if that specific call fails.</p>
       </div>
 
@@ -209,16 +209,17 @@
       <div class="tech-block">
         <h4>Important note — adding new mailboxes</h4>
         <p class="desc">Adding a new mailbox only enables the app to read, monitor, and send from that email account. It does <b>not</b> automatically teach the AI how to answer new categories of questions that may arrive through that mailbox.</p>
-        <p class="desc" style="margin-top:10px;">If a newly added mailbox serves a different purpose (for example, teacher communication rather than general customer support), the Knowledge Base and historical email library should also be reviewed and expanded to cover those topics. Otherwise, the AI may:</p>
+        <p class="desc" style="margin-top:10px;">If a newly added mailbox serves a different purpose (for example, teacher communication rather than general customer support), the Knowledge Base and historical email library should also be reviewed and expanded to cover those topics. Otherwise, depending on the type of enquiries received, the AI may:</p>
         <ul>
-          <li>respond that it does not have enough information,</li>
-          <li>produce inconsistent replies,</li>
-          <li>or have drafts blanked by the teacher-content safety checks if only teacher-facing documentation is retrieved.</li>
+          <li>not have sufficient information to answer confidently,</li>
+          <li>generate inconsistent responses,</li>
+          <li>or have drafts blanked by the teacher-content(for example, if teacher-facing content is retrieved for a customer-facing reply).</li>
         </ul>
         <div class="callout">
           <span class="flag">For best results</span>
           <span>Ensure the Knowledge Base and representative historical emails are updated whenever a newly monitored mailbox introduces substantially different types of enquiries.</span>
         </div>
+        <p class="desc" style="margin-top:10px;">The Settings module controls which mailboxes are monitored; the Knowledge Base and historical emails determine what the AI knows about those mailboxes' enquiries.</p>
       </div>
     </section>
 
@@ -233,6 +234,7 @@
             <tr><td class="file">main.py — <code>/settings</code>, <code>/settings/accounts/add</code>, <code>/settings/accounts/{id}/delete</code></td><td class="role">The page and its two actions</td></tr>
             <tr><td class="file">templates/settings.html</td><td class="role">The Settings page itself</td></tr>
             <tr><td class="file">templates/home.html</td><td class="role">Has the Settings card linking here</td></tr>
+            <tr><td class="file">gmail_watch.py</td><td class="role">Registers and renews Gmail watches for monitored mailboxes</td></tr>
           </tbody>
         </table>
       </div>

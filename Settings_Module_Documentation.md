@@ -37,7 +37,7 @@ This session migrated the whole app to **Domain-Wide Delegation** instead: a sin
 
 ### Validation on Add (`main.py`)
 
-Before saving, the route calls `get_gmail_service(email).users().getProfile(userId="me").execute()` — a real, live Gmail API call impersonating that exact address. If the address is misspelled, doesn't exist, or isn't in the Workspace domain the service account can impersonate, this fails immediately and the error is shown on the page — the row is never saved. On success, it also best-effort calls `register_watch(email)` so push-notification syncing starts right away, rather than waiting for the once-daily watch-renewal job; if that specific call fails, the account is still added, since the 5-minute polling backup covers it regardless.
+Before saving, the route calls `get_gmail_service(email).users().getProfile(userId="me").execute()` — a real, live Gmail API call impersonating that exact address. If the address is misspelled, does not exist as a Google Workspace mailbox, or cannot be accessed through Domain-Wide Delegation, validation fails immediately and the account is not saved. On success, it also best-effort calls `register_watch(email)` so push-notification syncing starts right away, rather than waiting for the once-daily watch-renewal job; if that specific call fails, the account is still added, since the 5-minute polling backup covers it regardless.
 
 ### Deleting an Account
 
@@ -73,4 +73,6 @@ For best results, ensure the Knowledge Base and representative historical emails
 | `templates/settings.html` | The Settings page itself |
 | `templates/home.html` | Has the Settings card linking here |
 
+| `gmail_watch.py` | Registers and renews Gmail watches for monitored mailboxes |
+---------------------------------------------------------- |
 ---
