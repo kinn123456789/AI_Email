@@ -32,7 +32,7 @@ When matched, it's tagged category `"Contact Form Enquiry"` and mailbox `"contac
 
 ### Field Extraction (`process_email.py`)
 
-The raw form email is a simple labeled template:
+**In simple words:** when someone fills the form on the website, the email that arrives in the inbox is just one plain block of text, like this:
 ```
 Name: ...
 Email: ...
@@ -40,19 +40,20 @@ Phone: ...
 Message: ...
 Submitted at: ...
 ```
-- **Name** — replaces the sender's display name if found; otherwise keeps the original.
-- **Email** — replaces the sender address only if a valid-looking value (contains "@") is found; otherwise the original envelope address is kept.
-- **Phone** — stored if present, left blank otherwise.
-- **Message** — everything between "Message:" and "Submitted at:" becomes the body shown to staff; if this pattern isn't found, the whole raw email is shown as a fallback.
+If nobody separated this out, staff would see this whole messy block as "the email" — hard to read, and impossible to search by just a name or phone number. So the code reads this text and picks out each piece on its own:
+
+- **Name** — takes the text after `Name:` and uses it as the person's name. If that's missing for some reason, it just keeps whatever name was already on the email.
+- **Email** — takes the text after `Email:`, but only uses it if it looks like a real email address (has an "@" in it). If not, it keeps the original email address the message actually came from.
+- **Phone** — takes the text after `Phone:`. If it's missing, the phone field is just left blank — nothing breaks.
+- **Message** — this is the actual question the person typed. The code grabs everything between `Message:` and `Submitted at:` and shows *only that* as the message — not the Name/Email/Phone clutter around it. If `Submitted at:` happens to be missing, that's fine too — it just grabs everything from `Message:` onward instead, so nothing is lost. The only real problem case is if the word `Message:` itself is missing — then the code gives up trying to be clever and just shows the whole raw email instead, so nothing silently disappears.
+
+**Worth knowing:** the website's own contact form requires Name, Email, Phone, and Message to be filled in before it lets someone submit at all — so in normal, everyday use, none of these "what if it's missing" situations should actually happen. They're documented here because that's genuinely what the code does if something unexpected ever comes through (a form change on the website's side, a broken email, etc.) — not because they're expected to happen day to day.
 
 ### Where the Data Lives (`database.py`)
 
 - Contact name and phone are stored in their own dedicated columns on the `messages` table.
 - The dashboard query specifically excludes Coral Academy's own internal addresses, so only real visitor enquiries show up.
 
-### Known Issue Worth Flagging
-
-There's a second, more direct API endpoint (`POST /submit-enquiry`) that was clearly meant to save a contact-form submission straight to the database without going through email at all. As it stands, it doesn't work — it's missing two required pieces of information the save step needs, causing an error, and even if fixed it still wouldn't set the flag needed to show up on the dashboard. The email-based flow above is the one that actually works end to end.
 
 ---
 
@@ -65,8 +66,8 @@ There's a second, more direct API endpoint (`POST /submit-enquiry`) that was cle
 | `database.py` | Stores and queries contact-form entries |
 | `templates/contact_dashboard.html` | The dedicated dashboard |
 | `main.py` — `/contact-dashboard`, `/contact-dashboard/sent` | Routes powering the dashboard and its sent-history view |
-| `main.py` — `/submit-enquiry` | Direct-save endpoint, currently non-functional |
-| `contactform.py` | Manual test script for the preprod enquiry API — not part of the live pipeline |
+| `main.py` — `/submit-enquiry` | **Dead code, not part of the live pipeline** — looks like an earlier attempt at letting the website POST enquiries directly into this app, superseded by the actual email-based flow above. Nothing calls it (confirmed — no code or external system references this app's own `/submit-enquiry`). It's also buggy: it never sets `mailbox="contact_form"` on save, so if it were ever triggered, the enquiry would incorrectly land in the regular inbox instead of the Contact Form dashboard. Safe to delete. |
+| `contactform.py` | Manual test script that hits Coral Academy's own separate `api.preprod.coralacademy.com/submit-enquiry` — unrelated to this app's dead route above, not part of the live pipeline |
 
 ---
 

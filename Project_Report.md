@@ -3,12 +3,13 @@
 **Prepared by:** Kinnera (with Claude Code assistant)
 **Date:** 26 July 2026
 
-This report explains, in simple words, what this whole project does and how it works underneath. It covers all 5 main parts (modules):
+This report explains, in simple words, what this whole project does and how it works underneath. It covers all 6 main parts (modules):
 1. Emails
 2. Teacher Portal
 3. Trial Follow-up
 4. Cancelled Subscription
 5. Contact Form
+6. AI Insights
 
 Every file in the project was checked to write this report, so it also mentions a few small known issues that are honest to point out.
 
@@ -168,7 +169,12 @@ When someone fills out the "Contact Us" form on the school's website, their mess
 **How it actually works (this is more roundabout than it might sound):**
 - The school's website does NOT send the enquiry directly into this app. Instead, when someone submits the form, the school's own separate website system sends a normal notification **email** (from `no-reply@coralacademy.com`, with a subject starting "New Contact Form Enquiry") to the support inbox — the same inbox this app already watches for regular emails.
 - This app's regular email-checking system picks up that notification email like any other email, but recognizes it as a contact-form enquiry by its sender and subject line.
-- Because the enquiry arrives as one plain block of text (Name, Email, Phone, Message all mixed into the email body), the system automatically pulls out each of those four pieces of information separately using pattern-matching, so they can be shown and searched properly, instead of showing one big blob of text.
+- **Field extraction (`process_email.py`), in simple words:** the email that arrives is just one plain block of text (`Name: ... / Email: ... / Phone: ... / Message: ... / Submitted at: ...`). If nobody separated this out, staff would see this whole messy block instead of a clean record. So the code reads it and pulls out each piece on its own:
+  - **Name** — takes the text after `Name:`; if missing, just keeps whatever name was already on the email.
+  - **Email** — takes the text after `Email:`, but only if it looks like a real email address (has an "@"); otherwise keeps the original sender address.
+  - **Phone** — takes the text after `Phone:`; if missing, just left blank, nothing breaks.
+  - **Message** — the actual question the person typed. Grabs everything between `Message:` and `Submitted at:` and shows only that. If `Submitted at:` is missing, it just grabs everything from `Message:` to the end instead — no harm done. Only real problem case: if `Message:` itself is missing, the code gives up and shows the whole raw email instead, so nothing silently disappears.
+  - **Worth knowing:** the website's form requires Name, Email, Phone, and Message to be filled in before someone can even submit it — so in everyday use, none of these "what if it's missing" situations should actually happen. They're documented because that's genuinely what the code does if something unexpected ever comes through, not because they're expected day to day.
 - The enquiry then gets the same AI treatment as a normal email — category, priority, summary, and a suggested draft reply — and is stored as its own type, so it shows up on its own dedicated page instead of mixing into the regular inbox.
 
 **What staff can do:**
@@ -179,10 +185,28 @@ When someone fills out the "Contact Us" form on the school's website, their mess
 - Reply directly — this sends a real email straight to the actual person who filled out the form (not to the website's no-reply address), using the exact same reply screen as regular emails
 - Select many at once and delete (trash) them
 
-**Known issue found during this review:**
-- There is a second, separate piece of code (`/submit-enquiry`) that looks like it was originally meant to let the website send enquiries directly into this app in a more modern way. It is not actually used anywhere — nothing in the project calls it — and it also has a small bug that means if it *were* used, the enquiry would incorrectly land in the regular inbox instead of the Contact Form page. This can be safely ignored or removed later; it has no effect on how the feature works today.
 
 **Status:** Small but complete feature — it works like a mini customer-support inbox just for website enquiries, just through an email-based path rather than a direct connection.
+
+---
+
+## 6. AI Insights
+
+**What it is:**
+A behind-the-scenes page (not something a parent or teacher ever sees) where staff can check how the AI itself is actually doing — not the emails, the AI's own performance.
+
+**How it works:**
+- Every single time the AI classifies or drafts a reply — for regular email, Teacher Portal messages, Trial Follow-up, or Cancelled Subscription emails alike — that attempt gets logged: which AI model was used, how many tokens it cost, how long it took, and whether it succeeded or failed.
+- Before this project's review, that log was being written constantly but nobody had ever built a page to actually read it. This page is that missing piece.
+- It shows: overall totals (how many AI calls, how many failed, total tokens, average speed), a breakdown by category (so if one type of question is failing more than others, that's easy to spot), the last 20 failures with the full error message, and a way to look up exactly what happened for one specific email/reply.
+- A more detailed, raw table of every single log entry also exists underneath, but it was hidden from the page since it showed internal technical entries that weren't meaningful to a staff member browsing it — the data itself is still fully there and queryable, just not shown as a giant raw table.
+
+**What staff can do:**
+- See at a glance whether the AI is working well or having a rough patch, without digging through server logs
+- Spot which category (Billing, Admissions, Teacher, etc.) is generating the most errors
+- Look up one specific reply and see exactly why the AI answered the way it did
+
+**Status:** ✅ Small, complete feature — a diagnostics page rather than something end users interact with, but genuinely useful for catching AI problems early instead of only hearing about them from an unhappy parent.
 
 ---
 
@@ -195,5 +219,6 @@ When someone fills out the "Contact Us" form on the school's website, their mess
 | Trial Follow-up | Sends 3-stage follow-up emails after a free trial expires | Yes | ✅ Working, recently improved |
 | Cancelled Subscription | Sends "come back" emails to cancelled/at-risk students | Yes | ✅ Working, biggest reliability improvements made here |
 | Contact Form | Handles website "Contact Us" form submissions (via email, not direct connection) | Yes | ✅ Small, complete feature |
+| AI Insights | Diagnostics page showing how well the AI itself is performing | No (reports on AI, doesn't call it) | ✅ Small, complete feature |
 
-All 5 modules are connected to the same underlying databases and share the same AI system for reading and replying to messages. The AI model used everywhere in this project is called **gpt-5-nano**, reached through a service called OpenRouter.
+All 6 modules are connected to the same underlying databases and share the same AI system for reading and replying to messages. The AI model used everywhere in this project is called **gpt-5-nano**, reached through a service called OpenRouter.

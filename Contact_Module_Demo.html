@@ -186,18 +186,23 @@
 
       <div class="tech-block">
         <h4>Field extraction <span class="filepill">process_email.py</span></h4>
-        <p class="desc">The raw form email looks like a simple labeled template. Each label is pulled out individually:</p>
+        <p class="desc">In simple words: the email that arrives is just one plain block of text. Without any processing, staff would see this whole messy block instead of a clean record:</p>
         <code class="snippet">Name: ...
 Email: ...
 Phone: ...
 Message: ...
 Submitted at: ...</code>
+        <p class="desc" style="margin-top:10px;">So the code reads it and pulls out each piece on its own:</p>
         <ul>
-          <li><b>Name</b> — replaces the sender's display name if found; otherwise keeps the original.</li>
-          <li><b>Email</b> — replaces the sender address only if a valid-looking (contains "@") value is found; otherwise the original envelope address is kept.</li>
-          <li><b>Phone</b> — stored if present, left blank otherwise.</li>
-          <li><b>Message</b> — everything between "Message:" and "Submitted at:" becomes the actual email body shown to staff; if this pattern isn't found, the whole raw email is shown instead as a fallback.</li>
+          <li><b>Name</b> — takes the text after "Name:"; if missing, just keeps whatever name was already on the email.</li>
+          <li><b>Email</b> — takes the text after "Email:", but only if it looks like a real email address (has an "@"); otherwise keeps the original sender address.</li>
+          <li><b>Phone</b> — takes the text after "Phone:"; if missing, just left blank, nothing breaks.</li>
+          <li><b>Message</b> — the actual question the person typed. Grabs everything between "Message:" and "Submitted at:" and shows only that. If "Submitted at:" is missing, it just grabs everything from "Message:" to the end instead — no harm done. Only real problem case: if "Message:" itself is missing, the code gives up and shows the whole raw email instead, so nothing silently disappears.</li>
         </ul>
+        <div class="callout">
+          <span class="flag">Worth knowing</span>
+          <span>The website's form requires Name, Email, Phone, and Message to be filled in before someone can even submit it — so in everyday use, none of these "what if it's missing" situations should actually happen. They're documented because that's genuinely what the code does if something unexpected ever comes through, not because they're expected day to day.</span>
+        </div>
       </div>
 
       <div class="tech-block">
@@ -208,13 +213,7 @@ Submitted at: ...</code>
         </ul>
       </div>
 
-      <div class="tech-block">
-        <h4>Known issue worth flagging</h4>
-        <div class="callout">
-          <span class="flag">Heads up</span>
-          <span>There's a second, more direct API endpoint in the code (<code>POST /submit-enquiry</code>) that was clearly meant to save a contact-form submission straight to the database without going through email at all. As it stands today it doesn't work — it's missing two required pieces of information the save step needs, so calling it currently causes an error, and even if that were fixed it still wouldn't set the right flag to make the entry show up on the dashboard. The email-based flow described above is the one that actually works end to end; this second path would need finishing if anyone wants to use it instead.</span>
-        </div>
-      </div>
+     
     </section>
 
     <section id="reference">
@@ -228,8 +227,6 @@ Submitted at: ...</code>
             <tr><td class="file">database.py</td><td class="role">Stores and queries contact-form entries</td></tr>
             <tr><td class="file">templates/contact_dashboard.html</td><td class="role">The dedicated dashboard staff use day to day</td></tr>
             <tr><td class="file">main.py — <code>/contact-dashboard</code>, <code>/contact-dashboard/sent</code></td><td class="role">Routes powering the dashboard and its sent-history view</td></tr>
-            <tr><td class="file">main.py — <code>/submit-enquiry</code></td><td class="role">Direct-save endpoint, currently non-functional (see callout above)</td></tr>
-            <tr><td class="file">contactform.py</td><td class="role">Manual test script for hitting the preprod enquiry API — not part of the live pipeline</td></tr>
           </tbody>
         </table>
       </div>
