@@ -33,7 +33,7 @@
         {% for err in errors %}
         <div class="bg-white rounded-2xl shadow p-5 border border-stone-100">
             <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-stone-400 local-time" data-utc="{{ err.created_at.isoformat() if err.created_at else '' }}"></span>
+                <span class="text-xs text-stone-400 local-time" data-utc="{{ err.created_at or '' }}"></span>
                 {% if err.gmail_message_id and not err.gmail_message_id.startswith('teacher_portal') %}
                 <a href="/ai-insights?q={{ err.gmail_message_id | urlencode }}" class="text-xs text-[#0F5D7A] hover:underline">View full log</a>
                 {% endif %}
