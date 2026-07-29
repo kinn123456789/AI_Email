@@ -18,7 +18,7 @@ def humanize_ai_error(raw_error):
     if "context length" in text or "context_length" in text:
         return "This conversation was too long for AI to process. Please reply manually."
 
-    if "content leak" in text:
+    if "teacher/staff-only wording" in text or "content leak" in text:
         return "AI couldn't safely write a draft for this one. Please reply manually."
 
     if "rate limit" in text or "429" in text:

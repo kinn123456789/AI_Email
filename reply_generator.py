@@ -173,7 +173,7 @@ def generate_reply(
         leaked_teacher_content = bool(reply) and bool(_TEACHER_FACING_LEAK_PATTERNS.search(reply))
 
         if leaked_teacher_content:
-            print(f"Teacher-facing content leak detected in reply for {gmail_message_id}: {reply!r}")
+            print(f"Draft blocked - contained teacher/staff-only wording not meant for a parent reply ({gmail_message_id}): {reply!r}")
 
         save_ai_log(
             gmail_message_id=gmail_message_id,
@@ -190,7 +190,7 @@ def generate_reply(
             historical_examples=historical_log,
             thread_history_length=len(thread_history or ""),
             ai_reply=reply,
-            error="Teacher-facing content leak detected; draft blanked" if leaked_teacher_content else None,
+            error="Draft blocked: contained teacher/staff-only wording not meant for a parent reply" if leaked_teacher_content else None,
         )
 
         if reply == "NO_REPLY" or leaked_teacher_content:
