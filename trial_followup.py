@@ -683,7 +683,7 @@ def get_followup_email_logs(search=None, date_from=None, date_to=None, page=1, p
                 {filters}
                 ORDER BY learner_id, email_number, id DESC
             ) latest
-            ORDER BY COALESCE(sent_at, scheduled_at) DESC
+            ORDER BY (status = 'sent') ASC, COALESCE(sent_at, scheduled_at) DESC
             LIMIT %s OFFSET %s
         """, params + [page_size, offset])
 
