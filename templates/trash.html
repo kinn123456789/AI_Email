@@ -11,15 +11,37 @@
 <div class="flex items-center justify-between mb-6">
 <h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">🗑️ Trash</h1>
 {% if deleted %}
-<div class="mb-6 rounded-xl bg-green-100 border border-green-300 text-green-800 px-5 py-3 font-semibold">
+<div id="deleted-message" class="mb-6 rounded-xl bg-green-100 border border-green-300 text-green-800 px-5 py-3 font-semibold">
     ✅ Email(s) permanently deleted.
 </div>
 {% endif %}
 {% if restored %}
-<div class="mb-6 rounded-xl bg-green-100 border border-green-300 text-green-800 px-5 py-3 font-semibold">
+<div id="restored-message" class="mb-6 rounded-xl bg-green-100 border border-green-300 text-green-800 px-5 py-3 font-semibold">
     ✅ Email(s) restored.
 </div>
 {% endif %}
+<script>
+(function () {
+    const ids = ["deleted-message", "restored-message"];
+    const params = ["deleted", "restored"];
+    let cleaned = false;
+
+    ids.forEach((id, i) => {
+        const el = document.getElementById(id);
+        if (el) {
+            setTimeout(() => {
+                el.remove();
+                if (!cleaned) {
+                    cleaned = true;
+                    const url = new URL(window.location);
+                    params.forEach(p => url.searchParams.delete(p));
+                    window.history.replaceState({}, "", url);
+                }
+            }, 3000);
+        }
+    });
+})();
+</script>
 <div class="flex items-center gap-3">
 <form method="post" action="/emails/restore-selected" id="restore-form"></form>
 <form method="post" action="/emails/delete-permanently" id="delete-form"></form>

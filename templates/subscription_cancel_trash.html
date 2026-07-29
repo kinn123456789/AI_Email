@@ -92,6 +92,9 @@ const restoreMessage = document.getElementById("restore-message");
 if (restoreMessage) {
     setTimeout(() => {
         restoreMessage.remove();
+        const url = new URL(window.location);
+        url.searchParams.delete("restored");
+        window.history.replaceState({}, "", url);
     }, 3000);
 }
 
