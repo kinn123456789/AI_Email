@@ -109,23 +109,13 @@
         </table>
     </div>
 
-    <!-- Look up one email's AI log -->
+    <!-- One email's AI log - reached via the "View AI Log" button on the
+    email detail page (links here with ?q=<gmail_message_id>), not typed
+    in manually. -->
+    {% if search_query %}
     <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
-        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Look Up a Draft's AI Log</h2>
-        <form method="get" action="/ai-insights" class="flex gap-2 mb-4">
-            <input
-                type="text"
-                name="q"
-                value="{{ search_query or '' }}"
-                placeholder="Paste the email's gmail_message_id"
-                class="flex-1 border border-stone-200 rounded-lg px-3 py-2 text-sm"
-            >
-            <button type="submit" class="bg-[#0F5D7A] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition">
-                Search
-            </button>
-        </form>
+        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Draft's AI Log</h2>
 
-        {% if search_query %}
             {% if searched_logs %}
                 {% for log in searched_logs %}
                 <div class="border border-stone-100 rounded-xl p-4 mb-3 text-sm">
@@ -146,8 +136,8 @@
             {% else %}
                 <p class="text-stone-400 text-sm">No AI log found for that message ID.</p>
             {% endif %}
-        {% endif %}
     </div>
+    {% endif %}
 
 
 </div>
