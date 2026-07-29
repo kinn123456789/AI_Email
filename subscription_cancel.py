@@ -1,4 +1,8 @@
 # subscription_cancel.py
+#
+# Only "Cancelled" and "Trial Expired" subscriptions get an AI-drafted
+# email. Every other status here is just for monitoring or checking
+# status, not for drafting.
 
 import os
 import re
