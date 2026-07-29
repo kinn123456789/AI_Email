@@ -1567,7 +1567,7 @@ def _get_draft_row_keys():
         db_pool.putconn(conn)
 
 
-_DRAFTABLE_STATUSES = {"cancelled", "trial_expired"}
+_DRAFTABLE_STATUSES = {"canceled", "trial_expired"}
 
 
 def prefetch_reengagement_drafts(batch_size=5):

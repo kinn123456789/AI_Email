@@ -289,6 +289,8 @@ class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
 <span class="bg-pink-300/60 text-pink-950 px-3 py-1 rounded-full text-xs font-bold">👩 Lucy</span>
 {% elif email.source == "engineering@coralacademy.com" %}
 <span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">🛠️ Engineering</span>
+{% elif email.source == "teachers@coralacademy.com" %}
+<span class="bg-emerald-300/60 text-emerald-950 px-3 py-1 rounded-full text-xs font-bold">👨‍🏫 Teachers</span>
 {% else %}
 <span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">{{ email.source or "Other" }}</span>
 {% endif %}
@@ -453,6 +455,9 @@ function sourceBadgeHtml(source) {
     }
     if (source === "engineering@coralacademy.com") {
         return '<span class="bg-indigo-300/60 text-indigo-950 px-3 py-1 rounded-full text-xs font-bold">🛠️ Engineering</span>';
+    }
+    if (source === "teachers@coralacademy.com") {
+        return '<span class="bg-emerald-300/60 text-emerald-950 px-3 py-1 rounded-full text-xs font-bold">👨‍🏫 Teachers</span>';
     }
     return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">' + escapeHtml(source || "Other") + '</span>';
 }

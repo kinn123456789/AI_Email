@@ -2120,7 +2120,7 @@ async def subscription_cancel_email(request: Request, row_key: str):
     if not row:
         return Response(content="Not found", status_code=404)
 
-    if row["subscription_status"] not in ("cancelled", "trial_expired"):
+    if row["subscription_status"] not in ("canceled", "trial_expired"):
         return templates.TemplateResponse(
             "subscription_cancel_email.html",
             {

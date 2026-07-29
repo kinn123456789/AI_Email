@@ -1,4 +1,4 @@
-# 💌 Subscription & Re-engagement Module — Full Documentation
+# Subscription & Re-engagement Module — Full Documentation
 
 *Reaching out automatically when a subscription is cancelled or a free trial runs out — without ever guessing who someone is.*
 

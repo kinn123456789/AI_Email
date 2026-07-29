@@ -99,6 +99,7 @@
                     <td class="py-2">
                         {% if row.errors > 0 %}
                         <a href="/ai-insights/errors?category={{ row.category | urlencode }}" class="text-red-600 font-semibold hover:underline">{{ row.errors }}</a>
+                        <span class="text-xs text-stone-400">(click to see error detail, e.g. "conversation too long for AI")</span>
                         {% else %}
                         {{ row.errors }}
                         {% endif %}
