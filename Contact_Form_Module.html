@@ -109,7 +109,6 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
     <h1>The Contact Form Module</h1>
     <p class="lede">How a website enquiry becomes a reply-ready message in its own dashboard.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
@@ -196,7 +195,7 @@ Submitted at: ...</code>
           <li><b>Name</b> — takes the text after "Name:"</li>
           <li><b>Email</b> — takes the text after "Email:" </li>
           <li><b>Phone</b> — takes the text after "Phone" </li>
-          <li><b>Message</b> — the actual question the person typed. Grabs everything after "Message</li>
+          <li><b>Message</b> — the actual question the person typed. Grabs everything after "Message" till submitted_at</li>
         </ul>
       </div>
 
@@ -204,11 +203,25 @@ Submitted at: ...</code>
         <h4>Where the data lives <span class="filepill">database.py</span></h4>
         <ul>
           <li>Contact name and phone are stored in their own dedicated columns on the messages table.</li>
-          <li>The dashboard query specifically excludes Coral Academy's own internal addresses, so only real visitor enquiries ever show up.</li>
+          <li>The list is sorted unread-first — unread enquiries stay at the top, read ones sink below them, and each group is ordered newest to oldest.</li>
         </ul>
       </div>
 
-     
+      <div class="tech-block">
+        <h4>Replying &amp; threading <span class="filepill">main.py</span></h4>
+        <p class="desc">The goal is to keep the entire back-and-forth with one visitor in a single conversation, even though it starts life as a form submission with no real email chain behind it. That's built up in stages:</p>
+        <ul>
+          <li>On submission, the enquiry is given a synthetic <code>thread_id</code> of <code>contact_form:&lt;visitor's email&gt;</code> — every enquiry from that same address shares it.</li>
+          <li>The first staff reply is sent from <code>support@coralacademy.com</code> and keeps that same <code>thread_id</code>, but the reply itself is filed under the regular inbox mailbox rather than the contact-form dashboard.</li>
+          <li>That reply gives the enquiry a real email Message-ID for the first time. If the visitor replies back, it arrives as an ordinary inbound email and threads automatically from then on — same as any other email conversation (<span class="filepill">process_email.py</span>).</li>
+        </ul>
+        <p class="desc">In simple terms, here's how any new reply finds its way back to the right conversation:</p>
+        <ul>
+          <li>First, it checks who the email says it's replying to. If that message is already in the system, the new email just joins its thread.</li>
+          <li>If that check comes up empty, it looks at the full list of earlier messages in the chain (some email apps attach this even when the direct "replying to" pointer is missing or broken) and joins the thread of the first one it recognizes.</li>
+          <li>If neither works, it's treated as the start of a brand new conversation.</li>
+        </ul>
+      </div>
     </section>
 
     <section id="reference">

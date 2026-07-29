@@ -96,6 +96,25 @@
         </form>
         {% endif %}
 
+        {% if replies %}
+        <div class="mb-8">
+            <h2 class="font-bold text-stone-800 text-sm tracking-wider uppercase px-1 mb-2">💬 Replies</h2>
+            <div class="flex flex-col gap-3">
+                {% for reply in replies %}
+                <div class="{{ 'bg-cyan-100/60 border-cyan-300/50' if reply.sender == 'staff' else 'bg-white/60 border-cyan-300/40' }} border p-4 rounded-2xl">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-stone-600">
+                            {{ '🏫 Coral Academy' if reply.sender == 'staff' else '👤 Parent' }}
+                        </span>
+                        <span class="text-xs text-stone-400 local-time" data-utc="{{ (reply.sent_at or reply.created_at).isoformat() if (reply.sent_at or reply.created_at) else '' }}"></span>
+                    </div>
+                    <div class="text-sm text-stone-700 whitespace-pre-wrap break-words">{{ reply.body }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
         <div class="border-t border-cyan-300/50 mt-8 pt-6 flex justify-end">
             <a href="/subscription-cancel" class="bg-stone-800 text-white px-6 py-3 rounded-xl font-semibold text-sm hover:bg-stone-900 transition shadow-sm">
                 ← Back to List

@@ -99,10 +99,10 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
+    
     <h1>Complete Project Report</h1>
     <p class="lede">What this whole project does and how it works underneath, in simple words — covering all 7 modules.</p>
-    <p class="meta">Prepared by Kinnera (with Claude Code assistant) &nbsp;·&nbsp; 26 July 2026</p>
+    
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
       <path d="M0 70 C 30 40, 60 100, 90 70 S 150 40, 180 70 S 220 100, 220 70" stroke="var(--secondary)" stroke-width="3" fill="none" opacity="0.55"/>
       <path d="M0 95 C 30 65, 60 125, 90 95 S 150 65, 180 95 S 220 125, 220 95" stroke="var(--accent)" stroke-width="3" fill="none" opacity="0.4"/>
@@ -147,7 +147,7 @@
         <ol>
           <li>Junk emails (newsletters, password resets, spam, automatic system alerts) are filtered out automatically using a mix of fixed rules and a rules list stored in the database. Staff don't need to see these — they go to a separate "Notifications" page, not the main inbox.</li>
           <li>Every real email is read by AI (the model used is called <b>gpt-5-nano</b>), which decides: what category it is (Admissions, Billing, Teacher, General, etc.), how urgent it is (Urgent/High/Medium/Low), a short one-line summary, and whether a staff member must check it before anything is sent.</li>
-          <li>To help write a good reply, the AI looks at two things: Coral Academy's help-center articles and class pages (its "knowledge base"), and a few real past emails Coral Academy staff sent before. It finds these by meaning, not just matching keywords. The knowledge base is used for real facts, like policies and class details. The past emails are only used to copy the writing style — the friendly tone, greeting, and sentence style — so the new reply sounds like Coral Academy wrote it. The AI never copies real facts, names, or promises from an old email.</li>
+          <li>To help write a good reply, the AI looks at two things: Coral Academy's help-center articles and class pages (its "knowledge base"), and a few real past emails Coral Academy staff sent before. It finds these by meaning, not just matching keywords. The knowledge base is used for real facts, like policies and class details, and is always checked first. The past emails always teach the writing style — the friendly tone, greeting, and sentence style — so the new reply sounds like Coral Academy wrote it. But when the knowledge base has no answer at all, the past emails can also fill in as a backup source of guidance on what to say — only if several similar ones (3 to 5) were found and at least 2 to 3 of them independently say the same thing, and none of them say anything that goes against the knowledge base. Even then, the AI never copies exact wording, names, dates, or promises from an old email — it restates the guidance in its own words.</li>
           <li>The AI then writes a full draft reply.</li>
           <li>Every email ends up as: "No Reply Needed", "Needs Review" (AI wrote a draft, staff must approve), or "Replied".</li>
         </ol>
@@ -180,7 +180,7 @@
         <ul>
            
           <li>Finding "similar past emails" and "similar help articles" works by turning text into a list of numbers (an "embedding") and finding the closest matches — a well-known AI search technique.</li>
-          <li>A second AI check ("reranking") looks at the ~30 possible past-email matches and picks only the 2-3 that would genuinely help write a good reply, instead of just picking whichever matched best by raw similarity.</li>
+          <li>A second AI check ("reranking") looks at the possible matches and picks only the genuinely useful ones, instead of just trusting raw similarity score order — for past emails, that's the ~30 candidates narrowed to 2-3 that would actually help write a good reply; the same kind of check now also runs on help-center matches, since a result can be topically similar without actually answering the question.</li>
           <li>Every single AI reply attempt (successful or failed) is logged in detail (how long it took, how many "tokens" it used, what information it was given) so problems can be traced later.</li>
         </ul>
         
@@ -261,15 +261,15 @@
       
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc">Working well, and recently made faster and safer against large amounts of data.</p></div>
+      
     </section>
 
     <section id="subscription">
-      <div class="section-head"><span class="module-num">4</span><h2>Cancelled Subscription</h2><span class="status-pill status-ok">Biggest reliability work here</span></div>
+      <div class="section-head"><span class="module-num">4</span><h2>Cancelled Subscription</h2></div>
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">A dashboard though the page title still says "Cancelled Subscriptions") that shows students whose paid subscription was cancelled, or whose free trial expired without turning into a paid plan — so staff can send them a friendly email .</p>
+        <p class="desc">A dashboard that shows students whose paid subscription was cancelled, or whose free trial expired without turning into a paid plan — so staff can send them a friendly email .</p>
       </div>
 
       <div class="tech-block">
@@ -280,7 +280,7 @@
           <li>Staff can filter by status — Cancelled, Active, Payment Failed, Trial Expired, and more.</li>
           <li>AI (<b>gpt-5-nano</b>) writes a warm "come back" email for each student, using details like how many classes they attended and which class they were in. Real parent/student names are hidden from the AI while it writes, using placeholder words, and swapped back in afterward.</li>
           <li>These AI emails are prepared in advance in the background (a small batch every minute), so when a staff member opens a student's page, the draft is usually already there instead of making them wait ~20 seconds for the AI to write it live.</li>
-          <li><b>Known gap:</b> the draft wording itself only really distinguishes two cases — "trial expired" and everything else. So a Payment Failed record (or any other status besides Trial Expired) gets the same wording as a real cancellation, saying the subscription "was recently cancelled" even when it wasn't. Staff can still edit the draft before sending, but the auto-written wording may not be accurate for statuses other than Cancelled or Trial Expired.</li>
+          
         </ul>
       </div>
 
@@ -296,19 +296,19 @@
       </div>
 
       <div class="tech-block">
-        <h4>Behind the scenes — this module had the most engineering work done on it</h4>
+        <h4>Behind the scenes</h4>
         <ul>
-          <li><b>The "keep the list up to date" job used to redo all the work every single minute.</b> Every 60 seconds, it would completely re-fetch and re-combine every subscription and trial from the last 3 months, even if nothing had changed. This was heavy, repeated work happening constantly, and was found to be a real cause of the app running out of memory and crashing on the server.</li>
-          <li><b>This was fixed by making the refresh "smart."</b> Now, most minutes, it only asks the database "what changed since the last check?" and updates just those few records. Once every ~30 minutes.</li>
+          
+          <li><b>Making the refresh "smart."</b> Most minutes, it only asks the database "what changed since the last check?" and updates just those few records. Once every ~30 minutes full refresh is done.</li>
           <li><b>Database request limits were discovered and fixed.</b> Supabase silently cuts off a result list at 1,000 rows, and fails outright if you ask for too many specific records at once (roughly 500-700). The system now automatically splits big requests into safe smaller batches.</li>
-          <li><b>A memory leak was found and fixed.</b> A new database connection was being opened but never properly closed for background tasks. Every connection is now explicitly closed right after it's used.</li>
+          
           <li><b>Background jobs were spaced out on purpose</b> so they never collide and overload the server.</li>
           
         </ul>
         
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc">Working well</p></div>
+      
     </section>
 
     <section id="contact">
@@ -327,13 +327,15 @@
           <li><b>Field extraction:</b> the email that arrives is just one plain block of text (<code>Name: ... / Email: ... / Phone: ... / Message: ... / Submitted at: ...</code>). The code reads it and pulls out each piece on its own: Name (falls back to the sender's display name), Email ( Sender's email address), Phone , Message </li>
           
           <li>The enquiry then gets the same AI treatment as a normal email and is stored as its own type, so it shows up on its own dedicated page instead of mixing into the regular inbox.</li>
+          <li><b>Sort order:</b> unread enquiries stay at the top of the list, read ones sink below them — and within each of those two groups, the newest ones come first.</li>
+          <li><b>Threading:</b> As a form submission has no real email chain , it's given a made-up conversation ID based on the visitor's email address, just so any further enquiries from that same person can be grouped together. Once a staff member sends the first reply, that reply is a real email — so if the visitor writes back after that, it's just an ordinary email reply and threads together automatically, the same way any other email conversation does.</li>
         </ul>
       </div>
 
       <div class="tech-block">
         <h4>What staff can do</h4>
         <ul>
-          <li>Browse all website enquiries, newest first, on their own dedicated page</li>
+          <li>Browse all website enquiries on their own dedicated page — unread ones first, then read ones, newest first within each</li>
           <li>Search by name, email, phone, or message</li>
           <li>Filter by date range</li>
           <li>See "All Enquiries" vs "Sent Mails" (already replied) separately</li>
@@ -342,7 +344,7 @@
         </ul>
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc">Small but complete feature — it works like a mini customer-support inbox just for website enquiries, just through an email-based path rather than a direct connection.</p></div>
+      
     </section>
 
     <section id="insights">
@@ -350,7 +352,7 @@
 
       <div class="tech-block">
         <h4>What it is</h4>
-        <p class="desc">A behind-the-scenes page (not something a parent or teacher ever sees) where staff can check how the AI itself is actually doing — not the emails, the AI's own performance.</p>
+        <p class="desc">A behind-the-scenes where staff can check how the AI itself is actually doing — not the emails, the AI's own performance.</p>
       </div>
 
       <div class="tech-block">
@@ -358,7 +360,7 @@
         <ul>
           <li>Every single time the AI classifies or drafts a reply — for regular email, Teacher Portal messages, Trial Follow-up, or Cancelled Subscription emails alike — that attempt gets logged: model used, tokens cost, how long it took, and whether it succeeded or failed.</li>
           
-          <li>It shows: overall totals, a breakdown by category, the last 20 failures with the full error message, and a way to look up exactly what happened for one specific email/reply.</li>
+          
           
         </ul>
       </div>
@@ -366,13 +368,13 @@
       <div class="tech-block">
         <h4>What staff can do</h4>
         <ul>
-          <li>See at a glance whether the AI is working well or having a rough patch, without digging through server logs</li>
-          <li>Spot which category (Billing, Admissions, Teacher, etc.) is generating the most errors</li>
-          <li>Look up one specific reply and see exactly why the AI answered the way it did</li>
+          <li>See at a glance total number of AI calls ,number of tokens used,time taken by AI to respond.</li>
+          
+          
         </ul>
       </div>
 
-      <div class="tech-block"><h4>Status</h4><p class="desc"> — a diagnostics page rather than something end users interact with, but can be used to find AI problems .</p></div>
+      
     </section>
 
     <section id="settings">
@@ -404,7 +406,7 @@
         <h4>What staff can do</h4>
         <ul>
           <li>See every mailbox currently being monitored</li>
-          <li>Add a new one (checked live before being saved)</li>
+          <li>Add a new one</li>
           <li>Delete one that was added here (only stops watching it going forward — any emails already saved from it are not deleted)</li>
         </ul>
       </div>
@@ -413,7 +415,7 @@
     </section>
 
   </main>
-  <footer>Complete Project Report &nbsp;·&nbsp;</footer>
+  
 </div>
 </body>
 </html>

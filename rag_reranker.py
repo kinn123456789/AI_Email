@@ -11,6 +11,167 @@ client = OpenAI(
 )
 
 
+def rerank_knowledge(subject, body, candidates):
+
+    article_list = ""
+
+    for i, article in enumerate(candidates):
+        article_list += f"""
+Index: {i}
+
+Similarity Score: {article["similarity"]:.2%}
+
+Title:
+{article["title"]}{" — " + article["section"] if article["section"] else ""}
+
+Content:
+{article["content"][:1200]}
+
+--------------------------------------------------
+"""
+
+    prompt = f"""
+You are selecting Knowledge Base articles for Coral Academy's AI Email Assistant.
+
+Your job is NOT to write a reply.
+
+Your job is to choose the Knowledge Base chunks that actually answer the customer's question — not ones that are merely topically or semantically similar.
+
+Unlike historical emails, these chunks are used as a FACTUAL source — an incorrect or irrelevant chunk here can cause the AI to state something wrong as if it were verified fact.
+
+--------------------------------------------------
+Candidate Knowledge Base Chunks
+--------------------------------------------------
+
+The following chunks were retrieved using semantic search.
+
+They are only candidates.
+
+Many are intentionally imperfect — vector similarity often returns chunks that are topically close but do not actually answer the question.
+
+Similarity scores are provided only as guidance.
+
+--------------------------------------------------
+Selection Rules
+--------------------------------------------------
+
+1. Only choose a chunk if it actually contains the specific fact, policy, or process needed to answer the customer's question.
+
+2. Do not choose a chunk just because it shares keywords or general topic with the question.
+
+3. Do not choose a chunk written for teachers/instructors/internal staff when the customer is a parent — see the "written for staff, not parents" red flags (phrases like "as an instructor," "email teachers@coralacademy.com," "post an announcement to enrolled parents").
+
+4. Prefer fewer, precisely relevant chunks over many loosely related ones.
+
+5. If none of the candidates genuinely answer the question, return an empty selection — do not force a match.
+
+6. Ignore duplicate or near-duplicate chunks; keep the clearer one.
+
+7. Keep each reason under 15 words.
+
+8. Use simple English.
+
+--------------------------------------------------
+Do NOT choose chunks that
+--------------------------------------------------
+
+• only match on keywords or general topic
+• describe a process for staff/teachers rather than the customer
+• contain outdated information contradicted by a more specific candidate
+• require guessing or inference beyond what the chunk actually states
+
+--------------------------------------------------
+Incoming Email
+--------------------------------------------------
+
+Subject:
+{subject}
+
+Body:
+{body}
+
+--------------------------------------------------
+Candidate Knowledge Base Chunks
+--------------------------------------------------
+
+{article_list}
+
+--------------------------------------------------
+Output
+--------------------------------------------------
+
+Return ONLY valid JSON.
+
+Do not include markdown.
+
+Do not include explanations.
+
+Do not include additional text.
+
+Confidence should be an integer between 0 and 100 indicating how directly the chunk answers the customer's question.
+
+Example:
+
+{{
+    "selected": [
+        {{
+            "index": 2,
+            "reason": "States the exact refund window policy asked about.",
+            "confidence": 96
+        }}
+    ]
+}}
+"""
+
+    try:
+
+        response = client.chat.completions.create(
+            model="gpt-5-nano",
+            temperature=0,
+            messages=[
+                {
+                    "role": "system",
+                    "content": """
+You are Coral Academy's Knowledge Base reranking assistant.
+
+Return only valid JSON.
+"""
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ],
+            response_format={"type": "json_object"}
+        )
+
+        result = json.loads(response.choices[0].message.content)
+
+        if "selected" not in result:
+            raise ValueError("Missing 'selected' field.")
+
+        for item in result["selected"]:
+
+            if "index" not in item:
+                raise ValueError("Missing index.")
+
+            if "reason" not in item:
+                raise ValueError("Missing reason.")
+
+            if "confidence" not in item:
+                item["confidence"] = 100
+
+        return result
+
+    except Exception as e:
+
+        print("Knowledge Reranker Error:", e)
+
+        return {
+            "selected": []
+        }
+
+
 def rerank_emails(subject, body, candidates):
 
     email_list = ""

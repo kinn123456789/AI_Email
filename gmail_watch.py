@@ -8,20 +8,23 @@ def register_watch(email_address):
 
     service = get_gmail_service(email_address)
 
-    result = service.users().watch(
-        userId="me",
-        body={
-            "topicName": TOPIC
-        }
-    ).execute()
+    try:
+        result = service.users().watch(
+            userId="me",
+            body={
+                "topicName": TOPIC
+            }
+        ).execute()
 
-    profile = service.users().getProfile(userId="me").execute()
+        profile = service.users().getProfile(userId="me").execute()
 
-    print("=" * 70)
-    print(f"Watch registered for: {profile['emailAddress']}")
-    print(result)
-    print("=" * 70)
-    return result
+        print("=" * 70)
+        print(f"Watch registered for: {profile['emailAddress']}")
+        print(result)
+        print("=" * 70)
+        return result
+    finally:
+        service.close()
 
 def renew_all_gmail_watches():
 

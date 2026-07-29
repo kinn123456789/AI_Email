@@ -8,14 +8,17 @@ def get_message(from_email, message_id):
 
     service = get_gmail_service(from_email)
 
-    response = service.users().messages().get(
-        userId="me",
-        id=message_id,
-        format="raw"
-    ).execute()
+    try:
+        response = service.users().messages().get(
+            userId="me",
+            id=message_id,
+            format="raw"
+        ).execute()
 
-    msg = email.message_from_bytes(
-        base64.urlsafe_b64decode(response["raw"])
-    )
+        msg = email.message_from_bytes(
+            base64.urlsafe_b64decode(response["raw"])
+        )
 
-    return msg
+        return msg
+    finally:
+        service.close()

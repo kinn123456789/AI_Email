@@ -21,40 +21,43 @@ def send_new_email(
     # from_email directly. See gmail_auth.py.
     service = get_gmail_service(from_email)
 
-    if attachments:
+    try:
+        if attachments:
 
-        message = MIMEMultipart()
-        message.attach(MIMEText(body))
+            message = MIMEMultipart()
+            message.attach(MIMEText(body))
 
-        for filename, file_data, content_type in attachments:
+            for filename, file_data, content_type in attachments:
 
-            maintype, _, subtype = (content_type or "application/octet-stream").partition("/")
+                maintype, _, subtype = (content_type or "application/octet-stream").partition("/")
 
-            part = MIMEBase(maintype or "application", subtype or "octet-stream")
-            part.set_payload(file_data)
-            encoders.encode_base64(part)
-            part.add_header(
-                "Content-Disposition",
-                f'attachment; filename="{filename}"'
-            )
-            message.attach(part)
+                part = MIMEBase(maintype or "application", subtype or "octet-stream")
+                part.set_payload(file_data)
+                encoders.encode_base64(part)
+                part.add_header(
+                    "Content-Disposition",
+                    f'attachment; filename="{filename}"'
+                )
+                message.attach(part)
 
-    else:
-        message = MIMEText(body)
+        else:
+            message = MIMEText(body)
 
-    message["To"] = to_email
-    message["From"] = from_email
-    message["Subject"] = subject
+        message["To"] = to_email
+        message["From"] = from_email
+        message["Subject"] = subject
 
-    raw = base64.urlsafe_b64encode(
-        message.as_bytes()
-    ).decode()
+        raw = base64.urlsafe_b64encode(
+            message.as_bytes()
+        ).decode()
 
-    sent = service.users().messages().send(
-        userId="me",
-        body={
-            "raw": raw
-        }
-    ).execute()
+        sent = service.users().messages().send(
+            userId="me",
+            body={
+                "raw": raw
+            }
+        ).execute()
 
-    return sent
+        return sent
+    finally:
+        service.close()

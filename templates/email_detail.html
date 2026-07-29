@@ -138,14 +138,16 @@
                     <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5">📥 Conversation</h2>
                     <span class="bg-cyan-200/50 text-cyan-800 text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md">Scrollable Thread</span>
                 </div>
-                <div id="conversationBox" class="bg-white/50 border border-cyan-100 p-5 rounded-3xl whitespace-pre-wrap break-words text-stone-700 text-sm leading-relaxed shadow-inner h-[500px] overflow-y-scroll force-visible-scrollbar">
+                <div class="relative">
+                <div id="conversationBox" class="bg-white/50 border border-cyan-100 p-5 rounded-3xl whitespace-pre-wrap break-words text-stone-700 text-sm leading-relaxed shadow-inner h-[650px] overflow-y-scroll force-visible-scrollbar">
                     <div class="flex flex-col justify-start space-y-5 pr-2">
                         {% for msg in conversation %}
                         {% set is_school = (msg.sender == school_email) %}
                         <div class="flex {{ 'justify-end' if is_school else 'justify-start' }}">
-                            <div class="{{ 'bg-cyan-100 border border-cyan-200' if is_school else 'bg-white border border-cyan-100' }} rounded-2xl p-5 max-w-2xl shadow-sm">
-                                <div class="font-semibold text-sm mb-2 text-gray-800">
+                            <div class="{{ ('bg-cyan-100 border-2 border-cyan-400' if is_school else 'bg-white border-2 border-cyan-400') if loop.last else ('bg-cyan-100 border border-cyan-200' if is_school else 'bg-white border border-cyan-100') }} rounded-2xl p-5 max-w-2xl shadow-sm">
+                                <div class="font-semibold text-sm mb-2 text-gray-800 flex items-center gap-2">
                                     {{ '🏫 Coral Academy' if is_school else '👤 ' }}
+                                    {% if loop.last %}<span class="bg-cyan-500 text-white text-[9px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded">Latest</span>{% endif %}
                                 </div>
                                 <div>{{ msg.body }}</div>
                                 <div class="text-xs text-stone-400 mt-3 local-time" data-utc="{{ msg.created_at.isoformat() if msg.created_at else '' }}"></div>
@@ -153,6 +155,11 @@
                         </div>
                         {% endfor %}
                     </div>
+                </div>
+                <button type="button" id="jumpToLatestBtn"
+                        class="hidden absolute bottom-4 right-4 bg-cyan-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-full shadow-lg hover:bg-cyan-700">
+                    ↓ Jump to latest
+                </button>
                 </div>
             </div>
 
@@ -233,12 +240,23 @@
 
     <script>
     window.addEventListener("load", function () {
-        {% if request.query_params.get("sent") %}
         const box = document.getElementById("conversationBox");
-        if (box) {
-            box.scrollTop = box.scrollHeight;
+        const jumpBtn = document.getElementById("jumpToLatestBtn");
+        if (!box) return;
+
+        box.scrollTop = box.scrollHeight;
+
+        if (jumpBtn) {
+            const nearBottom = () => box.scrollHeight - box.scrollTop - box.clientHeight < 40;
+
+            box.addEventListener("scroll", function () {
+                jumpBtn.classList.toggle("hidden", nearBottom());
+            });
+
+            jumpBtn.addEventListener("click", function () {
+                box.scrollTop = box.scrollHeight;
+            });
         }
-        {% endif %}
     });
     </script>
 <script src="/static/local-time.js"></script>

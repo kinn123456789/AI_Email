@@ -11,6 +11,7 @@ def send_email(from_email, token_file, to_email, subject, body, thread_id=None, 
     change) - auth is via domain-wide delegation, impersonating from_email
     directly. See gmail_auth.py.
     """
+    service = None
     try:
         service = get_gmail_service(from_email)
 
@@ -77,3 +78,6 @@ def send_email(from_email, token_file, to_email, subject, body, thread_id=None, 
         traceback.print_exc()
         print("SEND ERROR:", e)
         return None
+    finally:
+        if service:
+            service.close()

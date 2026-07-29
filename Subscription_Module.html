@@ -107,7 +107,7 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
+    
     <h1>The Subscription &amp; Re-engagement Module</h1>
     <p class="lede">Reaching out automatically when a subscription is cancelled or a free trial runs out — without ever guessing who someone is.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
@@ -190,7 +190,7 @@
           <table>
             <thead><tr><th>Table</th><th>Source</th><th>What it's for</th></tr></thead>
             <tbody>
-              <tr><td class="file">Subscriptions</td><td>Supabase (separate project)</td><td>Which subscriptions were cancelled and when</td></tr>
+              <tr><td class="file">Subscriptions</td><td>Supabase (separate project)</td><td>Every subscription row, any status — not filtered to cancelled at the query level (see below)</td></tr>
               <tr><td class="file">FreeTrialPass</td><td>Supabase</td><td>Which free trials expired without converting</td></tr>
               <tr><td class="file">Enrollments → Batches → Classes</td><td>Supabase</td><td>Resolves a learner to their class name(s) for display</td></tr>
               <tr><td class="file">Learners, Users</td><td>Supabase</td><td>Learner/parent names</td></tr>
@@ -205,6 +205,45 @@
         <div class="callout">
           <span class="flag">Note</span>
           <span>The 3 main-Postgres tables (<code>subscription_cancel_dismissed</code>, <code>subscription_cancel_sent</code>, <code>subscription_cancel_drafts</code>) have no <code>CREATE TABLE</code> statement checked into the repo — they're only ever referenced via raw <code>INSERT</code>/<code>SELECT</code> in <code>subscription_cancel.py</code>. No external Coral Academy REST API is involved anywhere in this module — everything above comes straight from these tables.</span>
+        </div>
+      </div>
+
+      <div class="tech-block">
+        <h4>Exact columns picked, by table <span class="filepill">subscription_cancel.py</span></h4>
+        <p class="desc">Every row on the dashboard is stitched together from up to 9 Supabase tables, joined in Python via <code>learner_id</code>/<code>parent_id</code>/<code>batch_id</code>/<code>class_id</code> (this is a REST API, not raw SQL, so there's no single database join). The two source paths — a real subscription vs. an expired trial — pull from different starting tables:</p>
+
+        <p class="desc" style="margin-top:14px;"><b>Subscription rows</b> (from <code>Subscriptions</code>):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Columns selected</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td class="file">Subscriptions</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">id, learner_id, subscription_type, subscription_status, subscribed_at, canceled_at, updated_at</td><td>The row itself — no status filter, every status included</td></tr>
+              <tr><td class="file">Learners</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">learner_id, parent_id</td><td>Maps learner → parent</td></tr>
+              <tr><td class="file">Users</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">user_id, name</td><td>Learner's display name (<code>user_id = learner_id</code>)</td></tr>
+              <tr><td class="file">EmailDeliveryStatus</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">parent_id, parent_name, parent_email, created_at</td><td>Parent's name/email (most recent row per parent)</td></tr>
+              <tr><td class="file">SessionInteraction</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">learner_id <i>(where did_attend = true)</i></td><td>Counts sessions attended</td></tr>
+              <tr><td class="file">Enrollments</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">learner_id, batch_id <i>(where is_latest = true)</i></td><td>Current enrollment</td></tr>
+              <tr><td class="file">Batches → Classes</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">batch_id, class_id → class_id, title</td><td>Class title shown on the row</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="desc" style="margin-top:14px;"><b>Trial rows</b> (from <code>FreeTrialPass</code>, shown as "Trial Expired"):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Columns selected</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td class="file">FreeTrialPass</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">free_trial_pass_id, parent_id, enrollment_ids, expiry_at, enrollment_start_timestamp</td><td>The expired trial itself — filtered to <code>expiry_at &lt;= now()</code></td></tr>
+              <tr><td class="file">Enrollments</td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">enrollment_id, learner_id</td><td>Resolves the trial's enrollment_ids → the actual learner_id</td></tr>
+              <tr><td class="file">Subscriptions <i>(conversion check)</i></td><td class="mono" style="font-family:var(--font-mono);font-size:0.85em;">learner_id, subscribed_at</td><td>If this learner subscribed on/after the trial's start, they've converted — <b>excluded</b> from trial results so they aren't shown twice</td></tr>
+              <tr><td class="file">Learners, Users, EmailDeliveryStatus, SessionInteraction, Enrollments → Batches → Classes</td><td>—</td><td>Same joins as the subscription path above, for parent/learner name, email, sessions, and class title</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <span class="flag">Note</span>
+          <span>The <code>Subscriptions</code> query has no status filter at all — it fetches every status, bounded only by date (<code>canceled_at</code>, or <code>updated_at</code> if <code>canceled_at</code> is null). Narrowing to just "cancelled" happens only via the status dropdown on the page itself, not in the underlying fetch — with "All Statuses" selected, active and paused rows show up here too.</span>
         </div>
       </div>
 
@@ -225,10 +264,7 @@
           <li>Once the draft comes back, the real names are substituted back in locally, so the final email reads naturally.</li>
           <li>If the AI call fails for any reason, a safe, pre-written fallback email is used instead so a draft is never simply missing.</li>
         </ul>
-        <div class="callout">
-          <span class="flag">Fixed this session</span>
-          <span>The swap-back used to be a simple find-and-replace with no check afterward. Now, after swap-back, the body is checked for any leftover bracketed placeholder-shaped text (not just the 2 exact tokens — catches wrong casing/spacing too). If one's still there, the draft is discarded and the safe hardcoded fallback template is used instead — a leaked placeholder can no longer reach Send.</span>
-        </div>
+        
       </div>
 
       <div class="tech-block">

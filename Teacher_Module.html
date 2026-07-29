@@ -108,7 +108,7 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
+    
     <h1>The Teacher Portal Module</h1>
     <p class="lede">How messages between teachers and parents get synced in, understood by AI, and answered — all from one inbox.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
@@ -206,14 +206,15 @@
           <li><b>Sync cadence:</b> every 8 minutes, offset 70 seconds from other jobs so it doesn't collide with them; only one run at a time.</li>
           <li>Every run is logged (success/failure/duration) so a silent failure is never invisible.</li>
         </ul>
-        <div class="callout"><span class="flag">Note</span><span>Teacher Portal data lives in the <b>same</b> main Postgres database as the rest of the app (not a separate Supabase project) — worth knowing since some other modules genuinely do use a separate Supabase project for their own data.</span></div>
+        
+        
       </div>
 
       <div class="tech-block">
         <h4>Classification &amp; drafting <span class="filepill">teacher_ai_processor1.py</span> <span class="filepill">teacher_reply_generator1.py</span></h4>
         <ul>
-          <li>Uses the exact same classifier (<code>ai_triage</code>) and reply engine (<code>reply_generator.generate_reply</code>) as regular email — just fed Teacher Portal content instead. Draft replies do <i>not</i> use historical-email style examples, only Help Center knowledge.</li>
-          <li><b>Context cap:</b> only the last 50 messages of a chat are given to the AI (fixed a real incident where one long-running thread grew to ~443,000 tokens and failed permanently against OpenRouter's 400,000 limit). This cap only affects what the AI sees — the full chat is still shown to staff in the UI.</li>
+          <li>Uses the exact same classifier (<code>ai_triage</code>) and reply engine (<code>reply_generator.generate_reply</code>) as regular email — just fed Teacher Portal content instead. Draft replies do <i>not</i> use historical-email style examples(as current historical emails dont have teacher facing mails ), only Help Center knowledge.</li>
+          
           <li><b>Safety override:</b> messages containing words like "complaint," "refund," "legal," or "bullying" are always forced to human review and bumped to at least High priority, regardless of what the AI itself decided.</li>
           <li>Every classification and draft attempt is logged for debugging, tagged as <code>teacher_portal:&lt;message_id&gt;</code>.</li>
         </ul>
@@ -243,7 +244,7 @@
           <li>No code in this repository (<code>teacher_portal_api_reader.py</code>, <code>teacher_api_sync.py</code>, <code>teacher_api_sender.py</code>) has been modified in the days surrounding the onset of this issue — <code>git log</code> shows the last change to the reader/sync files predates the failure by several commits, ruling out a regression on the application side.</li>
         </ul>
         <div class="callout"><span class="flag">Next step</span><span>Confirm with whoever manages the pre-production Teacher Portal API/infrastructure whether the <code>TEACHER_PORTAL_API_KEY</code> currently configured in this app's environment is still valid, and whether any gateway/routing change was deployed to <code>api.preprod.coralacademy.com</code> around 2026-07-26.</span></div>
-        <div class="callout"><span class="flag">Possible last-resort fallback (not recommended right now)</span><span>The permanent API key (<code>TEACHER_PORTAL_API_KEY</code>) is not working consistently — most likely due to a gateway/auth-layer issue on the pre-production side rather than the key itself being revoked (the identical 405 across every method/endpoint points upstream of the actual API logic, not to a per-endpoint restriction). <code>teacher_portal_reader.py</code> and <code>teacher_portal_sender.py</code> are older, still-functional integrations that hit real Teacher Portal endpoints using a short-lived <code>Authorization: Bearer</code> token instead of the API key. That token can only be obtained by logging into the Teacher Portal UI, so it can't be renewed by a plain scheduled script — in theory, Playwright could drive a browser session to log in and capture that token automatically. In practice this isn't a good option today: it requires running a headless Chromium browser on a schedule, and this app already runs on a memory-constrained 512MB Render instance that has suffered repeated OOM kills, one of them already tied to Chromium memory usage from an existing feature (<code>sync_help_center.py</code>). Adding a second, heavier Chromium-based job here would risk causing further crashes rather than fixing anything, and it doesn't address the actual root cause. This app is also built as a unified, API-first inbox — Gmail and the Teacher Portal are both integrated via clean REST/API calls, not browser scraping — so a Playwright-based workaround would be an architectural mismatch, not just a resource risk. It's noted here only as a theoretical last resort if the pre-production API issue turns out to be unfixable; the priority right now should stay on getting the API/gateway issue resolved at the source.</span></div>
+        <div class="callout"><span class="flag">Possible last-resort fallback </span><span>The permanent API key (<code>TEACHER_PORTAL_API_KEY</code>) is not working consistently — most likely due to a gateway/auth-layer issue on the pre-production side rather than the key itself being revoked (the identical 405 across every method/endpoint).<code>teacher_portal_reader.py</code> and <code>teacher_portal_sender.py</code> are older, still-functional integrations that hit real Teacher Portal endpoints using a short-lived <code>Authorization: Bearer</code> token instead of the API key. That token can only be obtained by logging into the Teacher Portal UI, so it can't be renewed by a plain scheduled script — in theory, Playwright could drive a browser session to log in and capture that token automatically.Playwright would would work till the login structure is not changed.</span></div>
       </div>
 
     </section>
@@ -259,11 +260,11 @@
             <tr><td class="file">teacher_ai_processor1.py</td><td class="role">Classifies parent messages, builds capped thread history</td></tr>
             <tr><td class="file">teacher_reply_generator1.py</td><td class="role">Generates the AI draft reply for a Teacher Portal message</td></tr>
             <tr><td class="file">teacher_api_sender.py</td><td class="role">Sends/deletes messages through the Teacher Portal API</td></tr>
-            <tr><td class="file">teacher_ai_processor.py</td><td class="role">Old version — actually broken (imports a file that no longer exists)</td></tr>
-            <tr><td class="file">teacher_reply_generator..py</td><td class="role">Predecessor of teacher_reply_generator1.py, no longer used</td></tr>
-            <tr><td class="file">teacher_sync.py · teacher_sync_backup.py</td><td class="role">Old sync logic, unused</td></tr>
+            
+            
+            
             <tr><td class="file">teacher_portal_reader.py · teacher_portal_sender.py</td><td class="role">Earlier versions of the reader/sender, no longer used</td></tr>
-            <tr><td class="file">teacher_db_reader.py · teacher_db_sync.py</td><td class="role">Old architecture that read Teacher Portal data from a separate Supabase project directly — since replaced</td></tr>
+            
           </tbody>
         </table>
       </div>

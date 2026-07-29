@@ -36,25 +36,28 @@ def get_gmail_history(email_address, history_id, page_token=None):
 
     service = _build_service(email_address)
 
-    kwargs = {
-        "userId": "me",
-        "startHistoryId": history_id,
-        "historyTypes": ["messageAdded"]
-    }
+    try:
+        kwargs = {
+            "userId": "me",
+            "startHistoryId": history_id,
+            "historyTypes": ["messageAdded"]
+        }
 
-    if page_token:
-        kwargs["pageToken"] = page_token
+        if page_token:
+            kwargs["pageToken"] = page_token
 
-    result = service.users().history().list(
-        **kwargs
-    ).execute()
+        result = service.users().history().list(
+            **kwargs
+        ).execute()
 
-    print("=" * 80)
-    print("GMAIL HISTORY")
-    print(result)
-    print("=" * 80)
+        print("=" * 80)
+        print("GMAIL HISTORY")
+        print(result)
+        print("=" * 80)
 
-    return result
+        return result
+    finally:
+        service.close()
 
 
 def _resync_from_scratch(account):
@@ -66,11 +69,15 @@ def _resync_from_scratch(account):
     imap_full_sync(account["email"])
 
     service = _build_service(account["email"])
-    profile = service.users().getProfile(userId="me").execute()
 
-    update_last_history_id(account["email"], profile["historyId"])
+    try:
+        profile = service.users().getProfile(userId="me").execute()
 
-    print(f"[{account['source']}] Captured fresh historyId: {profile['historyId']}")
+        update_last_history_id(account["email"], profile["historyId"])
+
+        print(f"[{account['source']}] Captured fresh historyId: {profile['historyId']}")
+    finally:
+        service.close()
 
 
 def run_history_reader(email_address, webhook_history_id=None):
@@ -170,24 +177,27 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
 
     any_failed = False
 
-    for msg_id in added_ids:
-        try:
-            raw = service.users().messages().get(
-                userId="me",
-                id=msg_id,
-                format="raw"
-            ).execute()
+    try:
+        for msg_id in added_ids:
+            try:
+                raw = service.users().messages().get(
+                    userId="me",
+                    id=msg_id,
+                    format="raw"
+                ).execute()
 
-            msg = email.message_from_bytes(
-                base64.urlsafe_b64decode(raw["raw"])
-            )
+                msg = email.message_from_bytes(
+                    base64.urlsafe_b64decode(raw["raw"])
+                )
 
-            process_email(msg=msg, account=account)
+                process_email(msg=msg, account=account)
 
-        except Exception:
-            traceback.print_exc()
-            any_failed = True
-            continue
+            except Exception:
+                traceback.print_exc()
+                any_failed = True
+                continue
+    finally:
+        service.close()
 
     # Only advance the checkpoint if every message in this batch was
     # actually processed. If we advanced it unconditionally and one message

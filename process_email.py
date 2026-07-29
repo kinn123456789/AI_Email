@@ -15,6 +15,8 @@ from rag_reranker import rerank_emails
 from knowledge_search import search_knowledge_base
 from reply_generator import generate_reply
 from slack_notifications import send_slack_notification
+from trial_followup import find_trial_followup_by_message_ids, save_followup_reply
+from subscription_cancel import find_subscription_by_message_ids, save_subscription_reply
 from email.utils import parsedate_to_datetime
 from concurrent.futures import ThreadPoolExecutor
 from embedding_service import new_embedding_client, close_embedding_client
@@ -185,6 +187,51 @@ def process_email(msg, account):
 
         thread_id = message_id
 
+    # Additive check, independent of the thread_id resolution above: does
+    # this email also happen to be a reply to a trial-followup or
+    # subscription-reengagement email this app sent? If so, log it into that
+    # module's own reply table too, so a genuine parent reply shows up on
+    # that dashboard instead of only being visible in the general inbox.
+    # This never changes thread_id, mailbox routing, or anything below -
+    # it's purely an extra record, best-effort (a lookup failure here must
+    # never block normal email processing).
+    try:
+
+        candidate_message_ids = [in_reply_to] + references_header.split()
+        candidate_message_ids = [m for m in candidate_message_ids if m]
+
+        if candidate_message_ids:
+
+            followup_match = find_trial_followup_by_message_ids(candidate_message_ids)
+
+            if followup_match:
+
+                save_followup_reply(
+                    email_log_id=followup_match["id"],
+                    subject=subject,
+                    body=body,
+                    gmail_message_id=None,
+                    sender="parent",
+                    real_message_id=message_id
+                )
+
+            subscription_match = find_subscription_by_message_ids(candidate_message_ids)
+
+            if subscription_match:
+
+                save_subscription_reply(
+                    row_key=subscription_match["row_key"],
+                    subject=subject,
+                    body=body,
+                    gmail_message_id=None,
+                    sender="parent",
+                    real_message_id=message_id
+                )
+
+    except Exception as e:
+
+        print(f"Trial-followup/subscription reply-matching failed (non-blocking): {e}")
+
     skip, category, reason, mailbox = is_automated_email(msg)
 
     contact_phone = None
@@ -263,7 +310,7 @@ def process_email(msg, account):
                 search_similar_emails, subject, body, embedding_client=similar_client
             )
             knowledge_future = executor.submit(
-                search_knowledge_base, subject, body, embedding_client=knowledge_client
+                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True
             )
 
             result = triage_future.result()

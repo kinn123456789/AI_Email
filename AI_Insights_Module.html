@@ -103,7 +103,7 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
+    
     <h1>The AI Insights Module</h1>
     <p class="lede">A window into what the AI is actually doing — every call, every token all in one place.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
@@ -139,28 +139,13 @@
         <div class="card">
           <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 20V10M11 20V4M18 20v-7" stroke-width="1.8" stroke-linecap="round"/></svg></div>
           <h4>Summary Stats</h4>
-          <p>Total AI calls, how many failed, total tokens used, and average response time — a quick health check at a glance.</p>
+          <p>Total AI calls, total tokens used, and average response time — a quick health check at a glance.</p>
         </div>
-        <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 015 5c0 2-1 3-2 4s-1 2-1 3H10c0-1 0-2-1-3s-2-2-2-4a5 5 0 015-5z" stroke-width="1.6"/><path d="M10 19h4M11 21h2" stroke-width="1.6" stroke-linecap="round"/></svg></div>
-          <h4>Broken Down by Category</h4>
-          <p>Calls and error counts split by category (Classification, Billing, Admissions, Teacher, Reengagement, Trial Followup, etc.) — makes it easy to spot if one particular area is failing more than others.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" stroke-width="1.7" stroke-linecap="round"/><path d="M18 16l3 3-3 3" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-          <h4>Recent Errors</h4>
-          <p>The last 20 AI failures, with full error text — the fastest way to notice something's actively going wrong.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M3 8l9 6 9-6M4 6h16v12H4z" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
-          <h4>Look Up One Draft's Log</h4>
-          <p>Paste a specific email's Message-ID to see exactly what happened when its reply was generated — also reachable with one click from any email's detail page via "View AI Log."</p>
-        </div>
+       
+        
+       
       </div>
-      <div class="callout" style="margin-top:16px;">
-        <span class="flag">Removed this session</span>
-        <span>The full searchable/paginated/deletable log table that used to sit below this section was removed — it showed raw internal entries (many labeled "no matching email — Teacher Portal or system entry") that weren't meaningful to staff. The underlying <code>ai_logs</code> table and the per-message lookup above are untouched.</span>
-      </div>
+      
     </section>
 
     <section id="technical">
@@ -169,20 +154,20 @@
       <div class="tech-block">
         <h4>Where the logic actually lives <span class="filepill">database.py</span> <span class="filepill">main.py</span></h4>
         <ul>
-          <li><code>get_ai_insights()</code> (<code>database.py</code>) — three queries: overall totals (calls/errors/tokens/avg response time), a per-category breakdown, and the last 20 errors. All three read straight from <code>ai_logs</code>.</li>
-          <li><code>get_ai_log_by_message_id()</code> — powers the single-message lookup box.</li>
+          <li><code>get_ai_insights()</code> (<code>database.py</code>) — two queries: overall totals (calls/tokens/avg response time), a per-category breakdown. Two queries read straight from <code>ai_logs</code>.</li>
+          
           <li><code>get_ai_logs()</code>, <code>get_ai_log_categories()</code>, <code>delete_ai_log()</code> — removed this session along with the full-log-table UI, since nothing else called them.</li>
-          <li><code>get_latest_reply_sources()</code> — newly added this session; pulls which specific Knowledge Base articles and historical emails were actually used for a given reply, now shown directly on the email detail page next to the AI summary, not just here.</li>
+          <li><code>get_latest_reply_sources()</code> —  pulls which specific Knowledge Base articles and historical emails were actually used for a given reply, now shown directly on the email detail page next to the AI summary, not just here.</li>
           <li>The route (<code>@app.get("/ai-insights")</code> in <code>main.py</code>) ties all of this together and also handles deleting a single log row.</li>
         </ul>
       </div>
 
       <div class="tech-block">
-        <h4>What actually gets logged, and by what</h4>
+        <h4>What actually gets logged in ai logs table for checking, and by what</h4>
         <ul>
           <li><b>Classification</b> (<code>ai_classifier.py</code>) — logs on both success and failure, category always recorded as <code>"Classification"</code>.</li>
           <li><b>Reply generation</b> (<code>reply_generator.py</code>) — logs with the email's real category (Billing, Admissions, etc.), plus which Knowledge Base articles and historical examples were used.</li>
-          <li><b>Teacher Portal</b> messages — same classifier/generator, tagged <code>teacher_portal:&lt;message_id&gt;</code> so they're identifiable in the log.</li>
+          <li><b>Teacher Portal</b> messages — same classifier/generator </code> so they're identifiable in the log.</li>
           <li><b>Subscription re-engagement</b> and <b>Trial follow-up</b> drafts — logged under their own categories (<code>"Reengagement"</code>, <code>"Trial Followup"</code>).</li>
           <li>A logging failure itself can never crash the calling function — <code>save_ai_log()</code> catches its own errors and just prints, so a broken log write never destroys an already-generated draft.</li>
         </ul>

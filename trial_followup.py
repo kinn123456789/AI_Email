@@ -723,6 +723,34 @@ def get_followup_email(email_id):
         db_pool.putconn(conn)
 
 
+def get_previous_followup_messages(learner_id, before_email_number):
+    """Earlier sent emails in this learner's follow-up campaign (email_number
+    less than the one being sent now), oldest first - used to chain
+    In-Reply-To/References so follow-up #2 and #3 thread as real replies to
+    the earlier ones instead of arriving as disconnected emails."""
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+
+        cursor.execute("""
+            SELECT gmail_message_id
+            FROM trial_followup_email_logs
+            WHERE learner_id = %s
+            AND email_number < %s
+            AND gmail_message_id IS NOT NULL
+            ORDER BY email_number ASC
+        """, (learner_id, before_email_number))
+
+        return [row["gmail_message_id"] for row in cursor.fetchall()]
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+
 def complete_followup_campaign(learner_id):
 
     conn = get_connection()
@@ -830,7 +858,7 @@ def get_completed_campaigns():
         cursor.close()
         db_pool.putconn(conn)
 
-def update_followup_email_log(email_id, gmail_message_id, status):
+def update_followup_email_log(email_id, gmail_message_id, status, real_message_id=None):
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -841,15 +869,69 @@ def update_followup_email_log(email_id, gmail_message_id, status):
             SET
                 gmail_message_id = %s,
                 status = %s,
+                real_message_id = COALESCE(%s, real_message_id),
                 sent_at = NOW()
             WHERE id = %s
         """, (
             gmail_message_id,
             status,
+            real_message_id,
             email_id
         ))
 
         conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def find_trial_followup_by_message_ids(candidate_message_ids):
+    """Given the In-Reply-To/References message-ids from an inbound email,
+    check whether any of them match a real Message-ID this app sent as part
+    of a trial-followup campaign. Returns the matching email_log row (id,
+    learner_id, etc.) or None. Used by process_email.py to link a genuine
+    parent reply back to the trial-followup dashboard - see
+    trial_followup_replies."""
+
+    candidate_message_ids = [m for m in (candidate_message_ids or []) if m]
+
+    if not candidate_message_ids:
+        return None
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT *
+            FROM trial_followup_email_logs
+            WHERE real_message_id = ANY(%s)
+            ORDER BY email_number DESC
+            LIMIT 1
+        """, (candidate_message_ids,))
+
+        match = cursor.fetchone()
+
+        if match:
+            return match
+
+        # Also check manual staff replies (trial_followup_replies) - a
+        # parent may be replying to an ad-hoc reply rather than to one of
+        # the 3 scheduled campaign emails directly.
+        cursor.execute("""
+            SELECT *
+            FROM trial_followup_email_logs
+            WHERE id = (
+                SELECT email_log_id
+                FROM trial_followup_replies
+                WHERE real_message_id = ANY(%s)
+                ORDER BY sent_at DESC
+                LIMIT 1
+            )
+        """, (candidate_message_ids,))
+
+        return cursor.fetchone()
 
     finally:
         cursor.close()
@@ -898,7 +980,8 @@ def save_followup_reply(
     gmail_message_id,
     gmail_thread_id=None,
     sender="staff",
-    status="sent"
+    status="sent",
+    real_message_id=None
 ):
 
     conn = get_connection()
@@ -916,10 +999,11 @@ def save_followup_reply(
                 gmail_message_id,
                 gmail_thread_id,
                 status,
+                real_message_id,
                 sent_at
             )
             VALUES
-            (%s,%s,%s,%s,%s,%s,%s,NOW())
+            (%s,%s,%s,%s,%s,%s,%s,%s,NOW())
         """,
         (
             email_log_id,
@@ -928,7 +1012,8 @@ def save_followup_reply(
             body,
             gmail_message_id,
             gmail_thread_id,
-            status
+            status,
+            real_message_id
         ))
 
         conn.commit()

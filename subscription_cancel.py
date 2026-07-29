@@ -1321,7 +1321,7 @@ def _resolve_unconverted_trial_learner(trial):
     return None
 
 
-def save_sent_subscription_email(row, subject, body, gmail_message_id):
+def save_sent_subscription_email(row, subject, body, gmail_message_id, real_message_id=None):
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -1329,12 +1329,13 @@ def save_sent_subscription_email(row, subject, body, gmail_message_id):
     try:
         cursor.execute("""
             INSERT INTO subscription_cancel_sent
-            (row_key, parent_name, parent_email, learner_name, subscription_type, subscription_status, subject, body, gmail_message_id, class_title)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            (row_key, parent_name, parent_email, learner_name, subscription_type, subscription_status, subject, body, gmail_message_id, class_title, real_message_id)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             ON CONFLICT (row_key) DO UPDATE
             SET subject = EXCLUDED.subject,
                 body = EXCLUDED.body,
                 gmail_message_id = EXCLUDED.gmail_message_id,
+                real_message_id = COALESCE(EXCLUDED.real_message_id, subscription_cancel_sent.real_message_id),
                 sent_at = NOW()
         """, (
             row["row_key"],
@@ -1347,6 +1348,7 @@ def save_sent_subscription_email(row, subject, body, gmail_message_id):
             body,
             gmail_message_id,
             row.get("class_title"),
+            real_message_id,
         ))
 
         conn.commit()
@@ -1367,6 +1369,109 @@ def get_sent_subscription_email(row_key):
         """, (row_key,))
 
         return cursor.fetchone()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def find_subscription_by_message_ids(candidate_message_ids):
+    """Given the In-Reply-To/References message-ids from an inbound email,
+    check whether any of them match a real Message-ID this app sent as a
+    subscription re-engagement email. Returns the matching
+    subscription_cancel_sent row (row_key, parent_email, etc.) or None. Used
+    by process_email.py to link a genuine parent reply back to the
+    subscription-cancel dashboard - see subscription_cancel_replies."""
+
+    candidate_message_ids = [m for m in (candidate_message_ids or []) if m]
+
+    if not candidate_message_ids:
+        return None
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT *
+            FROM subscription_cancel_sent
+            WHERE real_message_id = ANY(%s)
+            LIMIT 1
+        """, (candidate_message_ids,))
+
+        return cursor.fetchone()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def save_subscription_reply(
+    row_key,
+    subject,
+    body,
+    gmail_message_id,
+    gmail_thread_id=None,
+    sender="staff",
+    status="sent",
+    real_message_id=None
+):
+    """Mirrors trial_followup.save_followup_reply - keyed by row_key (a
+    subscription_cancel row has no integer id, just its row_key) instead of
+    an email_log_id."""
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO subscription_cancel_replies
+            (
+                row_key,
+                sender,
+                subject,
+                body,
+                gmail_message_id,
+                gmail_thread_id,
+                status,
+                real_message_id,
+                sent_at
+            )
+            VALUES
+            (%s,%s,%s,%s,%s,%s,%s,%s,NOW())
+        """,
+        (
+            row_key,
+            sender,
+            subject,
+            body,
+            gmail_message_id,
+            gmail_thread_id,
+            status,
+            real_message_id
+        ))
+
+        conn.commit()
+
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
+def get_subscription_replies(row_key):
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        cursor.execute("""
+            SELECT *
+            FROM subscription_cancel_replies
+            WHERE row_key = %s
+            ORDER BY created_at
+        """, (row_key,))
+
+        return cursor.fetchall()
 
     finally:
         cursor.close()

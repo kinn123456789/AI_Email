@@ -15,8 +15,9 @@ EMAIL_ACCOUNT = {
 }
 
 
-def send_email(to_email, subject, body):
+def send_email(to_email, subject, body, in_reply_to=None, references=None):
 
+    service = None
     try:
 
         service = get_gmail_service(EMAIL_ACCOUNT["email"])
@@ -30,6 +31,19 @@ def send_email(to_email, subject, body):
         message["To"] = to_email
         message["From"] = EMAIL_ACCOUNT["email"]
         message["Subject"] = subject
+
+        # Threading headers - chains follow-up #2/#3 (and manual replies) to
+        # the earlier email(s) in this learner's campaign as real RFC-5322
+        # replies, instead of each arriving as a disconnected email. See
+        # trial_followup.get_previous_followup_messages() for how the caller
+        # builds these from the campaign's prior sent messages.
+        if in_reply_to:
+            message["In-Reply-To"] = in_reply_to
+
+        if references:
+            message["References"] = references
+        elif in_reply_to:
+            message["References"] = in_reply_to
 
         raw = base64.urlsafe_b64encode(
             message.as_bytes()
@@ -47,3 +61,8 @@ def send_email(to_email, subject, body):
         print(f"Send Email Error: {e}")
 
         return None
+
+    finally:
+
+        if service:
+            service.close()

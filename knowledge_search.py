@@ -1,9 +1,10 @@
 #knowledge_search.py
 from database import get_connection, db_pool
 from embedding_service import generate_embedding
+from rag_reranker import rerank_knowledge
 
 
-def search_knowledge_base(subject, body, limit=5, embedding_client=None):
+def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=False):
     """
     Searches the unified Coral Academy Knowledge Base.
 
@@ -13,6 +14,13 @@ def search_knowledge_base(subject, body, limit=5, embedding_client=None):
     - Future knowledge sources
 
     Returns the most relevant unique results.
+
+    When rerank=True, over-fetches deduped candidates and runs them through
+    an LLM reranking pass (rag_reranker.rerank_knowledge) before truncating
+    to `limit` - same idea as rerank_emails for historical emails, since raw
+    vector similarity can return a chunk that's topically close without
+    actually answering the question. Default is False so existing callers
+    that don't need this extra LLM call are unaffected.
     """
 
     query = f"""
@@ -114,10 +122,29 @@ Body:
                 }
             )
 
-            if len(results) >= limit:
+            if not rerank and len(results) >= limit:
                 break
 
-        return results
+        if not rerank:
+            return results
+
+        if not results:
+            return results
+
+        reranked = rerank_knowledge(subject, body, results)
+        selected = sorted(
+            reranked["selected"],
+            key=lambda item: item["confidence"],
+            reverse=True
+        )
+
+        final = [
+            results[item["index"]]
+            for item in selected
+            if 0 <= item["index"] < len(results)
+        ][:limit]
+
+        return final
 
     finally:
         cursor.close()

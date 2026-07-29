@@ -115,7 +115,7 @@
 <body>
 <div class="layout">
   <div class="hero">
-    <span class="hero-eyebrow"><span class="dot"></span>Coral Academy</span>
+    
     <h1>The Trial Follow-Up Module</h1>
     <p class="lede">A gentle 3-email sequence for learners whose free trial just ended.</p>
     <svg class="wave" viewBox="0 0 220 140" aria-hidden="true">
@@ -140,8 +140,8 @@
     <section id="overview">
       
       <div class="lead-box">
-        When a learner's free trial ends without them enrolling, this module reaches back out — automatically, but
-        never impulsively. Once a day, it checks whose trial reached the 1-day, 3-day or 7-day mark since expiry,
+        When a learner's free trial ends without them enrolling, this module reaches back out — automatically.
+        Once a day, it checks whose trial reached the 1-day, 3-day or 7-day mark since expiry,
         writes a personalized email with AI and  saves it as a <strong>draft</strong>. Nothing goes out to a real family until a staff member
         actually opens it, reads it and clicks Send.
       </div>
@@ -231,6 +231,53 @@
       </div>
 
       <div class="tech-block">
+        <h4>Exact columns picked, by table <span class="filepill">trial_followup.py</span></h4>
+        <p class="desc">Same style of breakdown as the Subscription module — traced directly from the actual <code>.select(...)</code> calls, not guessed from variable names.</p>
+
+        <p class="desc" style="margin-top:14px;"><b>Finding candidates</b> (<code>get_trial_followup_candidates()</code>):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>Columns selected</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td class="file">FreeTrialPass</td><td style="font-family:var(--font-mono);font-size:0.85em;">free_trial_pass_id, parent_id, enrollment_ids, expiry_at, enrollment_start_timestamp</td><td>Trials that expired in the last 30 days</td></tr>
+              <tr><td class="file">Enrollments</td><td style="font-family:var(--font-mono);font-size:0.85em;">enrollment_id, learner_id</td><td>Resolves a trial's enrollment_ids → the actual learner_id</td></tr>
+              <tr><td class="file">Subscriptions <i>(conversion check)</i></td><td style="font-family:var(--font-mono);font-size:0.85em;">learner_id, subscription_status, subscribed_at</td><td>If subscribed_at is on/after the trial's start, this learner converted — excluded from candidates (status column is fetched but not filtered on, see note below)</td></tr>
+              <tr><td class="file">Users</td><td style="font-family:var(--font-mono);font-size:0.85em;">user_id, name</td><td>Learner's display name (<code>user_id = learner_id</code>)</td></tr>
+              <tr><td class="file">Enrollments → Batches → Classes</td><td style="font-family:var(--font-mono);font-size:0.85em;">learner_id, batch_id → batch_id, class_id → class_id, title</td><td>Class title, via the same shared lookup the Subscription module uses</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="desc" style="margin-top:14px;"><b>At send time</b> (<code>get_parent_details()</code>, called from <code>process_trial_followup.py</code> right before generating/sending each email):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Source</th><th>Field(s)</th><th>Purpose</th></tr></thead>
+            <tbody>
+              <tr><td class="file">Supabase Auth Admin<br><span style="font-family:var(--font-mono);font-size:0.8em;">auth.admin.get_user_by_id()</span></td><td>email</td><td>The parent's real email address — notably, this is <b>not</b> read from any database table, it's fetched live via the Auth Admin API</td></tr>
+              <tr><td class="file">Users</td><td style="font-family:var(--font-mono);font-size:0.85em;">name <i>(where user_id = parent_id)</i></td><td>Parent's display name</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="desc" style="margin-top:14px;"><b>This app's own Postgres tables</b> (not Supabase — where campaign/send state actually lives):</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Table</th><th>What it tracks</th></tr></thead>
+            <tbody>
+              <tr><td class="file">trial_followup_campaigns</td><td>One row per learner's campaign — which of the 3 emails have been drafted/sent, and whether it's converted/complete</td></tr>
+              <tr><td class="file">trial_followup_email_logs</td><td>Each individual email (draft or sent): subject, body, <code>gmail_message_id</code>, <code>real_message_id</code>, status, <code>email_number</code></td></tr>
+              <tr><td class="file">trial_followup_replies</td><td>Manual staff replies sent from the dashboard, and (since the threading fix) genuine inbound parent replies matched by <code>real_message_id</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="callout">
+          <span class="flag">Note</span>
+          <span>The <code>Subscriptions</code> conversion check fetches <code>subscription_status</code> but doesn't filter on it — deliberately. A learner who converted and later cancelled (or had a payment fail) still genuinely converted once, which is all this specific check needs to know; filtering to only "active" would have wrongly re-included them as a follow-up candidate.</span>
+        </div>
+      </div>
+
+      <div class="tech-block">
         <h4>How "already converted" is actually checked <span class="filepill">trial_followup.py</span></h4>
         <p class="desc">"Smart Enough to Stop" isn't detecting a change or an event — it's a snapshot check on two timestamps, re-run fresh every single day the job runs, not just once when the campaign starts:</p>
         <code class="snippet">if subscribed_at and start:
@@ -239,14 +286,11 @@
         converted = True</code>
         <ul>
           <li><b>start</b> is the trial's own enrollment start timestamp — when this free trial began, not when it expires.</li>
-          <li><b>subscribed_at</b> is when the learner's currently-<i>active</i> subscription began (subscription_status == "active" is filtered before this check even runs).</li>
+          <li><b>subscribed_at</b> is when a matching subscription began — deliberately <i>not</i> filtered to only "active" subscriptions first, since a learner who converted and then later cancelled (or had a payment fail) still genuinely converted once, which is all this specific check cares about.</li>
           <li><b>subscribed_at &gt;= start</b> answers a genuine before/after question — "did the subscription start at or after this trial started?" That's what actually matters for "did this trial lead to a conversion," not an equality check like subscribed_at != expiry, which would almost always be True anyway since two independently-recorded timestamps are essentially never identical down to the second.</li>
         </ul>
         <p class="desc" style="margin-top:10px;"><b>Worked example:</b> trial starts July 1, expires July 15, subscription starts July 10 → July 10 &gt;= July 1 → True → correctly counted as converted. If instead the learner had some unrelated old active subscription from back in March → March &gt;= July 1 → False → correctly not counted, since that subscription predates this trial.</p>
-        <div class="callout">
-          <span class="flag">Also worth knowing</span>
-          <span>The check only looks for subscription_status == "active" — not "anything other than expired." A learner who subscribed and then had that subscription cancelled or a payment fail would not be caught by this, so they'd still be treated as a valid follow-up candidate and keep getting nudged, even though they did convert at some point.</span>
-        </div>
+        
       </div>
 
       <div class="tech-block">

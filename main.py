@@ -36,6 +36,7 @@ from trial_followup import (
     complete_followup_campaign,
     save_followup_reply,
     get_followup_replies,
+    get_previous_followup_messages,
     get_due_followups,
     update_followup_schedule,
     move_followup_to_trash,
@@ -58,6 +59,7 @@ from subscription_cancel import (
     get_or_generate_reengagement_email,
     save_sent_subscription_email,
     get_sent_subscription_email,
+    get_subscription_replies,
     get_sent_subscriptions
 )
 from followup_email import send_email as reengagement_send_email
@@ -801,7 +803,11 @@ def add_settings_account(email: str = Form(...)):
     # delegation *before* saving it - otherwise "Add" would silently save a
     # typo'd or non-Workspace address that then fails every time it's polled.
     try:
-        get_gmail_service(email).users().getProfile(userId="me").execute()
+        service = get_gmail_service(email)
+        try:
+            service.users().getProfile(userId="me").execute()
+        finally:
+            service.close()
     except Exception as e:
         return RedirectResponse(
             url=f"/settings?error=Could not access {email} - {str(e)[:150]}",
@@ -923,7 +929,7 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
                 search_similar_emails, subject, body, embedding_client=similar_client
             )
             knowledge_future = executor.submit(
-                search_knowledge_base, subject, body, embedding_client=knowledge_client
+                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True
             )
 
             result = triage_future.result()
@@ -1224,6 +1230,34 @@ def notification_mailbox(request: Request, source: str = None, q: str = None, da
         }
     )
 
+def _followup_thread_headers(learner_id, email_number):
+    """Builds In-Reply-To/References so a follow-up email threads as a real
+    reply to the earlier email(s) in this learner's campaign, instead of
+    arriving as a disconnected email. Best-effort: a prior message that
+    can't be fetched (transient Gmail API error) is just skipped rather than
+    blocking the send."""
+
+    prior_gmail_ids = get_previous_followup_messages(learner_id, email_number)
+
+    message_ids = []
+
+    for gmail_id in prior_gmail_ids:
+        try:
+            msg = get_message(os.getenv("EMAIL_1"), gmail_id)
+            real_message_id = " ".join((msg.get("Message-ID") or "").split())
+
+            if real_message_id:
+                message_ids.append(real_message_id)
+
+        except Exception as e:
+            print(f"Could not fetch prior follow-up message {gmail_id} for threading: {e}")
+
+    if not message_ids:
+        return None, None
+
+    return message_ids[-1], " ".join(message_ids)
+
+
 @app.post("/trial-followup/send/{email_id}")
 def send_followup(email_id: int):
 
@@ -1238,19 +1272,34 @@ def send_followup(email_id: int):
             "message": "Email already sent."
         }
 
+    in_reply_to, references = _followup_thread_headers(
+        email["learner_id"], email["email_number"]
+    )
+
     gmail_message_id = followup_send_email(
         email["recipient_email"],
         email["subject"],
-        email["email_body"]
+        email["email_body"],
+        in_reply_to=in_reply_to,
+        references=references
     )
 
     if not gmail_message_id:
         return {"success": False}
 
+    real_message_id = None
+
+    try:
+        sent_msg = get_message(os.getenv("EMAIL_1"), gmail_message_id)
+        real_message_id = " ".join((sent_msg.get("Message-ID") or "").split())
+    except Exception as e:
+        print(f"Could not fetch just-sent follow-up message-id for threading: {e}")
+
     update_followup_email_log(
         email_id=email_id,
         gmail_message_id=gmail_message_id,
-        status="sent"
+        status="sent",
+        real_message_id=real_message_id or None
     )
 
     
@@ -1287,10 +1336,16 @@ def reply_again(
     email = get_followup_email(email_id)
     print(email)
 
+    in_reply_to, references = _followup_thread_headers(
+        email["learner_id"], email["email_number"] + 1
+    )
+
     gmail_message_id =  followup_send_email(
         email["recipient_email"],
         subject,
-        body
+        body,
+        in_reply_to=in_reply_to,
+        references=references
     )
 
     print("Gmail ID:", gmail_message_id)
@@ -1299,11 +1354,20 @@ def reply_again(
         print("Email failed")
         return {"success": False}
 
+    real_message_id = None
+
+    try:
+        sent_msg = get_message(os.getenv("EMAIL_1"), gmail_message_id)
+        real_message_id = " ".join((sent_msg.get("Message-ID") or "").split())
+    except Exception as e:
+        print(f"Could not fetch just-sent reply message-id for threading: {e}")
+
     save_followup_reply(
         email_log_id=email_id,
         subject=subject,
         body=body,
-        gmail_message_id=gmail_message_id
+        gmail_message_id=gmail_message_id,
+        real_message_id=real_message_id or None
     )
 
  
@@ -2023,6 +2087,8 @@ async def subscription_cancel_trash_restore(row_keys: list[str] = Form(...)):
 @app.get("/subscription-cancel/email/{row_key}", response_class=HTMLResponse)
 async def subscription_cancel_email(request: Request, row_key: str):
 
+    replies = get_subscription_replies(row_key)
+
     sent = get_sent_subscription_email(row_key)
 
     if sent:
@@ -2033,7 +2099,8 @@ async def subscription_cancel_email(request: Request, row_key: str):
                 "row": sent,
                 "sent": sent,
                 "subject": sent["subject"],
-                "body": sent["body"]
+                "body": sent["body"],
+                "replies": replies
             }
         )
 
@@ -2050,7 +2117,8 @@ async def subscription_cancel_email(request: Request, row_key: str):
                 "row": row,
                 "sent": None,
                 "subject": None,
-                "body": None
+                "body": None,
+                "replies": replies
             }
         )
 
@@ -2063,7 +2131,8 @@ async def subscription_cancel_email(request: Request, row_key: str):
             "row": row,
             "sent": None,
             "subject": subject,
-            "body": body
+            "body": body,
+            "replies": replies
         }
     )
 
@@ -2077,7 +2146,16 @@ async def subscription_cancel_email_send(row_key: str, subject: str = Form(...),
 
     gmail_message_id = reengagement_send_email(row["parent_email"], subject, body)
 
-    save_sent_subscription_email(row, subject, body, gmail_message_id)
+    real_message_id = None
+
+    if gmail_message_id:
+        try:
+            sent_msg = get_message(os.getenv("EMAIL_1"), gmail_message_id)
+            real_message_id = " ".join((sent_msg.get("Message-ID") or "").split())
+        except Exception as e:
+            print(f"Could not fetch just-sent reengagement message-id for threading: {e}")
+
+    save_sent_subscription_email(row, subject, body, gmail_message_id, real_message_id=real_message_id or None)
 
     return RedirectResponse(
         url=f"/subscription-cancel/email/{row_key}?sent=true",
