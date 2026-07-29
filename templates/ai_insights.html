@@ -53,6 +53,33 @@
         rate is for the model in use, since pricing can change.
     </p>
 
+    <!-- Monthly tokens -->
+    <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
+        <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">Tokens by Month</h2>
+        <table class="w-full text-sm">
+            <thead>
+                <tr class="text-left text-stone-400 uppercase text-xs tracking-wider border-b border-stone-100">
+                    <th class="py-2">Month</th>
+                    <th class="py-2">Input (prompt)</th>
+                    <th class="py-2">Output (completion)</th>
+                    <th class="py-2">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in monthly_tokens %}
+                <tr class="border-b border-stone-50">
+                    <td class="py-2">{{ row.month.strftime("%B %Y") if row.month else "—" }}</td>
+                    <td class="py-2">{{ "{:,}".format(row.prompt_tokens) }}</td>
+                    <td class="py-2">{{ "{:,}".format(row.completion_tokens) }}</td>
+                    <td class="py-2 font-semibold">{{ "{:,}".format(row.total_tokens) }}</td>
+                </tr>
+                {% else %}
+                <tr><td class="py-2 text-stone-400" colspan="4">No data yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
     <!-- By category -->
     <div class="bg-white rounded-2xl shadow p-6 border border-stone-100 mb-8">
         <h2 class="text-lg font-bold text-[#0F5D7A] mb-4">By Category</h2>
@@ -69,7 +96,13 @@
                 <tr class="border-b border-stone-50">
                     <td class="py-2">{{ row.category or "—" }}</td>
                     <td class="py-2">{{ row.calls }}</td>
-                    <td class="py-2 {{ 'text-red-600 font-semibold' if row.errors > 0 else '' }}">{{ row.errors }}</td>
+                    <td class="py-2">
+                        {% if row.errors > 0 %}
+                        <a href="/ai-insights/errors?category={{ row.category | urlencode }}" class="text-red-600 font-semibold hover:underline">{{ row.errors }}</a>
+                        {% else %}
+                        {{ row.errors }}
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

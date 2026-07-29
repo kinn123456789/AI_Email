@@ -1908,10 +1908,23 @@ def get_ai_insights():
             if row["created_at"]:
                 row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
 
+        cursor.execute("""
+            SELECT
+                date_trunc('month', created_at) AS month,
+                COALESCE(SUM(prompt_tokens), 0) AS prompt_tokens,
+                COALESCE(SUM(completion_tokens), 0) AS completion_tokens,
+                COALESCE(SUM(total_tokens), 0) AS total_tokens
+            FROM ai_logs
+            GROUP BY month
+            ORDER BY month DESC
+        """)
+        monthly_tokens = cursor.fetchall()
+
         return {
             "summary": summary,
             "by_category": by_category,
             "recent_errors": recent_errors,
+            "monthly_tokens": monthly_tokens,
         }
 
     finally:

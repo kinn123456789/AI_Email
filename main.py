@@ -130,7 +130,8 @@ templates = Jinja2Templates(directory="templates")
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
 from database import get_attachments, get_attachment_by_id, find_recipient_name, save_attachment
 from database import get_ai_insights, get_ai_log_by_message_id
-from database import get_ai_logs, get_ai_log_categories, delete_ai_log, get_failed_sync_messages, delete_failed_sync_message
+from database import get_ai_logs, delete_ai_log, get_failed_sync_messages, delete_failed_sync_message
+from ai_logger import humanize_ai_error
 from database import get_composed_sent_emails
 from database import get_all_email_accounts, add_email_account, delete_email_account
 
@@ -712,26 +713,10 @@ def category_view(
 def ai_insights(
     request: Request,
     q: str = None,
-    log_q: str = None,
-    category: str = None,
-    status: str = None,
-    date_from: str = None,
-    date_to: str = None,
-    page: int = 1
 ):
 
     data = get_ai_insights()
     searched_logs = get_ai_log_by_message_id(q) if q else None
-
-    logs_result = get_ai_logs(
-        category=category or None,
-        status=status or None,
-        search=log_q or None,
-        date_from=date_from or None,
-        date_to=date_to or None,
-        page=page,
-        page_size=50
-    )
 
     return templates.TemplateResponse(
         "ai_insights.html",
@@ -740,18 +725,44 @@ def ai_insights(
             "summary": data["summary"],
             "by_category": data["by_category"],
             "recent_errors": data["recent_errors"],
+            "monthly_tokens": data["monthly_tokens"],
             "search_query": q,
             "searched_logs": searched_logs,
-            "logs": logs_result["rows"],
-            "logs_total": logs_result["total"],
-            "logs_page": logs_result["page"],
-            "logs_total_pages": logs_result["total_pages"],
-            "log_categories": get_ai_log_categories(),
-            "selected_log_q": log_q,
-            "selected_category": category,
-            "selected_status": status,
-            "selected_date_from": date_from,
-            "selected_date_to": date_to,
+        }
+    )
+
+
+@app.get("/ai-insights/errors")
+def ai_insights_errors(request: Request, category: str = None, page: int = 1):
+
+    logs_result = get_ai_logs(
+        category=category or None,
+        status="error",
+        page=page,
+        page_size=50
+    )
+
+    errors = [
+        {
+            "id": row["id"],
+            "gmail_message_id": row["gmail_message_id"],
+            "subject": row.get("subject"),
+            "created_at": row["created_at"],
+            "friendly_error": humanize_ai_error(row["error"]),
+            "raw_error": row["error"],
+        }
+        for row in logs_result["rows"]
+    ]
+
+    return templates.TemplateResponse(
+        "ai_insights_errors.html",
+        {
+            "request": request,
+            "category": category,
+            "errors": errors,
+            "total": logs_result["total"],
+            "page": logs_result["page"],
+            "total_pages": logs_result["total_pages"],
         }
     )
 
