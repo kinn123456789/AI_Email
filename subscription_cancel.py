@@ -548,6 +548,11 @@ _FULL_REFRESH_EVERY_N_CYCLES = 30
 _INCREMENTAL_OVERLAP_SECONDS = 120
 
 _all_time_cache = {"rows": None, "loaded_at": 0}
+# Separate cache for the fully-joined all-time rows — only populated when a
+# search term is actually used (see get_all_time_cancelled_subscriptions),
+# so plain browsing/status/date-filtered all-time requests never pay for or
+# warm this heavier cache.
+_all_time_joined_cache = {"rows": None, "loaded_at": 0}
 _ALL_TIME_CACHE_TTL_SECONDS = 300
 
 
@@ -626,19 +631,60 @@ def _get_base_rows():
     return _cache["rows"]
 
 
-def _get_all_time_base_rows():
-    """On-demand full-history dataset (no date bound) — deliberately not
-    kept warm by the scheduler since it's rarely requested and only grows
-    over time. Cached briefly so repeated clicks within a session don't
-    each re-pay the full, growing fetch cost."""
+def _all_time_effective_date(row):
+    """Sort/filter key shared by lightweight subscriptions and trial
+    candidates — canceled_at falls back to updated_at for subscriptions
+    (see _build_rows_from), trials use expiry_at directly."""
+
+    if "free_trial_pass_id" in row:
+        return row["expiry_at"]
+
+    return row["canceled_at"] or row["updated_at"]
+
+
+def _get_all_time_candidates():
+    """On-demand full-history candidate lists (no date bound) — just the
+    lightweight Subscriptions/FreeTrialPass fields already returned by
+    _fetch_subscriptions_and_trials, NOT the full Learners/Users/
+    EmailDeliveryStatus/SessionInteraction/class-title join that
+    _build_rows_from does. Deliberately not kept warm by the scheduler since
+    it's rarely requested and only grows over time. Cached briefly so
+    repeated clicks/page turns within a session don't each re-pay the fetch
+    cost.
+
+    Only this lightweight fetch runs for the full dataset — the expensive
+    per-row joins now happen only for whichever ~page_size rows are actually
+    being displayed (see get_all_time_cancelled_subscriptions), instead of
+    for the entire history on every request. That join, run unconditionally
+    over every Subscriptions/FreeTrialPass row ever, was a real memory spike
+    that only gets worse as the tables grow."""
 
     cache_age = time.time() - _all_time_cache["loaded_at"]
 
     if _all_time_cache["rows"] is None or cache_age > _ALL_TIME_CACHE_TTL_SECONDS:
-        _all_time_cache["rows"] = _fetch_all_subscription_rows(since=None)
+        subscriptions, trial_candidates = _fetch_subscriptions_and_trials(since=None)
+        _all_time_cache["rows"] = subscriptions + trial_candidates
         _all_time_cache["loaded_at"] = time.time()
 
     return _all_time_cache["rows"]
+
+
+def _get_all_time_base_rows():
+    """Fully-joined full-history dataset (no date bound) — only used as the
+    search fallback in get_all_time_cancelled_subscriptions, since search
+    needs parent_name/parent_email/learner_name/class_title, which only
+    exist after the per-row join. Cached separately from the lightweight
+    candidates (_get_all_time_candidates) so a search doesn't warm/depend on
+    that cache's shape, and so plain (non-search) all-time requests never
+    trigger this heavier fetch+join."""
+
+    cache_age = time.time() - _all_time_joined_cache["loaded_at"]
+
+    if _all_time_joined_cache["rows"] is None or cache_age > _ALL_TIME_CACHE_TTL_SECONDS:
+        _all_time_joined_cache["rows"] = _fetch_all_subscription_rows(since=None)
+        _all_time_joined_cache["loaded_at"] = time.time()
+
+    return _all_time_joined_cache["rows"]
 
 
 def _build_class_titles_lookup(learner_ids):
@@ -1012,13 +1058,91 @@ def get_cancelled_subscriptions(search=None, date_from=None, date_to=None, statu
     return _filter_sort_paginate(_get_base_rows(), search, date_from, date_to, status, page, page_size)
 
 
+_ALL_TIME_TRIAL_STATUS = "trial_expired"
+
+
 def get_all_time_cancelled_subscriptions(search=None, date_from=None, date_to=None, status=None, page=1, page_size=50):
     """Full-history view, deliberately separate from the default cache —
-    see _get_all_time_base_rows for why. Slower, especially the first call
-    after the 5-minute cache expires, since it fetches every cancellation
-    and expired trial ever, not just the recent window."""
+    see _get_all_time_candidates for why. Filters/sorts/paginates the
+    lightweight candidate list first, THEN runs the expensive
+    Learners/Users/EmailDeliveryStatus/SessionInteraction/class-title join
+    only on the ~page_size rows actually being displayed — previously that
+    join ran over every Subscriptions/FreeTrialPass row ever on every
+    request, which only got heavier as those tables grew.
 
-    return _filter_sort_paginate(_get_all_time_base_rows(), search, date_from, date_to, status, page, page_size)
+    `search` filters on parent_name/parent_email/learner_name/class_title,
+    none of which exist before the per-row join, so a search term falls back
+    to the old full-join-then-filter path (_filter_sort_paginate over
+    _get_all_time_base_rows) instead of the fast lightweight-then-join-page
+    path used otherwise — slow only when someone actually searches all-time
+    history, fast on every other all-time request (plain browsing,
+    status/date filters)."""
+
+    if search:
+        return _filter_sort_paginate(
+            _get_all_time_base_rows(), search, date_from, date_to, status, page, page_size
+        )
+
+    candidates = list(_get_all_time_candidates())
+
+    dismissed_keys = get_dismissed_row_keys()
+
+    candidates = [
+        c for c in candidates
+        if (
+            f"sub:{c['id']}" if "id" in c else f"trial:{c['free_trial_pass_id']}"
+        ) not in dismissed_keys
+    ]
+
+    if status:
+        candidates = [
+            c for c in candidates
+            if (c.get("subscription_status") if "id" in c else _ALL_TIME_TRIAL_STATUS) == status
+        ]
+
+    if date_from:
+        candidates = [
+            c for c in candidates
+            if _all_time_effective_date(c) and _all_time_effective_date(c)[:10] >= date_from
+        ]
+
+    if date_to:
+        candidates = [
+            c for c in candidates
+            if _all_time_effective_date(c) and _all_time_effective_date(c)[:10] <= date_to
+        ]
+
+    candidates.sort(key=lambda c: _all_time_effective_date(c) or "", reverse=True)
+
+    total = len(candidates)
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    page = max(1, min(page, total_pages))
+    offset = (page - 1) * page_size
+    page_candidates = candidates[offset:offset + page_size]
+
+    subscriptions = [c for c in page_candidates if "id" in c]
+    trial_candidates = [c for c in page_candidates if "free_trial_pass_id" in c]
+
+    rows = _build_rows_from(subscriptions, trial_candidates)
+    rows_by_key = {r["row_key"]: r for r in rows}
+
+    # _build_rows_from doesn't preserve input order, so re-sort the joined
+    # rows back into the same order the lightweight pass already computed.
+    ordered_rows = [
+        rows_by_key[key]
+        for key in (
+            f"sub:{c['id']}" if "id" in c else f"trial:{c['free_trial_pass_id']}"
+            for c in page_candidates
+        )
+        if key in rows_by_key
+    ]
+
+    return {
+        "rows": ordered_rows,
+        "total": total,
+        "page": page,
+        "total_pages": total_pages,
+    }
 
 
 def get_dismissed_row_keys():
@@ -1582,14 +1706,23 @@ def prefetch_reengagement_drafts(batch_size=5):
     every other status (Payment Failed, Active, Past Due, etc.) would get
     the same "your subscription was recently cancelled" wording whether or
     not that's actually true, so those are left without a draft rather than
-    generating one that may be wrong."""
+    generating one that may be wrong.
 
-    rows = get_cancelled_subscriptions(page_size=100000)["rows"]
+    Reads the cache directly and filters in-place instead of going through
+    get_cancelled_subscriptions(page_size=100000) — that path also sorts and
+    paginates a full copy of the (up to ~100k-row) dataset, which this
+    function throws away immediately after filtering by status. Doing that
+    every 60 seconds forever was extra peak memory this once-a-minute job
+    doesn't need, and was one contributor to repeated OOM kills on Render's
+    512Mi tier."""
+
+    dismissed_keys = get_dismissed_row_keys()
     existing = _get_draft_row_keys()
 
     missing = [
-        r for r in rows
+        r for r in _get_base_rows()
         if r["row_key"] not in existing
+        and r["row_key"] not in dismissed_keys
         and r["subscription_status"] in _DRAFTABLE_STATUSES
     ]
 
