@@ -118,7 +118,7 @@
 
         {% for contact in contacts %}
 
-        <div class="bg-white rounded-2xl shadow p-6">
+        <div class="{{ 'bg-cyan-50 border-l-4 border-cyan-500' if not contact.is_read else 'bg-white' }} rounded-2xl shadow p-6">
 
             <div class="flex justify-between items-start gap-4">
 
