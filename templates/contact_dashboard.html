@@ -250,6 +250,19 @@ searchInput.addEventListener("input", function () {
         document.getElementById("filterForm").submit();
     }, 600);
 });
+
+// Keeps unread/read status (and everything else) current without
+// needing a manual refresh - skips the reload if it would disrupt
+// something in progress: a selected checkbox (about to delete
+// something) or the user actively typing in the search box.
+setInterval(() => {
+    const anyChecked = document.querySelectorAll(".contact-checkbox:checked").length > 0;
+    const searchFocused = document.activeElement === searchInput;
+
+    if (!anyChecked && !searchFocused) {
+        location.reload();
+    }
+}, 8000);
 </script>
 <script src="/static/local-time.js"></script>
 </html>
