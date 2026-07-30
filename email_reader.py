@@ -21,6 +21,7 @@ from reply_generator import generate_reply
 from emails_cleaner import clean_email_body
 from knowledge_search import search_knowledge_base
 from process_email import process_email
+from database import email_exists
 
 # Custom modules
 from email_filter import is_automated_email
@@ -84,6 +85,41 @@ def main(target_email=None):
 
             for email_id in mail_ids:
 
+                # Cheap pre-check: this backlog is read via readonly=True (so
+                # Gmail's own unread state is never touched, and the same
+                # "unseen" ids keep showing up every run) - most of the ids
+                # here are ones we've already processed on a prior run and
+                # will just be discarded as duplicates. Fetching only the
+                # Message-ID header first (a few bytes) instead of the full
+                # BODY.PEEK[] (the entire raw message, attachments included)
+                # avoids paying that full download cost 5 minutes later for
+                # the same already-known messages, forever, as this backlog
+                # grows.
+                status, header_data = mail.fetch(
+                    email_id,
+                    "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])"
+                )
+
+                if (
+                    status != "OK"
+                    or not header_data
+                    or not isinstance(header_data[0], tuple)
+                ):
+                    continue
+
+                header_msg = email.message_from_bytes(
+                    header_data[0][1]
+                )
+
+                candidate_message_id = " ".join(
+                    (header_msg.get("Message-ID") or "").split()
+                )
+
+                if candidate_message_id and email_exists(
+                    candidate_message_id, account["source"]
+                ):
+                    continue
+
                 status, msg_data = mail.fetch(
                     email_id,
                     "(BODY.PEEK[])"
@@ -99,7 +135,7 @@ def main(target_email=None):
                 msg = email.message_from_bytes(
                     msg_data[0][1]
                 )
-                
+
 
                 email_date = parsedate_to_datetime(msg["Date"])
                 try:
