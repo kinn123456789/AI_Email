@@ -46,35 +46,53 @@ def save_email(
     is_read=False,
     has_attachment=False,
     sender_name=None,
-    recipient=None
+    recipient=None,
+    gmail_internal_id=None,
+    ingested_via=None
 ):
+    """Returns the new row's id, or None if (message_id, source) already
+    existed - a UNIQUE constraint + ON CONFLICT DO NOTHING makes this the
+    actual dedup enforcement point, not just a convention callers have to
+    remember. Two independent ingestion pipelines (the Gmail History API
+    webhook reader and the IMAP backup poller) both call this for the same
+    mailbox; a caller-side "does it exist?" check before INSERT is a
+    classic check-then-act race if both pipelines see the same new message
+    at nearly the same moment - moving the guarantee into the database
+    itself closes that regardless of which two callers hit it."""
+
     conn = get_connection()
     cursor = conn.cursor()
     try:
-        # Added 'references_header' to the column list and the %s placeholder
         cursor.execute("""
             INSERT INTO messages(
                 sender, subject, body, category, priority, ai_summary,
                 ai_draft_reply, message_id, thread_id, in_reply_to, source,
                 contact_name, phone, status, requires_review, ai_confidence,
                 knowledge_url, reply_type, mailbox, references_header,email_date,is_read,has_attachment,
-                sender_name, recipient
+                sender_name, recipient, gmail_internal_id, ingested_via
             )
             VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
+            ON CONFLICT (message_id, source) DO NOTHING
             RETURNING id
         """, (
             sender, subject, body, category, priority, ai_summary,
             ai_draft_reply, message_id, thread_id, in_reply_to, source,
             contact_name, phone, status, requires_review, ai_confidence,
             knowledge_url, reply_type, mailbox, references_header, email_date, is_read , has_attachment,
-            sender_name, recipient
+            sender_name, recipient, gmail_internal_id, ingested_via
         ))
         result = cursor.fetchone()
         conn.commit()
-        return result[0] if result else None
+
+        if result:
+            print(f"Saved new message (id={result[0]}, via={ingested_via or 'unknown'})")
+            return result[0]
+
+        print(f"Duplicate skipped: message_id={message_id!r} source={source!r} (already existed, via={ingested_via or 'unknown'})")
+        return None
     finally:
         cursor.close()
         db_pool.putconn(conn)

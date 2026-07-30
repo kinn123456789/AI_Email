@@ -142,7 +142,8 @@ def _process_sent_message(mail, sent_id, account):
             reply_type="gmail_manual",
             references_header=references,
             email_date=email_date,
-            has_attachment=has_attachment
+            has_attachment=has_attachment,
+            ingested_via="sent_sync"
         )
         logger.info(f"Imported: {message_id}")
         mail.store(sent_id, '+FLAGS', '\\Seen')

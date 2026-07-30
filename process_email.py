@@ -39,7 +39,17 @@ from database import (
 ATTACHMENT_DIR = "attachments"
 
 
-def process_email(msg, account):
+def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
+    """ingested_via/gmail_internal_id identify which pipeline (the Gmail
+    History API webhook reader, or the independent IMAP backup poller)
+    fetched this message, and Gmail's own internal message id where
+    available (only the API-based path has it - IMAP has no equivalent).
+    Both are purely for diagnosis and stored as-is; the actual
+    duplicate-prevention guarantee is the UNIQUE(message_id, source)
+    constraint in save_email() below, not this early check - two pipelines
+    racing to process the same new message can both pass this check before
+    either has saved anything, so this is a fast-path to skip expensive AI
+    calls on known duplicates, not the real safety net."""
 
     message_id = " ".join((msg.get("Message-ID") or "").split())
 
@@ -278,7 +288,9 @@ def process_email(msg, account):
             references_header=references_header,
             email_date=email_date,
             has_attachment=has_attachment,
-            sender_name=sender_name
+            sender_name=sender_name,
+            gmail_internal_id=gmail_internal_id,
+            ingested_via=ingested_via
         )
 
         return
@@ -378,7 +390,9 @@ def process_email(msg, account):
         has_attachment=has_attachment,
         sender_name=sender_name,
         contact_name=sender_name if mailbox == "contact_form" else None,
-        phone=contact_phone
+        phone=contact_phone,
+        gmail_internal_id=gmail_internal_id,
+        ingested_via=ingested_via
     )
 
     print("Processed:", message_id)

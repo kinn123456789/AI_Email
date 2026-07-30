@@ -190,7 +190,12 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
                     base64.urlsafe_b64decode(raw["raw"])
                 )
 
-                process_email(msg=msg, account=account)
+                process_email(
+                    msg=msg,
+                    account=account,
+                    ingested_via="webhook",
+                    gmail_internal_id=msg_id
+                )
 
             except Exception:
                 traceback.print_exc()
@@ -199,14 +204,7 @@ def _run_history_reader_once(email_address, webhook_history_id=None):
     finally:
         service.close()
 
-    # Only advance the checkpoint if every message in this batch was
-    # actually processed. If we advanced it unconditionally and one message
-    # failed, the History API would never report that message again on a
-    # future run — it would be permanently skipped. Leaving the checkpoint
-    # behind means this whole batch gets re-fetched next run instead;
-    # already-succeeded messages are cheaply no-op'd by process_email()'s
-    # own message_id dedup check at the top, so only the failed one(s)
-    # actually get retried.
+    
     if not any_failed:
         update_last_history_id(account["email"], newest_history_id)
     else:

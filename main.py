@@ -497,7 +497,8 @@ async def _send_reply_impl(
             reply_type="human",
             mailbox=mailbox,
             references_header=original_email.get("references_header"),
-            has_attachment=bool(attachment_data)
+            has_attachment=bool(attachment_data),
+            ingested_via="manual_send"
         )
 
         for filename, file_data, content_type in attachment_data:
@@ -1023,7 +1024,8 @@ def submit_enquiry(request: Request, data: dict, background_tasks: BackgroundTas
         requires_review=True,
 
         contact_name=data.get("name"),
-        phone=data.get("phone_number")
+        phone=data.get("phone_number"),
+        ingested_via="contact_form_webhook"
     )
 
     background_tasks.add_task(

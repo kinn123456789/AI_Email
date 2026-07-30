@@ -141,7 +141,8 @@ def main(target_email=None):
                 try:
                     process_email(
                         msg=msg,
-                        account=account
+                        account=account,
+                        ingested_via="imap_poll"
                     )
                 except Exception:
                     traceback.print_exc()
