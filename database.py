@@ -331,19 +331,19 @@ def get_email_by_id(email_id):
         # 2. Made sure the second parameter to execute() is strictly a tuple containing just (email_id,)
         cursor.execute(
             """
-            SELECT id, sender, subject, body, category, ai_summary, 
+            SELECT id, sender, subject, body, category, ai_summary,
                    ai_draft_reply, priority, status, source, knowledge_url,
-                   ai_confidence, requires_review, created_at,
+                   ai_confidence, requires_review, created_at, email_date,
                    thread_id,
                    message_id,
                    in_reply_to,
                    reply_type,
                    mailbox
-                   
-                   
-            FROM messages 
+
+
+            FROM messages
             WHERE id = %s
-            """, 
+            """,
             (email_id,)
         )
         return cursor.fetchone()
