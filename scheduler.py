@@ -157,7 +157,7 @@ def run_refresh_subscription_cache():
         return
 
     try:
-        _run_logged_job("refresh_subscription_cache", refresh_subscription_cache)
+        refresh_subscription_cache()
     finally:
         subscription_cancel_lock.release()
 
@@ -170,7 +170,7 @@ def run_prefetch_reengagement_drafts():
         return
 
     try:
-        _run_logged_job("prefetch_reengagement_drafts", prefetch_reengagement_drafts)
+        prefetch_reengagement_drafts()
     finally:
         subscription_cancel_lock.release()
 
@@ -185,7 +185,7 @@ def run_help_center_refresh():
 
     subscription_cancel_lock.acquire(blocking=True)
     try:
-        _run_logged_job("help_center_refresh", refresh_knowledge_base)
+        refresh_knowledge_base()
     finally:
         subscription_cancel_lock.release()
 
@@ -199,33 +199,33 @@ def run_sent_mail_sync():
 
     subscription_cancel_lock.acquire(blocking=True)
     try:
-        _run_logged_job("sent_mail_style_sync", sync_sent_mail_and_embed)
+        sync_sent_mail_and_embed()
     finally:
         subscription_cancel_lock.release()
 
 
 def run_teacher_sync():
+    start = time.time()
+
     print("=" * 80)
     print("TEACHER SYNC STARTED")
     print("=" * 80)
 
-    def _do_teacher_sync():
+    try:
         sync_teacher_portal()
         process_teacher_messages()
 
-    _run_logged_job("teacher_sync", _do_teacher_sync)
+        print(
+            f"TEACHER SYNC COMPLETED IN "
+            f"{time.time() - start:.2f} seconds"
+        )
 
-
-def run_classes_refresh():
-    _run_logged_job("classes_refresh", refresh_classes)
-
-
-def run_gmail_watch_renewal():
-    _run_logged_job("gmail_watch", renew_all_gmail_watches)
-
-
-def run_trial_followups():
-    _run_logged_job("trial_followups", process_trial_followups)
+    except Exception as e:
+        print(
+            f"TEACHER SYNC FAILED AFTER "
+            f"{time.time() - start:.2f} seconds"
+        )
+        print(e)
 
 
 # -------------------------------------------------
@@ -295,7 +295,7 @@ scheduler.add_job(
 
 # Class Refresh
 scheduler.add_job(
-    run_classes_refresh,
+    refresh_classes,
     CronTrigger(hour=3, minute=0),
     id="classes_refresh",
     replace_existing=True,
@@ -306,7 +306,7 @@ scheduler.add_job(
 
 # Gmail Watch Renewal
 scheduler.add_job(
-    run_gmail_watch_renewal,
+    renew_all_gmail_watches,
     trigger="interval",
     days=1,
     id="gmail_watch",
@@ -329,7 +329,7 @@ scheduler.add_job(
 )
 
 scheduler.add_job(
-    run_trial_followups,
+    process_trial_followups,
     CronTrigger(hour=9, minute=0),
     id="trial_followups",
     replace_existing=True,
@@ -348,7 +348,7 @@ except Exception as e:
 scheduler.add_job(
     run_refresh_subscription_cache,
     trigger="interval",
-    minutes=1,
+    minutes=2,
     next_run_time=_schedule_base + timedelta(seconds=60),
     id="subscription_cancel_cache",
     replace_existing=True,
@@ -362,7 +362,7 @@ scheduler.add_job(
 scheduler.add_job(
     run_prefetch_reengagement_drafts,
     trigger="interval",
-    minutes=1,
+    minutes=2,
     next_run_time=_schedule_base + timedelta(seconds=20),
     id="subscription_cancel_draft_prefetch",
     replace_existing=True,
@@ -381,6 +381,6 @@ print("Classes Refresh: Daily at 3:00 AM")
 print("Gmail Watch Renewal: Every 1 day")
 print("Teacher Sync: Every 8 minutes")
 print("Trial Follow-ups: Daily at 9:00 AM")
-print("Subscription Cancel Cache: Every 1 minute")
-print("Subscription Cancel Draft Prefetch: Every 1 minute (batch of 5)")
+print("Subscription Cancel Cache: Every 2 minutes")
+print("Subscription Cancel Draft Prefetch: Every 2 minutes (batch of 5)")
 print("Historical Email Style Sync: Every 15 days")
