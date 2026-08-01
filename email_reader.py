@@ -34,6 +34,14 @@ ATTACHMENT_DIR = "attachments"
 if not os.path.exists(ATTACHMENT_DIR):
     os.makedirs(ATTACHMENT_DIR)
 
+# Caps how many non-duplicate emails get fully fetched+processed in a single
+# poll. Without this, a large unseen backlog (e.g. after downtime) triggers a
+# full BODY.PEEK[] fetch + AI pipeline for every one of them in one run, all
+# in-memory at once, which is what has been causing repeated OOM kills on the
+# 512MB instance. Leftover messages are simply picked up on the next 5-minute
+# run since they stay "unseen".
+MAX_EMAILS_PER_RUN = 15
+
 def get_email_accounts():
     """The 3 core mailboxes plus anything added via the Settings page -
     fetched fresh on every call, never cached at import time, so an
@@ -83,7 +91,17 @@ def main(target_email=None):
             # EXACT ORIGINAL LIMITING LOGIC RESTORED
             mail_ids = messages[0].split()
 
+            processed_count = 0
+
             for email_id in mail_ids:
+
+                if processed_count >= MAX_EMAILS_PER_RUN:
+                    print(
+                        account["source"],
+                        f"Reached MAX_EMAILS_PER_RUN ({MAX_EMAILS_PER_RUN}); "
+                        "remaining unseen messages will be picked up next run."
+                    )
+                    break
 
                 # Cheap pre-check: this backlog is read via readonly=True (so
                 # Gmail's own unread state is never touched, and the same
@@ -147,8 +165,10 @@ def main(target_email=None):
                 except Exception:
                     traceback.print_exc()
                     continue
+                finally:
+                    processed_count += 1
 
-                
+
 
         finally:
             if mail:

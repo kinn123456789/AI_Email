@@ -38,6 +38,12 @@ from database import (
 
 ATTACHMENT_DIR = "attachments"
 
+# Attachments larger than this are saved to disk as usual but skipped for
+# in-memory image analysis (base64 encoding roughly adds 33% on top of the
+# already-decoded bytes) - large attachments piling up in a single poll run
+# were a contributor to repeated OOM kills on the 512MB instance.
+MAX_IMAGE_ANALYSIS_BYTES = 5 * 1024 * 1024
+
 
 def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
     """ingested_via/gmail_internal_id identify which pipeline (the Gmail
@@ -112,7 +118,7 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
                     f"{safe_message_id}_{filename}"
                 )
 
-                if "image" in content_type:
+                if "image" in content_type and len(file_data) <= MAX_IMAGE_ANALYSIS_BYTES:
 
                     image_data_list.append(
                         {
