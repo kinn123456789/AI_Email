@@ -291,11 +291,12 @@ class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
         </span>
     {% endif %}
 
-{% else %}
+{% endif %}
 
-    <span class="block text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
-        Sent
-    </span>
+<span class="{% if not is_sent_view and not email.is_read %}font-bold text-stone-900{% else %}text-stone-700{% endif %}">
+    {% if email.has_attachment %}📎 {% endif %}
+    {{ email.subject }}
+</span>
 
 {% endif %}
 </div>
@@ -509,7 +510,6 @@ function subjectHtml(email) {
 
     if (window.location.pathname === "/dashboard/sent") {
         return '<div class="truncate font-semibold text-gray-950" title="' + title + '">' +
-            '<span class="block text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Sent</span>' +
             '<span class="text-stone-700">' + attach + subject + '</span></div>';
     }
 
