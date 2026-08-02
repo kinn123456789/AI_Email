@@ -140,6 +140,7 @@ def _process_sent_message(mail, sent_id, account):
             status="Replied",
             requires_review=False,
             reply_type="gmail_manual",
+            mailbox="sent",
             references_header=references,
             email_date=email_date,
             has_attachment=has_attachment,
