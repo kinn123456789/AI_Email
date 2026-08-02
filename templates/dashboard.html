@@ -507,6 +507,12 @@ function subjectHtml(email) {
     const subject = escapeHtml(email.subject || "");
     const title = escapeHtml(email.subject || "");
 
+    if (window.location.pathname === "/dashboard/sent") {
+        return '<div class="truncate font-semibold text-gray-950" title="' + title + '">' +
+            '<span class="block text-[10px] uppercase font-bold text-emerald-600 tracking-wider">Sent</span>' +
+            '<span class="text-stone-700">' + attach + subject + '</span></div>';
+    }
+
     if (!email.is_read) {
         return '<div class="truncate font-semibold text-gray-950" title="' + title + '">' +
             '<span class="block text-[10px] uppercase font-black text-cyan-700 tracking-wider">Unread</span>' +
