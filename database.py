@@ -835,6 +835,15 @@ def update_teacher_ai_fields(message_id, category, priority, summary, draft_repl
                 WHERE message_id = %s
             """, (category, priority, summary, draft_reply, message_id))
         conn.commit()
+    except Exception:
+        # Without this, a failed UPDATE (e.g. a bad parameter type) leaves
+        # the connection in an aborted-transaction state, and the finally
+        # block below still returns it to the pool — the next borrower
+        # would get "current transaction is aborted" on its very first
+        # query. Mirrors the same rollback/raise pattern already used in
+        # save_historical_email() elsewhere in this file.
+        conn.rollback()
+        raise
     finally:
         cursor.close()
         db_pool.putconn(conn)
@@ -996,8 +1005,14 @@ def     save_historical_email(
     source_account,
     has_attachment=False,
     attachment_count=0,
-    reference_ids=None
+    reference_ids=None,
+    is_unedited_ai_reply=False
 ):
+    # is_unedited_ai_reply defaults to False (trusted) so every existing
+    # caller - the Sent Mail import in learn_email_style.py included - keeps
+    # inserting genuinely human-authored rows as trusted without needing to
+    # pass this explicitly. Only the AI-draft-send path in main.py computes
+    # and passes a real value here.
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -1017,10 +1032,11 @@ def     save_historical_email(
                 source_account,
                 has_attachment,
                 attachment_count,
-                reference_ids
+                reference_ids,
+                is_unedited_ai_reply
             )
             VALUES (
-                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
+                %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s
             )
             ON CONFLICT (message_id) DO NOTHING
             RETURNING id
@@ -1036,7 +1052,8 @@ def     save_historical_email(
             source_account,
             has_attachment,
             attachment_count,
-            reference_ids
+            reference_ids,
+            is_unedited_ai_reply
         ))
 
         row = cursor.fetchone()
@@ -1096,7 +1113,10 @@ def get_historical_emails(email_ids):
         cursor.close()
         db_pool.putconn(conn)
 
-def update_final_reply(email_id, final_reply):
+def update_final_reply(email_id, final_reply, edited_before_send=None):
+    # edited_before_send defaults to None (unknown/pre-migration) so any
+    # caller that hasn't computed it yet leaves the column untouched-in-
+    # meaning rather than falsely recording "sent unchanged".
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -1105,10 +1125,12 @@ def update_final_reply(email_id, final_reply):
 
         cursor.execute("""
             UPDATE messages
-            SET final_reply = %s
+            SET final_reply = %s,
+                edited_before_send = %s
             WHERE id = %s
         """, (
             final_reply,
+            edited_before_send,
             email_id
         ))
 

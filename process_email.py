@@ -338,11 +338,22 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         close_embedding_client(similar_client)
         close_embedding_client(knowledge_client)
 
+    # knowledge is None specifically when knowledge_search.py's own rerank
+    # call errored (see its docstring) — distinct from a real, valid "no
+    # relevant KB content" outcome, which is a normal (possibly empty) list.
+    # A retrieval-layer error must not look identical to a genuine absence
+    # of information, so it's tracked here and folded into requires_review
+    # below rather than silently treated as "nothing relevant was found".
+    knowledge_retrieval_error = knowledge is None
+    if knowledge_retrieval_error:
+        knowledge = []
+
     reranked = rerank_emails(
         subject,
         body,
         similar
     )
+    historical_retrieval_error = reranked.get("error", False)
     selected_ids = {
         item["id"]
         for item in reranked["selected"]
@@ -356,8 +367,9 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
     print("Selected IDs:", selected_ids)
     print("Historical Emails Count:", len(historical_emails))
 
-    
-    draft = generate_reply(
+    retrieval_error = knowledge_retrieval_error or historical_retrieval_error
+
+    draft, generation_status = generate_reply(
         message_id,
         subject,
         body,
@@ -373,6 +385,29 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         email_date=email_date,
     )
 
+    # requires_review must reflect every reason the draft needs extra
+    # scrutiny, not just the classifier's own (earlier, independent) call:
+    # - result["requires_review"]: the classifier's own judgment
+    # - retrieval_error: an API/parsing failure at the retrieval/reranking
+    #   stage, which must never look like "nothing relevant existed"
+    # - generation_status == "blocked_safety_net": the leaked-content regex
+    #   fired — the draft is empty and needs a human, regardless of what
+    #   the classifier decided before generation ever ran
+    # - generation_status == "error": the generation call itself failed
+    # "no_reply" is deliberately NOT included — the model's own considered
+    # "I don't have enough information" outcome is treated as correct,
+    # cautious behavior rather than a fault requiring forced review.
+    requires_review = (
+        result["requires_review"]
+        or retrieval_error
+        or generation_status in ("blocked_safety_net", "error")
+    )
+
+    if retrieval_error:
+        print(f"Retrieval/rerank error for {message_id} - forcing requires_review")
+    if generation_status in ("blocked_safety_net", "error"):
+        print(f"Generation status '{generation_status}' for {message_id} - forcing requires_review")
+
     save_email(
         sender_email,
         subject,
@@ -386,7 +421,7 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         in_reply_to,
         account["source"],
         status="Needs Review",
-        requires_review=result["requires_review"],
+        requires_review=requires_review,
         ai_confidence=result["confidence"],
         #reply_type="human",
         reply_type=result["reply_type"],

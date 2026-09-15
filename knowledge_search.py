@@ -21,6 +21,10 @@ def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=
     vector similarity can return a chunk that's topically close without
     actually answering the question. Default is False so existing callers
     that don't need this extra LLM call are unaffected.
+
+    When rerank=True, returns None (instead of a list) specifically if the
+    rerank_knowledge() call itself failed — never for a genuine "nothing
+    relevant" outcome, which still returns a normal (possibly empty) list.
     """
 
     query = f"""
@@ -132,6 +136,16 @@ Body:
             return results
 
         reranked = rerank_knowledge(subject, body, results)
+
+        # Distinguishable from "reranked and genuinely found nothing" (which
+        # returns [] below via a valid, empty `selected` list) — None means
+        # the rerank call itself failed, so the caller can tell an
+        # infrastructure/API hiccup apart from a real absence of relevant KB
+        # content and react differently (e.g. force human review) instead of
+        # silently treating an error as "nothing was found".
+        if reranked.get("error"):
+            return None
+
         selected = sorted(
             reranked["selected"],
             key=lambda item: item["confidence"],

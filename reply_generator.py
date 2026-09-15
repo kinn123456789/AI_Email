@@ -55,6 +55,14 @@ def generate_reply(
     - Conversation history
     - Coral Academy Knowledge Base
     - Historical emails (style only)
+
+    Returns (reply_text, status), where status is one of:
+    - "ok": reply_text is a real generated draft
+    - "no_reply": the model's own NO_REPLY sentinel — a considered "not
+      enough information", not a fault. reply_text is "".
+    - "blocked_safety_net": the _TEACHER_FACING_LEAK_PATTERNS regex fired
+      on the model's output. reply_text is "".
+    - "error": the OpenRouter call itself failed. reply_text is "".
     """
 
     try:
@@ -193,10 +201,18 @@ def generate_reply(
             error="Draft blocked: contained teacher/staff-only wording not meant for a parent reply" if leaked_teacher_content else None,
         )
 
-        if reply == "NO_REPLY" or leaked_teacher_content:
-            return ""
+        # Explicit status alongside the reply text so a caller can tell WHY a
+        # draft came back empty, instead of inferring it from "" alone — the
+        # safety-net block, the model's own considered "not enough info"
+        # sentinel, and a genuine API/parsing error are three different
+        # situations that used to all collapse into the same empty string.
+        if leaked_teacher_content:
+            return "", "blocked_safety_net"
 
-        return reply
+        if reply == "NO_REPLY":
+            return "", "no_reply"
+
+        return reply, "ok"
 
     except Exception as e:
 
@@ -219,4 +235,4 @@ def generate_reply(
         )
 
         print("Reply Generator Error:", e)
-        return ""
+        return "", "error"

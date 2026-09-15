@@ -104,6 +104,10 @@
                 <p class="flex items-center gap-1.5">🏷️ <span class="text-stone-500">Category:</span> <span class="font-medium text-gray-900">{{ email.category }}</span></p>
                 <p class="flex items-center gap-1.5">🚨 <span class="text-stone-500">Priority:</span> <span class="font-medium text-gray-900">{{ email.priority }}</span></p>
                 <p class="flex items-center gap-1.5">📌 <span class="text-stone-500">Status:</span> <span class="font-medium text-gray-900">{{ email.status }}</span></p>
+                <p class="flex items-center gap-1.5">
+                    {% if email.requires_review %}⚠️ <span class="text-amber-700 font-semibold">Requires human review</span>
+                    {% else %}✅ <span class="text-stone-500">Review:</span> <span class="font-medium text-gray-900">Not flagged</span>{% endif %}
+                </p>
                 <p class="flex items-center gap-1.5 text-stone-600">
                     🤖 <span class="text-stone-500">Confidence:</span>
                     {% if email.ai_confidence is none %}<span class="text-stone-400 font-semibold">N/A</span>
@@ -184,6 +188,10 @@
 
                     {% if request.query_params.get("sent") %}
                     <p class="text-emerald-600 font-semibold mb-2">✓ Reply sent successfully — you can send another below.</p>
+                    {% endif %}
+
+                    {% if email.requires_review %}
+                    <p class="text-amber-700 font-semibold mb-2">⚠️ This draft is flagged for review — read carefully before sending.</p>
                     {% endif %}
 
                     <textarea name="reply_body" class="w-full min-h-[16rem] rounded-2xl p-4 bg-white/80 border border-cyan-200 shadow-sm mb-4">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>

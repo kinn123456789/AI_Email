@@ -161,6 +161,11 @@ Return only valid JSON.
             if "confidence" not in item:
                 item["confidence"] = 100
 
+        # error=False on every real outcome (including a genuinely empty
+        # "selected" list — that's a legitimate result, not a failure) so a
+        # caller can tell that apart from the except branch below, which is
+        # the only place this call actually broke.
+        result["error"] = False
         return result
 
     except Exception as e:
@@ -168,7 +173,8 @@ Return only valid JSON.
         print("Knowledge Reranker Error:", e)
 
         return {
-            "selected": []
+            "selected": [],
+            "error": True
         }
 
 
@@ -380,6 +386,11 @@ Return only valid JSON.
             if "confidence" not in item:
                 item["confidence"] = 100
 
+        # See rerank_knowledge()'s matching comment: error=False here (even
+        # for a genuinely empty selection) is what lets a caller distinguish
+        # "the model looked and found nothing useful" from "this call itself
+        # failed", which the except branch below now reports explicitly.
+        result["error"] = False
         return result
 
     except Exception as e:
@@ -387,5 +398,6 @@ Return only valid JSON.
         print("Reranker Error:", e)
 
         return {
-            "selected": []
+            "selected": [],
+            "error": True
         }

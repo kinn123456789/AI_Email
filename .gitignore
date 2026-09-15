@@ -8,6 +8,7 @@ attachments/
 credentials*.json
 token*.json
 service-account*.json
+.mcp.json
 # macOS
 .DS_Store
 

@@ -48,6 +48,10 @@ def search_similar_emails(subject, body, limit=30, embedding_client=None):
                 FROM historical_emails
                 WHERE embedding IS NOT NULL
                 AND sender = ANY(%s)
+                -- An AI draft a staff member sent unchanged isn't a genuine
+                -- example of Coral Academy's own writing style - excluding
+                -- it here stops the AI from being trained on its own output.
+                AND is_unedited_ai_reply = FALSE
             )
             SELECT
                 id,

@@ -425,6 +425,20 @@ async def send_reply(
             _send_in_progress.discard(email_id)
 
 
+def _compute_edited_before_send(reply_body, ai_draft_reply):
+    """True if the human changed the text before sending; False if the AI
+    draft went out unchanged. Both sides are normalized through
+    (x or "").strip() first so a None/empty ai_draft_reply (no draft was
+    ever generated) or a None/empty reply_body never crashes this
+    comparison or produces a false "unchanged" match against an unrelated
+    empty value.
+
+    Persisted as messages.edited_before_send, and its inverse as
+    historical_emails.is_unedited_ai_reply so search_similar_emails() never
+    retrieves an unedited AI draft as a trusted style example."""
+    return (reply_body or "").strip() != (ai_draft_reply or "").strip()
+
+
 async def _send_reply_impl(
     request, background_tasks, email_id, reply_body, attachments, original_email
 ):
@@ -457,6 +471,10 @@ async def _send_reply_impl(
             status_code=303
         )
 
+    edited_before_send = _compute_edited_before_send(
+        reply_body, original_email.get("ai_draft_reply")
+    )
+
     sent_result = send_email(
         from_email=from_email,
         token_file=token_file,
@@ -472,7 +490,7 @@ async def _send_reply_impl(
 
     if sent_result:
 
-        update_final_reply(email_id, reply_body)
+        update_final_reply(email_id, reply_body, edited_before_send)
         update_reply_type(email_id, "human")
         update_status(email_id, "Replied")
         set_resolved_time(email_id)
@@ -521,7 +539,8 @@ async def _send_reply_impl(
                 sender=source,
                 recipient=original_email["sender"],
                 subject=original_email["subject"],
-                body=reply_body
+                body=reply_body,
+                is_unedited_ai_reply=not edited_before_send
             )
         )
 
@@ -542,13 +561,18 @@ async def _send_reply_impl(
     )
 
 
-def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender, recipient, subject, body):
+def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender, recipient, subject, body, is_unedited_ai_reply):
     """Every real staff-sent reply feeds back into the RAG example pool used
     by search_similar_emails/rag_reranker.py, so the AI's style examples
     keep growing from genuine Coral Academy replies instead of only the
     one-time Sent Mail import. Runs as a background task — failures here
     must never affect the actual email send, which has already succeeded
-    by the time this runs."""
+    by the time this runs.
+
+    is_unedited_ai_reply is the inverse of edited_before_send: True means
+    the staff member sent the AI's draft with no changes, so this reply
+    must not be trusted as a hand-written style example - search_similar_emails()
+    excludes those rows from retrieval."""
 
     try:
         # Redact known names/emails/phone numbers before this text is ever
@@ -569,7 +593,8 @@ def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender,
             subject=redacted_subject,
             body=redacted_body,
             sent_at=datetime.utcnow(),
-            source_account=sender
+            source_account=sender,
+            is_unedited_ai_reply=is_unedited_ai_reply
         )
 
         if historical_id:
@@ -951,11 +976,23 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
         close_embedding_client(similar_client)
         close_embedding_client(knowledge_client)
 
+    # Mirrors process_email.py's same combination logic — see the comments
+    # there for the full reasoning. Kept duplicated rather than extracted
+    # into a shared helper, consistent with how this whole
+    # rerank/historical_emails block was already duplicated between the two
+    # files before this change.
+    knowledge_retrieval_error = knowledge is None
+    if knowledge_retrieval_error:
+        knowledge = []
+
     reranked = rerank_emails(subject, body, similar)
+    historical_retrieval_error = reranked.get("error", False)
     selected_ids = {item["id"] for item in reranked["selected"]}
     historical_emails = [email for email in similar if email[0] in selected_ids]
 
-    draft = generate_reply(
+    retrieval_error = knowledge_retrieval_error or historical_retrieval_error
+
+    draft, generation_status = generate_reply(
         None,
         subject,
         body,
@@ -968,13 +1005,19 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
         customer_name=customer_name,
     )
 
+    requires_review = (
+        result["requires_review"]
+        or retrieval_error
+        or generation_status in ("blocked_safety_net", "error")
+    )
+
     update_contact_form_ai_fields(
         row_id=row_id,
         category=result["category"],
         priority=result["priority"],
         summary=result["summary"],
         draft_reply=draft,
-        requires_review=result["requires_review"],
+        requires_review=requires_review,
         ai_confidence=result["confidence"],
         reply_type=result["reply_type"],
     )
