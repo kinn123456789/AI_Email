@@ -100,7 +100,8 @@ try:
         learning_goals,
         prerequisites,
         resources,
-        parental_guidance
+        parental_guidance,
+        pricing
     FROM classes
     """)
 
@@ -121,7 +122,8 @@ try:
             learning_goals,
             prerequisites,
             resources,
-            parental_guidance
+            parental_guidance,
+            pricing
         ) = row
 
         print(f"Embedding: {title}")
@@ -211,6 +213,16 @@ try:
                 subject,
                 "Parental Guidance",
                 parental_guidance,
+                class_url
+            )
+
+            insert_chunk(
+                cursor,
+                class_id,
+                title,
+                subject,
+                "Pricing",
+                pricing,
                 class_url
             )
 
