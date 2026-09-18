@@ -4,6 +4,68 @@ from database import get_connection
 from embedding_service import generate_embedding
 
 
+# classes.pricing stores "amount" in the currency's minor unit (cents) -
+# e.g. 2500 means $25.00, not $2,500 - matching every class in the catalog
+# (all cluster in the 2000-2500 range, which only makes sense as cents for
+# a per-session kids' class). Embedding the raw amount unconverted let the
+# LLM read "amount": 2500 as if it were already whole dollars.
+_CURRENCY_SYMBOLS = {"usd": "$", "eur": "€", "gbp": "£"}
+
+
+def _format_price_entry(entry):
+    """One pricing tier, e.g. {"unit": "session", "amount": 2500,
+    "currency": "usd"} -> "$25.00 per session". Returns None if the entry
+    doesn't have a usable amount, so callers can skip it like any other
+    empty field."""
+
+    amount = entry.get("amount")
+
+    if not isinstance(amount, (int, float)):
+        return None
+
+    unit = entry.get("unit") or "session"
+    currency = (entry.get("currency") or "").lower()
+    dollars = amount / 100
+    symbol = _CURRENCY_SYMBOLS.get(currency)
+
+    if symbol:
+        return f"{symbol}{dollars:.2f} per {unit}"
+
+    return f"{dollars:.2f} {currency.upper()} per {unit}".strip()
+
+
+def format_pricing(pricing):
+    """Converts the stored cents-based pricing dict into a plain,
+    human-readable string the LLM can quote directly - e.g.
+    {"regular": {"unit": "session", "amount": 2500, "currency": "usd"}}
+    -> "$25.00 per session". Handles the pricing structure generically
+    (any tier name, missing/malformed entries) rather than assuming any
+    one class's shape. Returns None for missing/empty/unusable pricing,
+    same as any other empty field insert_chunk() already skips."""
+
+    if not isinstance(pricing, dict) or not pricing:
+        return None
+
+    lines = []
+
+    for tier, entry in pricing.items():
+
+        if not isinstance(entry, dict):
+            continue
+
+        formatted = _format_price_entry(entry)
+
+        if not formatted:
+            continue
+
+        if len(pricing) > 1:
+            lines.append(f"{tier.replace('_', ' ').title()}: {formatted}")
+        else:
+            lines.append(formatted)
+
+    return "\n".join(lines) if lines else None
+
+
 def insert_chunk(
     cursor,
     class_id,
@@ -222,7 +284,7 @@ try:
                 title,
                 subject,
                 "Pricing",
-                pricing,
+                format_pricing(pricing),
                 class_url
             )
 

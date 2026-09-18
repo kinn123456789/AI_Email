@@ -119,6 +119,12 @@ class FakeConnection:
     def rollback(self):
         pass
 
+    def close(self):
+        # embed_classes.py calls conn.close() directly instead of
+        # returning it to the pool via db_pool.putconn() - a no-op here,
+        # same as every other fake teardown method.
+        pass
+
 
 class FakeSimpleConnectionPool:
     """Stand-in for psycopg2.pool.SimpleConnectionPool. database.py builds
@@ -163,6 +169,14 @@ import rag_reranker              # noqa: E402
 import knowledge_search          # noqa: E402
 import database                  # noqa: E402
 import teacher_reply_generator1  # noqa: E402
+
+# embed_classes.py has no `if __name__ == "__main__":` guard - importing it
+# runs its whole top-level backfill loop immediately (against the fake DB
+# pool set up above). Setting next_fetchall to [] first makes that one-time
+# run a harmless no-op ("Found 0 classes.") so only format_pricing()/
+# insert_chunk() get exercised deliberately, in the tests below.
+database.db_pool.next_fetchall = []
+import embed_classes             # noqa: E402
 
 
 _failures = []
@@ -618,6 +632,107 @@ def test_vector_search_excludes_unedited_ai_replies():
     )
 
 
+# ---------------------------------------------------------------------------
+# Pricing knowledge-chunk fix: classes.pricing stores "amount" in cents
+# (e.g. 2500 = $25.00), but embed_classes.py's Pricing chunk used to embed
+# that raw JSON unconverted, letting the LLM read 2500 as $2,500. These
+# tests exercise the real format_pricing()/insert_chunk() from
+# embed_classes.py, not a mirror.
+# ---------------------------------------------------------------------------
+
+def test_format_pricing_2500_cents_usd_session():
+    """Finance 101's actual stored value: amount=2500 -> $25.00/session,
+    not $2,500."""
+    result = embed_classes.format_pricing(
+        {"regular": {"unit": "session", "amount": 2500, "currency": "usd", "value_type": "default"}}
+    )
+    check(
+        "amount 2500 + USD + session -> '$25.00 per session'",
+        result == "$25.00 per session",
+        f"got {result!r}",
+    )
+
+
+def test_format_pricing_2000_cents_usd_session():
+    """Every other class in the catalog: amount=2000 -> $20.00/session."""
+    result = embed_classes.format_pricing(
+        {"regular": {"unit": "session", "amount": 2000, "currency": "usd", "value_type": "default"}}
+    )
+    check(
+        "amount 2000 + USD + session -> '$20.00 per session'",
+        result == "$20.00 per session",
+        f"got {result!r}",
+    )
+
+
+def test_pricing_chunk_no_longer_exposes_raw_cents_as_dollars():
+    """The actual INSERT content (via the real insert_chunk()) must contain
+    the converted dollar string, not the raw cents amount or a JSON dump -
+    the exact regression this fix targets."""
+    pricing = {"regular": {"unit": "session", "amount": 2500, "currency": "usd", "value_type": "default"}}
+
+    cursor = database.db_pool.getconn().cursor()
+    embed_classes.insert_chunk(
+        cursor, "class-1", "Finance 101", "lifeskills",
+        "Pricing", embed_classes.format_pricing(pricing), "https://example.com/finance-101",
+    )
+    chunk_content = database.db_pool.last_params[3]  # (title, section, subject, content, url, embedding, source_id)
+
+    check(
+        "Pricing chunk content contains the converted dollar amount",
+        "$25.00 per session" in chunk_content,
+        f"got content={chunk_content!r}",
+    )
+    check(
+        "Pricing chunk content does NOT contain the raw cents value as a bare number",
+        "2500" not in chunk_content and '"amount"' not in chunk_content,
+        f"got content={chunk_content!r}",
+    )
+
+
+def test_format_pricing_multiple_tiers_labeled():
+    """Not hardcoded to Finance 101's single "regular" tier - a pricing
+    dict with more than one tier labels each line so they stay
+    distinguishable."""
+    result = embed_classes.format_pricing({
+        "regular": {"unit": "session", "amount": 2500, "currency": "usd"},
+        "sibling_discount": {"unit": "session", "amount": 2000, "currency": "usd"},
+    })
+    check(
+        "multiple pricing tiers each get a labeled line",
+        result == "Regular: $25.00 per session\nSibling Discount: $20.00 per session",
+        f"got {result!r}",
+    )
+
+
+def test_format_pricing_missing_or_malformed_returns_none():
+    """Handled safely (matches insert_chunk's existing empty-field
+    behavior) rather than crashing on missing/empty/malformed pricing."""
+    check("format_pricing(None) -> None", embed_classes.format_pricing(None) is None)
+    check("format_pricing({}) -> None", embed_classes.format_pricing({}) is None)
+    check(
+        "format_pricing with non-numeric amount -> None",
+        embed_classes.format_pricing({"regular": {"unit": "session", "amount": "call for price"}}) is None,
+    )
+
+
+def test_non_pricing_chunks_unaffected_by_the_fix():
+    """Regression check: a normal string field (e.g. Description) still
+    flows through insert_chunk() completely unchanged - the fix only
+    touches the Pricing call site's argument, not insert_chunk() itself."""
+    cursor = database.db_pool.getconn().cursor()
+    embed_classes.insert_chunk(
+        cursor, "class-1", "Finance 101", "lifeskills",
+        "Description", "A fun intro to money basics.", "https://example.com/finance-101",
+    )
+    chunk_content = database.db_pool.last_params[3]
+    check(
+        "non-pricing chunk content is passed through unchanged",
+        "A fun intro to money basics." in chunk_content,
+        f"got content={chunk_content!r}",
+    )
+
+
 def test_is_unedited_ai_reply_derivation_matches_edited_before_send():
     """Mirrors main.py's wiring (is_unedited_ai_reply = not
     edited_before_send) for all three required cases at once."""
@@ -767,6 +882,14 @@ def main():
     test_save_historical_email_defaults_to_trusted()
     test_save_historical_email_persists_unedited_ai_reply_flag()
     test_vector_search_excludes_unedited_ai_replies()
+
+    test_format_pricing_2500_cents_usd_session()
+    test_format_pricing_2000_cents_usd_session()
+    test_pricing_chunk_no_longer_exposes_raw_cents_as_dollars()
+    test_format_pricing_multiple_tiers_labeled()
+    test_format_pricing_missing_or_malformed_returns_none()
+    test_non_pricing_chunks_unaffected_by_the_fix()
+
     test_is_unedited_ai_reply_derivation_matches_edited_before_send()
 
     test_requires_review_classifier_true()
