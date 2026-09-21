@@ -76,6 +76,7 @@
         <h2 class="text-lg font-bold mb-4 text-stone-800">Review AI Draft</h2>
         <form action="/subscription-cancel/email/{{ row.row_key }}/send" method="post"
               onsubmit="return confirm('Send this re-engagement email?')">
+            {{ csrf_input(request) }}
             <label class="block font-semibold mb-2 text-sm text-stone-800">Subject</label>
             <input
                 type="text"

@@ -20,6 +20,7 @@
 <div class="flex items-center gap-3">
 
 <form method="post" action="/subscription-cancel/delete-selected" id="delete-form">
+{{ csrf_input(request) }}
 <input type="hidden" name="show_all" value="{{ 'true' if show_all_time else '' }}">
 <button
     id="delete-btn"

@@ -20,6 +20,7 @@
 <div class="flex items-center gap-3">
 
 <form method="post" action="/subscription-cancel/trash/restore" id="restore-form">
+{{ csrf_input(request) }}
 <button
     id="restore-btn"
     type="submit"

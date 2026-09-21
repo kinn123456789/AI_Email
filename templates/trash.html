@@ -43,8 +43,8 @@
 })();
 </script>
 <div class="flex items-center gap-3">
-<form method="post" action="/emails/restore-selected" id="restore-form"></form>
-<form method="post" action="/emails/delete-permanently" id="delete-form"></form>
+<form method="post" action="/emails/restore-selected" id="restore-form">{{ csrf_input(request) }}</form>
+<form method="post" action="/emails/delete-permanently" id="delete-form">{{ csrf_input(request) }}</form>
 
 <button
     form="restore-form"

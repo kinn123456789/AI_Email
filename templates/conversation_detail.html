@@ -71,6 +71,7 @@
                 <h2 class="font-bold text-amber-900 uppercase text-[10px] tracking-widest">AI Suggested Reply</h2>
             </div>
             <form method="POST" action="/send-teacher-reply">
+                {{ csrf_input(request) }}
                 <input type="hidden" name="chat_id" value="{{ conversation.chat_id }}">
                 <input type="hidden" name="teacher_id" value="{{ conversation.teacher_id }}">
                 <textarea 

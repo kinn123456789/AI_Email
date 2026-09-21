@@ -33,6 +33,7 @@
 
         <div class="flex items-center gap-3">
             <form method="post" action="/contact-dashboard/delete-selected" id="delete-form">
+                {{ csrf_input(request) }}
                 <button
                     id="delete-btn"
                     type="submit"

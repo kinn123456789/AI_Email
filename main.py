@@ -125,6 +125,9 @@ from embedding_service import generate_embedding
 from historical_email_redaction import redact_pii
 templates = Jinja2Templates(directory="templates")
 
+import auth
+templates.env.globals["csrf_input"] = auth.csrf_input
+
 
 
 from fastapi.responses import HTMLResponse, RedirectResponse, Response, JSONResponse
@@ -155,6 +158,135 @@ async def log_unhandled_exceptions(request: Request, exc: Exception):
         status_code=500,
         content={"detail": "Internal server error"}
     )
+
+
+# ---------------------------------------------------------------------------
+# Authentication - default-deny gate over every route in this file.
+#
+# Previously nothing here required a session at all: any request to any
+# route - including POST /email/{id}/send (sends real email) and
+# POST /emails/delete-permanently - was served unconditionally. This
+# middleware closes that by treating every path as protected unless it is
+# explicitly listed in PUBLIC_PATHS, rather than opting individual routes
+# in one at a time - the latter is exactly the pattern that lets a newly
+# added route slip through unauthenticated by omission.
+#
+# Also enforces CSRF (double-submit cookie) on every POST to a protected
+# path in the same pass, so no individual route can forget it either.
+# ---------------------------------------------------------------------------
+
+from starlette.middleware.base import BaseHTTPMiddleware
+import auth
+
+# Exact-match only (no prefix/wildcard matching here beyond the explicit
+# /static handling below) - deliberately conservative so a path has to be
+# named here on purpose to bypass authentication.
+PUBLIC_PATHS = {
+    "/login",
+    "/submit-enquiry",
+    "/gmail/webhook",
+}
+
+# These return a bare JSON payload with no HTML page around it - a
+# redirect to /login would silently hand back a 200 HTML login page where
+# a caller (e.g. the dashboard's own 8-second poll, or any other client)
+# expects JSON, which could be misread as valid empty/zero data instead
+# of "you are not authenticated." An explicit 401 makes the failure
+# unambiguous to any caller, human or automated.
+JSON_UNAUTHENTICATED_PATHS = {
+    "/emails",
+    "/dashboard-data",
+}
+
+
+def _is_public_path(path):
+    if path in PUBLIC_PATHS:
+        return True
+    # StaticFiles itself only ever serves files that exist under the
+    # static/ directory it was mounted with (main.py's app.mount(...)
+    # below) and already refuses ../ traversal outside that directory -
+    # this prefix check only decides whether the auth gate steps aside
+    # for that mount, it does not grant any additional filesystem access.
+    if path == "/static" or path.startswith("/static/"):
+        return True
+    return False
+
+
+class AuthMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+
+        if _is_public_path(path):
+            return await call_next(request)
+
+        session = auth.verify_session_token(
+            request.cookies.get(auth.SESSION_COOKIE_NAME)
+        )
+
+        if not session:
+            if path in JSON_UNAUTHENTICATED_PATHS:
+                return JSONResponse(status_code=401, content={"detail": "Not authenticated"})
+            return RedirectResponse(url="/login", status_code=303)
+
+        if request.method == "POST":
+            csrf_cookie = request.cookies.get(auth.CSRF_COOKIE_NAME)
+            form = await request.form()
+            csrf_form_value = form.get(auth.CSRF_FORM_FIELD)
+
+            if not auth.verify_csrf(csrf_cookie, csrf_form_value):
+                return JSONResponse(status_code=403, content={"detail": "Invalid CSRF token"})
+
+        return await call_next(request)
+
+
+app.add_middleware(AuthMiddleware)
+
+
+@app.get("/login")
+def login_form(request: Request, error: str = None):
+    # The login form itself needs no CSRF token (POST /login is
+    # deliberately exempt - see the comment on that route). A real CSRF
+    # cookie is issued once login succeeds, which is the point it's
+    # actually needed for the first authenticated POST afterward.
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "error": error,
+        }
+    )
+
+
+@app.post("/login")
+async def login_submit(request: Request):
+    form = await request.form()
+    username = form.get("username", "")
+    password = form.get("password", "")
+
+    # Login itself is a public route (see PUBLIC_PATHS above) and is
+    # deliberately exempt from the CSRF check the middleware applies to
+    # every other POST - there is no existing session to forge an action
+    # against yet, and with a single shared operator credential (not
+    # per-user accounts) a login-CSRF attempt cannot escalate into
+    # anything beyond what a valid username/password already grants.
+    if auth.verify_credentials(username, password):
+        response = RedirectResponse(url="/dashboard", status_code=303)
+        auth.set_session_cookie(response, auth.create_session_token())
+        auth.set_csrf_cookie(response, auth.generate_csrf_token())
+        return response
+
+    # Deliberately generic - never reveals whether the username or the
+    # password was the wrong part, so a failed attempt gives an attacker
+    # no signal to narrow down which half of the credential pair to keep
+    # guessing.
+    return RedirectResponse(url="/login?error=1", status_code=303)
+
+
+@app.post("/logout")
+def logout():
+    response = RedirectResponse(url="/login", status_code=303)
+    auth.clear_auth_cookies(response)
+    return response
 
 
 print("MAIN.PY LOADED")
@@ -1780,6 +1912,12 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 templates = Jinja2Templates(directory="templates")
+# Second Jinja2Templates instance (pre-existing duplicate, unrelated to
+# this change) - registered again here so every template rendered by a
+# route below this point also has {{ csrf_input(request) }} available,
+# since this reassignment gives them a separate Jinja environment from
+# the one registered near the top of the file.
+templates.env.globals["csrf_input"] = auth.csrf_input
 
 
 @app.get("/teacher-inbox")

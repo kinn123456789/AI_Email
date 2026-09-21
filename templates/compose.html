@@ -83,6 +83,7 @@ style="background: url('/static/background.png') center/cover no-repeat fixed;">
         method="POST"
         enctype="multipart/form-data"
         class="space-y-6">
+        {{ csrf_input(request) }}
 
         <!-- From -->
         <!-- From -->

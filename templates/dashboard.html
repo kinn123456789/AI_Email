@@ -19,6 +19,7 @@
 <div class="flex items-center gap-3">
 
 <form method="post" action="/emails/delete-selected" id="delete-form">
+{{ csrf_input(request) }}
 <button
     id="delete-btn"
     type="submit"
@@ -213,11 +214,13 @@ Response Metrics
                         {% if row.status != "resolved" %}
                         <form method="post" action="/dashboard/failed-sync/{{ row.id }}/retry"
                               onsubmit="return confirm('Retry this message now?');">
+                            {{ csrf_input(request) }}
                             <button type="submit" class="text-emerald-600 hover:text-emerald-800 text-xs font-semibold">Retry Now</button>
                         </form>
                         {% endif %}
                         <form method="post" action="/dashboard/failed-sync/{{ row.id }}/delete"
                               onsubmit="return confirm('Delete this failed-sync entry? This cannot be undone.');">
+                            {{ csrf_input(request) }}
                             <button type="submit" class="text-red-500 hover:text-red-700 text-xs font-semibold">Delete</button>
                         </form>
                     </div>

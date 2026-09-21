@@ -1,0 +1,44 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - AI Email</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 font-sans text-stone-700 bg-cyan-50"
+      style="background: url('/static/background.png') center/cover no-repeat fixed;">
+
+    <div class="w-full max-w-sm bg-cyan-100/30 backdrop-blur-lg p-8 rounded-3xl shadow-2xl border border-white/50">
+        <div class="flex items-center gap-2 mb-6">
+            <span class="text-2xl">✨</span>
+            <h1 class="text-xl font-bold tracking-tight text-gray-900">AI Email Sign In</h1>
+        </div>
+
+        {% if error %}
+        <div class="mb-4 bg-red-100 border border-red-300 text-red-800 rounded-2xl p-3 text-sm font-semibold">
+            Invalid username or password.
+        </div>
+        {% endif %}
+
+        <form method="post" action="/login" class="flex flex-col gap-4">
+            <div>
+                <label class="block text-sm font-semibold text-stone-600 mb-1">Username</label>
+                <input type="text" name="username" required autofocus
+                       class="w-full rounded-xl border border-cyan-200 bg-white/80 px-4 py-3 text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-stone-600 mb-1">Password</label>
+                <input type="password" name="password" required
+                       class="w-full rounded-xl border border-cyan-200 bg-white/80 px-4 py-3 text-sm">
+            </div>
+            <button type="submit"
+                    class="bg-cyan-800 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-black transition mt-2">
+                Sign In
+            </button>
+        </form>
+    </div>
+
+</body>
+</html>

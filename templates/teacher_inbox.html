@@ -122,6 +122,7 @@ bg-white text-gray-800
 {% if message.sender == conversation.teacher_id %}
 <form action="/teacher/delete-message" method="POST" class="mt-1 text-right"
 onsubmit="return confirm('Delete this message?');">
+{{ csrf_input(request) }}
 <input type="hidden" name="chat_id" value="{{ selected_chat }}">
 <input type="hidden" name="teacher_id" value="{{ selected_teacher }}">
 <input type="hidden" name="message_id" value="{{ message.message_id }}">
@@ -183,7 +184,7 @@ readonly>{{ latest_parent_message.ai_draft_reply or "" }}</textarea>
 
 <!-- Your Reply Form -->
 <form id="replyForm" action="/teacher/send-reply" method="POST" class="flex flex-col flex-shrink-0">
-
+{{ csrf_input(request) }}
 <input type="hidden" name="chat_id" value="{{ selected_chat }}">
 <input type="hidden" name="teacher_id" value="{{ selected_teacher }}">
 <input type="hidden" name="message_id" value="{{ latest_parent_message.id }}">
