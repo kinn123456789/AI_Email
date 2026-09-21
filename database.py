@@ -37,6 +37,7 @@ def save_email(
     phone=None,
     status="New",
     requires_review=False,
+    review_reason=None,
     ai_confidence=None,
     knowledge_url=None,
     reply_type=None,
@@ -67,20 +68,20 @@ def save_email(
             INSERT INTO messages(
                 sender, subject, body, category, priority, ai_summary,
                 ai_draft_reply, message_id, thread_id, in_reply_to, source,
-                contact_name, phone, status, requires_review, ai_confidence,
+                contact_name, phone, status, requires_review, review_reason, ai_confidence,
                 knowledge_url, reply_type, mailbox, references_header,email_date,is_read,has_attachment,
                 sender_name, recipient, gmail_internal_id, ingested_via
             )
             VALUES (
                 %s, %s, %s, %s, %s, %s, %s, %s, %s, %s,
-                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
             )
             ON CONFLICT (message_id, source) DO NOTHING
             RETURNING id
         """, (
             sender, subject, body, category, priority, ai_summary,
             ai_draft_reply, message_id, thread_id, in_reply_to, source,
-            contact_name, phone, status, requires_review, ai_confidence,
+            contact_name, phone, status, requires_review, review_reason, ai_confidence,
             knowledge_url, reply_type, mailbox, references_header, email_date, is_read , has_attachment,
             sender_name, recipient, gmail_internal_id, ingested_via
         ))
@@ -351,7 +352,7 @@ def get_email_by_id(email_id):
             """
             SELECT id, sender, subject, body, category, ai_summary,
                    ai_draft_reply, priority, status, source, knowledge_url,
-                   ai_confidence, requires_review, created_at, email_date,
+                   ai_confidence, requires_review, review_reason, created_at, email_date,
                    thread_id,
                    message_id,
                    in_reply_to,
@@ -847,7 +848,7 @@ def update_teacher_ai_fields(message_id, category, priority, summary, draft_repl
     finally:
         cursor.close()
         db_pool.putconn(conn)
-def update_contact_form_ai_fields(row_id, category, priority, summary, draft_reply, requires_review, ai_confidence, reply_type):
+def update_contact_form_ai_fields(row_id, category, priority, summary, draft_reply, requires_review, ai_confidence, reply_type, review_reason=None):
     """Fills in the AI draft/status fields for a contact-form row saved before
     the slower similar-email/knowledge-base/draft generation finished (see
     /submit-enquiry) - the row starts as 'Needs Review' with no draft, then
@@ -863,10 +864,11 @@ def update_contact_form_ai_fields(row_id, category, priority, summary, draft_rep
                 ai_summary = %s,
                 ai_draft_reply = %s,
                 requires_review = %s,
+                review_reason = %s,
                 ai_confidence = %s,
                 reply_type = %s
             WHERE id = %s
-        """, (category, priority, summary, draft_reply, requires_review, ai_confidence, reply_type, row_id))
+        """, (category, priority, summary, draft_reply, requires_review, review_reason, ai_confidence, reply_type, row_id))
         conn.commit()
     finally:
         cursor.close()
@@ -1350,7 +1352,8 @@ def get_latest_thread_ai(thread_id):
                 category,
                 priority,
                 ai_confidence,
-                requires_review
+                requires_review,
+                review_reason
             FROM messages
             WHERE thread_id = %s
             ORDER BY created_at DESC

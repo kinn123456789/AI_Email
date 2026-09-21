@@ -104,9 +104,26 @@
                 <p class="flex items-center gap-1.5">🏷️ <span class="text-stone-500">Category:</span> <span class="font-medium text-gray-900">{{ email.category }}</span></p>
                 <p class="flex items-center gap-1.5">🚨 <span class="text-stone-500">Priority:</span> <span class="font-medium text-gray-900">{{ email.priority }}</span></p>
                 <p class="flex items-center gap-1.5">📌 <span class="text-stone-500">Status:</span> <span class="font-medium text-gray-900">{{ email.status }}</span></p>
-                <p class="flex items-center gap-1.5">
-                    {% if email.requires_review %}⚠️ <span class="text-amber-700 font-semibold">Requires human review</span>
-                    {% else %}✅ <span class="text-stone-500">Review:</span> <span class="font-medium text-gray-900">Not flagged</span>{% endif %}
+                <p class="flex flex-col gap-0.5">
+                    <span class="flex items-center gap-1.5">
+                        {% if email.requires_review %}⚠️ <span class="text-amber-700 font-semibold">Requires human review</span>
+                        {% else %}✅ <span class="text-stone-500">Review:</span> <span class="font-medium text-gray-900">Not flagged</span>{% endif %}
+                    </span>
+                    {% if email.requires_review %}
+                    {% set review_reason_labels = {
+                        "classifier": "Classification requires review",
+                        "retrieval_error": "Retrieval failed",
+                        "safety_block": "Safety block",
+                        "generation_error": "Reply generation failed",
+                        "existing_review": "Flagged for review"
+                    } %}
+                    {% set reason_codes = email.review_reason.split(',') if email.review_reason else ['existing_review'] %}
+                    <span class="text-xs text-amber-700/80 pl-6">
+                        {%- for code in reason_codes -%}
+                            {{ review_reason_labels.get(code.strip(), 'Flagged for review') }}{% if not loop.last %} · {% endif %}
+                        {%- endfor -%}
+                    </span>
+                    {% endif %}
                 </p>
                 <p class="flex items-center gap-1.5 text-stone-600" title="How confident the classifier is in the category/priority it assigned — not a measure of whether the reply itself is correct.">
                     🏷️ <span class="text-stone-500">Classification confidence:</span>

@@ -407,6 +407,7 @@ def view_email(request: Request, email_id: int):
             email_data["priority"] = latest_ai["priority"]
             email_data["ai_confidence"] = latest_ai["ai_confidence"]
             email_data["requires_review"] = latest_ai["requires_review"]
+            email_data["review_reason"] = latest_ai["review_reason"]
 
     #latest_summary = get_latest_ai_summary(thread_id)
 
@@ -1134,11 +1135,22 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
         customer_name=customer_name,
     )
 
-    requires_review = (
-        result["requires_review"]
-        or retrieval_error
-        or generation_status in ("blocked_safety_net", "error")
-    )
+    # Mirrors process_email.py's same review_reasons construction - see
+    # the comments there for the full reasoning. Kept duplicated for the
+    # same reason the rest of this block already is (see the comment
+    # above this function's rerank/historical_emails logic).
+    review_reasons = []
+    if result["requires_review"]:
+        review_reasons.append("classifier")
+    if retrieval_error:
+        review_reasons.append("retrieval_error")
+    if generation_status == "blocked_safety_net":
+        review_reasons.append("safety_block")
+    if generation_status == "error":
+        review_reasons.append("generation_error")
+
+    requires_review = bool(review_reasons)
+    review_reason = ",".join(review_reasons) if review_reasons else None
 
     update_contact_form_ai_fields(
         row_id=row_id,
@@ -1147,6 +1159,7 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
         summary=result["summary"],
         draft_reply=draft,
         requires_review=requires_review,
+        review_reason=review_reason,
         ai_confidence=result["confidence"],
         reply_type=result["reply_type"],
     )

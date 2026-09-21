@@ -397,11 +397,26 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
     # "no_reply" is deliberately NOT included — the model's own considered
     # "I don't have enough information" outcome is treated as correct,
     # cautious behavior rather than a fault requiring forced review.
-    requires_review = (
-        result["requires_review"]
-        or retrieval_error
-        or generation_status in ("blocked_safety_net", "error")
-    )
+    #
+    # review_reasons collects every contributing cause (not just the
+    # first one that's true) so an email flagged for more than one reason
+    # at once - e.g. the classifier already wanted review AND generation
+    # also failed - doesn't lose either signal. requires_review itself is
+    # still the exact same boolean as before (bool(review_reasons) is
+    # equivalent to the old OR-chain), kept for compatibility with every
+    # existing caller/query that already relies on it.
+    review_reasons = []
+    if result["requires_review"]:
+        review_reasons.append("classifier")
+    if retrieval_error:
+        review_reasons.append("retrieval_error")
+    if generation_status == "blocked_safety_net":
+        review_reasons.append("safety_block")
+    if generation_status == "error":
+        review_reasons.append("generation_error")
+
+    requires_review = bool(review_reasons)
+    review_reason = ",".join(review_reasons) if review_reasons else None
 
     if retrieval_error:
         print(f"Retrieval/rerank error for {message_id} - forcing requires_review")
@@ -422,6 +437,7 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         account["source"],
         status="Needs Review",
         requires_review=requires_review,
+        review_reason=review_reason,
         ai_confidence=result["confidence"],
         #reply_type="human",
         reply_type=result["reply_type"],
