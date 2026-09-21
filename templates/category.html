@@ -61,15 +61,8 @@
                         <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">Low</span>
                     {% endif %}
 
-                    <!-- Fixed: Confidence Badge is now visible for ALL priorities -->
                     {% if email.ai_confidence is not none %}
-                        {% if email.ai_confidence >= 90 %}
-                            <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-xs font-medium">🤖 {{ email.ai_confidence }}%</span>
-                        {% elif email.ai_confidence >= 70 %}
-                            <span class="bg-amber-100 text-amber-700 px-3 py-1 rounded-full text-xs font-medium">🤖 {{ email.ai_confidence }}%</span>
-                        {% else %}
-                            <span class="bg-rose-100 text-rose-700 px-3 py-1 rounded-full text-xs font-medium">🤖 {{ email.ai_confidence }}%</span>
-                        {% endif %}
+                        <span class="bg-stone-100 text-stone-600 px-3 py-1 rounded-full text-xs font-medium" title="Classification confidence — not a measure of whether the reply is correct.">🏷️ Classification: {{ email.ai_confidence }}%</span>
                     {% endif %}
                     {% if email.status == "Resolved" %}
 <span class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">

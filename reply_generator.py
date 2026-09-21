@@ -85,15 +85,10 @@ def generate_reply(
             email_date=email_date,
         )
 
-        print("\n" + "=" * 80)
-        print("FINAL PROMPT SENT TO GPT")
-        print("=" * 80)
-
-        print("\nCURRENT SUBJECT:")
-        print(subject)
-
-        print("\nCURRENT BODY:")
-        print(body)
+        # Safe metadata only - never the customer's own subject/body or the
+        # assembled prompt built from them, which used to be printed here
+        # in full on every single generation call.
+        print(f"\nBuilding reply prompt - gmail_message_id={gmail_message_id} category={category} priority={priority}")
 
         print("\nKNOWLEDGE RETRIEVED:")
         for i, k in enumerate(knowledge or [], 1):
@@ -106,17 +101,10 @@ def generate_reply(
                 round(k.get("similarity", 0), 3),
             )
 
-        print("\nHISTORICAL EMAILS RETRIEVED:")
-        for e in (historical_emails or []):
-            if isinstance(e, dict):
-                print("-", e.get("subject"))
-            else:
-                print("-", e[2])
-
-        print("\nFULL PROMPT:\n")
-        print(user_prompt)
-
-        print("=" * 80)
+        # Count only - historical email subjects are redacted before
+        # storage, but still customer-adjacent content that doesn't need
+        # to be printed to list how many were used.
+        print(f"\nHistorical examples retrieved: {len(historical_emails or [])}")
 
         start_time = time.time()
 
@@ -143,10 +131,9 @@ def generate_reply(
 
         reply = response.choices[0].message.content.strip()
 
-        print("=" * 80)
-        print("GPT GENERATED REPLY")
-        print(reply)
-        print("=" * 80)
+        # Length and timing only - never the generated draft itself, which
+        # is customer-facing content built from the customer's own email.
+        print(f"Reply generated - gmail_message_id={gmail_message_id} length={len(reply)} elapsed_ms={elapsed_ms}")
 
         usage = response.usage
 
@@ -178,10 +165,15 @@ def generate_reply(
                     "subject": email[2],
                 })
 
-        leaked_teacher_content = bool(reply) and bool(_TEACHER_FACING_LEAK_PATTERNS.search(reply))
+        # Captured once so the log line below can report exactly which
+        # staff-only phrase triggered the block without printing the
+        # surrounding draft text, which is built from the customer's own
+        # email and must not be logged.
+        _leak_match = _TEACHER_FACING_LEAK_PATTERNS.search(reply) if reply else None
+        leaked_teacher_content = bool(_leak_match)
 
         if leaked_teacher_content:
-            print(f"Draft blocked - contained teacher/staff-only wording not meant for a parent reply ({gmail_message_id}): {reply!r}")
+            print(f"Draft blocked - matched staff-only phrase {_leak_match.group()!r} (gmail_message_id={gmail_message_id})")
 
         save_ai_log(
             gmail_message_id=gmail_message_id,

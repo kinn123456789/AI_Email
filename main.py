@@ -323,8 +323,7 @@ def conversation_detail(
     mark_conversation_read(chat_id)
     conversation = get_conversation(chat_id)
 
-    print("CONVERSATION:")
-    print(conversation)
+    print(f"Loaded conversation: chat_id={chat_id}")
     mark_chat_read(
         chat_id,
         conversation["teacher_id"]
@@ -383,12 +382,13 @@ def view_email(request: Request, email_id: int):
 
     email_data = get_email_by_id(email_id)
 
-    print("=" * 50)
-    print("EMAIL DATA")
-    print(email_data)
+    # Safe metadata only - never the sender, subject, body, or AI draft.
+    # thread_id is deliberately not logged either: for contact-form-sourced
+    # threads it's literally "contact_form:{sender_email}", so printing it
+    # would leak a customer email address for that one source.
+    print(f"Loaded email: id={email_id} category={email_data.get('category')} status={email_data.get('status')}")
 
     thread_id = email_data.get("thread_id")
-    print("THREAD:", thread_id)
     # -------------------------------------------------
     # Show latest AI summary & draft for the thread
     # -------------------------------------------------
@@ -423,10 +423,7 @@ def view_email(request: Request, email_id: int):
     school_email = email_data["source"]
     attachments = get_attachments(email_data["message_id"]) if email_data.get("message_id") else []
 
-    print("Thread:", thread_id)
-    print("CONVERSATION:")
-    print(conversation)
-    print("=" * 50)
+    print(f"Loaded thread: thread_present={bool(thread_id)} conversation_length={len(conversation)}")
 
     return templates.TemplateResponse(
         "email_detail.html",
@@ -1519,10 +1516,9 @@ def reply_again(
     body: str = Form(...)
 ):
 
-    print("Reply route called")
+    print(f"Reply route called: email_id={email_id}")
 
     email = get_followup_email(email_id)
-    print(email)
 
     in_reply_to, references = _followup_thread_headers(
         email["learner_id"], email["email_number"] + 1
@@ -1698,10 +1694,11 @@ def _send_bulk_emails(recipients, subject, body, from_email, token_file, attachm
 
         msg = get_message(from_email, result["id"])
         if msg:
+            # Not logging Message-ID/Subject/From per recipient - Subject
+            # is often personalized per recipient and can carry a
+            # customer/student name. The aggregate count below is the
+            # useful operational signal.
             save_composed_email(msg, from_email)
-            print(msg["Message-ID"])
-            print(msg["Subject"])
-            print(msg["From"])
 
     print(f"Bulk send complete: {sent_count}/{len(recipients)} sent")
 
@@ -1928,7 +1925,7 @@ def teacher_inbox(
 ):
 
     teachers = get_teachers()
-    print(teachers)
+    print(f"Loaded teachers: count={len(teachers)}")
 
     conversations = []
 
@@ -1949,19 +1946,14 @@ def teacher_inbox(
         t = time.time()
 
         messages = get_conversation_messages(chat_id)
-        for m in messages:
-            print(m)
-        print("messages:", time.time() - t)
+        print(f"messages: count={len(messages)} elapsed={time.time() - t}")
 
         for msg in reversed(messages):
             if msg["sender"] == conversation["parent_id"]:
                 latest_parent_message = msg
                 break
-        print("LATEST PARENT MESSAGE =", latest_parent_message)
-        print("ID =", latest_parent_message.get("id") if latest_parent_message else None)
-        if latest_parent_message:
-            print("ID =", latest_parent_message.get("id"))
-            print("KEYS =", latest_parent_message.keys())
+        # Message ID only - never the sender or message body.
+        print(f"Latest parent message id: {latest_parent_message.get('id') if latest_parent_message else None}")
     else:
         latest_parent_message = None
 
@@ -2034,11 +2026,6 @@ async def send_reply(request: Request):
     print(">>> ENTERED send_reply")
     form = await request.form()
 
-    print("=" * 80)
-    print("RAW FORM")
-    print(dict(form))
-    print("=" * 80)
-
     chat_id = form.get("chat_id")
     teacher_id = form.get("teacher_id")
     message_id = form.get("message_id")
@@ -2054,10 +2041,7 @@ async def send_reply(request: Request):
         chat_id = chat_id if chat_id not in (None, "", "None") else query.get("chat_id", [None])[0]
         teacher_id = teacher_id if teacher_id not in (None, "", "None") else query.get("teacher_id", [None])[0]
 
-    print("chat_id:", chat_id)
-    print("teacher_id:", teacher_id)
-    print("message_id:", message_id)
-    print("reply:", reply)
+    print(f"chat_id={chat_id} teacher_id={teacher_id} message_id={message_id} reply_length={len(reply)}")
 
     if not chat_id or not teacher_id:
         return {
@@ -2081,13 +2065,14 @@ async def send_reply(request: Request):
         teacher_id=teacher_id,
         message=reply
     )
-    print("Teacher API:", time.time() - t)
-    print("API RESULT:", result)
+    # Never log result["data"] here - it's the Teacher Portal API's raw
+    # response, which echoes back the message content that was just sent.
+    print(f"Teacher API: elapsed={time.time() - t} success={result.get('success')} status_code={result.get('status_code')}")
 
     if result["success"]:
         print("Calling save_teacher_reply()")
         sent_message = extract_teacher_api_message(result, reply, teacher_id)
-        print("EXTRACTED TEACHER API MESSAGE:", sent_message)
+        print(f"Extracted teacher API message: message_id={sent_message.get('message_id')}")
 
         if message_id:
             mark_reply_sent(message_id)
