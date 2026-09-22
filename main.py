@@ -367,19 +367,6 @@ def view_email(request: Request, email_id: int):
 
     print(">>> AFTER mark_email_read")
 
-    conn = get_connection()
-    cur = conn.cursor()
-
-    cur.execute(
-        "SELECT is_read FROM messages WHERE id = %s",
-        (email_id,)
-    )
-
-    print("AFTER UPDATE:", cur.fetchone())
-
-    cur.close()
-    db_pool.putconn(conn)
-
     email_data = get_email_by_id(email_id)
 
     # Safe metadata only - never the sender, subject, body, or AI draft.
@@ -389,40 +376,52 @@ def view_email(request: Request, email_id: int):
     print(f"Loaded email: id={email_id} category={email_data.get('category')} status={email_data.get('status')}")
 
     thread_id = email_data.get("thread_id")
+    message_id = email_data.get("message_id")
+
+    # get_latest_thread_ai, get_latest_reply_sources, get_thread, and
+    # get_attachments are independent of each other (none needs another's
+    # result) - same reasoning already applied to the AI-triage/similar-email/
+    # knowledge-base calls in process_email.py, using the same
+    # ThreadPoolExecutor pattern. The truthy guards on thread_id/message_id
+    # are preserved exactly as before, so a missing id still skips the DB
+    # call entirely rather than querying with NULL.
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        thread_ai_future = executor.submit(get_latest_thread_ai, thread_id) if thread_id else None
+        reply_sources_future = executor.submit(get_latest_reply_sources, message_id)
+        conversation_future = executor.submit(get_thread, thread_id) if thread_id else None
+        attachments_future = executor.submit(get_attachments, message_id) if message_id else None
+
+        latest_ai = thread_ai_future.result() if thread_ai_future else None
+        reply_sources = reply_sources_future.result()
+        conversation = conversation_future.result() if conversation_future else []
+        attachments = attachments_future.result() if attachments_future else []
+
     # -------------------------------------------------
     # Show latest AI summary & draft for the thread
     # -------------------------------------------------
 
-    if thread_id:
+    if latest_ai:
 
-        latest_ai = get_latest_thread_ai(thread_id)
+        email_data["ai_summary"] = latest_ai["ai_summary"]
+        email_data["ai_draft_reply"] = latest_ai["ai_draft_reply"]
 
-        if latest_ai:
-
-            email_data["ai_summary"] = latest_ai["ai_summary"]
-            email_data["ai_draft_reply"] = latest_ai["ai_draft_reply"]
-
-            # Optional (recommended)
-            email_data["category"] = latest_ai["category"]
-            email_data["priority"] = latest_ai["priority"]
-            email_data["ai_confidence"] = latest_ai["ai_confidence"]
-            email_data["requires_review"] = latest_ai["requires_review"]
-            email_data["review_reason"] = latest_ai["review_reason"]
+        # Optional (recommended)
+        email_data["category"] = latest_ai["category"]
+        email_data["priority"] = latest_ai["priority"]
+        email_data["ai_confidence"] = latest_ai["ai_confidence"]
+        email_data["requires_review"] = latest_ai["requires_review"]
+        email_data["review_reason"] = latest_ai["review_reason"]
 
     #latest_summary = get_latest_ai_summary(thread_id)
 
     #if latest_summary:
       #  email_data["ai_summary"] = latest_summary
 
-    reply_sources = get_latest_reply_sources(email_data.get("message_id"))
-
     if reply_sources:
         email_data["knowledge_used"] = reply_sources["knowledge_used"]
         email_data["historical_examples"] = reply_sources["historical_examples"]
 
-    conversation = get_thread(thread_id) if thread_id else []
     school_email = email_data["source"]
-    attachments = get_attachments(email_data["message_id"]) if email_data.get("message_id") else []
 
     print(f"Loaded thread: thread_present={bool(thread_id)} conversation_length={len(conversation)}")
 

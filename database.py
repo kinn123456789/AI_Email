@@ -184,35 +184,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             "" if status == "Replied" else "AND reply_type IS DISTINCT FROM 'gmail_manual'"
         )
 
-        cursor.execute(f"""
-            SELECT
-                COUNT(*) AS total,
-                COUNT(*) FILTER (WHERE status = 'Needs Review') AS needs_review_count,
-                COUNT(*) FILTER (WHERE reply_type = 'automatic') AS auto_reply_count
-            FROM messages
-            WHERE mailbox = 'inbox'
-            AND status != 'Resolved'
-            {gmail_manual_filter}
-            {filters}
-        """, params)
-
-        counts_row = cursor.fetchone()
-        total = counts_row["total"]
-
-        total_pages = max(1, (total + page_size - 1) // page_size)
-        page = max(1, min(page, total_pages))
-        offset = (page - 1) * page_size
-
-        cursor.execute(f"""
-            SELECT
-                id, sender, subject, source, category, priority, status,
-                reply_type, created_at, first_reply_at, resolved_at,
-                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment
-            FROM messages
-            WHERE mailbox = 'inbox'
-            AND status != 'Resolved'
-            {gmail_manual_filter}
-            {filters}
+        order_by_clause = """
             ORDER BY
                 is_read ASC,
 
@@ -231,11 +203,99 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
                 END,
                 email_date DESC NULLS LAST,
                 created_at DESC
+        """
+
+        # total/needs_review_count/auto_reply_count are folded into the same
+        # paginated query via COUNT(*) OVER() window functions (counted over
+        # the whole filtered set, not just the returned page) instead of a
+        # separate COUNT query - one round trip instead of two for the common
+        # case. page can't be clamped to total_pages until total is known,
+        # and total is now only known from this query's own result - so a
+        # requested page/offset past the real last page (or a genuinely empty
+        # filtered set) comes back with zero rows here. That's the one case
+        # this can't resolve in a single query, so it falls back below to
+        # recompute the true total and re-run with the correctly clamped
+        # offset - preserving the exact page-clamping behavior this endpoint
+        # already had, at the cost of extra round trips only in that rare
+        # edge case rather than on every request.
+        offset = (max(1, page) - 1) * page_size
+
+        cursor.execute(f"""
+            SELECT
+                id, sender, subject, source, category, priority, status,
+                reply_type, created_at, first_reply_at, resolved_at,
+                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment,
+                COUNT(*) OVER() AS total,
+                COUNT(*) FILTER (WHERE status = 'Needs Review') OVER() AS needs_review_count,
+                COUNT(*) FILTER (WHERE reply_type = 'automatic') OVER() AS auto_reply_count
+            FROM messages
+            WHERE mailbox = 'inbox'
+            AND status != 'Resolved'
+            {gmail_manual_filter}
+            {filters}
+            {order_by_clause}
             LIMIT %s OFFSET %s;
         """, params + [page_size, offset])
 
         rows = cursor.fetchall()
+
+        if rows:
+            total = rows[0]["total"]
+            needs_review_count = rows[0]["needs_review_count"]
+            auto_reply_count = rows[0]["auto_reply_count"]
+            total_pages = max(1, (total + page_size - 1) // page_size)
+            page = max(1, min(page, total_pages))
+        else:
+            # Either a genuinely empty filtered set, or the requested page
+            # landed past the real last page - either way, the true total
+            # can only come from a plain COUNT now, matching the query this
+            # function used before this change.
+            cursor.execute(f"""
+                SELECT
+                    COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status = 'Needs Review') AS needs_review_count,
+                    COUNT(*) FILTER (WHERE reply_type = 'automatic') AS auto_reply_count
+                FROM messages
+                WHERE mailbox = 'inbox'
+                AND status != 'Resolved'
+                {gmail_manual_filter}
+                {filters}
+            """, params)
+
+            counts_row = cursor.fetchone()
+            total = counts_row["total"]
+            needs_review_count = counts_row["needs_review_count"]
+            auto_reply_count = counts_row["auto_reply_count"]
+
+            total_pages = max(1, (total + page_size - 1) // page_size)
+            page = max(1, min(page, total_pages))
+
+            if total > 0:
+                offset = (page - 1) * page_size
+
+                cursor.execute(f"""
+                    SELECT
+                        id, sender, subject, source, category, priority, status,
+                        reply_type, created_at, first_reply_at, resolved_at,
+                        knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment
+                    FROM messages
+                    WHERE mailbox = 'inbox'
+                    AND status != 'Resolved'
+                    {gmail_manual_filter}
+                    {filters}
+                    {order_by_clause}
+                    LIMIT %s OFFSET %s;
+                """, params + [page_size, offset])
+
+                rows = cursor.fetchall()
+
         for row in rows:
+            # Only present on rows from the combined query above - stripped
+            # so this function's per-row shape is identical either way.
+            row.pop("total", None)
+            row.pop("needs_review_count", None)
+            row.pop("auto_reply_count", None)
+
             if row["created_at"]:
                 # Raw UTC ISO timestamp, formatted client-side into the
                 # viewer's own local timezone by static/local-time.js —
@@ -254,8 +314,8 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
         return {
             "rows": rows,
             "total": total,
-            "needs_review_count": counts_row["needs_review_count"],
-            "auto_reply_count": counts_row["auto_reply_count"],
+            "needs_review_count": needs_review_count,
+            "auto_reply_count": auto_reply_count,
             "page": page,
             "total_pages": total_pages,
         }
