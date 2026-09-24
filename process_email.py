@@ -275,6 +275,13 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         if message_match:
             body = message_match.group(1).strip()
 
+    # Shared by both the skip=True automated-email branch below and the
+    # internal-alert short-circuit further down - the exact same subject
+    # signal already validated for P0-2 (zero false positives against real
+    # production data), defined once here rather than duplicated in both
+    # places.
+    schedule_alert_keywords = ["low enrollment", "schedule ending", "session ending"]
+
     if skip:
 
         # Low Enrollment / Schedule Ending alerts still need to surface as
@@ -282,7 +289,6 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         # via a List-Unsubscribe header) before the classifier ever runs -
         # same subject-only signal and reasoning as ai_classifier.py's own
         # override. Every other automated email type keeps today's Low.
-        schedule_alert_keywords = ["low enrollment", "schedule ending", "session ending"]
         subject_lower = subject.lower()
         skip_priority = "High" if any(kw in subject_lower for kw in schedule_alert_keywords) else "Low"
 
@@ -292,6 +298,46 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
             body=body,
             category=category,
             priority=skip_priority,
+            ai_summary=reason,
+            ai_draft_reply="",
+            message_id=message_id,
+            thread_id=thread_id,
+            in_reply_to=in_reply_to,
+            source=account["source"],
+            status="No Reply Required",
+            mailbox=mailbox,
+            references_header=references_header,
+            email_date=email_date,
+            has_attachment=has_attachment,
+            sender_name=sender_name,
+            gmail_internal_id=gmail_internal_id,
+            ingested_via=ingested_via
+        )
+
+        return
+
+    # P0-3: known internal Coral alert subjects that is_automated_email()
+    # didn't catch (e.g. no List-Unsubscribe header on that particular
+    # send - the same inconsistency already found for these exact alerts)
+    # still need to skip the full pipeline below. Retrieval, reranking, and
+    # generation are all wasted work for an email already known to need no
+    # reply, and letting it fall through to the classifier path left it
+    # saved with a hardcoded "Needs Review" status - sitting in the
+    # dashboard's action queue indefinitely despite nothing actually being
+    # needed. Reuses the exact same save shape as the skip=True branch
+    # above and the exact same subject-only signal already validated for
+    # P0-2. ai_classifier.py's own priority override is left completely in
+    # place as a fallback safety net for anything this doesn't catch.
+    subject_lower = subject.lower()
+
+    if any(kw in subject_lower for kw in schedule_alert_keywords):
+
+        save_email(
+            sender=sender_email,
+            subject=subject,
+            body=body,
+            category=category,
+            priority="High",
             ai_summary=reason,
             ai_draft_reply="",
             message_id=message_id,
