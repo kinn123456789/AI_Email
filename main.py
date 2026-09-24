@@ -1095,7 +1095,7 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
                 search_similar_emails, subject, body, embedding_client=similar_client
             )
             knowledge_future = executor.submit(
-                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True
+                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True, audience="parent"
             )
 
             result = triage_future.result()
@@ -1132,6 +1132,7 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
         knowledge,
         source="contact_form",
         customer_name=customer_name,
+        audience="parent",
     )
 
     # Mirrors process_email.py's same review_reasons construction - see

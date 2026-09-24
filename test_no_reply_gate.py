@@ -234,6 +234,10 @@ def test_process_email_py_gates_generate_reply_on_needs_reply():
 
 
 def test_process_email_py_preserves_generate_reply_call_arguments():
+    """Byte-for-byte pin on the P0-1 call block, updated once (and only
+    once) for the teacher-leak-fix task's approved addition of an explicit
+    trailing audience="parent" kwarg - every other argument, and their
+    order, is unchanged from the original P0-1 fix."""
     src = _read_source("process_email.py")
     call_block = (
         'draft, generation_status = generate_reply(\n'
@@ -250,10 +254,11 @@ def test_process_email_py_preserves_generate_reply_call_arguments():
         '            source=account["source"],\n'
         '            customer_name=find_recipient_name(sender_email),\n'
         '            email_date=email_date,\n'
+        '            audience="parent",\n'
         '        )'
     )
     check(
-        "the generate_reply() call arguments are byte-for-byte unchanged from before this fix",
+        "the generate_reply() call arguments are unchanged from P0-1 except for the approved trailing audience=\"parent\"",
         call_block in src,
     )
 

@@ -26,7 +26,8 @@ def generate_teacher_reply(
 
     knowledge = search_knowledge_base(
         subject=f"{category}: {subject}",
-        body=body
+        body=body,
+        audience="teacher"
     )
 
     reply_text, generation_status = generate_reply(
@@ -37,7 +38,8 @@ def generate_teacher_reply(
         priority=priority,
         thread_history=thread_history,
         historical_emails=[],
-        knowledge=knowledge
+        knowledge=knowledge,
+        audience="teacher"
     )
 
     if generation_status != "ok":

@@ -4,7 +4,7 @@ from embedding_service import generate_embedding
 from rag_reranker import rerank_knowledge
 
 
-def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=False):
+def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=False, audience="parent"):
     """
     Searches the unified Coral Academy Knowledge Base.
 
@@ -25,6 +25,18 @@ def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=
     When rerank=True, returns None (instead of a list) specifically if the
     rerank_knowledge() call itself failed — never for a genuine "nothing
     relevant" outcome, which still returns a normal (possibly empty) list.
+
+    audience is an explicit "parent" or "teacher" signal from the caller -
+    never inferred from the email itself. category="Teaching" rows (written
+    for instructors, not customers - e.g. "Class Cancellation &
+    Rescheduling") are dropped before they're ever added to `results` when
+    audience="parent", so they can't reach the reranker or the generator at
+    all for a parent-facing email. audience="teacher" (Teacher Portal)
+    keeps the existing unfiltered behavior - Teaching content stays fully
+    available there. Filtering this early means a request that only had
+    Teaching-category candidates still produces a genuine empty `results`
+    list (or None only on an actual rerank failure, exactly as before) -
+    never a fabricated retrieval error.
     """
 
     query = f"""
@@ -95,11 +107,21 @@ Body:
           
 
             url = row[4]
+            category = row[2] or ""
 
             #if url in seen_urls:
              #   continue
 
             #seen_urls.add(url)
+
+            # Primary protection against teacher-facing content reaching a
+            # parent-facing reply: dropped here, before dedup/append, so a
+            # Teaching-category row can never enter `results` at all for
+            # audience="parent" - never reaches the reranker, never reaches
+            # generate_reply(). Deterministic category check, no extra LLM
+            # call. audience="teacher" (Teacher Portal) is unaffected.
+            if audience == "parent" and category == "Teaching":
+                continue
 
             key = (
                 row[5],   # source
@@ -117,7 +139,7 @@ Body:
                 {
                     "title": row[0],
                     "section": row[1] or "",
-                    "category": row[2] or "",
+                    "category": category,
                     "content": row[3] or "",
                     "url": row[4] or "",
                     "source": row[5] or "",

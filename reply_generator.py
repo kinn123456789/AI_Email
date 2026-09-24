@@ -11,15 +11,38 @@ from ai_logger import save_ai_log
 
 # Catches teacher/staff-only content leaking into a parent-facing reply —
 # the same red-flag phrases prompt_builder.py's KNOWLEDGE RETRIEVAL section
-# already warns the model away from, kept here as a deterministic backstop.
+# already warns the model away from, kept here as a deterministic backstop
+# and defense-in-depth layer (the primary protection is the audience-based
+# retrieval filter in knowledge_search.py, which stops Teaching-category
+# content from reaching this function at all for a parent-facing email).
+#
 # Confirmed this session that the prompt-only instruction does not reliably
 # hold on its own (reproduced live: a "Class Cancellation & Rescheduling"
 # article's internal procedure - "Email teachers@coralacademy.com with the
 # reason for cancellation... Our coordination team will identify a suitable
-# rescheduled time" - leaked near-verbatim into a parent's reschedule reply
-# despite that exact phrase being named as a red flag in the prompt).
+# rescheduled time" - leaked near-verbatim into a parent's reschedule
+# reply despite that exact phrase being named as a red flag in the prompt).
+#
+# A 30-day production audit (this session) additionally confirmed the model
+# doesn't only quote red-flag sentences verbatim - it can blend/paraphrase
+# them into new wording the original 6 literal phrases didn't cover: a real
+# parent-facing draft said "our platform team will identify a suitable
+# Friday time and update the enrolled parents," which matched none of the
+# patterns below at the time. `platform team will \w+` generalizes the old
+# literal "platform team will assist" to any single-word verb (assist,
+# identify, help, ...) instead of only that one exact phrase; the
+# (update|notify|inform) ... enrolled (parents|families) pattern catches
+# that same leak's other half. Both stay narrow and verb-anchored
+# specifically so they don't fire on ordinary words like "teacher," "class,"
+# "reschedule," "parent," "enrolled," or "schedule" on their own.
 _TEACHER_FACING_LEAK_PATTERNS = re.compile(
-    r"teachers@coralacademy\.com|as an instructor|your credibility|coordination team|post an announcement|platform team will assist",
+    r"teachers@coralacademy\.com"
+    r"|as an instructor"
+    r"|your credibility"
+    r"|coordination team"
+    r"|post an announcement"
+    r"|platform team will \w+"
+    r"|(update|notify|inform) (the )?enrolled (parents|families)",
     re.IGNORECASE,
 )
 
@@ -48,6 +71,7 @@ def generate_reply(
     source=None,
     customer_name=None,
     email_date=None,
+    audience="parent",
 ):
     """
     Generates an AI draft reply using:
@@ -63,6 +87,17 @@ def generate_reply(
     - "blocked_safety_net": the _TEACHER_FACING_LEAK_PATTERNS regex fired
       on the model's output. reply_text is "".
     - "error": the OpenRouter call itself failed. reply_text is "".
+
+    audience is an explicit "parent" or "teacher" signal from the caller -
+    never inferred here from category/source/subject/knowledge. The
+    _TEACHER_FACING_LEAK_PATTERNS safety net only ever applies when
+    audience="parent": its entire purpose is keeping staff-only wording out
+    of a parent-facing reply, so it has no reason to fire on
+    audience="teacher" output, where that same wording is normal, correct
+    content (e.g. explaining a cancellation/rescheduling process to the
+    teacher who asked about it). For audience="teacher", the regex is
+    simply never evaluated - generation proceeds exactly as it did before
+    this safety net existed.
     """
 
     try:
@@ -168,8 +203,14 @@ def generate_reply(
         # Captured once so the log line below can report exactly which
         # staff-only phrase triggered the block without printing the
         # surrounding draft text, which is built from the customer's own
-        # email and must not be logged.
-        _leak_match = _TEACHER_FACING_LEAK_PATTERNS.search(reply) if reply else None
+        # email and must not be logged. Only evaluated for audience="parent"
+        # - see the audience note in this function's docstring for why a
+        # teacher-audience draft must never be blocked by this check.
+        _leak_match = (
+            _TEACHER_FACING_LEAK_PATTERNS.search(reply)
+            if reply and audience == "parent"
+            else None
+        )
         leaked_teacher_content = bool(_leak_match)
 
         if leaked_teacher_content:

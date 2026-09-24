@@ -383,7 +383,7 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
                 search_similar_emails, subject, body, embedding_client=similar_client
             )
             knowledge_future = executor.submit(
-                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True
+                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True, audience="parent"
             )
 
             result = triage_future.result()
@@ -449,6 +449,7 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
             source=account["source"],
             customer_name=find_recipient_name(sender_email),
             email_date=email_date,
+            audience="parent",
         )
     else:
         draft, generation_status = "", "skipped"

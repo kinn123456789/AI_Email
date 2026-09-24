@@ -287,9 +287,18 @@ def test_teacher_reply_returns_plain_string_not_tuple():
     )
 
 
-def test_teacher_reply_safety_block_returns_empty_string_not_tuple():
-    """Same regression check for the blocked_safety_net path - must still
-    be "" (matching pre-tuple behavior), never ("", "blocked_safety_net")."""
+def test_teacher_reply_staff_phrase_returns_plain_string_not_blocked():
+    """Same return-type regression check (str, never a tuple), using a
+    phrase that matches _TEACHER_FACING_LEAK_PATTERNS.
+
+    This phrase used to trigger blocked_safety_net here (generate_reply()
+    applied the regex unconditionally). The teacher-leak-fix task's senior
+    review found that was itself a bug: this exact kind of internal-process
+    wording is normal, correct Teacher Portal content, and blocking it
+    silently emptied a legitimate draft (Teacher Portal has no
+    requires_review field to surface the block). generate_reply() now only
+    evaluates the regex for audience="parent"; teacher_reply_generator1.py
+    passes audience="teacher", so this phrase must come through normally."""
     database.db_pool.next_fetchall = []
     reply_generator.client.chat.completions.set_next(
         _fake_chat_response("Our coordination team will identify a suitable rescheduled time.")
@@ -299,8 +308,8 @@ def test_teacher_reply_safety_block_returns_empty_string_not_tuple():
         category="General", priority="Medium", thread_history="", message_id="t-2",
     )
     check(
-        "Teacher Portal: safety-net block returns '' (str), not a tuple",
-        isinstance(result, str) and result == "",
+        "Teacher Portal: staff-process phrase is returned normally (str, not blocked, not a tuple)",
+        isinstance(result, str) and result == "Our coordination team will identify a suitable rescheduled time.",
         f"got {result!r} (type={type(result).__name__})",
     )
 
@@ -860,7 +869,7 @@ def main():
     test_generate_reply_error()
 
     test_teacher_reply_returns_plain_string_not_tuple()
-    test_teacher_reply_safety_block_returns_empty_string_not_tuple()
+    test_teacher_reply_staff_phrase_returns_plain_string_not_blocked()
     test_teacher_reply_no_reply_returns_empty_string_not_tuple()
     test_teacher_reply_error_returns_empty_string_not_tuple()
     test_update_teacher_ai_fields_rolls_back_on_failure()
