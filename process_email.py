@@ -369,21 +369,34 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
 
     retrieval_error = knowledge_retrieval_error or historical_retrieval_error
 
-    draft, generation_status = generate_reply(
-        message_id,
-        subject,
-        body,
-        result["category"],
-        result["priority"],
-        history_text,
-        #similar,
-        #reranked,
-        historical_emails,
-        knowledge,
-        source=account["source"],
-        customer_name=find_recipient_name(sender_email),
-        email_date=email_date,
-    )
+    # The classifier's own needs_reply=false is a considered "this doesn't
+    # need a response" judgment (e.g. an internal Coral alert/notification) -
+    # calling generate_reply() anyway wastes an LLM call and produces a
+    # misleading customer-style draft with nothing downstream to gate it
+    # from showing on the dashboard. "skipped" is a new, distinct status
+    # value (never equal to "blocked_safety_net" or "error") specifically so
+    # it flows through the requires_review logic below exactly like
+    # "no_reply"/"ok" already do - it does not, on its own, add a review
+    # reason. result["requires_review"] and retrieval_error remain the
+    # authoritative signals for that, unchanged.
+    if result["needs_reply"]:
+        draft, generation_status = generate_reply(
+            message_id,
+            subject,
+            body,
+            result["category"],
+            result["priority"],
+            history_text,
+            #similar,
+            #reranked,
+            historical_emails,
+            knowledge,
+            source=account["source"],
+            customer_name=find_recipient_name(sender_email),
+            email_date=email_date,
+        )
+    else:
+        draft, generation_status = "", "skipped"
 
     # requires_review must reflect every reason the draft needs extra
     # scrutiny, not just the classifier's own (earlier, independent) call:
