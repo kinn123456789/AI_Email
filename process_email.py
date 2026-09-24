@@ -276,13 +276,22 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
             body = message_match.group(1).strip()
 
     if skip:
-        
+
+        # Low Enrollment / Schedule Ending alerts still need to surface as
+        # High priority even when is_automated_email() catches them (e.g.
+        # via a List-Unsubscribe header) before the classifier ever runs -
+        # same subject-only signal and reasoning as ai_classifier.py's own
+        # override. Every other automated email type keeps today's Low.
+        schedule_alert_keywords = ["low enrollment", "schedule ending", "session ending"]
+        subject_lower = subject.lower()
+        skip_priority = "High" if any(kw in subject_lower for kw in schedule_alert_keywords) else "Low"
+
         save_email(
             sender=sender_email,
             subject=subject,
             body=body,
             category=category,
-            priority="Low",
+            priority=skip_priority,
             ai_summary=reason,
             ai_draft_reply="",
             message_id=message_id,

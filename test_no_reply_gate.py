@@ -279,58 +279,89 @@ def test_process_email_py_save_email_call_unchanged():
 
 
 # ---------------------------------------------------------------------------
-# 5. Scope confirmation: no other file was touched by this fix.
+# 5. Scope confirmation.
+#
+# These two checks used to inspect the LIVE `git status --short` output and
+# assert the working tree contained only P0-1's own files. That's a
+# moment-in-time snapshot, not a fact about P0-1 itself - it necessarily
+# breaks the instant any later, unrelated task (e.g. P0-2) makes its own
+# legitimate changes on top, with no bearing on whether P0-1 is still
+# intact. Replaced with two content/history-based checks that stay true
+# regardless of what any future task touches: (a) the P0-1 gate is still
+# actually present in process_email.py, both in the commit that introduced
+# it and in the current working-tree file, and (b) commit 4ad2c186 itself -
+# a fixed, permanent historical fact - only ever touched its approved
+# files. Neither assumes anything about which other files a later task may
+# legitimately modify.
 # ---------------------------------------------------------------------------
 
-def test_only_process_email_and_this_test_file_changed():
+_P0_1_COMMIT = "4ad2c1860ef82d9689de2ecee902b35592258b74"
+_P0_1_GATE_PATTERN = 'if result["needs_reply"]:\n        draft, generation_status = generate_reply('
+_P0_1_SKIP_PATTERN = 'else:\n        draft, generation_status = "", "skipped"'
+
+
+def test_p0_1_gate_present_at_commit_and_in_working_tree():
+    """Confirms the P0-1 needs_reply gate has not been accidentally removed
+    or reverted - checked both against the commit that actually introduced
+    it (the fixed, permanent historical baseline) and against whatever is
+    currently on disk (which may carry later, unrelated changes on top,
+    e.g. P0-2's priority edit further down the same file)."""
     import subprocess
 
     repo_dir = os.path.dirname(os.path.abspath(__file__))
-    result = subprocess.run(
-        ["git", "status", "--short"],
+    committed_content = subprocess.run(
+        ["git", "show", f"{_P0_1_COMMIT}:process_email.py"],
         cwd=repo_dir, capture_output=True, text=True, check=True,
-    )
-    changed_files = set()
-    for line in result.stdout.splitlines():
-        # "git status --short" format: "XY path" - path starts at column 4.
-        changed_files.add(line[3:].strip())
+    ).stdout
 
     check(
-        "git status shows only process_email.py and test_no_reply_gate.py changed/untracked",
-        changed_files == {"process_email.py", "test_no_reply_gate.py"},
-        f"found: {sorted(changed_files)}",
+        f"the P0-1 gate is present in process_email.py as committed at {_P0_1_COMMIT[:10]}",
+        _P0_1_GATE_PATTERN in committed_content and _P0_1_SKIP_PATTERN in committed_content,
+    )
+
+    working_tree_content = _read_source("process_email.py")
+    check(
+        "the P0-1 gate is still present in the current working-tree process_email.py",
+        _P0_1_GATE_PATTERN in working_tree_content and _P0_1_SKIP_PATTERN in working_tree_content,
     )
 
 
-def test_untouched_files_confirmed_by_name():
-    """Explicit, named confirmation (not just a diff count) that none of the
-    files this fix was scoped to avoid are present in the change set."""
+def test_p0_1_commit_only_touched_its_approved_files():
+    """What commit 4ad2c186 (the P0-1 commit) actually changed is a fixed,
+    permanent historical fact - unlike the live working tree, it can never
+    be altered by a later task, so asserting against it stays meaningful
+    forever instead of breaking on the next unrelated change. Also confirms
+    this test file's own P0-1 behavioral tests are still defined and still
+    invoked from main() - i.e. not silently gutted or excluded."""
     import subprocess
 
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
-        ["git", "status", "--short"],
+        ["git", "show", "--name-only", "--format=", _P0_1_COMMIT],
         cwd=repo_dir, capture_output=True, text=True, check=True,
     )
-    changed_files = {line[3:].strip() for line in result.stdout.splitlines()}
+    files_in_commit = {line.strip() for line in result.stdout.splitlines() if line.strip()}
 
-    for forbidden in [
-        "main.py",
-        "ai_classifier.py",
-        "reply_generator.py",
-        "prompt_builder.py",
-        "vector_search.py",
-        "knowledge_search.py",
-        "rag_reranker.py",
-        "teacher_ai_processor1.py",
-        "teacher_reply_generator1.py",
-        "trial_followup.py",
-        "subscription_cancel.py",
-    ]:
-        check(f"{forbidden} was not modified", forbidden not in changed_files)
+    check(
+        f"commit {_P0_1_COMMIT[:10]} (P0-1) touched exactly its approved files",
+        files_in_commit == {"process_email.py", "test_no_reply_gate.py"},
+        f"found: {sorted(files_in_commit)}",
+    )
 
-    templates_touched = [f for f in changed_files if f.startswith("templates/")]
-    check("no template files were modified", templates_touched == [], f"found: {templates_touched}")
+    own_source = _read_source("test_no_reply_gate.py")
+    core_p0_1_tests = [
+        "test_needs_reply_true_calls_generate_reply_once_with_same_arguments",
+        "test_needs_reply_false_skips_generate_reply",
+    ]
+    for test_name in core_p0_1_tests:
+        check(
+            f"{test_name} is still defined in this file",
+            f"def {test_name}(" in own_source,
+        )
+        check(
+            f"{test_name} is still invoked from main()",
+            f"    {test_name}()" in own_source,
+        )
 
 
 def main():
@@ -353,8 +384,8 @@ def main():
     test_process_email_py_downstream_review_logic_unchanged()
     test_process_email_py_save_email_call_unchanged()
 
-    test_only_process_email_and_this_test_file_changed()
-    test_untouched_files_confirmed_by_name()
+    test_p0_1_gate_present_at_commit_and_in_working_tree()
+    test_p0_1_commit_only_touched_its_approved_files()
 
     if _failures:
         print(f"\n{len(_failures)} FAILURE(S): {_failures}")

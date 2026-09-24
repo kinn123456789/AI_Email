@@ -429,6 +429,24 @@ Return only valid JSON.
             if result.get("priority") in ["Low", "Medium"]:
                 result["priority"] = "High"
 
+        # --------------------------------------------------
+        # Low Enrollment / Schedule Ending override
+        # --------------------------------------------------
+        # Internal Coral alerts about a class's enrollment or upcoming
+        # schedule ending are operationally time-sensitive - staff need to
+        # act before the session in question, so these must always surface
+        # as High priority. Subject-only (never body): these alerts have a
+        # fixed, predictable subject template, while body text is free-form
+        # enough (Teacher Portal chat, customer emails) that matching there
+        # risks an unrelated false positive. Only ever raises priority,
+        # never lowers it - an Urgent classification is left untouched.
+        schedule_alert_keywords = ["low enrollment", "schedule ending", "session ending"]
+
+        if any(kw in subject_lower for kw in schedule_alert_keywords):
+
+            if result.get("priority") in ["Low", "Medium"]:
+                result["priority"] = "High"
+
         print(json.dumps(result, indent=2))
 
         usage = response.usage
