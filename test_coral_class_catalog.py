@@ -98,6 +98,7 @@ _install_fake_module(
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import coral_class_catalog as ccc  # noqa: E402
+import live_class_intent as lci  # noqa: E402 - only used by test F, for build_prompt_block()
 
 
 def _reset():
@@ -555,6 +556,145 @@ def test_22_no_seat_availability_field_ever_generated():
     )
 
 
+# ---------------------------------------------------------------------------
+# Pricing/teacher price-bug fix: production sent a parent "$2,000 USD per
+# session" for a class actually priced at $20.00 - Coral's raw
+# pricing.regular.amount (2000) is in cents, and build_live_class_context()
+# used to pass that raw dict straight into the prompt. These tests exercise
+# the real, fixed build_live_class_context()/_format_pricing()/
+# _format_teacher(), not a mirror.
+# ---------------------------------------------------------------------------
+
+def test_A_pricing_cents_converted_to_dollars():
+    class_data = {
+        "title": "Astronomy 101: Learn About Space",
+        "pricing": {
+            "regular": {
+                "unit": "session",
+                "amount": 2000,
+                "currency": "usd",
+            }
+        },
+    }
+    context = ccc.build_live_class_context(class_data)
+    check(
+        "A. amount=2000 cents is converted to '$20.00 per session', matching the verified live price",
+        context.get("pricing") == "$20.00 per session",
+        f"got {context.get('pricing')!r}",
+    )
+
+
+def test_B_no_raw_pricing_leaks_into_context():
+    class_data = {
+        "title": "Astronomy 101: Learn About Space",
+        "pricing": {
+            "regular": {
+                "unit": "session",
+                "amount": 2000,
+                "currency": "usd",
+            }
+        },
+    }
+    context = ccc.build_live_class_context(class_data)
+    pricing_value = context.get("pricing")
+
+    check("B. pricing value is a plain string, not the raw dict", isinstance(pricing_value, str))
+    check("B. context does not contain the literal word 'amount' anywhere", "amount" not in str(context))
+    check(
+        "B. context does not contain a raw pricing-dict representation (e.g. \"{'regular':\")",
+        "{'regular'" not in str(context) and '{"regular"' not in str(context),
+    )
+    check(
+        "B. context does not contain the incorrect '$2,000' reading of the unconverted cents value",
+        "$2,000" not in str(context),
+    )
+
+
+def test_C_multiple_pricing_tiers_labeled():
+    class_data = {
+        "title": "Finance 101",
+        "pricing": {
+            "regular": {"unit": "session", "amount": 2500, "currency": "usd"},
+            "sibling_discount": {"unit": "session", "amount": 2000, "currency": "usd"},
+        },
+    }
+    context = ccc.build_live_class_context(class_data)
+    check(
+        "C. multiple pricing tiers are each converted and labeled on their own line",
+        context.get("pricing") == "Regular: $25.00 per session\nSibling Discount: $20.00 per session",
+        f"got {context.get('pricing')!r}",
+    )
+
+
+def test_D_teacher_reduced_to_name_only():
+    class_data = {
+        "title": "Astronomy 101: Learn About Space",
+        "teacher": {
+            "id": "9fbeef67-7e48-415f-9205-c3a53d10cc34",
+            "name": "Amalia",
+            "bio": "As a nature teacher and world explorer, I have worked with children...",
+            "headline": "Building a Love for Science Through Exploration!",
+            "profile_image_url": "https://backend.coralacademy.com/storage/v1/object/public/profile_images//Amalia.png",
+            "reviews": {"value": 0, "count": 0},
+            "is_saved": False,
+            "is_messaging_available": True,
+        },
+    }
+    context = ccc.build_live_class_context(class_data)
+
+    check(
+        "D. teacher field is reduced to exactly the teacher's name",
+        context.get("teacher") == "Amalia",
+        f"got {context.get('teacher')!r}",
+    )
+    check("D. teacher bio does not leak into the context", "nature teacher and world explorer" not in str(context))
+    check("D. teacher headline does not leak into the context", "Building a Love for Science" not in str(context))
+    check("D. teacher profile_image_url does not leak into the context", "profile_images" not in str(context))
+    check("D. teacher internal id does not leak into the context", "9fbeef67-7e48-415f-9205-c3a53d10cc34" not in str(context))
+    check("D. teacher reviews data does not leak into the context", "reviews" not in str(context))
+    check("D. teacher is_saved flag does not leak into the context", "is_saved" not in str(context))
+    check("D. teacher is_messaging_available flag does not leak into the context", "is_messaging_available" not in str(context))
+
+
+def test_E_missing_teacher_name_omits_field():
+    no_name = {"title": "Astronomy 101", "teacher": {"id": "aaa", "bio": "..."}}
+    empty_name = {"title": "Astronomy 101", "teacher": {"name": "   "}}
+    not_a_dict = {"title": "Astronomy 101", "teacher": "Amalia"}
+
+    check(
+        "E. a teacher object with no 'name' key omits the teacher field entirely (not the raw object)",
+        "teacher" not in ccc.build_live_class_context(no_name),
+    )
+    check(
+        "E. a teacher object with a blank/whitespace-only name omits the teacher field",
+        "teacher" not in ccc.build_live_class_context(empty_name),
+    )
+    check(
+        "E. a non-dict teacher value omits the teacher field rather than passing it through raw",
+        "teacher" not in ccc.build_live_class_context(not_a_dict),
+    )
+
+
+def test_F_prompt_block_has_formatted_price_not_raw_cents():
+    class_data = {
+        "title": "Astronomy 101: Learn About Space",
+        "pricing": {
+            "regular": {
+                "unit": "session",
+                "amount": 2000,
+                "currency": "usd",
+            }
+        },
+    }
+    context = ccc.build_live_class_context(class_data)
+    block = lci.build_prompt_block(context)
+
+    check("F. build_prompt_block() contains the correctly converted price", "$20.00 per session" in block)
+    check("F. build_prompt_block() does not contain the raw 'amount' key", "amount" not in block)
+    check("F. build_prompt_block() does not contain the bare unconverted cents value '2000'", "2000" not in block)
+    check("F. build_prompt_block() does not contain the incorrect '$2,000' reading", "$2,000" not in block)
+
+
 def main():
     test_1_2_successful_fetch_and_parsing()
     test_3_http_error()
@@ -583,6 +723,13 @@ def main():
     test_21b_context_full_class_returns_all_allowed_fields()
     test_21c_context_handles_non_dict_input()
     test_22_no_seat_availability_field_ever_generated()
+
+    test_A_pricing_cents_converted_to_dollars()
+    test_B_no_raw_pricing_leaks_into_context()
+    test_C_multiple_pricing_tiers_labeled()
+    test_D_teacher_reduced_to_name_only()
+    test_E_missing_teacher_name_omits_field()
+    test_F_prompt_block_has_formatted_price_not_raw_cents()
 
     if _failures:
         print(f"\n{len(_failures)} FAILURE(S): {_failures}")

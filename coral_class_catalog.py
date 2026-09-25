@@ -346,6 +346,99 @@ _LIVE_CONTEXT_FIELDS = (
 )
 
 
+# Coral's API stores a pricing tier's "amount" in the currency's minor
+# unit (cents), never whole dollars - confirmed against a live class's
+# known price (2000 cents == $20.00) and already established as this
+# codebase's convention by embed_classes.py's identically-behaved
+# format_pricing()/_format_price_entry(), used for the RAG/knowledge-base
+# Pricing chunk. Deliberately mirrored here rather than imported:
+# embed_classes.py is a top-level script - it opens a live database
+# connection and executes SQL as soon as it's imported, not inside a
+# function or an `if __name__ == "__main__":` guard - so importing it
+# from this module (which loads on every app startup, via
+# process_email.py -> live_class_intent.py -> here) would run real
+# database reads/writes as a side effect of the app simply starting up,
+# or of this module being loaded. Keeping this a pure, side-effect-free
+# duplicate avoids that entirely; the two are intentionally kept
+# behaviorally identical (same currency map, same per-tier formatting,
+# same rounding).
+_CURRENCY_SYMBOLS = {"usd": "$", "eur": "€", "gbp": "£"}
+
+
+def _format_price_entry(entry):
+    """One pricing tier, e.g. {"unit": "session", "amount": 2000,
+    "currency": "usd"} -> "$20.00 per session". Returns None if the entry
+    doesn't have a usable amount, so build_live_class_context() can omit
+    pricing entirely rather than expose a raw/malformed value."""
+
+    amount = entry.get("amount")
+
+    if not isinstance(amount, (int, float)):
+        return None
+
+    unit = entry.get("unit") or "session"
+    currency = (entry.get("currency") or "").lower()
+    dollars = amount / 100
+    symbol = _CURRENCY_SYMBOLS.get(currency)
+
+    if symbol:
+        return f"{symbol}{dollars:.2f} per {unit}"
+
+    return f"{dollars:.2f} {currency.upper()} per {unit}".strip()
+
+
+def _format_pricing(pricing):
+    """Converts the raw, cents-based pricing dict Coral's API returns into
+    a plain, human-readable string safe to place directly in a prompt -
+    e.g. {"regular": {"unit": "session", "amount": 2000, "currency":
+    "usd"}} -> "$20.00 per session". Handles any tier name and multiple
+    tiers generically (each gets its own labeled line when there's more
+    than one), matching embed_classes.format_pricing()'s behavior exactly.
+    Returns None for missing/empty/unusable pricing, so the caller can
+    omit the field rather than pass through something unformattable."""
+
+    if not isinstance(pricing, dict) or not pricing:
+        return None
+
+    lines = []
+
+    for tier, entry in pricing.items():
+
+        if not isinstance(entry, dict):
+            continue
+
+        formatted = _format_price_entry(entry)
+
+        if not formatted:
+            continue
+
+        if len(pricing) > 1:
+            lines.append(f"{tier.replace('_', ' ').title()}: {formatted}")
+        else:
+            lines.append(formatted)
+
+    return "\n".join(lines) if lines else None
+
+
+def _format_teacher(teacher):
+    """Reduces Coral's raw teacher object to just the human-readable name
+    a parent-facing reply should ever see - never the bio, headline,
+    qualifications, profile image URL, review counts, internal id, or
+    saved/messaging flags, none of which belong in this prompt. Returns
+    None when no usable name is present, so the caller can omit the field
+    entirely rather than expose the raw object."""
+
+    if not isinstance(teacher, dict):
+        return None
+
+    name = teacher.get("name")
+
+    if not isinstance(name, str) or not name.strip():
+        return None
+
+    return name.strip()
+
+
 def build_live_class_context(class_data):
     """Returns only the fields in _LIVE_CONTEXT_FIELDS, and only when
     actually present (and not None) in class_data - never invents a
@@ -354,13 +447,49 @@ def build_live_class_context(class_data):
     already returns for ongoing/rolling classes, per the earlier
     investigation) are passed through as-is rather than omitted - an
     empty string is itself real, current information ("no fixed start/end
-    date"), not a missing field."""
+    date"), not a missing field.
+
+    Two allow-listed fields get their raw value replaced with a
+    human-readable one rather than passed through as-is - the field
+    names stay "pricing" and "teacher", only their values change:
+
+    - "pricing": Coral's raw dict (cents-based "amount") is converted via
+      _format_pricing() into a plain string like "$20.00 per session".
+      This is the fix for a confirmed production bug: the raw dict was
+      being placed directly in the prompt, and the model read the
+      unconverted cents amount as whole dollars (e.g. 2000 -> "$2,000"
+      instead of "$20.00").
+    - "teacher": Coral's raw teacher object is reduced via
+      _format_teacher() to just the teacher's name - never their bio,
+      qualifications, profile image URL, or other profile fields.
+
+    If either raw value can't be formatted into something clean (an
+    unusable/malformed pricing shape, or a teacher with no usable name),
+    that field is omitted from the context entirely rather than exposing
+    the raw value - the same "never leak an unformatted fact" principle
+    this function already applies to every other field."""
 
     if not isinstance(class_data, dict):
         return {}
 
-    return {
+    context = {
         field: class_data[field]
         for field in _LIVE_CONTEXT_FIELDS
         if field in class_data and class_data[field] is not None
     }
+
+    if "pricing" in context:
+        formatted_pricing = _format_pricing(context["pricing"])
+        if formatted_pricing:
+            context["pricing"] = formatted_pricing
+        else:
+            del context["pricing"]
+
+    if "teacher" in context:
+        formatted_teacher = _format_teacher(context["teacher"])
+        if formatted_teacher:
+            context["teacher"] = formatted_teacher
+        else:
+            del context["teacher"]
+
+    return context
