@@ -11,7 +11,12 @@ client = OpenAI(
 )
 
 
-def rerank_knowledge(subject, body, candidates):
+def rerank_knowledge(subject, body, candidates, llm_client=None):
+    """llm_client is an optional injected OpenAI-family client (see
+    ai_triage()'s matching docstring for the full reasoning). Defaults to
+    the shared module-level `client` when omitted - every caller today."""
+
+    active_client = llm_client or client
 
     article_list = ""
 
@@ -125,7 +130,7 @@ Example:
 
     try:
 
-        response = client.chat.completions.create(
+        response = active_client.chat.completions.create(
             model="gpt-5-nano",
             temperature=0,
             messages=[
@@ -178,7 +183,12 @@ Return only valid JSON.
         }
 
 
-def rerank_emails(subject, body, candidates):
+def rerank_emails(subject, body, candidates, llm_client=None):
+    """llm_client is an optional injected OpenAI-family client (see
+    ai_triage()'s matching docstring for the full reasoning). Defaults to
+    the shared module-level `client` when omitted - every caller today."""
+
+    active_client = llm_client or client
 
     email_list = ""
 
@@ -350,7 +360,7 @@ Example:
 
     try:
 
-        response = client.chat.completions.create(
+        response = active_client.chat.completions.create(
             model="gpt-5-nano",
             temperature=0,
             messages=[

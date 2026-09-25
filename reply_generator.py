@@ -72,6 +72,7 @@ def generate_reply(
     customer_name=None,
     email_date=None,
     audience="parent",
+    llm_client=None,
 ):
     """
     Generates an AI draft reply using:
@@ -98,7 +99,14 @@ def generate_reply(
     teacher who asked about it). For audience="teacher", the regex is
     simply never evaluated - generation proceeds exactly as it did before
     this safety net existed.
+
+    llm_client is an optional injected OpenAI-family client (see
+    ai_classifier.ai_triage()'s matching docstring for the full reasoning).
+    Defaults to the shared module-level `client` when omitted - every
+    caller today.
     """
+
+    active_client = llm_client or client
 
     try:
         print("\nKNOWLEDGE OBJECT BEFORE PROMPT")
@@ -147,7 +155,7 @@ def generate_reply(
         #with open("last_prompt.txt", "w", encoding="utf-8") as f:
          #   f.write(user_prompt)
         
-        response = client.chat.completions.create(
+        response = active_client.chat.completions.create(
             model="gpt-5-nano",
             temperature=0.3,
             messages=[

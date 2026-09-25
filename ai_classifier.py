@@ -31,7 +31,27 @@ except Exception as warmup_err:
     print("OpenAI client warm-up failed:", warmup_err)
 
 
-def ai_triage(subject, body, history=None, images=None, gmail_message_id=None):
+def ai_triage(
+    subject,
+    body,
+    history=None,
+    images=None,
+    gmail_message_id=None,
+    llm_client=None,
+):
+    """
+    llm_client is an optional injected OpenAI-family client - for a future
+    mailbox worker that wants its own isolated client instead of sharing
+    the module-level `client` across concurrently-running mailbox workers
+    (see embedding_service.py's new_embedding_client() for the same idea,
+    already applied to embeddings). Named llm_client rather than client to
+    avoid shadowing the module-level `client` below, and to avoid colliding
+    with the unrelated embedding_client parameter used elsewhere. When
+    omitted (the default, every caller today), behavior is unchanged -
+    falls back to the same shared module-level client as before.
+    """
+
+    active_client = llm_client or client
 
     history = history or ""
 
@@ -352,7 +372,7 @@ Return ONLY this JSON
 
     try:
 
-        response = client.chat.completions.create(
+        response = active_client.chat.completions.create(
             model="gpt-5-nano",
             temperature=0,
             messages=[

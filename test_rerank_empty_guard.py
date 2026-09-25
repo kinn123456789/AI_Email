@@ -190,8 +190,9 @@ def test_real_process_email_py_contains_the_guard():
         'else:\n        reranked = {"selected": [], "error": False}' in src,
     )
     check(
-        "D. rerank_emails() call arguments (subject, body, similar) are unchanged",
-        "reranked = rerank_emails(\n            subject,\n            body,\n            similar\n        )" in src,
+        "D. rerank_emails() call arguments (subject, body, similar) are unchanged, "
+        "aside from the approved trailing llm_client=reranker_client from the LLM-client-isolation task",
+        "reranked = rerank_emails(\n            subject,\n            body,\n            similar,\n            llm_client=reranker_client,\n        )" in src,
     )
     check(
         "D. downstream historical_retrieval_error/selected_ids/historical_emails derivation is unchanged",

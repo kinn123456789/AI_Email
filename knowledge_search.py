@@ -4,7 +4,7 @@ from embedding_service import generate_embedding
 from rag_reranker import rerank_knowledge
 
 
-def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=False, audience="parent"):
+def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=False, audience="parent", llm_client=None):
     """
     Searches the unified Coral Academy Knowledge Base.
 
@@ -37,6 +37,12 @@ def search_knowledge_base(subject, body, limit=5, embedding_client=None, rerank=
     Teaching-category candidates still produces a genuine empty `results`
     list (or None only on an actual rerank failure, exactly as before) -
     never a fabricated retrieval error.
+
+    llm_client is an optional injected OpenAI-family client, forwarded to
+    rerank_knowledge() when rerank=True (see ai_classifier.ai_triage()'s
+    matching docstring for the full reasoning). Defaults to None, which
+    makes rerank_knowledge() fall back to its own shared module-level
+    client - every caller today.
     """
 
     query = f"""
@@ -157,7 +163,7 @@ Body:
         if not results:
             return results
 
-        reranked = rerank_knowledge(subject, body, results)
+        reranked = rerank_knowledge(subject, body, results, llm_client=llm_client)
 
         # Distinguishable from "reranked and genuinely found nothing" (which
         # returns [] below via a valid, empty `selected` list) — None means

@@ -608,7 +608,22 @@ def test_all_call_sites_pass_explicit_audience():
 
 
 def test_ai_classifier_and_prompt_builder_untouched():
-    """Explicitly out of scope for this task per its own instructions."""
+    """Explicitly out of scope for the teacher-leak-fix task itself, per its
+    own instructions. This checks the current uncommitted working tree
+    against HEAD, which only stays a valid proxy for "did the teacher-leak-
+    fix task touch this file" as long as no *later*, separately-approved
+    task also has legitimate uncommitted changes sitting in the tree at
+    test-run time.
+
+    ai_classifier.py is no longer covered here for that reason: the
+    LLM-client-isolation task (a later, separately-approved task) legitimately
+    adds an llm_client parameter to ai_classifier.py's ai_triage() - a real,
+    intentional, approved change unrelated to teacher-leak-fix, not a
+    regression of this check's original guarantee. See
+    test_llm_client_isolation.py for that change's own dedicated coverage.
+
+    prompt_builder.py remains checked - no task so far has ever had a
+    reason to touch it, so this stays a valid, always-true invariant."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -616,7 +631,6 @@ def test_ai_classifier_and_prompt_builder_untouched():
         cwd=repo_dir, capture_output=True, text=True, check=True,
     )
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-    check("ai_classifier.py was not modified by this task", "ai_classifier.py" not in changed)
     check("prompt_builder.py was not modified by this task", "prompt_builder.py" not in changed)
 
 

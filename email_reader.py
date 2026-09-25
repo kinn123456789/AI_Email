@@ -5,7 +5,9 @@ import time
 import imaplib
 import traceback
 from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from openai import OpenAI
 
 from email.utils import parseaddr
 from email.header import decode_header
@@ -22,6 +24,7 @@ from emails_cleaner import clean_email_body
 from knowledge_search import search_knowledge_base
 from process_email import process_email
 from database import email_exists
+from embedding_service import new_embedding_client, close_embedding_client
 
 # Custom modules
 from email_filter import is_automated_email
@@ -62,19 +65,56 @@ def oauth_login(email_address, token_file=None):
     from gmail_auth import imap_login
     return imap_login(email_address)
 
-def main(target_email=None):
-    for account in get_email_accounts():
-        if (
-            target_email
-            and account["email"] != target_email
-        ):
-            continue
+def _new_llm_client():
+    # Reuses the exact same construction already used by ai_classifier.py,
+    # rag_reranker.py, and reply_generator.py's own module-level `client`
+    # (same env var, same base_url, same model-independent client - no
+    # credentials duplicated or hardcoded here, and no model selection
+    # happens at client-construction time at all).
+    return OpenAI(
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+        base_url="https://openrouter.ai/api/v1",
+    )
 
+
+def _process_account(account):
+    """One mailbox worker. Owns one isolated 5-client LLM/embedding bundle
+    for its entire run - created once here, reused for every message this
+    account processes (never recreated per message), and closed exactly
+    once in the outer finally below, regardless of whether this account's
+    processing succeeds or raises. See process_email.py's llm_clients
+    docstring for the full concurrency reasoning this bundle exists to
+    satisfy: without it, concurrently-running mailbox workers would share
+    ai_classifier.py/rag_reranker.py/reply_generator.py's module-level
+    clients across threads for the first time ever, which is exactly the
+    hazard embedding_service.py's new_embedding_client() already exists to
+    avoid for embeddings.
+
+    Mechanical extraction of the former per-account loop body in main() -
+    the only changes from that original code are: an explicit `return`
+    instead of `continue` (this is now a standalone callable, not a loop
+    iteration), creating/threading through/closing the client bundle, and
+    prefixing the account's own status lines with its email address now
+    that mailbox logs can interleave. IMAP login, mailbox selection,
+    search criteria, date window, duplicate detection, message fetch,
+    parsing, the process_email() call itself, error handling, and message
+    ordering within this mailbox are all unchanged."""
+
+    if not account.get("email"):
+        return
+
+    llm_clients = {
+        "classifier": _new_llm_client(),
+        "reranker": _new_llm_client(),
+        "generator": _new_llm_client(),
+        "similar_embedding": new_embedding_client(),
+        "knowledge_embedding": new_embedding_client(),
+    }
+
+    try:
         print("=" * 60)
-        print("Checking:", account["source"])
+        print(f"[{account['email']}] Checking:", account["source"])
         print("=" * 60)
-        if not account.get("email"):
-            continue
 
         mail = None
 
@@ -84,9 +124,9 @@ def main(target_email=None):
 
             since_date = (datetime.now() - timedelta(days=2)).strftime("%d-%b-%Y")
             status, messages = mail.search(None, "OR", "UNSEEN", "SINCE", since_date)
-            print(account["source"], "Unread/recent emails:", len(messages[0].split()))
+            print(f"[{account['email']}]", account["source"], "Unread/recent emails:", len(messages[0].split()))
             if status != "OK":
-                continue
+                return
 
             # EXACT ORIGINAL LIMITING LOGIC RESTORED
             mail_ids = messages[0].split()
@@ -97,6 +137,7 @@ def main(target_email=None):
 
                 if processed_count >= MAX_EMAILS_PER_RUN:
                     print(
+                        f"[{account['email']}]",
                         account["source"],
                         f"Reached MAX_EMAILS_PER_RUN ({MAX_EMAILS_PER_RUN}); "
                         "remaining unseen messages will be picked up next run."
@@ -160,7 +201,8 @@ def main(target_email=None):
                     process_email(
                         msg=msg,
                         account=account,
-                        ingested_via="imap_poll"
+                        ingested_via="imap_poll",
+                        llm_clients=llm_clients,
                     )
                 except Exception:
                     traceback.print_exc()
@@ -176,6 +218,47 @@ def main(target_email=None):
                     mail.logout()
                 except Exception:
                     pass
+    finally:
+        close_embedding_client(llm_clients["classifier"])
+        close_embedding_client(llm_clients["reranker"])
+        close_embedding_client(llm_clients["generator"])
+        close_embedding_client(llm_clients["similar_embedding"])
+        close_embedding_client(llm_clients["knowledge_embedding"])
+
+
+def main(target_email=None):
+    # target_email filtering happens here, at selection time - the exact
+    # same semantics as before (only the named mailbox is processed when
+    # given, every account otherwise), except now it also means an
+    # unselected account never gets submitted to the executor at all,
+    # rather than being iterated and skipped.
+    accounts = [
+        account for account in get_email_accounts()
+        if not target_email or account["email"] == target_email
+    ]
+
+    # Exactly 3 workers because there are exactly 3 core mailboxes today -
+    # not a dynamic count. Each mailbox worker (_process_account) owns its
+    # own isolated LLM/embedding client bundle; nothing here shares state
+    # across workers. as_completed() means one slow mailbox never blocks
+    # collecting/logging the others' results. The existing reader_lock in
+    # scheduler.py already ensures only one full email_reader.main() run is
+    # in flight at a time - unchanged, not touched here - so this executor
+    # only ever parallelizes the mailboxes within one such run.
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            executor.submit(_process_account, account): account
+            for account in accounts
+        }
+
+        for future in as_completed(futures):
+            account = futures[future]
+            try:
+                future.result()
+            except Exception:
+                print(f"[{account.get('email')}] mailbox worker failed:")
+                traceback.print_exc()
+                continue
 
     print("=" * 60)
     print("ABOUT TO START SENT MAIL SYNC")

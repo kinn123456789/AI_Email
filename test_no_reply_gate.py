@@ -255,10 +255,12 @@ def test_process_email_py_preserves_generate_reply_call_arguments():
         '            customer_name=find_recipient_name(sender_email),\n'
         '            email_date=email_date,\n'
         '            audience="parent",\n'
+        '            llm_client=generator_client,\n'
         '        )'
     )
     check(
-        "the generate_reply() call arguments are unchanged from P0-1 except for the approved trailing audience=\"parent\"",
+        "the generate_reply() call arguments are unchanged from P0-1 except for the approved trailing "
+        "audience=\"parent\" and llm_client=generator_client",
         call_block in src,
     )
 

@@ -196,7 +196,11 @@ def test_generate_reply_not_called_for_short_circuited_alert():
 
 def _process_email_body():
     src = _read_source("process_email.py")
-    start = src.find("def process_email(msg, account, ingested_via=None, gmail_internal_id=None):")
+    # Updated for the approved LLM-client-isolation task's addition of a
+    # trailing llm_clients=None parameter - the signature marker below is
+    # the only thing that changed here, purely to keep locating the real
+    # function body; nothing about what this test checks changed.
+    start = src.find("def process_email(msg, account, ingested_via=None, gmail_internal_id=None, llm_clients=None):")
     assert start != -1, "could not locate process_email() body"
     # process_email() is the only top-level function in this file (runs to
     # EOF) - fall back to the end of the file when there's no following

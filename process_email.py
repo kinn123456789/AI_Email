@@ -44,8 +44,20 @@ ATTACHMENT_DIR = "attachments"
 # were a contributor to repeated OOM kills on the 512MB instance.
 MAX_IMAGE_ANALYSIS_BYTES = 5 * 1024 * 1024
 
+# The exact set of keys a caller must supply in process_email()'s optional
+# llm_clients bundle - see that parameter's docstring below for the full
+# reasoning. Defined once here so the validation and the error message stay
+# in sync with each other.
+_REQUIRED_LLM_CLIENT_KEYS = frozenset({
+    "classifier",
+    "reranker",
+    "generator",
+    "similar_embedding",
+    "knowledge_embedding",
+})
 
-def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
+
+def process_email(msg, account, ingested_via=None, gmail_internal_id=None, llm_clients=None):
     """ingested_via/gmail_internal_id identify which pipeline (the Gmail
     History API webhook reader, or the independent IMAP backup poller)
     fetched this message, and Gmail's own internal message id where
@@ -55,7 +67,23 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
     constraint in save_email() below, not this early check - two pipelines
     racing to process the same new message can both pass this check before
     either has saved anything, so this is a fast-path to skip expensive AI
-    calls on known duplicates, not the real safety net."""
+    calls on known duplicates, not the real safety net.
+
+    llm_clients is an optional bundle of pre-built, isolated OpenAI-family
+    clients for a future mailbox worker that wants its own clients instead
+    of sharing the module-level singletons across concurrently-running
+    mailbox workers - the same concurrency hazard already solved for
+    embeddings (see embedding_service.new_embedding_client()), extended
+    here to classification/reranking/generation. Expected keys: exactly
+    "classifier", "reranker", "generator", "similar_embedding",
+    "knowledge_embedding" - a partial or malformed bundle raises
+    ValueError rather than silently falling back to the shared
+    module-level clients for whichever piece is missing, which would
+    quietly reintroduce the exact hazard this exists to prevent. When
+    omitted (every caller today), behavior is unchanged: fresh embedding
+    clients are still created and closed per message exactly as before,
+    and classification/reranking/generation each fall back to their own
+    shared module-level client."""
 
     message_id = " ".join((msg.get("Message-ID") or "").split())
 
@@ -371,27 +399,52 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
     # default client isn't safe to use from two threads at once (same class
     # of issue already found and fixed for the Supabase client elsewhere in
     # this app).
-    similar_client = new_embedding_client()
-    knowledge_client = new_embedding_client()
+    #
+    # See process_email()'s own docstring for the full llm_clients
+    # reasoning. owns_embedding_clients tracks whether this call created
+    # the embedding clients itself (and must close them) or received them
+    # pre-built from the caller (who owns closing them, later, once, after
+    # its own entire run - not here, per-message).
+    if llm_clients is not None:
+        if set(llm_clients.keys()) != _REQUIRED_LLM_CLIENT_KEYS:
+            raise ValueError(
+                "Invalid mailbox LLM client bundle: expected "
+                + ", ".join(sorted(_REQUIRED_LLM_CLIENT_KEYS))
+            )
+
+        classifier_client = llm_clients["classifier"]
+        reranker_client = llm_clients["reranker"]
+        generator_client = llm_clients["generator"]
+        similar_client = llm_clients["similar_embedding"]
+        knowledge_client = llm_clients["knowledge_embedding"]
+        owns_embedding_clients = False
+    else:
+        classifier_client = None
+        reranker_client = None
+        generator_client = None
+        similar_client = new_embedding_client()
+        knowledge_client = new_embedding_client()
+        owns_embedding_clients = True
 
     try:
         with ThreadPoolExecutor(max_workers=3) as executor:
             triage_future = executor.submit(
-                ai_triage, subject, body, history=history_text, images=image_data_list, gmail_message_id=message_id
+                ai_triage, subject, body, history=history_text, images=image_data_list, gmail_message_id=message_id, llm_client=classifier_client
             )
             similar_future = executor.submit(
                 search_similar_emails, subject, body, embedding_client=similar_client
             )
             knowledge_future = executor.submit(
-                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True, audience="parent"
+                search_knowledge_base, subject, body, embedding_client=knowledge_client, rerank=True, audience="parent", llm_client=reranker_client
             )
 
             result = triage_future.result()
             similar = similar_future.result()
             knowledge = knowledge_future.result()
     finally:
-        close_embedding_client(similar_client)
-        close_embedding_client(knowledge_client)
+        if owns_embedding_clients:
+            close_embedding_client(similar_client)
+            close_embedding_client(knowledge_client)
 
     # knowledge is None specifically when knowledge_search.py's own rerank
     # call errored (see its docstring) — distinct from a real, valid "no
@@ -415,7 +468,8 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
         reranked = rerank_emails(
             subject,
             body,
-            similar
+            similar,
+            llm_client=reranker_client,
         )
     else:
         reranked = {"selected": [], "error": False}
@@ -461,6 +515,7 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
             customer_name=find_recipient_name(sender_email),
             email_date=email_date,
             audience="parent",
+            llm_client=generator_client,
         )
     else:
         draft, generation_status = "", "skipped"
