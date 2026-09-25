@@ -1114,7 +1114,18 @@ def _process_contact_form_enquiry(row_id, subject, body, customer_name):
     if knowledge_retrieval_error:
         knowledge = []
 
-    reranked = rerank_emails(subject, body, similar)
+    # Mirrors process_email.py's same empty-candidate guard - see the
+    # comments there for the full reasoning. An empty `similar` list has
+    # nothing to rank, so skip the LLM call entirely and use the exact same
+    # shape rerank_emails() itself returns on a genuine, error-free empty
+    # selection - error=False (never True), so this isn't mistaken for a
+    # retrieval failure downstream. Behavior for a non-empty `similar` is
+    # completely unchanged - it still goes through rerank_emails() exactly
+    # as before.
+    if similar:
+        reranked = rerank_emails(subject, body, similar)
+    else:
+        reranked = {"selected": [], "error": False}
     historical_retrieval_error = reranked.get("error", False)
     selected_ids = {item["id"] for item in reranked["selected"]}
     historical_emails = [email for email in similar if email[0] in selected_ids]

@@ -403,11 +403,22 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None):
     if knowledge_retrieval_error:
         knowledge = []
 
-    reranked = rerank_emails(
-        subject,
-        body,
-        similar
-    )
+    # Mirrors knowledge_search.py's own "if not results: return results"
+    # guard for the KB-rerank path: an empty `similar` list has nothing to
+    # rank, so skip the LLM call entirely and use the exact same shape
+    # rerank_emails() itself returns on a genuine, error-free empty
+    # selection - error=False (never True), so this isn't mistaken for a
+    # retrieval failure downstream. Behavior for a non-empty `similar` is
+    # completely unchanged - it still goes through rerank_emails() exactly
+    # as before.
+    if similar:
+        reranked = rerank_emails(
+            subject,
+            body,
+            similar
+        )
+    else:
+        reranked = {"selected": [], "error": False}
     historical_retrieval_error = reranked.get("error", False)
     selected_ids = {
         item["id"]
