@@ -551,9 +551,14 @@ def test_F_bundle_clients_reach_the_correct_downstream_calls():
         "F. rerank_emails() is called with llm_client=reranker_client",
         "similar,\n            llm_client=reranker_client,\n        )" in src,
     )
+    # Was pinned as the literal end of the call (trailing "...)") until
+    # Phase 2 of the live Coral class-data feature legitimately added its
+    # own trailing live_class_context=... kwarg after llm_client=... -
+    # updated to check llm_client=generator_client is present as its own
+    # argument line, regardless of what (if anything) follows it.
     check(
         "F. generate_reply() is called with llm_client=generator_client",
-        "audience=\"parent\",\n            llm_client=generator_client,\n        )" in src,
+        "audience=\"parent\",\n            llm_client=generator_client,\n" in src,
     )
 
 

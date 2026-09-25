@@ -73,6 +73,7 @@ def generate_reply(
     email_date=None,
     audience="parent",
     llm_client=None,
+    live_class_context=None,
 ):
     """
     Generates an AI draft reply using:
@@ -104,6 +105,18 @@ def generate_reply(
     ai_classifier.ai_triage()'s matching docstring for the full reasoning).
     Defaults to the shared module-level `client` when omitted - every
     caller today.
+
+    live_class_context is an optional, pre-formatted text block (built by
+    live_class_intent.py's build_prompt_block()) carrying CURRENT,
+    authoritative live Coral class-catalog facts for this email - only
+    ever supplied by the parent pipeline (process_email.py), and only
+    when the email looked like it needed current price/schedule/teacher/
+    enrollment data AND that data was safely resolved to exactly one live
+    class. When supplied, it's prepended ahead of the existing prompt,
+    clearly labeled as more current than the Knowledge Base below it.
+    Every other caller (Teacher Portal, contact-form) omits this
+    entirely, so the prompt is built exactly as before this parameter
+    existed - it's additive only.
     """
 
     active_client = llm_client or client
@@ -117,7 +130,7 @@ def generate_reply(
         
         user_prompt = build_user_prompt(
             subject=subject,
-            body=body, 
+            body=body,
             category=category,
             priority=priority,
             thread_history=thread_history,
@@ -127,6 +140,22 @@ def generate_reply(
             customer_name=customer_name,
             email_date=email_date,
         )
+
+        # Prepended, not merged into prompt_builder.py's own prompt -
+        # keeps all Coral-live-data-specific prompt text isolated here,
+        # so the existing, extensively-tuned RAG prompt stays completely
+        # untouched for every caller that doesn't pass this. See this
+        # function's live_class_context docstring above.
+        if live_class_context:
+            user_prompt = (
+                f"{live_class_context}\n\n"
+                "==================================================\n\n"
+                "GENERAL KNOWLEDGE AND EMAIL DETAILS BELOW (the Coral "
+                "Academy Knowledge Base within this section may be less "
+                "current than the LIVE CORAL CLASS DATA above for any "
+                "price/schedule/teacher/enrollment fact):\n\n"
+                f"{user_prompt}"
+            )
 
         # Safe metadata only - never the customer's own subject/body or the
         # assembled prompt built from them, which used to be printed here

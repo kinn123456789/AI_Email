@@ -223,9 +223,15 @@ def test_existing_ok_status_behavior_unchanged():
 
 def test_process_email_py_gates_generate_reply_on_needs_reply():
     src = _read_source("process_email.py")
+    # Was a byte-adjacent literal until Phase 2 of the live Coral
+    # class-data feature legitimately inserted its own intent-detection
+    # call between the gate and generate_reply() - updated to a
+    # presence + ordering check so it stays true regardless of what runs
+    # between the gate and the call.
     check(
         'process_email.py wraps the generate_reply() call in "if result[\"needs_reply\"]:"',
-        'if result["needs_reply"]:\n        draft, generation_status = generate_reply(' in src,
+        'if result["needs_reply"]:' in src
+        and src.index('if result["needs_reply"]:') < src.index('draft, generation_status = generate_reply('),
     )
     check(
         'process_email.py sets draft="" and generation_status="skipped" in the else branch',
@@ -234,10 +240,11 @@ def test_process_email_py_gates_generate_reply_on_needs_reply():
 
 
 def test_process_email_py_preserves_generate_reply_call_arguments():
-    """Byte-for-byte pin on the P0-1 call block, updated once (and only
-    once) for the teacher-leak-fix task's approved addition of an explicit
-    trailing audience="parent" kwarg - every other argument, and their
-    order, is unchanged from the original P0-1 fix."""
+    """Byte-for-byte pin on the P0-1 call block, updated twice: once for
+    the teacher-leak-fix task's approved trailing audience="parent" kwarg,
+    and again for Phase 2 of the live Coral class-data feature's approved
+    trailing live_class_context=... kwarg - every other argument, and
+    their order, is unchanged from the original P0-1 fix."""
     src = _read_source("process_email.py")
     call_block = (
         'draft, generation_status = generate_reply(\n'
@@ -256,6 +263,7 @@ def test_process_email_py_preserves_generate_reply_call_arguments():
         '            email_date=email_date,\n'
         '            audience="parent",\n'
         '            llm_client=generator_client,\n'
+        '            live_class_context=live_class_result["context_text"],\n'
         '        )'
     )
     check(
@@ -326,10 +334,18 @@ def test_p0_1_gate_present_at_commit_and_in_working_tree():
         _P0_1_GATE_PATTERN in committed_content and _P0_1_SKIP_PATTERN in committed_content,
     )
 
+    # The working-tree file, unlike the fixed historical commit above, now
+    # legitimately has Phase 2 of the live Coral class-data feature's own
+    # intent-detection call between the gate and generate_reply() - so the
+    # working-tree check uses presence + ordering instead of the exact
+    # byte-adjacent _P0_1_GATE_PATTERN.
     working_tree_content = _read_source("process_email.py")
     check(
         "the P0-1 gate is still present in the current working-tree process_email.py",
-        _P0_1_GATE_PATTERN in working_tree_content and _P0_1_SKIP_PATTERN in working_tree_content,
+        'if result["needs_reply"]:' in working_tree_content
+        and working_tree_content.index('if result["needs_reply"]:')
+        < working_tree_content.index('draft, generation_status = generate_reply(')
+        and _P0_1_SKIP_PATTERN in working_tree_content,
     )
 
 

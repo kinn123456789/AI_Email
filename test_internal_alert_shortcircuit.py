@@ -213,9 +213,15 @@ def _process_email_body():
 
 def test_p0_1_no_reply_gate_unchanged():
     body = _process_email_body()
+    # Was a byte-adjacent literal until Phase 2 of the live Coral
+    # class-data feature legitimately inserted its own intent-detection
+    # call between the gate and generate_reply() - updated to a
+    # presence + ordering check so it stays true regardless of what runs
+    # between the gate and the call.
     check(
         'K. P0-1: generate_reply() is still gated on "if result[\"needs_reply\"]:"',
-        'if result["needs_reply"]:\n        draft, generation_status = generate_reply(' in body,
+        'if result["needs_reply"]:' in body
+        and body.index('if result["needs_reply"]:') < body.index('draft, generation_status = generate_reply('),
     )
     check(
         'K. P0-1: the skip branch (draft="", generation_status="skipped") is still present',

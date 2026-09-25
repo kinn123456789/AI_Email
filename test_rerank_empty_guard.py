@@ -207,9 +207,15 @@ def test_no_other_process_email_behavior_changed():
     they were."""
     src = _read_source("process_email.py")
 
+    # Was a byte-adjacent literal until Phase 2 of the live Coral
+    # class-data feature legitimately inserted its own intent-detection
+    # call between the gate and generate_reply() - updated to a
+    # presence + ordering check so it stays true regardless of what runs
+    # between the gate and the call.
     check(
         "P0-1 no-reply gate still present, unchanged",
-        'if result["needs_reply"]:\n        draft, generation_status = generate_reply(' in src,
+        'if result["needs_reply"]:' in src
+        and src.index('if result["needs_reply"]:') < src.index('draft, generation_status = generate_reply('),
     )
     check(
         "P0-3 short-circuit still present and still precedes the retrieval block",

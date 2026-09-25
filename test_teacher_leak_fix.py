@@ -340,9 +340,16 @@ def test_H_ordinary_language_not_blocked():
 
 def test_I_p0_1_no_reply_gate_intact():
     src = _read_source("process_email.py")
+    # Was a byte-adjacent literal until Phase 2 of the live Coral
+    # class-data feature legitimately inserted its own intent-detection
+    # call between the gate and generate_reply() - updated to a
+    # presence + ordering check (same style already used for the P0-3
+    # short-circuit in test_internal_alert_shortcircuit.py) so it stays
+    # true regardless of what runs between the gate and the call.
     check(
         'I. P0-1 gate still present: "if result["needs_reply"]:"',
-        'if result["needs_reply"]:\n        draft, generation_status = generate_reply(' in src,
+        'if result["needs_reply"]:' in src
+        and src.index('if result["needs_reply"]:') < src.index('draft, generation_status = generate_reply('),
     )
     check(
         'I. P0-1 skip branch still present: draft="", generation_status="skipped"',

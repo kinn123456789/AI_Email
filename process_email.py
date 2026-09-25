@@ -14,6 +14,7 @@ from vector_search import search_similar_emails
 from rag_reranker import rerank_emails
 from knowledge_search import search_knowledge_base
 from reply_generator import generate_reply
+from live_class_intent import get_live_class_data
 from slack_notifications import send_slack_notification
 from trial_followup import find_trial_followup_by_message_ids, save_followup_reply
 from subscription_cancel import find_subscription_by_message_ids, save_subscription_reply
@@ -500,6 +501,24 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None, llm_c
     # reason. result["requires_review"] and retrieval_error remain the
     # authoritative signals for that, unchanged.
     if result["needs_reply"]:
+
+        # Phase 2 of the live Coral class-data feature: a fast, LLM-free
+        # check (regex/keyword only) for whether this parent email asks
+        # for a current price/schedule/teacher/enrollment fact. For the
+        # common case where it doesn't, this makes zero network/DB calls
+        # and returns instantly - live_class_result["needed"] is False,
+        # context is None, no review is forced. Only when it IS needed
+        # does this touch Coral at all, via a single cached (5-minute
+        # TTL), unauthenticated GET - see live_class_intent.py and
+        # coral_class_catalog.py for the full detection/fetch/match logic
+        # and every failure mode's explicit handling. A failure to safely
+        # resolve exactly one live class for a detected current-fact
+        # question never falls back to presenting stale Knowledge Base
+        # data as current - it forces human review instead (folded into
+        # review_reasons below, the same existing mechanism every other
+        # review trigger already uses).
+        live_class_result = get_live_class_data(subject, body)
+
         draft, generation_status = generate_reply(
             message_id,
             subject,
@@ -516,9 +535,11 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None, llm_c
             email_date=email_date,
             audience="parent",
             llm_client=generator_client,
+            live_class_context=live_class_result["context_text"],
         )
     else:
         draft, generation_status = "", "skipped"
+        live_class_result = {"requires_review": False, "review_reason": None}
 
     # requires_review must reflect every reason the draft needs extra
     # scrutiny, not just the classifier's own (earlier, independent) call:
@@ -549,6 +570,8 @@ def process_email(msg, account, ingested_via=None, gmail_internal_id=None, llm_c
         review_reasons.append("safety_block")
     if generation_status == "error":
         review_reasons.append("generation_error")
+    if live_class_result["requires_review"]:
+        review_reasons.append(live_class_result["review_reason"])
 
     requires_review = bool(review_reasons)
     review_reason = ",".join(review_reasons) if review_reasons else None
