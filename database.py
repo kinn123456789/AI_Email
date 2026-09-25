@@ -136,6 +136,44 @@ def email_exists(message_id, source):
         cursor.close()
         db_pool.putconn(conn)
 
+
+def email_ids_exist(message_ids, source):
+    """Batched pre-check for email_reader.py's IMAP candidate loop - the
+    N+1 replacement for calling email_exists() once per candidate. Given a
+    collection of candidate Message-ID strings and one source, returns the
+    subset (as a set) that already exists for that source, in ONE query
+    instead of one round trip per candidate - each of which used to check
+    out and return its own DB connection.
+
+    Not a replacement for email_exists(): this is a pre-check only, used to
+    skip already-known candidates before the expensive full-body IMAP
+    fetch + AI pipeline. The authoritative, race-safe duplicate guard
+    remains process_email()'s own check (see save_email()'s docstring) -
+    unchanged, still runs once per genuinely-new candidate, exactly as
+    before this function existed.
+
+    Empty input returns an empty set without touching the database at
+    all - no connection is checked out for a mailbox with no candidates
+    left to check."""
+
+    message_ids = [m for m in message_ids if m]
+
+    if not message_ids:
+        return set()
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT message_id FROM messages WHERE source = %s AND message_id = ANY(%s)",
+            (source, message_ids)
+        )
+        return {row[0] for row in cursor.fetchall()}
+    finally:
+        cursor.close()
+        db_pool.putconn(conn)
+
+
 def get_emails(source=None, search=None, status=None, date_from=None, date_to=None, page=1, page_size=50, read_status=None):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)

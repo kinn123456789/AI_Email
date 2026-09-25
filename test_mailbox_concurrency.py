@@ -100,8 +100,12 @@ def test_8_9_dedup_fetch_parse_and_process_email_call_unchanged():
         '"(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])"' in _SRC,
     )
     check(
-        "8/9. email_exists() dedup guard unchanged",
-        "if candidate_message_id and email_exists(\n                    candidate_message_id, account[\"source\"]\n                ):" in _SRC,
+        "8/9. duplicate-check decision shape unchanged (truthy candidate_message_id + membership test) - "
+        "the per-candidate database.email_exists() call was superseded by the approved "
+        "batched-duplicate-check task (database.email_ids_exist(), one round trip per mailbox per run "
+        "instead of one per candidate); see test_email_reader_batch_duplicate_check.py for that task's "
+        "own dedicated coverage",
+        "if candidate_message_id and candidate_message_id in existing_message_ids:" in _SRC,
     )
     check(
         "8/9. full message fetch unchanged: BODY.PEEK[]",
@@ -125,8 +129,10 @@ def test_8_9_dedup_fetch_parse_and_process_email_call_unchanged():
         "llm_clients=llm_clients,\n                    )" in _SRC,
     )
     check(
-        "process_email() itself was not modified by this task (no other call-site changes)",
-        _SRC.count("process_email(") == 2,  # the import line + the one real call site
+        "process_email() is invoked from exactly one real call site (prose mentions of "
+        "'process_email()' elsewhere in comments are not call sites, so matched on the exact "
+        "invocation shape, not a bare substring count)",
+        _SRC.count("process_email(\n                        msg=msg,") == 1,
     )
 
 
@@ -166,8 +172,17 @@ def test_11_process_email_internal_concurrency_unchanged():
 
 
 def test_12_13_14_no_database_scheduler_or_coral_changes():
-    """Points 12, 13, 14: no database.py, scheduler.py, or Coral-integration
-    changes anywhere in this task."""
+    """Points 12, 13, 14: no scheduler.py or Coral-integration changes
+    anywhere in this task.
+
+    database.py is no longer checked here: this mailbox-concurrency task
+    itself never touched it (point 12's original intent), but a later,
+    separately-approved task (the batched-duplicate-check optimization)
+    legitimately adds database.email_ids_exist() to it. That's a real,
+    intentional, approved change unrelated to mailbox concurrency, not a
+    regression of this check's original guarantee - see
+    test_email_reader_batch_duplicate_check.py for that task's own
+    dedicated coverage confirming the change is scoped correctly."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -175,7 +190,6 @@ def test_12_13_14_no_database_scheduler_or_coral_changes():
         cwd=repo_dir, capture_output=True, text=True, check=True,
     )
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-    check("12. database.py was not modified", "database.py" not in changed)
     check("13. scheduler.py was not modified", "scheduler.py" not in changed)
     check("14. main.py (the Coral/FastAPI app entrypoint) was not modified", "main.py" not in changed)
     check(

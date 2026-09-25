@@ -23,7 +23,7 @@ from reply_generator import generate_reply
 from emails_cleaner import clean_email_body
 from knowledge_search import search_knowledge_base
 from process_email import process_email
-from database import email_exists
+from database import email_ids_exist
 from embedding_service import new_embedding_client, close_embedding_client
 
 # Custom modules
@@ -131,29 +131,33 @@ def _process_account(account):
             # EXACT ORIGINAL LIMITING LOGIC RESTORED
             mail_ids = messages[0].split()
 
-            processed_count = 0
+            # Stage 1: the same per-candidate header-only fetch and Message-ID
+            # parsing as before, unchanged in mechanics (same IMAP call, same
+            # BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)] shape, same handling of a
+            # failed/malformed fetch - a candidate whose header fetch itself
+            # fails is dropped here exactly as it used to be, via `continue`,
+            # and never gets a batched-lookup entry or a full fetch either).
+            # A candidate with no parseable Message-ID header still gets an
+            # entry here (candidate_message_id="") - the batched lookup below
+            # only ever checks non-empty ids, so it's treated as "does not
+            # exist" and proceeds to full processing, exactly as the original
+            # `if candidate_message_id and email_exists(...)` short-circuit
+            # already did.
+            #
+            # This intentionally still walks every id in mail_ids regardless
+            # of MAX_EMAILS_PER_RUN, so the single batched lookup below can
+            # cover the whole candidate set in one round trip - the existing
+            # MAX_EMAILS_PER_RUN cap is still enforced exactly as before, just
+            # in stage 3. In the rare case a mailbox has more than
+            # MAX_EMAILS_PER_RUN genuinely-new messages in one run, this does
+            # a few extra (still individually cheap) header fetches for
+            # candidates that end up skipped by the cap anyway - it changes
+            # no email's ingestion outcome or ordering, only that edge case's
+            # IMAP call count.
+            candidates = []
 
             for email_id in mail_ids:
 
-                if processed_count >= MAX_EMAILS_PER_RUN:
-                    print(
-                        f"[{account['email']}]",
-                        account["source"],
-                        f"Reached MAX_EMAILS_PER_RUN ({MAX_EMAILS_PER_RUN}); "
-                        "remaining unseen messages will be picked up next run."
-                    )
-                    break
-
-                # Cheap pre-check: this backlog is read via readonly=True (so
-                # Gmail's own unread state is never touched, and the same
-                # "unseen" ids keep showing up every run) - most of the ids
-                # here are ones we've already processed on a prior run and
-                # will just be discarded as duplicates. Fetching only the
-                # Message-ID header first (a few bytes) instead of the full
-                # BODY.PEEK[] (the entire raw message, attachments included)
-                # avoids paying that full download cost 5 minutes later for
-                # the same already-known messages, forever, as this backlog
-                # grows.
                 status, header_data = mail.fetch(
                     email_id,
                     "(BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])"
@@ -174,9 +178,41 @@ def _process_account(account):
                     (header_msg.get("Message-ID") or "").split()
                 )
 
-                if candidate_message_id and email_exists(
-                    candidate_message_id, account["source"]
-                ):
+                candidates.append((email_id, candidate_message_id))
+
+            # Stage 2: ONE batched duplicate pre-check for this mailbox,
+            # replacing what used to be one database.email_exists() round
+            # trip (its own connection checkout/return each time) per
+            # candidate. Only non-empty Message-IDs are ever checked - same
+            # as the original `if candidate_message_id and ...` condition.
+            # This is a pre-check only: process_email()'s own authoritative,
+            # race-safe duplicate guard (see save_email()'s docstring) is
+            # untouched and still runs for every genuinely-new candidate
+            # below, exactly as before this change.
+            existing_message_ids = email_ids_exist(
+                [cmid for _, cmid in candidates if cmid],
+                account["source"],
+            )
+
+            processed_count = 0
+
+            # Stage 3: walk the candidates in their original order (the same
+            # order mail_ids came back from SEARCH in), applying the same
+            # MAX_EMAILS_PER_RUN cap and the same duplicate-skip decision as
+            # before - just against the pre-computed existing_message_ids set
+            # instead of a fresh per-candidate database call.
+            for email_id, candidate_message_id in candidates:
+
+                if processed_count >= MAX_EMAILS_PER_RUN:
+                    print(
+                        f"[{account['email']}]",
+                        account["source"],
+                        f"Reached MAX_EMAILS_PER_RUN ({MAX_EMAILS_PER_RUN}); "
+                        "remaining unseen messages will be picked up next run."
+                    )
+                    break
+
+                if candidate_message_id and candidate_message_id in existing_message_ids:
                     continue
 
                 status, msg_data = mail.fetch(
