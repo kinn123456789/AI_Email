@@ -284,7 +284,7 @@ scheduler.add_job(
 scheduler.add_job(
     run_email_reader,
     trigger="interval",
-    minutes=5,
+    minutes=1,
     next_run_time=_schedule_base + timedelta(seconds=40),
     id="email_reader",
     replace_existing=True,
