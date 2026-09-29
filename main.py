@@ -231,6 +231,16 @@ class AuthMiddleware(BaseHTTPMiddleware):
         if request.method == "POST":
             csrf_cookie = request.cookies.get(auth.CSRF_COOKIE_NAME)
             form = await request.form()
+
+            # Stashed so any downstream route can reuse this exact parsed
+            # form instead of calling request.form() a second time itself -
+            # a second, independent read of the same body was silently
+            # losing non-CSRF fields (e.g. /settings/accounts/add's own
+            # "email" field) in production, even though this first read
+            # here always saw csrf_token correctly. See the read-only
+            # investigation this fix is approved from.
+            request.state.form = form
+
             csrf_form_value = form.get(auth.CSRF_FORM_FIELD)
 
             if not auth.verify_csrf(csrf_cookie, csrf_form_value):
@@ -983,15 +993,14 @@ async def add_settings_account(request: Request):
     from gmail_auth import get_gmail_service
     from gmail_watch import register_watch
 
-    # Reads the form directly (matching how AuthMiddleware's own CSRF check
-    # already reads it) instead of a separate declarative email: str =
-    # Form(...) dependency - the latter triggers a second, independent
-    # parse of the same POST body by FastAPI's own dependency injection,
-    # which was losing the "email" field in production (see the read-only
-    # investigation this fix is approved from) even though the middleware's
-    # own await request.form() call correctly saw csrf_token moments
-    # earlier.
-    form = await request.form()
+    # Reuses AuthMiddleware's own already-parsed form (request.state.form,
+    # stashed there right after its own successful `await request.form()`
+    # for CSRF) instead of reading the body again here - a second,
+    # independent read of the same body was silently losing the "email"
+    # field in production even though the middleware's first read always
+    # saw csrf_token correctly. See the read-only investigation this fix
+    # is approved from.
+    form = request.state.form
     email = (form.get("email") or "").strip().lower()
 
     if not email or "@" not in email:

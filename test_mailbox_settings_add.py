@@ -1,37 +1,64 @@
 """Focused tests for the /settings/accounts/add "email field missing"
 production bug fix.
 
-Root cause (see the read-only investigation this fix was approved from):
-AuthMiddleware already reads the POST body once, via its own
-`await request.form()` call, purely to extract csrf_token on every
-protected POST. The route's own separate `email: str = Form(...)`
-parameter then triggered a SECOND, independent parse of the same body by
-FastAPI's own dependency injection - which was losing the "email" field
-in production, producing:
-    {"detail":[{"type":"missing","loc":["body","email"],"msg":"Field required","input":null}]}
-even though the middleware's own read correctly saw csrf_token moments
-earlier.
+Root cause history (see the two read-only investigations this fix was
+approved from):
 
-Fix: add_settings_account() now reads the form directly
-(`await request.form()`) inside its own body, the same mechanism the
-middleware already uses successfully, instead of a separate declarative
-Form(...) dependency. Every other line of the route (validation, Gmail
-access check, add_email_account(), register_watch(), the three redirect
-shapes) is unchanged.
+1. AuthMiddleware.dispatch() reads the POST body once, via its own
+   `await request.form()` call, purely to extract csrf_token on every
+   protected POST. The route originally declared a separate
+   `email: str = Form(...)` parameter, which triggered a SECOND,
+   independent parse of the same body by FastAPI's own dependency
+   injection - and that second parse was losing the "email" field in
+   production, producing a raw 422:
+       {"detail":[{"type":"missing","loc":["body","email"],"msg":"Field required","input":null}]}
 
-Matches this repo's existing test_*.py convention (see test_review_reasons.py,
-test_performance_fixes.py): a plain script using only assert statements and
-the standard library - no pytest. main.py can't be imported here (starts
-real scheduler.py background jobs, needs fastapi/apscheduler, neither
-installed in this sandbox) - checked via source-presence/structural checks
-against the real file, the same technique every other test file touching
-main.py in this repo already uses.
+2. A first fix (commit 41d718c) changed the route to call
+   `await request.form()` itself instead of declaring `Form(...)`. This
+   did NOT actually remove the second, independent body read - it just
+   changed how that second read was written, and a missing "email"
+   field was now caught gracefully instead of raising, producing a
+   DIFFERENT but still-wrong symptom: the app's own "Enter a valid
+   email address" message, even for a genuinely valid address.
+
+THE ACTUAL FIX (this file tests): eliminate the second read entirely.
+AuthMiddleware.dispatch() now stashes its own already-successful parsed
+form on `request.state.form` right after computing it. add_settings_account()
+reads `request.state.form` instead of ever calling `request.form()`
+itself - so the request body is read exactly once per request, by the
+middleware, and reused everywhere downstream that needs it.
+
+Every other line of the route (validation, Gmail access check,
+add_email_account(), register_watch(), the three redirect shapes) is
+unchanged.
+
+TESTING LIMITATION (explicitly documented, not worked around): this
+sandbox has neither `fastapi` nor `starlette` installed (verified via
+`python3 -c "import fastapi"` / `import starlette` at review time - both
+raise ModuleNotFoundError), so no `TestClient`/real HTTP request-level
+test is possible here, and none was added. Per instructions, no package
+was installed to work around this. Every check below is a structural/
+source-presence check against the real main.py/database.py/
+templates/settings.html files - the same technique every other test file
+touching main.py in this repo already uses (main.py itself can't be
+imported: it starts real scheduler.py background jobs and needs
+fastapi/apscheduler). A genuine integration test (a real TestClient POST
+with `csrf_token`/`email` form data, asserting the response, that
+`get_gmail_service`/`add_email_account`/`register_watch` were called
+with the expected value via mocks, and that no real Gmail/DB call
+occurred) would be materially stronger and is recommended as a follow-up
+once those packages are available in whatever environment actually runs
+this suite in CI/production.
+
+Matches this repo's existing test_*.py convention: a plain script using
+only assert statements and the standard library - no pytest.
 
 Run with: python3 test_mailbox_settings_add.py
 """
 
 import os
 import re
+import subprocess
 import sys
 
 
@@ -58,29 +85,66 @@ def _route_body():
     return src[start:end]
 
 
+def _middleware_body():
+    src = _read_source("main.py")
+    start = src.find("class AuthMiddleware(BaseHTTPMiddleware):")
+    end = src.find("app.add_middleware(AuthMiddleware)")
+    assert start != -1 and end != -1 and end > start, "could not locate AuthMiddleware's body"
+    return src[start:end]
+
+
 # ---------------------------------------------------------------------------
-# a/b. The old Form(...) dependency is gone; the route reads the form
-# itself, the same way AuthMiddleware's own CSRF check already does.
+# a. The old Form(...) dependency is gone.
 # ---------------------------------------------------------------------------
 
 def test_no_longer_uses_declarative_form_dependency():
     body = _route_body()
     check('add_settings_account no longer declares "email: str = Form(...)"',
           "email: str = Form(...)" not in body)
-    check("the route signature now takes request: Request instead",
+    check("the route signature still takes request: Request",
           "async def add_settings_account(request: Request):" in body)
-    check("the route is now async (required to await request.form())",
-          re.search(r"async def add_settings_account\(", body) is not None)
 
 
-def test_reads_email_via_request_form():
+# ---------------------------------------------------------------------------
+# b. The route reads email using request.state.form - NOT a second
+# request.form() call of its own.
+# ---------------------------------------------------------------------------
+
+def test_middleware_stashes_form_on_request_state():
+    mw = _middleware_body()
+    check("AuthMiddleware still does its own single await request.form() call for CSRF",
+          "form = await request.form()" in mw)
+    check("that exact parsed form is stashed onto request.state.form",
+          "request.state.form = form" in mw)
+    # Ordering: the stash must happen using the SAME `form` variable CSRF
+    # itself uses, and before CSRF is verified (so even a CSRF failure
+    # doesn't matter - the stash is unconditional on the request having
+    # reached this point at all, which is what add_settings_account()
+    # depends on).
+    idx_form = mw.index("form = await request.form()")
+    idx_stash = mw.index("request.state.form = form")
+    idx_csrf_get = mw.index("csrf_form_value = form.get(auth.CSRF_FORM_FIELD)")
+    check("stash happens right after the parse, before the csrf_form_value lookup",
+          idx_form < idx_stash < idx_csrf_get)
+    check("CSRF validation logic itself is byte-for-byte unchanged",
+          "csrf_form_value = form.get(auth.CSRF_FORM_FIELD)" in mw
+          and "if not auth.verify_csrf(csrf_cookie, csrf_form_value):" in mw
+          and 'return JSONResponse(status_code=403, content={"detail": "Invalid CSRF token"})' in mw)
+
+
+def test_route_reuses_request_state_form_not_a_second_read():
     body = _route_body()
-    check("the route awaits request.form() directly",
-          "form = await request.form()" in body)
-    check('email is pulled from that form dict via form.get("email")',
+    check("the route reads form = request.state.form",
+          "form = request.state.form" in body)
+    # Checks the actual executable code shape ("<name> = await
+    # request.form()") rather than a bare "request.form()" substring,
+    # which would also match this route's own explanatory comment
+    # describing what the middleware does elsewhere - a real second read
+    # would appear as exactly this assignment pattern.
+    check("the route does NOT itself call `= await request.form()` anywhere (no second body read)",
+          "= await request.form()" not in body)
+    check('email is pulled from the reused form via form.get("email")',
           'form.get("email")' in body)
-    check("the same mechanism AuthMiddleware's own CSRF check already uses (await request.form()) is reused",
-          _read_source("main.py").count("await request.form()") >= 2)
 
 
 # ---------------------------------------------------------------------------
@@ -91,7 +155,7 @@ def test_email_still_stripped_and_lowercased():
     body = _route_body()
     check('email is still .strip().lower()-ed exactly as before',
           '.strip().lower()' in body)
-    check("the strip/lower happens on the form-extracted value, not a stale Form(...) param",
+    check("the strip/lower happens on the reused-form-extracted value",
           'email = (form.get("email") or "").strip().lower()' in body)
 
 
@@ -110,9 +174,6 @@ def test_existing_redirects_preserved():
           'url=f"/settings?error=Could not access {email} - {str(e)[:150]}"' in body)
     check("success redirect unchanged (?added=)",
           'url=f"/settings?added={email}"' in body)
-    # Exactly 3 RedirectResponse call sites: invalid email, Gmail-access
-    # failure, success - same count as before this fix (no new/removed
-    # branch was introduced).
     check("exactly 3 RedirectResponse(...) call sites remain in this route",
           body.count("RedirectResponse(") == 3, f"got {body.count('RedirectResponse(')}")
 
@@ -132,7 +193,6 @@ def test_add_email_account_and_register_watch_preserved():
           '(wrapped in its own try/except that only prints on failure)',
           "register_watch(email)" in body
           and 'print(f"Could not register watch for new account {email}: {e}")' in body)
-    # Ordering: validate -> Gmail-reachability check -> add_email_account -> register_watch -> success redirect.
     idx_validate = body.index('if not email or "@" not in email:')
     idx_gmail = body.index("get_gmail_service(email)")
     idx_add = body.index("add_email_account(email)")
@@ -166,13 +226,6 @@ def test_core_email_accounts_untouched():
 def test_no_db_schema_or_coral_changes():
     check("database.py contains no ALTER/CREATE/DROP TABLE statement touching email_accounts",
           not re.search(r"(ALTER|CREATE|DROP)\s+TABLE\s+.*email_accounts", _read_source("database.py"), re.IGNORECASE))
-    # A pre-existing, unrelated migration_p0_1_edited_before_send.sql
-    # already lives in this repo from an earlier task - checking "no
-    # migration file exists at all" would be a false positive against
-    # that file. The actual thing this fix must not do is ADD a new one,
-    # which git status --short (an untracked/new file would show as
-    # "??") settles directly and specifically.
-    import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
         ["git", "status", "--porcelain"],
@@ -186,6 +239,41 @@ def test_no_db_schema_or_coral_changes():
           not new_or_changed_sql_files, f"got {new_or_changed_sql_files!r}")
     check("the fixed route contains no SQL of its own (all DB access still goes through add_email_account())",
           "cursor.execute" not in _route_body() and "INSERT INTO" not in _route_body())
+
+
+# ---------------------------------------------------------------------------
+# Other protected POST routes are not accidentally affected by the new
+# request.state.form stash - it's purely additive to the middleware, and
+# every other route's own Form(...)-based parameter handling is untouched.
+# ---------------------------------------------------------------------------
+
+def test_other_post_routes_unaffected():
+    src = _read_source("main.py")
+    # Checks the actual executable code shapes (not a bare substring
+    # count, which would also match this fix's own explanatory comments)
+    # so the assertion stays precise regardless of prose wording: exactly
+    # one real write (the middleware's stash) and exactly one real read
+    # (this route's reuse) exist anywhere in main.py - no other route was
+    # wired to request.state, accidentally or otherwise.
+    check("exactly one real write to request.state.form in the whole file (the middleware's stash)",
+          src.count("request.state.form = form") == 1, f"got {src.count('request.state.form = form')}")
+    check("exactly one real read of request.state.form in the whole file (this route's reuse)",
+          src.count("form = request.state.form") == 1, f"got {src.count('form = request.state.form')}")
+    # A representative sample of other Form(...)-based protected POST
+    # routes, confirmed still declared exactly as before - this change
+    # only ever ADDS an attribute to request.state; it never alters how
+    # FastAPI resolves any other route's own parameters.
+    for signature in [
+        "reply_body: str = Form(...)",
+        "email_ids: list[int] = Form(...)",
+        "chat_id: str = Form(...)",
+        "row_keys: list[str] = Form(...), show_all: str = Form(None)",
+    ]:
+        check(f'other route signature "{signature}" is untouched',
+              signature in src)
+    check("AuthMiddleware's own dispatch() still ends by calling call_next(request) unconditionally "
+          "for every authenticated request (public-path and non-POST requests never touch request.state.form)",
+          "return await call_next(request)" in _middleware_body())
 
 
 # ---------------------------------------------------------------------------
@@ -203,14 +291,22 @@ def test_settings_html_untouched():
 
 
 def main():
+    print("NOTE: fastapi/starlette are not installed in this environment "
+          "(verified at review time) - no TestClient/real-request test was "
+          "possible or attempted. All checks below are structural/source "
+          "checks. See this file's module docstring for the recommended "
+          "follow-up integration test.\n")
+
     tests = [
         test_no_longer_uses_declarative_form_dependency,
-        test_reads_email_via_request_form,
+        test_middleware_stashes_form_on_request_state,
+        test_route_reuses_request_state_form_not_a_second_read,
         test_email_still_stripped_and_lowercased,
         test_existing_redirects_preserved,
         test_add_email_account_and_register_watch_preserved,
         test_core_email_accounts_untouched,
         test_no_db_schema_or_coral_changes,
+        test_other_post_routes_unaffected,
         test_settings_html_untouched,
     ]
     for t in tests:
