@@ -20,6 +20,66 @@ db_pool = SimpleConnectionPool(
 def get_connection():
     return db_pool.getconn()
 
+
+# ---------------------------------------------------------------------------
+# Dashboard date-grouping (TODAY/YESTERDAY/plain date headers) support for
+# get_emails() below. The viewer's own browser-reported IANA timezone (see
+# main.py's _resolve_viewer_timezone(), sourced from the `tz` cookie
+# static/local-time.js-adjacent JS in templates/dashboard.html sets) is the
+# only thing that ever decides a "calendar day" here - this app deliberately
+# carries no zoneinfo/pytz/tzdata dependency of its own and no fixed
+# server-side timezone config; Postgres's own built-in timezone database
+# (via AT TIME ZONE in the query below) is the only interpreter of this
+# string, anywhere.
+# ---------------------------------------------------------------------------
+
+_TIMEZONE_NAME_REGEX = re.compile(
+    r"^[A-Za-z0-9_+\-]{1,35}(?:/[A-Za-z0-9_+\-]{1,35}){0,2}$"
+)
+
+
+def _sanitize_timezone(tz):
+    """Shape-only validation (not a real IANA lookup - see the module note
+    above) so a malformed/tampered `tz` cookie value can never reach
+    Postgres as a broken AT TIME ZONE argument and break the whole
+    dashboard query. Falls back to UTC - the exact same fallback already
+    used for a browser that hasn't set the cookie yet at all."""
+
+    if tz and _TIMEZONE_NAME_REGEX.match(tz):
+        return tz
+
+    return "UTC"
+
+
+def _compute_date_label(local_date, viewer_today):
+    """Turns one row's local calendar date into the dashboard's
+    TODAY/YESTERDAY/plain-date group header text. Both arguments are
+    computed by the same query, in the same viewer timezone (see
+    get_emails()'s SELECT below) - this never re-derives or guesses a
+    timezone of its own, only compares two dates Postgres already
+    resolved consistently.
+
+    Deliberately returns the SAME casing regardless of which branch is
+    used ("TODAY · Sep 29", "Sep 27") - templates/dashboard.html applies
+    a single `uppercase` CSS class over all of it, so no case-branching
+    is needed here for the on-screen ALL-CAPS look."""
+
+    if local_date is None or viewer_today is None:
+        return None
+
+    month_day = local_date.strftime("%b") + " " + str(local_date.day)
+    if local_date.year != viewer_today.year:
+        month_day += f", {local_date.year}"
+
+    delta_days = (viewer_today - local_date).days
+
+    if delta_days == 0:
+        return f"TODAY · {month_day}"
+    if delta_days == 1:
+        return f"YESTERDAY · {month_day}"
+    return month_day
+
+
 # --- HELPER PATTERN: Every function now uses try/finally ---
 def save_email(
     sender,
@@ -174,7 +234,7 @@ def email_ids_exist(message_ids, source):
         db_pool.putconn(conn)
 
 
-def get_emails(source=None, search=None, status=None, date_from=None, date_to=None, page=1, page_size=50, read_status=None):
+def get_emails(source=None, search=None, status=None, date_from=None, date_to=None, page=1, page_size=50, read_status=None, priority=None, viewer_timezone="UTC"):
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -208,6 +268,18 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             filters += " AND created_at::date <= %s"
             params.append(date_to)
 
+        # "All"/None/"" means no filter, matching every other optional
+        # filter param's own convention in this function (falsy = don't
+        # filter). Values pass through verbatim (Urgent/High/Medium/Low) -
+        # deliberately no allow-list here, mirroring status/source/
+        # read_status's own unchecked pass-through above: an unrecognized
+        # value simply matches nothing rather than raising, which is also
+        # how the existing priority CASE below already treats an unknown
+        # priority (falls into its own ELSE tier, never crashes).
+        if priority:
+            filters += " AND priority = %s"
+            params.append(priority)
+
         if search:
             filters += " AND (subject ILIKE %s OR sender ILIKE %s OR body ILIKE %s)"
             like = f"%{search}%"
@@ -222,15 +294,20 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             "" if status == "Replied" else "AND reply_type IS DISTINCT FROM 'gmail_manual'"
         )
 
+        # Date-first, then priority, then newest-first within that date -
+        # replaces the previous is_read/status-primary ordering entirely
+        # (an intentional, explicitly-approved change, not an oversight;
+        # unread/"Needs Review" indicators are still shown, just no longer
+        # a sort key). local_date/effective_ts are SELECT aliases defined
+        # per-query below - local_date is the viewer's own calendar day
+        # (see _sanitize_timezone()'s module note), effective_ts is the
+        # exact same email_date-with-created_at-fallback precedence the
+        # previous ordering already used, now also serving as the
+        # within-day/within-priority tiebreaker. The priority CASE itself
+        # is unchanged from before, "Urgent" tier included.
         order_by_clause = """
             ORDER BY
-                is_read ASC,
-
-                CASE status
-                    WHEN 'Needs Review' THEN 1
-                    WHEN 'Replied' THEN 2
-                    ELSE 3
-                END,
+                local_date DESC,
 
                 CASE priority
                     WHEN 'Urgent' THEN 1
@@ -239,9 +316,17 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
                     WHEN 'Low' THEN 4
                     ELSE 5
                 END,
-                email_date DESC NULLS LAST,
-                created_at DESC
+
+                effective_ts DESC
         """
+
+        # Shape-validated once here so a malformed/tampered `tz` cookie
+        # value can never reach Postgres as a broken timezone argument
+        # (see _sanitize_timezone()'s own docstring) - falls back to UTC,
+        # the same fallback used for a browser that hasn't set the cookie
+        # yet at all (main.py's _resolve_viewer_timezone()).
+        tz = _sanitize_timezone(viewer_timezone)
+        tz_params = [tz, tz]
 
         # total/needs_review_count/auto_reply_count are folded into the same
         # paginated query via COUNT(*) OVER() window functions (counted over
@@ -263,6 +348,9 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
                 id, sender, subject, source, category, priority, status,
                 reply_type, created_at, first_reply_at, resolved_at,
                 knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, review_reason, is_read, has_attachment,
+                COALESCE(email_date, created_at AT TIME ZONE 'UTC') AS effective_ts,
+                (COALESCE(email_date, created_at AT TIME ZONE 'UTC') AT TIME ZONE %s)::date AS local_date,
+                (NOW() AT TIME ZONE %s)::date AS viewer_today,
                 COUNT(*) OVER() AS total,
                 COUNT(*) FILTER (WHERE status = 'Needs Review') OVER() AS needs_review_count,
                 COUNT(*) FILTER (WHERE reply_type = 'automatic') OVER() AS auto_reply_count
@@ -273,7 +361,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             {filters}
             {order_by_clause}
             LIMIT %s OFFSET %s;
-        """, params + [page_size, offset])
+        """, tz_params + params + [page_size, offset])
 
         rows = cursor.fetchall()
 
@@ -315,7 +403,10 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
                     SELECT
                         id, sender, subject, source, category, priority, status,
                         reply_type, created_at, first_reply_at, resolved_at,
-                        knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, review_reason, is_read, has_attachment
+                        knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, review_reason, is_read, has_attachment,
+                        COALESCE(email_date, created_at AT TIME ZONE 'UTC') AS effective_ts,
+                        (COALESCE(email_date, created_at AT TIME ZONE 'UTC') AT TIME ZONE %s)::date AS local_date,
+                        (NOW() AT TIME ZONE %s)::date AS viewer_today
                     FROM messages
                     WHERE mailbox = 'inbox'
                     AND status != 'Resolved'
@@ -323,9 +414,21 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
                     {filters}
                     {order_by_clause}
                     LIMIT %s OFFSET %s;
-                """, params + [page_size, offset])
+                """, tz_params + params + [page_size, offset])
 
                 rows = cursor.fetchall()
+
+        # Tracked across the loop below (rows already arrive in the final
+        # date-group/priority/time order from SQL above) so each row can
+        # say "start a new TODAY/YESTERDAY/date header here" without the
+        # template or the JS auto-refresh path ever having to compare
+        # dates themselves - both just check this one boolean. Reset to
+        # None per get_emails() call/page: it's intentional, not a bug,
+        # that the first row of every page always starts a new group - a
+        # date group spanning two pages shows its header again on page
+        # two rather than this function ever fetching extra rows to avoid
+        # it (no cross-page/cross-request memory of the last label).
+        previous_date_label = None
 
         for row in rows:
             # Only present on rows from the combined query above - stripped
@@ -333,6 +436,12 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             row.pop("total", None)
             row.pop("needs_review_count", None)
             row.pop("auto_reply_count", None)
+
+            row.pop("effective_ts", None)
+            date_label = _compute_date_label(row.pop("local_date", None), row.pop("viewer_today", None))
+            row["date_label"] = date_label
+            row["is_new_date_group"] = (date_label != previous_date_label)
+            previous_date_label = date_label
 
             if row["created_at"]:
                 # Raw UTC ISO timestamp, formatted client-side into the

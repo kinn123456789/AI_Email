@@ -244,13 +244,19 @@ def test_get_emails_preserves_filters_search_and_order():
     sql = _pool.sql_log[0]
     params = _pool.params_log[0]
 
+    # is_read ASC / CASE status / email_date DESC NULLS LAST / created_at
+    # DESC are gone from this list - the dashboard date-grouping + priority
+    # filter task (a later, separately-approved change) intentionally
+    # replaced the previous is_read/status-primary ORDER BY with a
+    # date-first, then-priority, then-newest-first ordering (local_date /
+    # effective_ts below). CASE priority is unchanged and still checked.
     for fragment in [
         "AND source = %s", "AND status = %s", "AND is_read = FALSE",
         "AND created_at::date >= %s", "AND created_at::date <= %s",
         "AND (subject ILIKE %s OR sender ILIKE %s OR body ILIKE %s)",
         "WHERE mailbox = 'inbox'", "AND status != 'Resolved'",
-        "ORDER BY", "is_read ASC", "CASE status", "CASE priority",
-        "email_date DESC NULLS LAST", "created_at DESC", "LIMIT %s OFFSET %s",
+        "ORDER BY", "local_date DESC", "CASE priority", "effective_ts DESC",
+        "LIMIT %s OFFSET %s",
     ]:
         check(f'combined query still includes "{fragment}"', fragment in sql)
 
@@ -258,9 +264,16 @@ def test_get_emails_preserves_filters_search_and_order():
           "AND reply_type IS DISTINCT FROM 'gmail_manual'" in sql)
     check("search term is parameterized (ILIKE wildcards), not string-interpolated into the SQL",
           "tuition" not in sql and any(p == "%tuition%" for p in params))
+    # The leading ["UTC", "UTC"] pair is new: the two AT TIME ZONE
+    # parameters get_emails() now always sends first (local_date's and
+    # viewer_today's), ahead of every filter param - "UTC" here because
+    # this call didn't pass viewer_timezone, matching the function's own
+    # documented default/fallback. Everything after it is the exact same
+    # filter-param sequence as before, unchanged.
     check("all filter param values are present, in filter-application order",
-          params[:-2] == ["lucy@coralacademy.com", "Needs Review", "2026-01-01", "2026-01-31",
-                           "%tuition%", "%tuition%", "%tuition%"])
+          params[:2] == ["UTC", "UTC"]
+          and params[2:-2] == ["lucy@coralacademy.com", "Needs Review", "2026-01-01", "2026-01-31",
+                                "%tuition%", "%tuition%", "%tuition%"])
     check("LIMIT/OFFSET params are appended last", params[-2] == 50 and params[-1] == 0)
 
 
@@ -374,21 +387,32 @@ def test_main_py_operational_logs_still_present():
 
 
 def test_dashboard_data_route_untouched():
-    """This sprint did not touch /dashboard-data - it already only called
-    get_emails() (no combined/separate COUNT distinction visible to it) and
-    already built its own whitelisted response dict, so get_emails()'s
-    internal round-trip change is fully transparent to it."""
+    """This sprint (test_performance_fixes.py's own round-trip work) did not
+    touch /dashboard-data - it already only called get_emails() (no
+    combined/separate COUNT distinction visible to it) and already built
+    its own whitelisted response dict, so get_emails()'s internal
+    round-trip change was fully transparent to it.
+
+    /dashboard-data itself WAS legitimately touched later, by the separately-
+    approved dashboard date-grouping + priority filter task: it now also
+    resolves the viewer's browser timezone from the request (a `priority`
+    param and `viewer_timezone=` argument were added to the get_emails()
+    call, and `date_label`/`is_new_date_group` were added to the per-email
+    whitelist) so JS auto-refresh can group rows the same way the initial
+    server-rendered page does. Updated here rather than left broken."""
     src = _read_main_source()
     start = src.find('@app.get("/dashboard-data")')
     end = src.find('@app.get("/category/{category}")')
     body = src[start:end]
     check('dashboard-data still calls get_emails() with the same parameters',
           "get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, "
-          "page=page, page_size=page_size, read_status=read_status)" in body)
+          "page=page, page_size=page_size, read_status=read_status, priority=priority, "
+          "viewer_timezone=viewer_timezone)" in body)
     check("dashboard-data still returns the same whitelisted per-email fields",
           all(f'"{k}":' in body for k in [
               "id", "subject", "sender", "source", "category", "priority",
               "status", "created_at", "is_read", "has_attachment",
+              "date_label", "is_new_date_group",
           ]))
     check("dashboard-data still returns the same top-level response keys",
           all(f'"{k}":' in body for k in [

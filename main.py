@@ -733,11 +733,31 @@ def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender,
         print("Failed to save reply to historical_emails:", e)
 
 
+# Cookie set client-side in templates/dashboard.html (the browser's own
+# Intl.DateTimeFormat().resolvedOptions().timeZone) so the dashboard's
+# TODAY/YESTERDAY date grouping and date-first ordering use the viewer's
+# actual local calendar day, the same browser-local convention
+# static/local-time.js already uses for every displayed timestamp - without
+# this app ever hardcoding a single server-side timezone. A browser's very
+# first-ever request (before that JS has run once - a fresh login, a
+# cleared-cookies visit) has no cookie yet and falls back to UTC for that
+# one server-rendered page only; every later request from that same browser
+# (this page's own 8-second auto-refresh, or any subsequent navigation)
+# already carries it. Re-read fresh from the request every single call -
+# never cached, never a permanent server-side setting.
+_TIMEZONE_COOKIE_NAME = "tz"
+
+
+def _resolve_viewer_timezone(request: Request):
+    return request.cookies.get(_TIMEZONE_COOKIE_NAME) or "UTC"
+
+
 @app.get("/dashboard")
-def dashboard(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1, read_status: str = None):
+def dashboard(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1, read_status: str = None, priority: str = None):
 
     page_size = 50
-    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size, read_status=read_status)
+    viewer_timezone = _resolve_viewer_timezone(request)
+    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size, read_status=read_status, priority=priority, viewer_timezone=viewer_timezone)
     rows = result["rows"]
     total_count = result["total"]
     needs_review_count = result["needs_review_count"]
@@ -786,6 +806,7 @@ def dashboard(request: Request, source: str = None, q: str = None, status: str =
             "selected_date_from": date_from,
             "selected_date_to": date_to,
             "selected_read_status": read_status,
+            "selected_priority": priority,
             "current_page": page,
             "total_pages": total_pages,
             "total_count": total_count,
@@ -814,10 +835,11 @@ def dashboard_sent(source: str = None, q: str = None, date_from: str = None, dat
     )
 
 @app.get("/dashboard-data")
-def dashboard_data(source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1, read_status: str = None):
+def dashboard_data(request: Request, source: str = None, q: str = None, status: str = None, date_from: str = None, date_to: str = None, page: int = 1, read_status: str = None, priority: str = None):
 
     page_size = 50
-    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size, read_status=read_status)
+    viewer_timezone = _resolve_viewer_timezone(request)
+    result = get_emails(source=source, search=q, status=status, date_from=date_from, date_to=date_to, page=page, page_size=page_size, read_status=read_status, priority=priority, viewer_timezone=viewer_timezone)
 
     emails = [
         {
@@ -833,6 +855,8 @@ def dashboard_data(source: str = None, q: str = None, status: str = None, date_f
             "has_attachment": e["has_attachment"],
             "requires_review": e["requires_review"],
             "review_reason": e["review_reason"],
+            "date_label": e["date_label"],
+            "is_new_date_group": e["is_new_date_group"],
         }
         for e in result["rows"]
     ]

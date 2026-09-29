@@ -149,6 +149,15 @@ Response Metrics
 <option value="read" {% if selected_read_status == "read" %}selected{% endif %}>Read Only</option>
 </select>
 
+<select name="priority" onchange="this.form.submit()"
+    class="bg-white/60 border border-cyan-200 rounded-xl px-4 py-3 text-sm font-semibold text-cyan-950">
+<option value="" {% if not selected_priority %}selected{% endif %}>All Priorities</option>
+<option value="Urgent" {% if selected_priority == "Urgent" %}selected{% endif %}>Urgent</option>
+<option value="High" {% if selected_priority == "High" %}selected{% endif %}>High</option>
+<option value="Medium" {% if selected_priority == "Medium" %}selected{% endif %}>Medium</option>
+<option value="Low" {% if selected_priority == "Low" %}selected{% endif %}>Low</option>
+</select>
+
 <input
     type="date"
     name="date_from"
@@ -176,7 +185,7 @@ Response Metrics
     Filter
 </button>
 
-{% if selected_source or search_query or selected_status or selected_date_from or selected_date_to or selected_read_status %}
+{% if selected_source or search_query or selected_status or selected_date_from or selected_date_to or selected_read_status or selected_priority %}
 <a href="/dashboard" class="text-cyan-950/70 text-sm font-bold underline">Clear</a>
 {% endif %}
 
@@ -251,6 +260,13 @@ Response Metrics
 </thead>
 <tbody id="tableBody" class="text-sm text-gray-950 divide-y divide-cyan-300/40">
 {% for email in emails %}
+{% if email.is_new_date_group %}
+<tr class="date-group-header">
+<td colspan="8" class="bg-cyan-900/10 px-6 py-2 text-xs font-bold text-cyan-950 uppercase tracking-widest border-t border-b border-cyan-300/40">
+{{ email.date_label }}
+</td>
+</tr>
+{% endif %}
 <tr
 onclick="window.location='/email/{{ email.id }}'"
 class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
@@ -382,7 +398,8 @@ Showing 0 emails
     'status': selected_status or '',
     'q': search_query or '',
     'date_from': selected_date_from or '',
-    'date_to': selected_date_to or ''
+    'date_to': selected_date_to or '',
+    'priority': selected_priority or ''
 } %}
 <div id="paginationControls" class="flex items-center justify-center gap-4 mt-6">
 <a id="prevPageLink" href="/dashboard?{{ base_qs|urlencode }}&page={{ current_page - 1 }}"
@@ -397,6 +414,26 @@ Showing 0 emails
 </div>
 </body>
 <script src="/static/local-time.js"></script>
+<script>
+// Lets the server compute TODAY/YESTERDAY date-group boundaries and
+// date-first sort order in the *viewer's own* calendar day, matching the
+// same browser-local convention local-time.js already uses for every
+// displayed timestamp in this app - without ever hardcoding a single
+// server-side timezone (see main.py's _resolve_viewer_timezone()). The
+// very first request from a browser that hasn't set this cookie yet (a
+// fresh login, a cleared-cookies visit) falls back to UTC for that one
+// server-rendered page only; every request after that - this same page's
+// own 8-second auto-refresh, or any later navigation - already carries it.
+try {
+    var __tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (__tz) {
+        document.cookie = "tz=" + encodeURIComponent(__tz) + "; path=/; max-age=31536000; SameSite=Lax";
+    }
+} catch (e) {
+    // Intl unsupported or cookies blocked - dashboard keeps working with
+    // the UTC fallback, never breaks.
+}
+</script>
 <script>
 const selectAll = document.getElementById("select-all");
 const deleteBtn = document.getElementById("delete-btn");
@@ -553,6 +590,24 @@ function subjectHtml(email) {
         '<span class="text-stone-700">' + attach + subject + '</span></div>';
 }
 
+function dateGroupHeaderHtml(label) {
+    return '<tr class="date-group-header">' +
+        '<td colspan="8" class="bg-cyan-900/10 px-6 py-2 text-xs font-bold text-cyan-950 uppercase tracking-widest border-t border-b border-cyan-300/40">' +
+        escapeHtml(label) + '</td></tr>';
+}
+
+// Mirrors the server-rendered row loop's own date-group-header insertion
+// above (guarded by the email's is_new_date_group flag) - both sides just
+// trust the boolean/label the server already computed (database.py's
+// get_emails()), so grouping logic is never duplicated or re-derived
+// client-side.
+function buildRowsHtml(emails) {
+    return emails.map(function (email) {
+        var header = email.is_new_date_group ? dateGroupHeaderHtml(email.date_label) : "";
+        return header + buildRowHtml(email);
+    }).join("");
+}
+
 function buildRowHtml(email) {
     const catClass = catColors[email.category] || "bg-gray-300/60 text-gray-950";
 
@@ -609,7 +664,7 @@ function refreshDashboard() {
             );
 
             const tbody = document.getElementById("tableBody");
-            tbody.innerHTML = data.emails.map(buildRowHtml).join("");
+            tbody.innerHTML = buildRowsHtml(data.emails);
 
             if (window.applyLocalTimes) {
                 window.applyLocalTimes();
