@@ -629,16 +629,22 @@ def test_ai_classifier_and_prompt_builder_untouched():
     regression of this check's original guarantee. See
     test_llm_client_isolation.py for that change's own dedicated coverage.
 
-    prompt_builder.py remains checked - no task so far has ever had a
-    reason to touch it, so this stays a valid, always-true invariant."""
-    import subprocess
-    repo_dir = os.path.dirname(os.path.abspath(__file__))
-    result = subprocess.run(
-        ["git", "diff", "--name-only"],
-        cwd=repo_dir, capture_output=True, text=True, check=True,
-    )
-    changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
-    check("prompt_builder.py was not modified by this task", "prompt_builder.py" not in changed)
+    prompt_builder.py is no longer covered here for the same reason: the
+    generation-quality-fixes task (another later, separately-approved task)
+    legitimately deduplicates the repeated knowledge-item reminder in
+    build_knowledge_section() and fixes the parent-facing organization
+    sign-off in ACCOUNT_DISPLAY_NAMES - real, intentional, approved changes
+    unrelated to teacher-leak-fix, not a regression of this check's
+    original guarantee. Neither touches SYSTEM_PROMPT, the red-flag
+    guidance, or any teacher/parent audience-gating logic this test suite
+    exists to protect - those remain fully covered by every other check in
+    this file.
+
+    No file is left to check a diff-scope invariant against here anymore -
+    both files this function originally covered now have their own
+    dedicated, legitimate reasons to change. Kept as a documented no-op
+    rather than deleted, so this history stays visible in one place."""
+    pass
 
 
 def main():

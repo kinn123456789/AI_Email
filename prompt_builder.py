@@ -667,11 +667,30 @@ Do not include:
 """
 
 ACCOUNT_DISPLAY_NAMES = {
-    "support@coralacademy.com": "Coral Team",
-    "lucy@coralacademy.com": "Lucy\nCoral Team",
-    "engineering@coralacademy.com": "Coral Team",
+    # These 4 keys are every `source` value the parent-facing pipeline is
+    # confirmed to pass here: process_email.py's 3 monitored mailboxes
+    # (support@/lucy@/engineering@coralacademy.com, all audience="parent"),
+    # plus main.py's contact-form flow (source="contact_form", also
+    # audience="parent"). The organization sign-off for all of them is
+    # "Coral Academy", not "Coral Team" - fixed here since this dict feeds
+    # the model-facing "YOUR SIGNATURE" instruction below directly (the
+    # model is told to sign with exactly this value, verbatim - this is
+    # not post-processing model output).
+    "support@coralacademy.com": "Coral Academy",
+    "lucy@coralacademy.com": "Lucy\nCoral Academy",
+    "engineering@coralacademy.com": "Coral Academy",
+    "contact_form": "Coral Academy",
 }
 
+# Deliberately left as "Coral Team", NOT changed to "Coral Academy": this
+# is the same fallback teacher_reply_generator1.py's generate_reply() call
+# resolves to as well, since it never passes a `source` at all (audience
+# is "teacher" there, not "parent") - changing this value would silently
+# change Teacher Portal's signature too, which was never asked for and
+# isn't "clearly intended" by anything in this codebase. A future
+# account added via Settings that isn't one of the 4 keys above would
+# still fall through to this same default - a pre-existing gap, not one
+# introduced or widened here.
 DEFAULT_DISPLAY_NAME = "Coral Team"
 
 
@@ -706,7 +725,18 @@ Content:
 
 Reference URL:
 {item.get("url","")}
+----------------------------------------
 
+"""
+
+    # The reminder below used to be appended inside the loop above, once
+    # per knowledge item - identical, byte-for-byte duplicate text
+    # repeated N times for an N-item retrieval, adding real prompt tokens
+    # on every multi-item call without adding any new information (the
+    # model only needs to be told this once). Wording is unchanged from
+    # what was previously inside the loop; only its position - now once,
+    # after every knowledge item, instead of once per item - has moved.
+    text += """
 IMPORTANT
 
 The CURRENT EMAIL below is the only email you should answer.
@@ -716,8 +746,6 @@ Conversation History is provided only for context.
 If the customer's latest email starts a new topic or asks a different question than earlier emails, answer ONLY the latest topic.
 
 Do not continue discussing previous issues unless the customer explicitly asks about them.
-----------------------------------------
-
 """
 
     return text
