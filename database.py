@@ -262,7 +262,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
             SELECT
                 id, sender, subject, source, category, priority, status,
                 reply_type, created_at, first_reply_at, resolved_at,
-                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment,
+                knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, review_reason, is_read, has_attachment,
                 COUNT(*) OVER() AS total,
                 COUNT(*) FILTER (WHERE status = 'Needs Review') OVER() AS needs_review_count,
                 COUNT(*) FILTER (WHERE reply_type = 'automatic') OVER() AS auto_reply_count
@@ -315,7 +315,7 @@ def get_emails(source=None, search=None, status=None, date_from=None, date_to=No
                     SELECT
                         id, sender, subject, source, category, priority, status,
                         reply_type, created_at, first_reply_at, resolved_at,
-                        knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, is_read, has_attachment
+                        knowledge_url, ai_confidence, ai_summary, ai_draft_reply, requires_review, review_reason, is_read, has_attachment
                     FROM messages
                     WHERE mailbox = 'inbox'
                     AND status != 'Resolved'

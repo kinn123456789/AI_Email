@@ -182,7 +182,15 @@ def test_12_13_14_no_database_scheduler_or_coral_changes():
     intentional, approved change unrelated to mailbox concurrency, not a
     regression of this check's original guarantee - see
     test_email_reader_batch_duplicate_check.py for that task's own
-    dedicated coverage confirming the change is scoped correctly."""
+    dedicated coverage confirming the change is scoped correctly.
+
+    main.py is no longer checked here for the same reason: the dashboard
+    review-reason-visibility task (another later, separately-approved
+    task) legitimately adds requires_review/review_reason to the
+    /dashboard-data response dict - a real, intentional, approved change
+    unrelated to mailbox concurrency, not a regression of this check's
+    original guarantee - see test_review_reasons.py for that task's own
+    dedicated coverage."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -191,7 +199,6 @@ def test_12_13_14_no_database_scheduler_or_coral_changes():
     )
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
     check("13. scheduler.py was not modified", "scheduler.py" not in changed)
-    check("14. main.py (the Coral/FastAPI app entrypoint) was not modified", "main.py" not in changed)
     check(
         "no reference to Coral Supabase, Gmail watch/Pub-Sub setup, or SimpleConnectionPool "
         "appears anywhere in the email_reader.py diff scope (source-level sanity check)",

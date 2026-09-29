@@ -322,6 +322,26 @@ class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
 {% else %}
 <span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">{{ email.status }}</span>
 {% endif %}
+{% if email.requires_review %}
+{% set review_reason_labels = {
+    "classifier": "Classification requires review",
+    "retrieval_error": "Retrieval failed",
+    "safety_block": "Safety block",
+    "generation_error": "Reply generation failed",
+    "live_class_unavailable": "Live class information unavailable",
+    "live_class_ambiguous": "Live class match ambiguous",
+    "live_class_not_found": "Live class not found",
+    "live_class_browsing_unavailable": "Live class browsing unavailable",
+    "live_class_browsing_no_match": "No matching classes found",
+    "existing_review": "Flagged for review"
+} %}
+{% set reason_codes = email.review_reason.split(',') if email.review_reason else ['existing_review'] %}
+<div class="text-[10px] text-amber-700/80 mt-1 leading-tight">⚠️
+    {%- for code in reason_codes -%}
+        {{ review_reason_labels.get(code.strip(), 'Flagged for review') }}{% if not loop.last %} · {% endif %}
+    {%- endfor -%}
+</div>
+{% endif %}
 </td>
 {#
 <td class="p-4">
@@ -486,6 +506,36 @@ function statusHtml(status) {
     return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">' + escapeHtml(status) + '</span>';
 }
 
+// Kept in sync by hand with the {% set review_reason_labels = {...} %}
+// dict in this same file's server-rendered row above (and with the
+// identical dict in templates/email_detail.html) - client-side JS can't
+// {% include %} a Jinja2 template, so this is the one place in the app
+// where this mapping is necessarily duplicated rather than shared.
+// test_review_reasons.py cross-checks all three copies stay identical.
+const REVIEW_REASON_LABELS = {
+    "classifier": "Classification requires review",
+    "retrieval_error": "Retrieval failed",
+    "safety_block": "Safety block",
+    "generation_error": "Reply generation failed",
+    "live_class_unavailable": "Live class information unavailable",
+    "live_class_ambiguous": "Live class match ambiguous",
+    "live_class_not_found": "Live class not found",
+    "live_class_browsing_unavailable": "Live class browsing unavailable",
+    "live_class_browsing_no_match": "No matching classes found",
+    "existing_review": "Flagged for review"
+};
+
+function reviewReasonHtml(email) {
+    if (!email.requires_review) {
+        return "";
+    }
+    const codes = email.review_reason ? email.review_reason.split(",") : ["existing_review"];
+    const labels = codes.map(function (code) {
+        return REVIEW_REASON_LABELS[code.trim()] || "Flagged for review";
+    });
+    return '<div class="text-[10px] text-amber-700/80 mt-1 leading-tight">⚠️ ' + escapeHtml(labels.join(" · ")) + '</div>';
+}
+
 function subjectHtml(email) {
     const attach = email.has_attachment ? "📎 " : "";
     const subject = escapeHtml(email.subject || "");
@@ -514,7 +564,7 @@ function buildRowHtml(email) {
         '<td class="p-4">' + sourceBadgeHtml(email.source) + '</td>' +
         '<td class="p-4"><span class="px-3 py-1 rounded text-xs font-bold ' + catClass + '">' + escapeHtml(email.category) + '</span></td>' +
         '<td class="p-4 font-bold">' + priorityHtml(email.priority) + '</td>' +
-        '<td class="p-4">' + statusHtml(email.status) + '</td>' +
+        '<td class="p-4">' + statusHtml(email.status) + reviewReasonHtml(email) + '</td>' +
         '<td class="p-4 text-cyan-950 text-xs font-bold local-time" data-utc="' + escapeHtml(email.created_at) + '"></td>' +
     '</tr>';
 }

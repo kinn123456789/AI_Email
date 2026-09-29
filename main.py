@@ -831,6 +831,8 @@ def dashboard_data(source: str = None, q: str = None, status: str = None, date_f
             "created_at": e["created_at"],
             "is_read": e["is_read"],
             "has_attachment": e["has_attachment"],
+            "requires_review": e["requires_review"],
+            "review_reason": e["review_reason"],
         }
         for e in result["rows"]
     ]

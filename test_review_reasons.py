@@ -542,6 +542,202 @@ def test_template_reason_display_mechanism_itself_unchanged():
     )
 
 
+# ---------------------------------------------------------------------------
+# Dashboard list: review_reason plumbed through get_emails() -> /dashboard-data
+# -> dashboard.html, reusing the exact same review_reason_labels mapping
+# already established for email_detail.html - not a decision-logic change,
+# purely exposing an already-persisted, already-computed value one layer
+# further out.
+# ---------------------------------------------------------------------------
+
+def test_get_emails_select_includes_review_reason():
+    """Both SELECT statements in get_emails() (the common combined-query
+    path and the empty-result fallback path) now select review_reason
+    alongside the requires_review they already selected."""
+    src = _read_source("database.py")
+    get_emails_start = src.index("def get_emails(")
+    get_emails_end = src.index("\ndef ", get_emails_start + 1)
+    get_emails_src = src[get_emails_start:get_emails_end]
+
+    # Only the two row-returning SELECTs (each starts "id, sender, subject...")
+    # are relevant here - the third SELECT in this function is the
+    # COUNT-only fallback query, which never selected individual message
+    # columns at all and isn't expected to.
+    select_statements = [
+        s for s in get_emails_src.split("SELECT")[1:]
+        if "FROM messages" in s and "id, sender, subject" in s
+    ]
+    check(
+        "get_emails() has both expected SELECT statements to check",
+        len(select_statements) == 2,
+        f"found {len(select_statements)}",
+    )
+    for i, stmt in enumerate(select_statements, 1):
+        check(
+            f"get_emails() SELECT #{i} includes review_reason",
+            "review_reason" in stmt,
+        )
+        check(
+            f"get_emails() SELECT #{i} still includes the pre-existing requires_review",
+            "requires_review" in stmt,
+        )
+
+
+def test_get_emails_pagination_counts_unaffected():
+    """Functional regression check: adding review_reason to the SELECT
+    column list does not change total/needs_review_count/auto_reply_count/
+    page/total_pages - the exact same window-function values flow through
+    unchanged, using the real get_emails() against a fake pool."""
+    fake_row = {
+        "id": 1, "sender": "parent@example.com", "subject": "s", "source": "support@coralacademy.com",
+        "category": "General", "priority": "Medium", "status": "Needs Review", "reply_type": "automatic",
+        "created_at": None, "first_reply_at": None, "resolved_at": None, "knowledge_url": None,
+        "ai_confidence": 0.9, "ai_summary": "sum", "ai_draft_reply": "draft",
+        "requires_review": True, "review_reason": "classifier,live_class_ambiguous",
+        "is_read": False, "has_attachment": False,
+        "total": 7, "needs_review_count": 3, "auto_reply_count": 4,
+    }
+    database.db_pool.next_fetchall = [dict(fake_row)]
+    result = database.get_emails(page=1, page_size=50)
+
+    check("total is passed through unchanged", result["total"] == 7)
+    check("needs_review_count is passed through unchanged", result["needs_review_count"] == 3)
+    check("auto_reply_count is passed through unchanged", result["auto_reply_count"] == 4)
+    check("page/total_pages compute the same as before", result["page"] == 1 and result["total_pages"] == 1)
+    check(
+        "review_reason itself reaches the returned row unchanged",
+        result["rows"][0]["review_reason"] == "classifier,live_class_ambiguous",
+    )
+    check(
+        "the window-function columns are still stripped from the returned row",
+        "total" not in result["rows"][0] and "needs_review_count" not in result["rows"][0] and "auto_reply_count" not in result["rows"][0],
+    )
+
+
+def test_dashboard_data_route_includes_review_fields():
+    """main.py's /dashboard-data JSON endpoint builds its response as an
+    explicit field-by-field dict (not a passthrough of get_emails()'s
+    rows) - without requires_review/review_reason added here too, the
+    auto-refreshed rows would never see them, even though the initial
+    server-rendered page load already would."""
+    src = _read_source("main.py")
+    dashboard_data_start = src.index('@app.get("/dashboard-data")')
+    dashboard_data_end = src.index("\n\n\n", dashboard_data_start)
+    route_src = src[dashboard_data_start:dashboard_data_end]
+
+    check(
+        '/dashboard-data includes "requires_review": e["requires_review"] in its response dict',
+        '"requires_review": e["requires_review"]' in route_src,
+    )
+    check(
+        '/dashboard-data includes "review_reason": e["review_reason"] in its response dict',
+        '"review_reason": e["review_reason"]' in route_src,
+    )
+
+
+_EXPECTED_REVIEW_REASON_LABELS = {
+    "classifier": "Classification requires review",
+    "retrieval_error": "Retrieval failed",
+    "safety_block": "Safety block",
+    "generation_error": "Reply generation failed",
+    "live_class_unavailable": "Live class information unavailable",
+    "live_class_ambiguous": "Live class match ambiguous",
+    "live_class_not_found": "Live class not found",
+    "live_class_browsing_unavailable": "Live class browsing unavailable",
+    "live_class_browsing_no_match": "No matching classes found",
+    "existing_review": "Flagged for review",
+}
+
+
+def test_dashboard_html_jinja_labels_match_email_detail_exactly():
+    """dashboard.html necessarily duplicates the label dict rather than
+    sharing a single Jinja2 source with email_detail.html (no Python-side
+    registration was added, and email_detail.html - already shipped and
+    tested - was deliberately left untouched by this task) - this test is
+    the anti-drift guard in its place: every label in both templates must
+    match this one expected mapping exactly."""
+    dashboard_src = _read_source(os.path.join("templates", "dashboard.html"))
+    detail_src = _read_source(os.path.join("templates", "email_detail.html"))
+
+    for code, label in _EXPECTED_REVIEW_REASON_LABELS.items():
+        check(
+            f'dashboard.html\'s Jinja dict maps "{code}" to the expected label',
+            f'"{code}": "{label}"' in dashboard_src,
+        )
+        check(
+            f'email_detail.html\'s Jinja dict still maps "{code}" to the same expected label (no drift)',
+            f'"{code}": "{label}"' in detail_src,
+        )
+
+
+def test_dashboard_html_js_labels_match_jinja_labels():
+    """The client-side REVIEW_REASON_LABELS object (used by the
+    auto-refresh path, which can't use Jinja2) is checked against the
+    exact same expected mapping - so a future change to one copy without
+    the other two is caught here."""
+    src = _read_source(os.path.join("templates", "dashboard.html"))
+    js_start = src.index("const REVIEW_REASON_LABELS = {")
+    js_end = src.index("};", js_start)
+    js_block = src[js_start:js_end]
+
+    for code, label in _EXPECTED_REVIEW_REASON_LABELS.items():
+        check(
+            f'dashboard.html\'s JS REVIEW_REASON_LABELS maps "{code}" to the expected label',
+            f'"{code}": "{label}"' in js_block,
+        )
+
+
+def test_dashboard_html_reason_shown_only_when_requires_review():
+    src = _read_source(os.path.join("templates", "dashboard.html"))
+    check(
+        "the Jinja reason block is guarded by {% if email.requires_review %}",
+        "{% if email.requires_review %}" in src and "review_reason_labels" in src,
+    )
+    check(
+        "the JS reviewReasonHtml() returns an empty string when requires_review is falsy "
+        "(a non-reviewed email displays nothing)",
+        'if (!email.requires_review) {\n        return "";\n    }' in src,
+    )
+
+
+def test_dashboard_html_no_reason_falls_back_to_generic_indicator():
+    src = _read_source(os.path.join("templates", "dashboard.html"))
+    check(
+        "Jinja: a requires_review=true row with no review_reason falls back to ['existing_review'] "
+        '("Flagged for review"), the same generic indicator email_detail.html already uses',
+        "email.review_reason.split(',') if email.review_reason else ['existing_review']" in src,
+    )
+    check(
+        'JS: the same fallback is present for the auto-refreshed rows (["existing_review"])',
+        'email.review_reason ? email.review_reason.split(",") : ["existing_review"]' in src,
+    )
+
+
+def test_dashboard_html_multiple_reasons_joined_with_dot():
+    src = _read_source(os.path.join("templates", "dashboard.html"))
+    check(
+        "Jinja: multiple reasons are joined with ' · ' between them, matching email_detail.html",
+        "{% if not loop.last %} · {% endif %}" in src,
+    )
+    check(
+        "JS: multiple reasons are joined with ' · ' between them",
+        'labels.join(" · ")' in src,
+    )
+
+
+def test_dashboard_html_reason_block_is_compact():
+    """Row-height guard: the reason line uses a small, tight-leading text
+    style (matching the file's own existing convention for compact
+    secondary row text, e.g. the "Unread"/"Read" label above the
+    subject), not a second full-size badge that would noticeably grow
+    row height."""
+    src = _read_source(os.path.join("templates", "dashboard.html"))
+    check(
+        "the Jinja reason line uses the compact text-[10px] style already used elsewhere in this file",
+        'class="text-[10px] text-amber-700/80 mt-1 leading-tight"' in src,
+    )
+
+
 def main():
     test_classifier_review_only()
     test_retrieval_error_only()
@@ -571,6 +767,16 @@ def main():
     test_template_live_class_labels_are_specific_not_generic()
     test_template_existing_four_labels_unchanged()
     test_template_reason_display_mechanism_itself_unchanged()
+
+    test_get_emails_select_includes_review_reason()
+    test_get_emails_pagination_counts_unaffected()
+    test_dashboard_data_route_includes_review_fields()
+    test_dashboard_html_jinja_labels_match_email_detail_exactly()
+    test_dashboard_html_js_labels_match_jinja_labels()
+    test_dashboard_html_reason_shown_only_when_requires_review()
+    test_dashboard_html_no_reason_falls_back_to_generic_indicator()
+    test_dashboard_html_multiple_reasons_joined_with_dot()
+    test_dashboard_html_reason_block_is_compact()
 
     print()
     if _failures:
