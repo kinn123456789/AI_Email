@@ -978,12 +978,21 @@ def settings_page(request: Request, error: str = None, added: str = None):
 
 
 @app.post("/settings/accounts/add")
-def add_settings_account(email: str = Form(...)):
+async def add_settings_account(request: Request):
 
     from gmail_auth import get_gmail_service
     from gmail_watch import register_watch
 
-    email = email.strip().lower()
+    # Reads the form directly (matching how AuthMiddleware's own CSRF check
+    # already reads it) instead of a separate declarative email: str =
+    # Form(...) dependency - the latter triggers a second, independent
+    # parse of the same POST body by FastAPI's own dependency injection,
+    # which was losing the "email" field in production (see the read-only
+    # investigation this fix is approved from) even though the middleware's
+    # own await request.form() call correctly saw csrf_token moments
+    # earlier.
+    form = await request.form()
+    email = (form.get("email") or "").strip().lower()
 
     if not email or "@" not in email:
         return RedirectResponse(
