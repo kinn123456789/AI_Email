@@ -506,12 +506,13 @@ function statusHtml(status) {
     return '<span class="bg-gray-300/60 text-gray-950 px-3 py-1 rounded-full text-xs font-bold">' + escapeHtml(status) + '</span>';
 }
 
-// Kept in sync by hand with the {% set review_reason_labels = {...} %}
-// dict in this same file's server-rendered row above (and with the
-// identical dict in templates/email_detail.html) - client-side JS can't
-// {% include %} a Jinja2 template, so this is the one place in the app
-// where this mapping is necessarily duplicated rather than shared.
-// test_review_reasons.py cross-checks all three copies stay identical.
+// Kept in sync by hand with the review_reason_labels dict assigned via
+// a Jinja "set" block in this same file's server-rendered row above (and
+// with the identical dict in templates/email_detail.html) - client-side
+// JS can't pull in a Jinja2 template at render time, so this is the one
+// place in the app where this mapping is necessarily duplicated rather
+// than shared. test_review_reasons.py cross-checks all three copies
+// stay identical.
 const REVIEW_REASON_LABELS = {
     "classifier": "Classification requires review",
     "retrieval_error": "Retrieval failed",
