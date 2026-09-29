@@ -132,6 +132,64 @@ def test_5b_detection_checks_subject_too():
     )
 
 
+# ---------------------------------------------------------------------------
+# Class-browsing intent detection - Phase 3.
+# ---------------------------------------------------------------------------
+
+def test_browsing_1_positive_examples_detected():
+    for text in [
+        "What science classes are currently available?",
+        "What classes are available?",
+        "Which classes do you offer?",
+        "What programs do you offer?",
+        "Show me classes",
+        "List classes",
+    ]:
+        check(f"browsing-1. positive browsing example detected: {text!r}", lci.detect_class_browsing_intent("", text))
+
+
+def test_browsing_2_real_production_incident_now_detected():
+    body = (
+        "Hi Coral Academy,\n\nI'm interested in enrolling my daughter in one of your science classes.\n"
+        "Could you please let me know what options are currently available?\n\nThanks,\nTest Parent"
+    )
+    check(
+        "browsing-2. the exact real production email that motivated this feature "
+        "(subject 'Test', 'classes'/'available' in different clauses) is now detected as browsing",
+        lci.detect_class_browsing_intent("Test", body),
+    )
+
+
+def test_browsing_3_negative_single_class_examples_not_detected():
+    for text in [
+        "What is the price of Astronomy 101?",
+        "How much is Astronomy 101?",
+        "What is the schedule for Astronomy 101?",
+    ]:
+        check(
+            f"browsing-3. single-class question NOT detected as browsing: {text!r}",
+            not lci.detect_class_browsing_intent("", text),
+        )
+        check(
+            f"browsing-3. that same text still correctly triggers the existing single-class detector: {text!r}",
+            lci.detect_current_class_intent("", text),
+        )
+
+
+def test_browsing_4_unrelated_classes_mention_not_detected():
+    check(
+        "browsing-4. a support question that happens to mention 'classes' but has no "
+        "offer/availability cue is NOT detected as browsing",
+        not lci.detect_class_browsing_intent("", "Which of my classes is being cancelled this week?"),
+    )
+
+
+def test_browsing_5_description_question_not_detected_by_either():
+    text = "What is this class about? What will my child learn?"
+    check("browsing-5. a description question is not browsing intent", not lci.detect_class_browsing_intent("", text))
+    check("browsing-5. a description question is not single-class current-fact intent either", not lci.detect_current_class_intent("", text))
+
+
 # ===========================================================================
 # PART 2 - get_live_class_data(): monkeypatch the 3 coral_class_catalog
 # functions live_class_intent.py imported by name. No real HTTP call.
@@ -192,6 +250,44 @@ def test_6_success_exact_match():
         "6. the matched class's actual data appears in the block",
         "Astronomy 101" in result["context_text"] and "Amalia" in result["context_text"],
     )
+
+
+def test_6b_single_class_price_regression_unaffected_by_browsing_change():
+    """Explicit regression check: adding the browsing flow must not
+    change single-class price-question behavior at all."""
+    with _Patch(
+        lci,
+        get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [_SAMPLE_CLASS]},
+        find_matching_class=lambda classes, query: {"status": lci.SUCCESS, "class": _SAMPLE_CLASS, "candidates": []},
+    ):
+        result = lci.get_live_class_data("", "How much is Astronomy 101?")
+
+    check("6b. single-class price question still resolves via the single-class flow, not browsing", result["requires_review"] is False)
+    check("6b. the correctly-formatted price still appears", "$25.00 per session" in result["context_text"])
+
+
+def test_6c_single_class_schedule_now_formatted_cleanly():
+    """The single-class flow now reuses _format_schedule_facts() for
+    frequency/session_duration/batch_duration - this proves the raw dict
+    no longer leaks into the prompt for a single-class schedule question."""
+    class_with_schedule = dict(
+        _SAMPLE_CLASS,
+        frequency={"count": 1, "interval": "weekly", "value_type": "default"},
+        session_duration={"unit": "minutes", "count": 50, "value_type": "default"},
+        batch_duration={"count": 3, "interval": "weeks", "value_type": "minimum"},
+    )
+    with _Patch(
+        lci,
+        get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [class_with_schedule]},
+        find_matching_class=lambda classes, query: {"status": lci.SUCCESS, "class": class_with_schedule, "candidates": []},
+    ):
+        result = lci.get_live_class_data("", "What is the schedule for Astronomy 101?")
+
+    check("6c. the schedule question resolves via the single-class flow", result["requires_review"] is False)
+    check("6c. frequency is a clean formatted string, not a raw dict", "1 session per week" in result["context_text"])
+    check("6c. session_duration is a clean formatted string, not a raw dict", "50 minutes per session" in result["context_text"])
+    check("6c. batch_duration is a clean formatted string, not a raw dict", "Minimum 3 weeks" in result["context_text"])
+    check("6c. no raw dict repr (e.g. \"{'count'\") leaks into the prompt for these fields", "{'count'" not in result["context_text"])
 
 
 # ---------------------------------------------------------------------------
@@ -306,6 +402,126 @@ def test_13_stale_rag_never_substituted_on_failure():
         result["context_text"] is None,
     )
     check("13. review is forced instead of silently answering from stale data", result["requires_review"] is True)
+
+
+# ===========================================================================
+# PART 2b - class browsing orchestration (_get_browsing_class_data(), via
+# get_live_class_data()). Same monkeypatch style as Part 2 above, patching
+# the coral_class_catalog names live_class_intent.py imports by name. No
+# real HTTP call, no RAG/knowledge_search involvement anywhere here.
+# ===========================================================================
+
+_BROWSING_SCIENCE_CLASSES = [
+    dict(_SAMPLE_CLASS, id="s1", title="Astronomy 101: Learn About Space", subject="science",
+         is_active="true", approval_status="approved"),
+    dict(_SAMPLE_CLASS, id="s2", title="Geology & Earth Science Explorers", subject="science",
+         is_active="true", approval_status="approved"),
+]
+
+
+def test_browsing_6_broad_science_browsing_success():
+    with _Patch(
+        lci,
+        get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": _BROWSING_SCIENCE_CLASSES},
+    ):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    check("browsing-6. needed is True", result["needed"] is True)
+    check("browsing-6. no review required for a clean browsing match", result["requires_review"] is False)
+    check("browsing-6. review_reason is None", result["review_reason"] is None)
+    check(
+        "browsing-6. context_text lists both matched science classes",
+        "Astronomy 101" in result["context_text"] and "Geology & Earth Science Explorers" in result["context_text"],
+    )
+    check("browsing-6. context_text is clearly labeled as a live listing", "LIVE CORAL CLASS LISTING" in result["context_text"])
+
+
+def test_browsing_7_generic_browsing_returns_all_classes():
+    mixed = _BROWSING_SCIENCE_CLASSES + [
+        dict(_SAMPLE_CLASS, id="f1", title="Finance 101", subject="lifeskills", is_active="true", approval_status="approved")
+    ]
+    with _Patch(lci, get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": mixed}):
+        result = lci.get_live_class_data("", "What classes do you have available?")
+
+    check(
+        "browsing-7. a fully generic browsing question lists every currently-available class",
+        all(c["title"] in result["context_text"] for c in mixed),
+    )
+
+
+def test_browsing_8_api_error_forces_review():
+    with _Patch(lci, get_cached_catalog=lambda: {"status": "API_ERROR", "classes": None, "error": "timeout"}):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    check("browsing-8. an API error on a browsing question forces review", result["requires_review"] is True)
+    check("browsing-8. review_reason is the browsing-unavailable token", result["review_reason"] == lci.REVIEW_REASON_BROWSING_UNAVAILABLE)
+    check("browsing-8. no context is generated", result["context_text"] is None)
+
+
+def test_browsing_9_no_currently_available_match_forces_review():
+    inactive = [dict(_SAMPLE_CLASS, id="s1", subject="science", is_active="false", approval_status="approved")]
+    with _Patch(lci, get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": inactive}):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    check(
+        "browsing-9. a successful fetch with zero currently-available matches forces review "
+        "rather than silently saying 'we have nothing'",
+        result["requires_review"] is True,
+    )
+    check("browsing-9. review_reason is the browsing-no-match token", result["review_reason"] == lci.REVIEW_REASON_BROWSING_NO_MATCH)
+    check("browsing-9. no context is generated", result["context_text"] is None)
+
+
+def test_browsing_10_no_weekly_topic_or_day_time_content():
+    rich = dict(
+        _SAMPLE_CLASS, id="s1", subject="science", is_active="true", approval_status="approved",
+        frequency={"count": 1, "interval": "weekly", "value_type": "default"},
+        session_duration={"unit": "minutes", "count": 50, "value_type": "default"},
+        description=(
+            "Please find the week-on-week schedule below:\n"
+            "Monday: Snakes\nTuesday: Lizards\n9:00 AM session start"
+        ),
+    )
+    with _Patch(lci, get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [rich]}):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    block = result["context_text"]
+    check("browsing-10. the browsing block never contains the description's weekly schedule text", "week-on-week" not in block)
+    check("browsing-10. the browsing block never contains an invented day of the week", "Monday" not in block and "Tuesday" not in block)
+    check("browsing-10. the browsing block never contains an invented time of day", "9:00 AM" not in block)
+    check("browsing-10. the browsing block explicitly instructs the model not to invent days/times/weekly topics", "Never invent a day of" in block and "weekly topics" in block)
+
+
+def test_browsing_11_known_into_the_wild_incident_cannot_recur():
+    """The exact production incident: a rich, multi-topic description
+    (containing what looks like a second class, "Scales and Slime")
+    must never produce a second class entry - build_browsing_class_context()
+    never reads description at all, so there is nothing for the model to
+    split into an invented class."""
+    into_the_wild = dict(
+        _SAMPLE_CLASS, id="d8a4adf3-941f-4944-b278-378544601ecc",
+        title="Into the Wild: Young Zoologists Club", subject="science",
+        url_slug="scalesandslime", is_active="true", approval_status="approved",
+        description="SQUAMATA\nApril 2: Colubrids & Constrictors\nApril 9: Vipers & Cobras",
+    )
+    with _Patch(lci, get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [into_the_wild]}):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    check("browsing-11. only the one real class title appears", result["context_text"].count("Class title:") == 1)
+    check("browsing-11. 'Scales and Slime' never appears as its own class", "Scales and Slime" not in result["context_text"])
+    check("browsing-11. the raw description content never leaks through", "SQUAMATA" not in result["context_text"])
+
+
+def test_browsing_12_capped_at_six_with_more_count():
+    many = [
+        dict(_SAMPLE_CLASS, id=f"s{i}", title=f"Science Class {i}", subject="science", is_active="true", approval_status="approved")
+        for i in range(9)
+    ]
+    with _Patch(lci, get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": many}):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    check("browsing-12. exactly 6 classes are listed in detail", result["context_text"].count("Class title:") == 6)
+    check("browsing-12. a correct 'and N more' note is appended for the remaining 3", "and 3 more classes are currently available" in result["context_text"])
 
 
 # ---------------------------------------------------------------------------
@@ -653,7 +869,15 @@ def main():
     test_5_static_questions_not_detected()
     test_5b_detection_checks_subject_too()
 
+    test_browsing_1_positive_examples_detected()
+    test_browsing_2_real_production_incident_now_detected()
+    test_browsing_3_negative_single_class_examples_not_detected()
+    test_browsing_4_unrelated_classes_mention_not_detected()
+    test_browsing_5_description_question_not_detected_by_either()
+
     test_6_success_exact_match()
+    test_6b_single_class_price_regression_unaffected_by_browsing_change()
+    test_6c_single_class_schedule_now_formatted_cleanly()
     test_7_ambiguous_match()
     test_8_not_found()
     test_9_api_error()
@@ -661,6 +885,15 @@ def main():
     test_11_current_fact_plus_failure_requires_review()
     test_12_current_fact_plus_ambiguous_requires_review()
     test_13_stale_rag_never_substituted_on_failure()
+
+    test_browsing_6_broad_science_browsing_success()
+    test_browsing_7_generic_browsing_returns_all_classes()
+    test_browsing_8_api_error_forces_review()
+    test_browsing_9_no_currently_available_match_forces_review()
+    test_browsing_10_no_weekly_topic_or_day_time_content()
+    test_browsing_11_known_into_the_wild_incident_cannot_recur()
+    test_browsing_12_capped_at_six_with_more_count()
+
     test_19_missing_optional_fields_no_crash()
     test_20_no_unexpected_fields_in_context()
     test_no_seat_availability_wording_in_block()

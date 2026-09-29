@@ -99,6 +99,32 @@ def _normalize_class(raw):
     return normalized
 
 
+def _dedupe_classes(classes):
+    """Removes duplicate class entries, keyed strictly on `id` (falling
+    back to `url_slug` only when `id` is missing/empty) - never on
+    `title`. Two distinct live classes could plausibly share similar or
+    identical wording; deduplicating on title risks silently dropping a
+    real class. Preserves the first occurrence and original relative
+    order. The live catalog has never been observed to actually contain
+    a duplicate id or slug (confirmed against a real fetch of all 9
+    current classes) - this is a defensive, forward-looking guard, not a
+    fix for an observed live-data defect."""
+
+    seen = set()
+    deduped = []
+
+    for c in classes:
+        if not isinstance(c, dict):
+            continue
+        key = c.get("id") or c.get("url_slug")
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        deduped.append(c)
+
+    return deduped
+
+
 def fetch_catalog(timeout=REQUEST_TIMEOUT_SECONDS):
     """Fetches the live Coral class catalog with a single, unauthenticated
     GET. Never raises - every failure mode (network error, timeout, a
@@ -188,6 +214,7 @@ def fetch_catalog(timeout=REQUEST_TIMEOUT_SECONDS):
         nc for nc in (_normalize_class(item) for item in raw_classes)
         if nc is not None
     ]
+    normalized_classes = _dedupe_classes(normalized_classes)
 
     return {
         "status": SUCCESS,
@@ -336,6 +363,7 @@ _LIVE_CONTEXT_FIELDS = (
     "end_timestamp",
     "meeting_type",
     "teaching_type",
+    "enrollment_type",
     "is_active",
     "is_listed",
     "is_enrollment_allowed",
@@ -491,5 +519,221 @@ def build_live_class_context(class_data):
             context["teacher"] = formatted_teacher
         else:
             del context["teacher"]
+
+    # Same "never leak an unformatted fact" principle applied to the raw
+    # frequency/session_duration/batch_duration dicts - only the three
+    # fields _format_schedule_facts() can actually produce a clean string
+    # for are replaced; a field it can't format (malformed shape) is
+    # dropped rather than left as a raw dict. start_timestamp/
+    # end_timestamp/timezone are deliberately left untouched here - see
+    # _format_schedule_facts()'s own docstring.
+    schedule_facts = _format_schedule_facts(class_data)
+    for field in ("frequency", "session_duration", "batch_duration"):
+        if field in context:
+            if field in schedule_facts:
+                context[field] = schedule_facts[field]
+            else:
+                del context[field]
+
+    return context
+
+
+# ---------------------------------------------------------------------------
+# Class browsing (multi-class) support - Phase 3. Built entirely on top of
+# the existing fetch/cache/normalize layer above; nothing here changes how
+# a single specific class is looked up (find_matching_class,
+# build_live_class_context are both untouched by this section).
+# ---------------------------------------------------------------------------
+
+def _format_schedule_facts(class_data):
+    """Builds a small set of clean, human-readable schedule facts from
+    ONLY frequency/session_duration/batch_duration/start_timestamp/
+    end_timestamp/enrollment_type - never from description, summary,
+    learning_goals, or any other free-text field, and never inventing a
+    day of the week or a time of day, since no live field carries that
+    information (confirmed against a real fetch of the current catalog -
+    frequency only ever describes cadence, e.g. "1x per week", not which
+    day). Omits any fact a field's actual shape can't support rather than
+    guessing it. Returns {} for non-dict input or a class with no usable
+    schedule field at all.
+
+    Returns a plain dict, e.g.:
+        {"frequency": "1 session per week",
+         "session_duration": "50 minutes per session",
+         "batch_duration": "Minimum 3 weeks",
+         "enrollment_type": "Ongoing enrollment",
+         "dates": "No fixed start/end date (rolling enrollment)"}
+    """
+
+    if not isinstance(class_data, dict):
+        return {}
+
+    facts = {}
+
+    frequency = class_data.get("frequency")
+    if isinstance(frequency, dict):
+        count = frequency.get("count")
+        interval = frequency.get("interval")
+        if isinstance(count, (int, float)) and interval:
+            cadence = {"weekly": "week", "daily": "day", "monthly": "month"}.get(
+                str(interval).lower(), str(interval)
+            )
+            unit = "session" if count == 1 else "sessions"
+            facts["frequency"] = f"{count:g} {unit} per {cadence}"
+
+    session_duration = class_data.get("session_duration")
+    if isinstance(session_duration, dict):
+        count = session_duration.get("count")
+        unit = session_duration.get("unit")
+        if isinstance(count, (int, float)) and unit:
+            facts["session_duration"] = f"{count:g} {unit} per session"
+
+    batch_duration = class_data.get("batch_duration")
+    if isinstance(batch_duration, dict):
+        count = batch_duration.get("count")
+        interval = batch_duration.get("interval")
+        value_type = str(batch_duration.get("value_type") or "").strip().lower()
+        if isinstance(count, (int, float)) and interval:
+            prefix = "Minimum " if value_type == "minimum" else ""
+            facts["batch_duration"] = f"{prefix}{count:g} {interval}"
+
+    enrollment_type = class_data.get("enrollment_type")
+    if isinstance(enrollment_type, str) and enrollment_type.strip():
+        normalized_enrollment = enrollment_type.strip().lower()
+        if normalized_enrollment == "ongoing":
+            facts["enrollment_type"] = "Ongoing enrollment"
+        else:
+            facts["enrollment_type"] = enrollment_type.strip().capitalize()
+
+    start_timestamp = class_data.get("start_timestamp")
+    end_timestamp = class_data.get("end_timestamp")
+    if not start_timestamp and not end_timestamp:
+        facts["dates"] = "No fixed start/end date (rolling enrollment)"
+    else:
+        if start_timestamp:
+            facts["start_date"] = str(start_timestamp)
+        if end_timestamp:
+            facts["end_date"] = str(end_timestamp)
+
+    return facts
+
+
+def _is_class_currently_available(class_data):
+    """True only when a class is active, listed, and approved - using
+    the live API's own actual semantics, confirmed against a real fetch
+    of the current catalog rather than assumed: `is_active` is returned
+    as the STRING "true"/"false" (not a JSON boolean), so a plain
+    truthiness check (`if class_data.get("is_active")`) would incorrectly
+    treat the string "false" as truthy. `is_listed` and `approval_status`
+    are checked with their own explicit, type-safe comparisons.
+
+    `is_enrollment_allowed` is deliberately NOT part of this gate - a
+    class can be active/listed/approved but temporarily closed to new
+    enrollment (full, paused, etc.); that's surfaced as its own fact by
+    build_browsing_class_context() rather than used to hide the class
+    entirely. Only "approved" has ever been observed for approval_status
+    in live data - any other value, or a missing one, is conservatively
+    treated as not available rather than guessed to be safe."""
+
+    if not isinstance(class_data, dict):
+        return False
+
+    is_active = str(class_data.get("is_active", "")).strip().lower() == "true"
+    is_listed = bool(class_data.get("is_listed"))
+    approval_status = str(class_data.get("approval_status") or "").strip().lower()
+
+    return is_active and is_listed and approval_status == "approved"
+
+
+def find_matching_classes_for_browsing(classes, query_text):
+    """Broad, multi-result matching for class-browsing questions (e.g.
+    "what science classes are currently available?") - deliberately
+    separate from find_matching_class() above, which is tuned for
+    "resolve to exactly one class or fail" (SUCCESS/AMBIGUOUS/NOT_FOUND)
+    and is the wrong shape for "return every relevant class".
+
+    Matches only against each live class's own `subject` taxonomy value
+    (e.g. "science"), as an exact, case-insensitive, word-boundary match
+    - never a loose substring match (which could false-positive on a
+    short subject value appearing inside an unrelated word), and never
+    against description/summary/learning_goals text.
+
+    If the query doesn't name any subject actually present in `classes`
+    at all, every class is returned as a candidate - a fully generic
+    "what classes do you have?" question. Availability filtering and any
+    result-count cap are the caller's responsibility, not this
+    function's."""
+
+    classes = classes or []
+    normalized_query = _normalize_text(query_text)
+
+    if not normalized_query or not classes:
+        return list(classes)
+
+    subjects_present = {
+        _normalize_text(c.get("subject"))
+        for c in classes
+        if isinstance(c, dict) and c.get("subject")
+    }
+    subjects_present.discard("")
+
+    matched_subjects = {
+        subject for subject in subjects_present
+        if re.search(rf"\b{re.escape(subject)}\b", normalized_query)
+    }
+
+    if matched_subjects:
+        return [
+            c for c in classes
+            if isinstance(c, dict) and _normalize_text(c.get("subject")) in matched_subjects
+        ]
+
+    return list(classes)
+
+
+# The explicit, small allow-list of top-level fields a browsing listing
+# is permitted to show per class - deliberately narrower than
+# _LIVE_CONTEXT_FIELDS (no description/summary/learning_goals - see the
+# module docstring's dedicated section on this - and no raw pricing/
+# teacher, which get their own formatted replacements below).
+_BROWSING_CONTEXT_FIELDS = ("title", "subject", "url_slug", "is_enrollment_allowed")
+
+
+def build_browsing_class_context(class_data):
+    """Builds one class's compact entry for a browsing listing - title,
+    subject, url_slug, and is_enrollment_allowed pulled straight from the
+    explicit allow-list above, plus formatted pricing (via the existing,
+    unmodified _format_pricing() - the same fix from 14b8ec6, not a new
+    implementation), formatted teacher name only (via the existing,
+    unmodified _format_teacher()), and schedule facts (via
+    _format_schedule_facts()). Never includes description, summary,
+    learning_goals, resourses, parental_guidance, teacher id/bio/
+    headline/profile_image_url/reviews, or any other raw/internal field -
+    those simply aren't read by this function at all."""
+
+    if not isinstance(class_data, dict):
+        return {}
+
+    context = {
+        field: class_data[field]
+        for field in _BROWSING_CONTEXT_FIELDS
+        if field in class_data and class_data[field] is not None
+    }
+
+    pricing = class_data.get("pricing")
+    if pricing is not None:
+        formatted_pricing = _format_pricing(pricing)
+        if formatted_pricing:
+            context["pricing"] = formatted_pricing
+
+    teacher = class_data.get("teacher")
+    if teacher is not None:
+        formatted_teacher = _format_teacher(teacher)
+        if formatted_teacher:
+            context["teacher"] = formatted_teacher
+
+    schedule_facts = _format_schedule_facts(class_data)
+    if schedule_facts:
+        context["schedule"] = schedule_facts
 
     return context

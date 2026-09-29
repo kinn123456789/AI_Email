@@ -130,6 +130,7 @@ _VALID_PAYLOAD = {
                 "end_timestamp": "",
                 "meeting_type": "camp_SDK",
                 "teaching_type": "group_class",
+                "enrollment_type": "ongoing",
                 "is_active": True,
                 "is_listed": True,
                 "is_enrollment_allowed": True,
@@ -695,6 +696,266 @@ def test_F_prompt_block_has_formatted_price_not_raw_cents():
     check("F. build_prompt_block() does not contain the incorrect '$2,000' reading", "$2,000" not in block)
 
 
+# ===========================================================================
+# Class browsing (multi-class) support - Phase 3.
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# G/H. Deduplication - strictly by id (fallback url_slug), never by title.
+# ---------------------------------------------------------------------------
+
+def test_G_dedupe_by_id_removes_duplicate():
+    classes = [
+        {"id": "aaa-111", "title": "Astronomy 101", "url_slug": "astro"},
+        {"id": "aaa-111", "title": "Astronomy 101 (duplicate)", "url_slug": "astro-dup"},
+        {"id": "bbb-222", "title": "Finance 101", "url_slug": "finance"},
+    ]
+    deduped = ccc._dedupe_classes(classes)
+    check("G. duplicate id is removed, only one entry per id remains", len(deduped) == 2)
+    check("G. the FIRST occurrence of a duplicate id is kept", deduped[0]["title"] == "Astronomy 101")
+
+
+def test_H_dedupe_same_title_different_id_both_kept():
+    classes = [
+        {"id": "aaa-111", "title": "Into the Wild: Young Zoologists Club", "url_slug": "wild-1"},
+        {"id": "ccc-333", "title": "Into the Wild: Young Zoologists Club", "url_slug": "wild-2"},
+    ]
+    deduped = ccc._dedupe_classes(classes)
+    check(
+        "H. two entries with the SAME title but different ids are both kept "
+        "(dedup must never use title as the key)",
+        len(deduped) == 2,
+    )
+
+
+def test_H2_dedupe_fallback_to_url_slug_when_id_missing():
+    classes = [
+        {"title": "A", "url_slug": "slug-a"},
+        {"title": "A duplicate", "url_slug": "slug-a"},
+        {"title": "B", "url_slug": "slug-b"},
+    ]
+    deduped = ccc._dedupe_classes(classes)
+    check("H2. falls back to url_slug when id is absent", len(deduped) == 2)
+
+
+# ---------------------------------------------------------------------------
+# I-L. Current availability filtering - real API semantics (is_active is a
+# STRING, not a boolean).
+# ---------------------------------------------------------------------------
+
+def test_I_is_active_string_false_excluded():
+    c = {"is_active": "false", "is_listed": True, "approval_status": "approved"}
+    check(
+        "I. is_active='false' (string) is correctly excluded - a naive truthiness "
+        "check would incorrectly treat this non-empty string as truthy",
+        ccc._is_class_currently_available(c) is False,
+    )
+
+
+def test_J_is_active_string_true_included():
+    c = {"is_active": "true", "is_listed": True, "approval_status": "approved"}
+    check("J. is_active='true' + is_listed=True + approved is currently available", ccc._is_class_currently_available(c) is True)
+
+
+def test_K_is_listed_false_excluded():
+    c = {"is_active": "true", "is_listed": False, "approval_status": "approved"}
+    check("K. is_listed=False excludes the class even when active+approved", ccc._is_class_currently_available(c) is False)
+
+
+def test_L_approval_status_not_approved_excluded():
+    for status in ("pending", "rejected", "", None):
+        c = {"is_active": "true", "is_listed": True, "approval_status": status}
+        check(
+            f"L. approval_status={status!r} (not 'approved') excludes the class",
+            ccc._is_class_currently_available(c) is False,
+        )
+
+
+def test_L2_availability_non_dict_input_safe():
+    check("L2. non-dict input returns False, not a crash", ccc._is_class_currently_available(None) is False)
+    check("L2. a list input returns False, not a crash", ccc._is_class_currently_available([1, 2]) is False)
+
+
+# ---------------------------------------------------------------------------
+# M-O. Schedule formatter - only frequency/session_duration/batch_duration/
+# start_timestamp/end_timestamp/enrollment_type; never day-of-week or
+# time-of-day, which no live field provides.
+# ---------------------------------------------------------------------------
+
+def test_M_schedule_facts_formatted_cleanly():
+    class_data = {
+        "frequency": {"count": 1, "interval": "weekly", "value_type": "default"},
+        "session_duration": {"unit": "minutes", "count": 50, "value_type": "default"},
+        "batch_duration": {"count": 3, "interval": "weeks", "max_count": 78, "value_type": "minimum"},
+        "enrollment_type": "ongoing",
+        "start_timestamp": None,
+        "end_timestamp": None,
+    }
+    facts = ccc._format_schedule_facts(class_data)
+    check("M. frequency formatted as '1 session per week'", facts.get("frequency") == "1 session per week")
+    check("M. session_duration formatted as '50 minutes per session'", facts.get("session_duration") == "50 minutes per session")
+    check("M. batch_duration formatted as 'Minimum 3 weeks'", facts.get("batch_duration") == "Minimum 3 weeks")
+    check("M. enrollment_type 'ongoing' formatted as 'Ongoing enrollment'", facts.get("enrollment_type") == "Ongoing enrollment")
+    check(
+        "M. no fixed start/end timestamps produces the 'rolling enrollment' dates fact",
+        facts.get("dates") == "No fixed start/end date (rolling enrollment)",
+    )
+
+
+def test_M2_schedule_facts_plural_sessions():
+    class_data = {"frequency": {"count": 2, "interval": "weekly", "value_type": "default"}}
+    facts = ccc._format_schedule_facts(class_data)
+    check("M2. count=2 correctly pluralizes 'sessions'", facts.get("frequency") == "2 sessions per week")
+
+
+def test_M3_schedule_facts_start_end_dates_when_present():
+    class_data = {"start_timestamp": "2026-04-01T00:00:00Z", "end_timestamp": "2026-06-01T00:00:00Z"}
+    facts = ccc._format_schedule_facts(class_data)
+    check("M3. a real start_timestamp produces a start_date fact, not the rolling-enrollment fallback", "start_date" in facts and "dates" not in facts)
+    check("M3. a real end_timestamp produces an end_date fact", "end_date" in facts)
+
+
+def test_N_missing_schedule_fields_omitted():
+    facts = ccc._format_schedule_facts({"title": "X"})
+    check("N. a class with no schedule-related fields at all produces only the rolling-enrollment dates fact", set(facts.keys()) == {"dates"})
+
+    facts2 = ccc._format_schedule_facts({"frequency": {"count": 1, "interval": "weekly"}})
+    check("N. missing session_duration/batch_duration are simply absent, not errored or invented", "session_duration" not in facts2 and "batch_duration" not in facts2)
+
+    check("N. non-dict input returns {} rather than crashing", ccc._format_schedule_facts(None) == {})
+    check("N. malformed frequency (not a dict) is skipped rather than crashing", "frequency" not in ccc._format_schedule_facts({"frequency": "weekly"}))
+
+
+def test_O_no_day_or_time_ever_invented():
+    class_data = {
+        "frequency": {"count": 1, "interval": "weekly", "value_type": "default"},
+        "session_duration": {"unit": "minutes", "count": 50, "value_type": "default"},
+        "batch_duration": {"count": 3, "interval": "weeks", "value_type": "minimum"},
+        "enrollment_type": "ongoing",
+    }
+    facts = ccc._format_schedule_facts(class_data)
+    facts_text = " ".join(str(v) for v in facts.values()).lower()
+    weekdays = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+    check(
+        "O. no weekday name ever appears in formatted schedule facts - no live field provides one",
+        not any(day in facts_text for day in weekdays),
+    )
+    check(
+        "O. no clock-time pattern (am/pm) ever appears in formatted schedule facts",
+        "am" not in facts_text.split() and "pm" not in facts_text.split(),
+    )
+
+
+# ---------------------------------------------------------------------------
+# P/Q. build_browsing_class_context() reuses the existing pricing/teacher
+# formatters unchanged - no regression on the 14b8ec6 fix.
+# ---------------------------------------------------------------------------
+
+def test_P_browsing_context_pricing_regression():
+    class_data = {
+        "title": "Astronomy 101: Learn About Space",
+        "pricing": {"regular": {"unit": "session", "amount": 2000, "currency": "usd"}},
+    }
+    context = ccc.build_browsing_class_context(class_data)
+    check(
+        "P. browsing context pricing is '$20.00 per session', not raw cents or '$2,000'",
+        context.get("pricing") == "$20.00 per session",
+        f"got {context.get('pricing')!r}",
+    )
+
+
+def test_Q_browsing_context_teacher_sanitized():
+    class_data = {
+        "title": "Astronomy 101: Learn About Space",
+        "teacher": {
+            "id": "9fbeef67-7e48-415f-9205-c3a53d10cc34",
+            "name": "Amalia",
+            "bio": "As a nature teacher and world explorer...",
+            "profile_image_url": "https://backend.coralacademy.com/storage/.../Amalia.png",
+        },
+    }
+    context = ccc.build_browsing_class_context(class_data)
+    check("Q. browsing context teacher is reduced to just the name", context.get("teacher") == "Amalia")
+    check("Q. browsing context never exposes teacher bio", "nature teacher and world explorer" not in str(context))
+    check("Q. browsing context never exposes teacher profile_image_url", "profile_images" not in str(context) and "backend.coralacademy.com" not in str(context))
+
+
+# ---------------------------------------------------------------------------
+# R. enrollment_type is now an allow-listed single-class field too.
+# ---------------------------------------------------------------------------
+
+def test_R_enrollment_type_in_single_class_context():
+    class_data = {"title": "X", "enrollment_type": "ongoing"}
+    context = ccc.build_live_class_context(class_data)
+    check("R. 'enrollment_type' is present in _LIVE_CONTEXT_FIELDS", "enrollment_type" in ccc._LIVE_CONTEXT_FIELDS)
+    check("R. enrollment_type passes through the single-class context", context.get("enrollment_type") == "ongoing")
+
+
+# ---------------------------------------------------------------------------
+# S. The known "Into the Wild" incident: a rich, multi-topic description
+# (containing what looks like a second class, "Scales and Slime") must
+# never leak into a browsing context - build_browsing_class_context()
+# simply never reads description at all.
+# ---------------------------------------------------------------------------
+
+def test_S_rich_description_never_leaks_into_browsing_context():
+    class_data = {
+        "id": "d8a4adf3-941f-4944-b278-378544601ecc",
+        "title": "Into the Wild: Young Zoologists Club",
+        "url_slug": "scalesandslime",
+        "description": (
+            "Live science classes featuring real animals...\n\n"
+            "SQUAMATA\nAbout 90% of all reptiles are squamates...\n"
+            "April 2: Colubrids & Constrictors\nApril 9: Vipers & Cobras"
+        ),
+        "pricing": {"regular": {"unit": "session", "amount": 2000, "currency": "usd"}},
+    }
+    context = ccc.build_browsing_class_context(class_data)
+    context_text = str(context)
+    check("S. browsing context never contains the raw description text", "SQUAMATA" not in context_text)
+    check("S. browsing context never contains description-derived dated schedule text", "Colubrids" not in context_text and "April 2" not in context_text)
+    check("S. build_browsing_class_context() has exactly one title in its output", context.get("title") == "Into the Wild: Young Zoologists Club")
+
+
+# ---------------------------------------------------------------------------
+# T/U. find_matching_classes_for_browsing() - exact word-boundary subject
+# match, never a loose substring; generic query returns everything.
+# ---------------------------------------------------------------------------
+
+_BROWSING_CLASSES = [
+    {"id": "s1", "title": "Astronomy 101: Learn About Space", "subject": "science", "url_slug": "astro"},
+    {"id": "s2", "title": "Geology & Earth Science Explorers", "subject": "science", "url_slug": "geology"},
+    {"id": "f1", "title": "Finance 101: A Practical Playbook", "subject": "lifeskills", "url_slug": "finance"},
+]
+
+
+def test_T_browsing_subject_word_boundary_match():
+    result = ccc.find_matching_classes_for_browsing(_BROWSING_CLASSES, "What science classes are currently available?")
+    check("T. subject match returns only the 'science' classes", {c["id"] for c in result} == {"s1", "s2"})
+
+
+def test_T2_browsing_no_loose_substring_match():
+    # "art" must not match inside an unrelated word like "started" or "part" -
+    # word-boundary matching only.
+    classes_with_short_subject = [
+        {"id": "a1", "title": "Art Explorers", "subject": "art", "url_slug": "art-1"},
+        {"id": "s1", "title": "Astronomy 101", "subject": "science", "url_slug": "astro"},
+    ]
+    result = ccc.find_matching_classes_for_browsing(
+        classes_with_short_subject, "We started this program part-way through the year, what classes are available?"
+    )
+    check(
+        "T2. 'art' does not accidentally match inside 'started'/'part' - no subject "
+        "term is actually present, so every class is returned as a generic candidate",
+        {c["id"] for c in result} == {"a1", "s1"},
+    )
+
+
+def test_U_browsing_generic_query_returns_all_classes():
+    result = ccc.find_matching_classes_for_browsing(_BROWSING_CLASSES, "What classes do you have available?")
+    check("U. a fully generic query with no recognized subject returns every class", len(result) == 3)
+
+
 def main():
     test_1_2_successful_fetch_and_parsing()
     test_3_http_error()
@@ -730,6 +991,27 @@ def main():
     test_D_teacher_reduced_to_name_only()
     test_E_missing_teacher_name_omits_field()
     test_F_prompt_block_has_formatted_price_not_raw_cents()
+
+    test_G_dedupe_by_id_removes_duplicate()
+    test_H_dedupe_same_title_different_id_both_kept()
+    test_H2_dedupe_fallback_to_url_slug_when_id_missing()
+    test_I_is_active_string_false_excluded()
+    test_J_is_active_string_true_included()
+    test_K_is_listed_false_excluded()
+    test_L_approval_status_not_approved_excluded()
+    test_L2_availability_non_dict_input_safe()
+    test_M_schedule_facts_formatted_cleanly()
+    test_M2_schedule_facts_plural_sessions()
+    test_M3_schedule_facts_start_end_dates_when_present()
+    test_N_missing_schedule_fields_omitted()
+    test_O_no_day_or_time_ever_invented()
+    test_P_browsing_context_pricing_regression()
+    test_Q_browsing_context_teacher_sanitized()
+    test_R_enrollment_type_in_single_class_context()
+    test_S_rich_description_never_leaks_into_browsing_context()
+    test_T_browsing_subject_word_boundary_match()
+    test_T2_browsing_no_loose_substring_match()
+    test_U_browsing_generic_query_returns_all_classes()
 
     if _failures:
         print(f"\n{len(_failures)} FAILURE(S): {_failures}")
