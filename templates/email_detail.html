@@ -115,6 +115,11 @@
                         "retrieval_error": "Retrieval failed",
                         "safety_block": "Safety block",
                         "generation_error": "Reply generation failed",
+                        "live_class_unavailable": "Live class information unavailable",
+                        "live_class_ambiguous": "Live class match ambiguous",
+                        "live_class_not_found": "Live class not found",
+                        "live_class_browsing_unavailable": "Live class browsing unavailable",
+                        "live_class_browsing_no_match": "No matching classes found",
                         "existing_review": "Flagged for review"
                     } %}
                     {% set reason_codes = email.review_reason.split(',') if email.review_reason else ['existing_review'] %}

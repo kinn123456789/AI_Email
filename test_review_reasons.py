@@ -117,11 +117,22 @@ def _install_fakes():
     psycopg2_mod.extras = extras_mod
     psycopg2_mod.connect = lambda *a, **kw: FakeConnection(FakeSimpleConnectionPool())
 
+    # live_class_intent.py imports coral_class_catalog.py, which does
+    # `import requests` at module level - faked the same way
+    # test_coral_class_catalog.py/test_live_class_integration.py already
+    # do, purely so the real REVIEW_REASON_* constants can be imported and
+    # cross-checked against the template below. No network call is made
+    # anywhere in this file.
+    requests_mod = _install_fake_module("requests", get=lambda *a, **kw: None)
+    requests_mod.Timeout = type("Timeout", (Exception,), {})
+    requests_mod.RequestException = type("RequestException", (Exception,), {})
+
 
 _install_fakes()
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import database  # noqa: E402
+import live_class_intent  # noqa: E402
 
 database.db_pool = FakeSimpleConnectionPool()
 
@@ -436,6 +447,101 @@ def test_template_review_reason_only_shown_when_requires_review():
     )
 
 
+# ---------------------------------------------------------------------------
+# Template: the newer live-class review reasons (live_class_intent.py) are
+# now also mapped to a specific, meaningful label - previously absent, so
+# they fell through to the generic "Flagged for review" fallback even
+# though the underlying reason was already known and already persisted.
+# ---------------------------------------------------------------------------
+
+# Every REVIEW_REASON_* token live_class_intent.py can actually produce,
+# read live from the real module rather than duplicated as a hardcoded
+# list - this way, a future review reason added there without a matching
+# template label fails this test automatically.
+_LIVE_CLASS_REVIEW_REASONS = [
+    value for name, value in vars(live_class_intent).items()
+    if name.startswith("REVIEW_REASON_") and isinstance(value, str)
+]
+
+
+def test_template_includes_a_label_for_every_live_class_review_reason():
+    src = _read_source(os.path.join("templates", "email_detail.html"))
+    check(
+        "live_class_intent.py actually defines some REVIEW_REASON_* constants "
+        "(sanity check that the list above isn't accidentally empty)",
+        len(_LIVE_CLASS_REVIEW_REASONS) >= 5,
+        f"found {_LIVE_CLASS_REVIEW_REASONS!r}",
+    )
+    for code in _LIVE_CLASS_REVIEW_REASONS:
+        check(
+            f"email_detail.html's review_reason_labels dict has an entry for {code!r} "
+            "(the real token live_class_intent.py persists to messages.review_reason)",
+            f'"{code}"' in src,
+        )
+
+
+def test_template_live_class_labels_are_specific_not_generic():
+    src = _read_source(os.path.join("templates", "email_detail.html"))
+    # Pull the dict literal itself out of the template so each label's
+    # actual mapped text can be checked, not just that the key exists
+    # somewhere in the file.
+    dict_start = src.index("review_reason_labels = {")
+    dict_end = src.index("%}", dict_start)
+    dict_block = src[dict_start:dict_end]
+
+    expected_labels = {
+        "live_class_unavailable": "Live class information unavailable",
+        "live_class_ambiguous": "Live class match ambiguous",
+        "live_class_not_found": "Live class not found",
+        "live_class_browsing_unavailable": "Live class browsing unavailable",
+        "live_class_browsing_no_match": "No matching classes found",
+    }
+    for code, label in expected_labels.items():
+        check(
+            f'"{code}" maps to a specific label ("{label}"), not the generic fallback',
+            f'"{code}": "{label}"' in dict_block,
+        )
+
+
+def test_template_existing_four_labels_unchanged():
+    """Explicit regression guard: the 4 original reason codes and their
+    exact original label text must be byte-for-byte unchanged by this
+    addition - only new entries were added, nothing existing was edited."""
+    src = _read_source(os.path.join("templates", "email_detail.html"))
+    original_labels = {
+        "classifier": "Classification requires review",
+        "retrieval_error": "Retrieval failed",
+        "safety_block": "Safety block",
+        "generation_error": "Reply generation failed",
+        "existing_review": "Flagged for review",
+    }
+    for code, label in original_labels.items():
+        check(
+            f'original label for "{code}" ("{label}") is unchanged',
+            f'"{code}": "{label}"' in src,
+        )
+
+
+def test_template_reason_display_mechanism_itself_unchanged():
+    """The split/lookup/join logic that actually renders the reasons list
+    is unchanged - this addition only ever added new dict entries, never
+    touched the surrounding presentation logic."""
+    src = _read_source(os.path.join("templates", "email_detail.html"))
+    check(
+        "the comma-split + safe-default lookup mechanism is unchanged",
+        "email.review_reason.split(',') if email.review_reason else ['existing_review']" in src
+        and "review_reason_labels.get(code.strip(), 'Flagged for review')" in src,
+    )
+    check(
+        "multiple reasons are still joined with ' · ' between them (unchanged separator)",
+        "{% if not loop.last %} · {% endif %}" in src,
+    )
+    check(
+        "the generic 'Requires human review' / 'Not flagged' states are both still present unchanged",
+        "Requires human review" in src and "Not flagged" in src,
+    )
+
+
 def main():
     test_classifier_review_only()
     test_retrieval_error_only()
@@ -460,6 +566,11 @@ def main():
 
     test_template_review_reason_uses_safe_fixed_labels()
     test_template_review_reason_only_shown_when_requires_review()
+
+    test_template_includes_a_label_for_every_live_class_review_reason()
+    test_template_live_class_labels_are_specific_not_generic()
+    test_template_existing_four_labels_unchanged()
+    test_template_reason_display_mechanism_itself_unchanged()
 
     print()
     if _failures:
