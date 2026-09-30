@@ -14,11 +14,23 @@ source on GitHub) declares:
 
 Change under test: generate_reply() now extracts
 usage.completion_tokens_details.reasoning_tokens defensively (via
-getattr() with a default at every step) and prints it as a new,
-separate stdout log line - purely additive observability. No ai_logs
-column exists for this value (confirmed by schema inspection), so
-nothing is persisted to the database and save_ai_log() is called with
-exactly the same arguments as before this change.
+getattr() with a default at every step) and logs it as a new, separate
+log line - purely additive observability. No ai_logs column exists for
+this value (confirmed by schema inspection), so nothing is persisted to
+the database and save_ai_log() is called with exactly the same arguments
+as before this change.
+
+Follow-up (this file): the reasoning-token line now goes through
+logger.py's existing logger (logger.info(...)) instead of print() - a
+read-only investigation found this module's prints weren't showing up in
+Render's log viewer, most plausibly because of default stdout buffering,
+while logging.StreamHandler flushes on every record by design. This is a
+transport change only: the message text/format and the reasoning_tokens
+value itself are completely unchanged. reply_generator.logger is
+monkey-patched with a small fake (FakeLogger below) for the duration of
+each call in this file, the same lightweight-fake philosophy this file
+already uses for openai/psycopg2/dotenv - real logging.Handler plumbing
+isn't needed just to assert on one captured message string.
 
 Matches this repo's existing test_*.py convention (see test_p0_fixes.py,
 whose exact fake-OpenAI-client/fake-psycopg2 infrastructure this file
@@ -113,6 +125,28 @@ class FakeConnection:
         pass
 
 
+class FakeLogger:
+    """Stands in for logger.py's real `logger` - only .info() is exercised
+    by the code under test, but .error()/.warning()/.exception() are
+    included as harmless no-ops so this fake stays safe to use even if a
+    future change adds another log level here."""
+
+    def __init__(self):
+        self.messages = []
+
+    def info(self, msg, *a, **kw):
+        self.messages.append(str(msg))
+
+    def error(self, msg, *a, **kw):
+        self.messages.append(str(msg))
+
+    def warning(self, msg, *a, **kw):
+        self.messages.append(str(msg))
+
+    def exception(self, msg, *a, **kw):
+        self.messages.append(str(msg))
+
+
 class FakeSimpleConnectionPool:
     def __init__(self, *a, **kw):
         self.next_fetchall = []
@@ -193,20 +227,33 @@ def _response_with_malformed_usage_structure(content):
 
 
 def _call_generate_reply(response):
+    """Returns (reply_text, status, output), where `output` merges the
+    real stdout print() lines (e.g. "Reply generated - ...", unchanged by
+    this task) with the fake logger's captured .info() lines (e.g.
+    "Reasoning tokens - ...", now logged rather than printed) into one
+    string, so every existing "<expected text> in output" assertion below
+    still works unchanged regardless of which transport a given line uses."""
     reply_generator.client.chat.completions.set_next(response)
+    fake_logger = FakeLogger()
+    original_logger = reply_generator.logger
+    reply_generator.logger = fake_logger
     buf = io.StringIO()
-    with redirect_stdout(buf):
-        reply_text, status = reply_generator.generate_reply(
-            gmail_message_id="test-msg-1",
-            subject="How much is the class?",
-            body="Can you tell me the price?",
-            category="Billing",
-            priority="Medium",
-            thread_history="",
-            historical_emails=[],
-            knowledge=[],
-        )
-    return reply_text, status, buf.getvalue()
+    try:
+        with redirect_stdout(buf):
+            reply_text, status = reply_generator.generate_reply(
+                gmail_message_id="test-msg-1",
+                subject="How much is the class?",
+                body="Can you tell me the price?",
+                category="Billing",
+                priority="Medium",
+                thread_history="",
+                historical_emails=[],
+                knowledge=[],
+            )
+    finally:
+        reply_generator.logger = original_logger
+    output = buf.getvalue() + "\n".join(fake_logger.messages)
+    return reply_text, status, output
 
 
 # ---------------------------------------------------------------------------
@@ -220,7 +267,7 @@ def test_reasoning_tokens_present_is_captured_and_logged():
     check("reply generation still succeeds", status == "ok")
     check("the reply text is unchanged", reply_text == "Thanks for your question. It's $20 per session.")
     check(
-        "the new stdout line reports the real reasoning_tokens value (900)",
+        "the new log line reports the real reasoning_tokens value (900)",
         "Reasoning tokens - gmail_message_id=test-msg-1 reasoning_tokens=900" in output,
         f"got output={output!r}",
     )
@@ -237,7 +284,7 @@ def test_reasoning_tokens_absent_defaults_to_none_and_does_not_crash():
     check("reply generation still succeeds even with no completion_tokens_details at all", status == "ok")
     check("the reply text is unchanged", reply_text == "No reasoning-token metadata here.")
     check(
-        "the new stdout line reports reasoning_tokens=None rather than raising",
+        "the new log line reports reasoning_tokens=None rather than raising",
         "Reasoning tokens - gmail_message_id=test-msg-1 reasoning_tokens=None" in output,
         f"got output={output!r}",
     )
@@ -323,6 +370,70 @@ def test_no_reasoning_token_value_is_ever_passed_to_save_ai_log():
     )
 
 
+# ---------------------------------------------------------------------------
+# 6. Source-level scope check: confirm the print()->logger.info() swap is
+#    exactly as narrow as this task requires - only the one reasoning-token
+#    line changed, every other print() in this file is untouched, and the
+#    import follows this repo's own established convention.
+# ---------------------------------------------------------------------------
+
+def _read_source(filename):
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), filename), "r", encoding="utf-8") as f:
+        return f.read()
+
+
+def test_reasoning_token_line_uses_logger_not_print():
+    src = _read_source("reply_generator.py")
+    check(
+        "the reasoning-token line calls logger.info(...), not print(...)",
+        'logger.info(f"Reasoning tokens - gmail_message_id={gmail_message_id} reasoning_tokens={reasoning_tokens}")' in src,
+    )
+    check(
+        "the old print()-based reasoning-token line no longer exists",
+        'print(f"Reasoning tokens - gmail_message_id={gmail_message_id} reasoning_tokens={reasoning_tokens}")' not in src,
+    )
+    check(
+        "the logger is imported the same way every other caller in this repo already does it",
+        "from logger import logger" in src,
+    )
+
+
+def _code_lines(src):
+    """Non-comment source lines only - this file's own new explanatory
+    comment mentions "print()" and "logger.info()" several times in
+    prose, which would otherwise inflate a naive whole-file substring
+    count (the same class of false positive this repo's test suite has
+    hit before whenever a comment happens to name the exact thing a check
+    is looking for)."""
+    return [line for line in src.splitlines() if not line.strip().startswith("#")]
+
+
+def test_no_other_print_statement_was_touched():
+    src = _read_source("reply_generator.py")
+    code_lines = _code_lines(src)
+    real_print_calls = sum(line.count("print(") for line in code_lines)
+    real_logger_info_calls = sum(line.count("logger.info(") for line in code_lines)
+    check(
+        "the pre-existing 'Reply generated' line is still a print(), unchanged by this task",
+        'print(f"Reply generated - gmail_message_id={gmail_message_id} length={len(reply)} elapsed_ms={elapsed_ms}")' in src,
+    )
+    check(
+        "reply_generator.py still has exactly 10 other print() calls in real code (11 total before this task, minus the one converted)",
+        real_print_calls == 10,
+        f"got {real_print_calls}",
+    )
+    check(
+        "exactly one real logger.info(...) call exists in reply_generator.py - no other line was converted",
+        real_logger_info_calls == 1,
+        f"got {real_logger_info_calls}",
+    )
+    check(
+        "reasoning_tokens is still computed exactly as before (getattr chain unchanged)",
+        'completion_tokens_details = getattr(usage, "completion_tokens_details", None)' in src
+        and 'reasoning_tokens = getattr(completion_tokens_details, "reasoning_tokens", None)' in src,
+    )
+
+
 def main():
     tests = [
         test_reasoning_tokens_present_is_captured_and_logged,
@@ -331,6 +442,8 @@ def main():
         test_usage_object_itself_missing_is_handled_by_existing_code_path,
         test_existing_token_metrics_and_status_unaffected,
         test_no_reasoning_token_value_is_ever_passed_to_save_ai_log,
+        test_reasoning_token_line_uses_logger_not_print,
+        test_no_other_print_statement_was_touched,
     ]
     for t in tests:
         t()

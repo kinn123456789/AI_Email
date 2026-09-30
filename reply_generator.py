@@ -8,6 +8,7 @@ from openai import OpenAI
 import time
 
 from ai_logger import save_ai_log
+from logger import logger
 
 # Catches teacher/staff-only content leaking into a parent-facing reply —
 # the same red-flag phrases prompt_builder.py's KNOWLEDGE RETRIEVAL section
@@ -225,10 +226,21 @@ def generate_reply(
         # returned reply/status, and response_time_ms/prompt_tokens/
         # completion_tokens/total_tokens below are completely unaffected
         # either way. No ai_logs column exists to persist this yet, so it's
-        # logged to stdout only for now, not passed to save_ai_log().
+        # logged only for now, not passed to save_ai_log().
+        #
+        # Uses logger.py's existing logger, not print() - a follow-up to the
+        # read-only log-visibility investigation, which found this module
+        # never used the project's own logger (11 bare print() calls, 0
+        # logger.* calls) even though it already exists and every other
+        # print() here has the exact same visibility risk. logger.info()
+        # goes through logging.StreamHandler, which flushes on every record
+        # by design, unlike unbuffered-by-default stdout under print().
+        # reasoning_tokens is logged exactly as computed below, including a
+        # real None when the provider doesn't supply a breakdown - never
+        # coerced to 0, since None and 0 mean different things here.
         completion_tokens_details = getattr(usage, "completion_tokens_details", None)
         reasoning_tokens = getattr(completion_tokens_details, "reasoning_tokens", None)
-        print(f"Reasoning tokens - gmail_message_id={gmail_message_id} reasoning_tokens={reasoning_tokens}")
+        logger.info(f"Reasoning tokens - gmail_message_id={gmail_message_id} reasoning_tokens={reasoning_tokens}")
 
         knowledge_log = []
 
