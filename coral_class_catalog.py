@@ -77,6 +77,61 @@ def _normalize_text(text):
     return re.sub(r"\s+", " ", str(text).strip().lower())
 
 
+# ---------------------------------------------------------------------------
+# Word-overlap matching support for find_matching_class()'s Tier 2.5 (see
+# that function) - a small, explicit, deterministic stopword list, not a
+# general NLP stopword library. Two kinds of word are excluded from ever
+# being treated as a "meaningful" class-name word on their own:
+#
+#   - _GENERIC_CLASS_WORDS: the generic nouns a parent uses to refer to
+#     "a class" in the abstract ("class", "course", "session" and their
+#     plurals) - explicitly called out as required NOT_FOUND cases.
+#   - _COMMON_STOPWORDS: the small set of English articles/prepositions
+#     that would otherwise show up as a literal word inside many real
+#     class titles (e.g. "Finance 101: A Practical Playbook For Mastering
+#     Money" contains "a" and "for" as ordinary words) - matching on one
+#     of these alone would find "a class" in half the catalog by accident.
+#
+# Deliberately NOT an exhaustive stopword list: a casual/conversational
+# word this list doesn't happen to name (e.g. "please", "hi") is still
+# harmless here even if treated as "meaningful", since Tier 2.5 below
+# only ever matches when that exact word is also a whole word inside a
+# class's own title - an ordinary conversational word essentially never
+# is one, so it can never accidentally identify a class on its own.
+# ---------------------------------------------------------------------------
+
+_GENERIC_CLASS_WORDS = frozenset({
+    "class", "classes",
+    "course", "courses",
+    "session", "sessions",
+})
+
+_COMMON_STOPWORDS = frozenset({
+    "a", "an", "the",
+    "of", "for", "in", "on", "at", "to", "with", "and", "or",
+    "is", "are", "be",
+})
+
+_STOPWORDS = _GENERIC_CLASS_WORDS | _COMMON_STOPWORDS
+
+_WORD_PATTERN = re.compile(r"[a-z0-9]+")
+
+
+def _meaningful_words(normalized_text):
+    """Whole alphanumeric tokens from already-normalized text, minus
+    _STOPWORDS and minus any token under 3 characters or made up entirely
+    of digits. A bare course number like "101" is shared by enough
+    unrelated titles (most of Coral's classes are named "<Subject> 101")
+    that it can't meaningfully distinguish one class from another, so
+    it's excluded the same way a stopword would be - never treated as a
+    "meaningful class-name word" on its own."""
+
+    return [
+        w for w in _WORD_PATTERN.findall(normalized_text)
+        if len(w) >= 3 and w not in _STOPWORDS and not w.isdigit()
+    ]
+
+
 def _normalize_class(raw):
     """Ensures the handful of identity fields this module actually
     depends on for matching (id, title, subject, url_slug) are always
@@ -284,9 +339,19 @@ def find_matching_class(classes, query_text):
          query appears as a substring of the title (titles shorter than
          4 normalized characters are skipped here, to avoid an
          unhelpfully generic title matching almost anything).
-      3. Only if no title match exists at all: a weaker fallback against
-         subject or url_slug (slug words treated as space-separated),
-         same minimum-length guard.
+      2.5. Word-overlap fallback for an informal reference that never
+         contains the full title as a substring (e.g. "the Finance
+         class" vs. "Finance 101: A Practical Playbook For Mastering
+         Money"): the query's "meaningful" words (see _meaningful_words()
+         - excludes stopwords, generic nouns like "class"/"course"/
+         "session", and bare numbers) are checked as whole words against
+         each title. A class counts as matched here if ANY meaningful
+         query word appears as a whole word in its title. Still fully
+         deterministic, still no LLM, still bounded to exactly the
+         classes this function was given.
+      3. Only if no title or word-overlap match exists at all: a weaker
+         fallback against subject or url_slug (slug words treated as
+         space-separated), same minimum-length guard.
 
     At each tier: exactly one match -> SUCCESS with that class. More than
     one -> AMBIGUOUS with every candidate, rather than guessing which one
@@ -324,6 +389,27 @@ def find_matching_class(classes, query_text):
         return {"status": SUCCESS, "class": title_matches[0], "candidates": []}
     if len(title_matches) > 1:
         return {"status": AMBIGUOUS, "class": None, "candidates": title_matches}
+
+    # Tier 2.5: word-overlap fallback. Only reached when Tier 2 found
+    # zero title matches - never runs at all for a query with no
+    # meaningful words (e.g. "class"/"course"/"session" alone), which
+    # falls straight through to Tier 3 exactly as it did before this
+    # tier existed.
+    meaningful_words = _meaningful_words(normalized_query)
+
+    if meaningful_words:
+        word_matches = []
+        for c in classes:
+            title = _normalize_text(c.get("title"))
+            if not title:
+                continue
+            if any(re.search(r"\b" + re.escape(w) + r"\b", title) for w in meaningful_words):
+                word_matches.append(c)
+
+        if len(word_matches) == 1:
+            return {"status": SUCCESS, "class": word_matches[0], "candidates": []}
+        if len(word_matches) > 1:
+            return {"status": AMBIGUOUS, "class": None, "candidates": word_matches}
 
     weak_matches = []
     for c in classes:

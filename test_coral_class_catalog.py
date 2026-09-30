@@ -476,6 +476,125 @@ def test_20_missing_optional_fields_no_crash():
     check("20. a completely empty class dict doesn't crash matching", result2["status"] == ccc.NOT_FOUND)
 
 
+# ---------------------------------------------------------------------------
+# 20c. find_matching_class() Tier 2.5 - word-overlap fallback for informal
+# class references (e.g. "the Finance class") that never contain the full
+# title as a substring in either direction. Realistic production-like
+# titles, including Finance 101 and two Science-subject classes (so the
+# same meaningful word "science" is shared by more than one title, to
+# exercise AMBIGUOUS the same way the task's own example expects).
+# ---------------------------------------------------------------------------
+
+_INFORMAL_MATCH_CLASSES = [
+    {
+        "id": "fin-101",
+        "title": "Finance 101: A Practical Playbook For Mastering Money",
+        "subject": "lifeskills",
+        "url_slug": "finance-101-a-practical-playbook-for-mastering-money",
+    },
+    {
+        "id": "geo-sci",
+        "title": "Geology & Earth Science Explorers",
+        "subject": "science",
+        "url_slug": "geology-earth-science-explorers",
+    },
+    {
+        "id": "sci-fair",
+        "title": "Science Fair Prep Workshop",
+        "subject": "science",
+        "url_slug": "science-fair-prep-workshop",
+    },
+    {
+        "id": "cartooning",
+        "title": "Cartooning for Beginners",
+        "subject": "art",
+        "url_slug": "cartooning-for-beginners",
+    },
+]
+
+
+def test_20c1_informal_reference_uniquely_matches_finance_101():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "the Finance class")
+    check("20c1. 'the Finance class' resolves via word-overlap, not substring", result["status"] == ccc.SUCCESS)
+    check("20c1. the correct class (Finance 101) is returned", result["class"] is not None and result["class"]["id"] == "fin-101")
+
+
+def test_20c2_bare_meaningful_word_uniquely_matches():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "Finance")
+    check("20c2. a single bare meaningful word ('Finance') still uniquely matches", result["status"] == ccc.SUCCESS)
+    check("20c2. the correct class (Finance 101) is returned", result["class"] is not None and result["class"]["id"] == "fin-101")
+
+
+def test_20c3_extra_trailing_word_does_not_break_the_match():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "Finance class please")
+    check(
+        "20c3. an extra non-matching word ('please') alongside a unique meaningful word doesn't block the match",
+        result["status"] == ccc.SUCCESS,
+    )
+    check("20c3. the correct class (Finance 101) is returned", result["class"] is not None and result["class"]["id"] == "fin-101")
+
+
+def test_20c4_shared_meaningful_word_across_titles_is_ambiguous():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "Science class")
+    check(
+        "20c4. 'science' appearing in two different titles returns AMBIGUOUS, not a guess",
+        result["status"] == ccc.AMBIGUOUS,
+    )
+    check("20c4. class is None on AMBIGUOUS", result["class"] is None)
+    check(
+        "20c4. both Science-titled classes are listed as candidates",
+        {c["id"] for c in result["candidates"]} == {"geo-sci", "sci-fair"},
+    )
+
+
+def test_20c5_generic_class_word_alone_is_not_found():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "class")
+    check("20c5. the bare generic word 'class' alone returns NOT_FOUND", result["status"] == ccc.NOT_FOUND)
+
+
+def test_20c6_generic_course_word_alone_is_not_found():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "course")
+    check("20c6. the bare generic word 'course' alone returns NOT_FOUND", result["status"] == ccc.NOT_FOUND)
+
+
+def test_20c7_generic_session_word_alone_is_not_found():
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "session")
+    check("20c7. the bare generic word 'session' alone returns NOT_FOUND", result["status"] == ccc.NOT_FOUND)
+
+
+def test_20c8_whole_word_boundary_prevents_accidental_substring_match():
+    # "art" is only ever a substring INSIDE the word "Cartooning" in this
+    # fixture - never a standalone word in any title. A naive substring
+    # check (as opposed to a \b-bounded whole-word check) would wrongly
+    # match "Cartooning for Beginners" here; the correct, required
+    # behavior is NOT_FOUND (Tier 3's own subject="art" is also correctly
+    # skipped - "art" is under its 4-character minimum length guard).
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "art class")
+    check(
+        "20c8. 'art' never matches 'Cartooning' via a partial substring - no whole-word hit exists",
+        result["status"] == ccc.NOT_FOUND,
+    )
+
+
+def test_20c9_existing_tiers_take_priority_over_word_overlap():
+    # Tier 1 (exact title match) must still win outright over Tier 2.5 -
+    # confirms insertion order wasn't disturbed.
+    result = ccc.find_matching_class(_INFORMAL_MATCH_CLASSES, "Finance 101: A Practical Playbook For Mastering Money")
+    check("20c9. an exact full-title query still resolves via Tier 1", result["status"] == ccc.SUCCESS)
+    check("20c9. the correct class is returned", result["class"]["id"] == "fin-101")
+
+
+def test_20c10_meaningful_words_helper_filters_stopwords_and_numbers():
+    check(
+        "20c10. _meaningful_words strips generic class/course/session nouns, stopwords, and bare numbers",
+        ccc._meaningful_words("the finance 101 class for a session") == ["finance"],
+    )
+    check(
+        "20c10. an all-stopword/generic/numeric string yields no meaningful words",
+        ccc._meaningful_words("a class 101 for the session") == [],
+    )
+
+
 # ===========================================================================
 # build_live_class_context()
 # ===========================================================================
@@ -1087,6 +1206,17 @@ def main():
     test_18b_no_classes_or_empty_query_returns_not_found()
     test_19_multiple_matches_ambiguous()
     test_20_missing_optional_fields_no_crash()
+
+    test_20c1_informal_reference_uniquely_matches_finance_101()
+    test_20c2_bare_meaningful_word_uniquely_matches()
+    test_20c3_extra_trailing_word_does_not_break_the_match()
+    test_20c4_shared_meaningful_word_across_titles_is_ambiguous()
+    test_20c5_generic_class_word_alone_is_not_found()
+    test_20c6_generic_course_word_alone_is_not_found()
+    test_20c7_generic_session_word_alone_is_not_found()
+    test_20c8_whole_word_boundary_prevents_accidental_substring_match()
+    test_20c9_existing_tiers_take_priority_over_word_overlap()
+    test_20c10_meaningful_words_helper_filters_stopwords_and_numbers()
 
     test_21_context_does_not_invent_fields()
     test_21b_context_full_class_returns_all_allowed_fields()
