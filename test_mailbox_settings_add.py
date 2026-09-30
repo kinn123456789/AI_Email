@@ -252,13 +252,22 @@ def test_other_post_routes_unaffected():
     # Checks the actual executable code shapes (not a bare substring
     # count, which would also match this fix's own explanatory comments)
     # so the assertion stays precise regardless of prose wording: exactly
-    # one real write (the middleware's stash) and exactly one real read
-    # (this route's reuse) exist anywhere in main.py - no other route was
-    # wired to request.state, accidentally or otherwise.
+    # one real write (the middleware's stash) exists anywhere in main.py -
+    # no route was wired to write request.state, accidentally or otherwise
+    # (there is, and should only ever be, one place that parses the body
+    # and stashes it).
     check("exactly one real write to request.state.form in the whole file (the middleware's stash)",
           src.count("request.state.form = form") == 1, f"got {src.count('request.state.form = form')}")
-    check("exactly one real read of request.state.form in the whole file (this route's reuse)",
-          src.count("form = request.state.form") == 1, f"got {src.count('form = request.state.form')}")
+    # Reads are a different story: 2 is correct here, not 1 - the AI
+    # Polish Phase 1 route (a later, separately-approved task) legitimately
+    # reuses the exact same request.state.form pattern this fix
+    # established, for the exact same reason (avoiding a second,
+    # independent body read). Any additional protected POST route that
+    # needs the parsed form is expected to keep reusing this pattern
+    # rather than reading the body itself - the count is expected to grow
+    # as more routes adopt it, not stay pinned at 1 forever.
+    check("at least one real read of request.state.form exists (this fix's own route)",
+          src.count("form = request.state.form") >= 1, f"got {src.count('form = request.state.form')}")
     # A representative sample of other Form(...)-based protected POST
     # routes, confirmed still declared exactly as before - this change
     # only ever ADDS an attribute to request.state; it never alters how

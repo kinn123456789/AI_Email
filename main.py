@@ -700,6 +700,60 @@ async def _send_reply_impl(
     )
 
 
+from reply_polish import polish_draft
+
+
+@app.post("/email/{email_id}/polish")
+async def polish_reply(request: Request, email_id: int):
+    """Phase 1 of the future AI Polish feature (see the read-only
+    architecture investigation this follows) - an isolated endpoint that
+    takes the CURRENT HUMAN-EDITED draft (submitted by the caller, never
+    re-read from the database) and returns a polished version, without
+    touching reply generation, RAG, live-class data, or any existing
+    email state. Nothing is persisted here: not messages.ai_draft_reply,
+    not messages.final_reply, no new row of any kind, no database
+    function is called at all - identical in spirit to how /send remains
+    the only place those columns are ever written. This route exists so
+    a future UI (not built in this phase) can call it, inspect the
+    result, and decide whether to apply it.
+
+    email_id is accepted for URL symmetry with the other
+    /email/{email_id}/* actions (send, dismiss) and as a natural place
+    for a future caller to correlate a polish attempt with the email it
+    came from - Phase 1 deliberately does not look it up or touch the
+    database with it at all.
+
+    Reuses AuthMiddleware's own already-parsed form (request.state.form)
+    instead of reading the body again here - see add_settings_account()
+    above for the established reasoning (a second, independent read of
+    the same body was found to silently lose form fields in production).
+    Requires multipart/form-data or x-www-form-urlencoded submission
+    (never a raw JSON body) for exactly that reason - AuthMiddleware's
+    own CSRF check only ever parses a form body, so this endpoint is
+    already fully covered by the app's existing session+CSRF protection
+    with no additional code, provided the caller submits FormData the
+    same way every other protected POST in this app already does."""
+
+    form = request.state.form
+    draft = (form.get("draft") or "").strip()
+
+    if not draft:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Enter some draft text before polishing."}
+        )
+
+    polished, status = polish_draft(draft)
+
+    if status != "ok":
+        return JSONResponse(
+            status_code=502,
+            content={"error": "Unable to polish the draft right now."}
+        )
+
+    return JSONResponse(content={"polished": polished})
+
+
 def _save_reply_to_historical_emails(message_id, thread_id, in_reply_to, sender, recipient, subject, body, is_unedited_ai_reply):
     """Every real staff-sent reply feeds back into the RAG example pool used
     by search_similar_emails/rag_reranker.py, so the AI's style examples

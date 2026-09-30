@@ -217,14 +217,17 @@
                      can slot into beside the existing controls without any
                      further restructuring. -->
                 {% if email.status != "Closed" %}
-                <form action="/email/{{ email.id }}/send" method="POST" enctype="multipart/form-data" class="bg-white/50 p-6 rounded-3xl border border-cyan-100 flex flex-col"
+                <form id="composeForm" action="/email/{{ email.id }}/send" method="POST" enctype="multipart/form-data" class="bg-white/50 p-6 rounded-3xl border border-cyan-100 flex flex-col"
                       onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerText='Sending...';">
                     {{ csrf_input(request) }}
                     <div class="flex items-center justify-between gap-3 px-1 mb-2">
                         <label class="font-bold text-gray-900 text-sm tracking-wider uppercase">✍️ Compose Reply/AI draft</label>
-                        <!-- Reserved for a future "AI Polish" action, placed
-                             beside these existing controls - not implemented
-                             in this task. -->
+                        <button type="button" id="polishBtn"
+                                class="bg-white border border-cyan-200 text-cyan-800 px-4 py-2 rounded-xl font-semibold text-xs uppercase tracking-wide hover:bg-cyan-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Improve grammar, clarity, and tone of the draft below - never changes facts and never sends or replaces your draft until you choose Apply"
+                                aria-label="AI Polish - improve the wording of the current draft without changing its meaning">
+                            <span id="polishBtnLabel">✨ AI Polish</span>
+                        </button>
                     </div>
 
                     {% if request.query_params.get("sent") %}
@@ -235,7 +238,31 @@
                     <p class="text-amber-700 font-semibold mb-2">⚠️ This draft is flagged for review — read carefully before sending.</p>
                     {% endif %}
 
-                    <textarea name="reply_body" class="w-full min-h-[24rem] lg:min-h-[30rem] flex-1 resize-y rounded-2xl p-5 bg-white/80 border border-cyan-200 shadow-sm mb-4 text-[15px] leading-relaxed">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>
+                    <textarea id="replyBody" name="reply_body" class="w-full min-h-[24rem] lg:min-h-[30rem] flex-1 resize-y rounded-2xl p-5 bg-white/80 border border-cyan-200 shadow-sm mb-4 text-[15px] leading-relaxed">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>
+
+                    <div id="polishError" class="hidden mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-2" role="alert"></div>
+
+                    <div id="polishPreview" class="hidden mb-4 rounded-2xl border border-cyan-300 bg-cyan-50/60 p-4">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="text-xs font-bold uppercase tracking-wider text-cyan-800">✨ AI Polish Preview</span>
+                            <span id="polishStaleNote" class="hidden text-[11px] text-amber-700 font-semibold">Based on an earlier version of your draft</span>
+                        </div>
+                        <div id="polishPreviewText" class="text-sm text-stone-800 leading-relaxed whitespace-pre-wrap mb-3"></div>
+                        <p class="text-[11px] text-stone-500 mb-3">Not applied yet — review it, then choose an option below.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" id="polishApplyBtn"
+                                    class="bg-cyan-800 text-white px-4 py-2 rounded-xl font-semibold text-xs hover:bg-black transition"
+                                    aria-label="Apply the polished draft - replaces the text in the compose box above">
+                                Apply polished draft
+                            </button>
+                            <button type="button" id="polishDiscardBtn"
+                                    class="bg-white border border-cyan-200 text-stone-600 px-4 py-2 rounded-xl font-semibold text-xs hover:bg-cyan-50 transition"
+                                    aria-label="Discard this polished suggestion and keep my current draft">
+                                Discard
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="mb-4">
                         <label class="block text-sm font-semibold text-stone-600 mb-1">Attachments (optional)</label>
                         <input type="file" name="attachments" multiple class="w-full rounded-xl border border-cyan-200 bg-white/80 px-3 py-2 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-cyan-800 file:text-white file:font-semibold hover:file:bg-black">
@@ -319,6 +346,142 @@
             });
         }
     });
+    </script>
+
+    <script>
+    (function () {
+        const composeForm = document.getElementById("composeForm");
+        const replyBody = document.getElementById("replyBody");
+        const polishBtn = document.getElementById("polishBtn");
+        const polishBtnLabel = document.getElementById("polishBtnLabel");
+        const polishError = document.getElementById("polishError");
+        const polishPreview = document.getElementById("polishPreview");
+        const polishPreviewText = document.getElementById("polishPreviewText");
+        const polishStaleNote = document.getElementById("polishStaleNote");
+        const polishApplyBtn = document.getElementById("polishApplyBtn");
+        const polishDiscardBtn = document.getElementById("polishDiscardBtn");
+
+        // A closed conversation renders no compose form at all - bail out
+        // quietly rather than throwing on missing elements.
+        if (!composeForm || !replyBody || !polishBtn) {
+            return;
+        }
+
+        let polishInFlight = false;
+        // Bumped on every Polish click. A response is only ever acted on
+        // if it's still the answer to the MOST RECENT click - an older,
+        // slower response can never clobber what a newer click produced.
+        let polishRequestSeq = 0;
+
+        function hidePolishError() {
+            polishError.classList.add("hidden");
+            polishError.textContent = "";
+        }
+
+        function showPolishError(message) {
+            polishError.textContent = message;
+            polishError.classList.remove("hidden");
+        }
+
+        function hidePolishPreview() {
+            polishPreview.classList.add("hidden");
+            polishPreviewText.textContent = "";
+            polishStaleNote.classList.add("hidden");
+        }
+
+        function setPolishing(isPolishing) {
+            polishInFlight = isPolishing;
+            polishBtn.disabled = isPolishing;
+            polishBtnLabel.textContent = isPolishing ? "✨ Polishing..." : "✨ AI Polish";
+        }
+
+        polishBtn.addEventListener("click", function () {
+            if (polishInFlight) {
+                return;
+            }
+
+            // Captured now, at click time - Discard always restores this
+            // exact string, and Apply only ever uses the preview text
+            // this specific request produces. Nothing below ever re-reads
+            // "the current draft" to decide what to restore or apply.
+            const draftAtRequestTime = replyBody.value;
+
+            if (!draftAtRequestTime.trim()) {
+                showPolishError("Enter some draft text before polishing.");
+                return;
+            }
+
+            hidePolishError();
+            hidePolishPreview();
+            setPolishing(true);
+
+            const thisRequestSeq = ++polishRequestSeq;
+
+            const csrfInput = composeForm.querySelector('input[name="csrf_token"]');
+            const formData = new FormData();
+            formData.append("csrf_token", csrfInput ? csrfInput.value : "");
+            formData.append("draft", draftAtRequestTime);
+
+            fetch("/email/{{ email.id }}/polish", {
+                method: "POST",
+                body: formData,
+            })
+                .then(function (response) {
+                    return response.json().catch(function () {
+                        return null;
+                    }).then(function (data) {
+                        return { ok: response.ok, data: data };
+                    });
+                })
+                .then(function (result) {
+                    // A newer Polish click has already superseded this
+                    // request - its result is stale, so drop it entirely.
+                    if (thisRequestSeq !== polishRequestSeq) {
+                        return;
+                    }
+
+                    setPolishing(false);
+
+                    const polished = result.data && typeof result.data.polished === "string"
+                        ? result.data.polished.trim()
+                        : "";
+
+                    if (!result.ok || !polished) {
+                        showPolishError("We couldn't polish this draft right now. Your original draft is unchanged.");
+                        return;
+                    }
+
+                    polishPreviewText.textContent = polished;
+
+                    // The textarea is NEVER overwritten here. If the user
+                    // edited it while this request was in flight, the live
+                    // value will no longer match what was polished - make
+                    // that visible instead of hiding it. Apply stays an
+                    // explicit, separate action either way.
+                    polishStaleNote.classList.toggle("hidden", replyBody.value === draftAtRequestTime);
+                    polishPreview.classList.remove("hidden");
+                })
+                .catch(function () {
+                    if (thisRequestSeq !== polishRequestSeq) {
+                        return;
+                    }
+                    setPolishing(false);
+                    showPolishError("We couldn't polish this draft right now. Your original draft is unchanged.");
+                });
+        });
+
+        polishApplyBtn.addEventListener("click", function () {
+            replyBody.value = polishPreviewText.textContent;
+            hidePolishPreview();
+        });
+
+        polishDiscardBtn.addEventListener("click", function () {
+            // Never touches the textarea and never calls the backend
+            // again - whatever is currently in the box (edited or not)
+            // is left exactly as-is.
+            hidePolishPreview();
+        });
+    })();
     </script>
 <script src="/static/local-time.js"></script>
 </body>
