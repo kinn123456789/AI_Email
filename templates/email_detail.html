@@ -153,59 +153,76 @@
             {% endif %}
         </div>
 
-        <!-- Main Desktop Grid (60-40 Split) -->
-        <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 mb-8">
-            
-            <!-- Left Column: Conversation (60%) -->
-            <div class="flex flex-col lg:col-span-3">
-                <div class="flex items-center justify-between mb-2 px-1">
-                    <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5">📥 Conversation</h2>
-                    <span class="bg-cyan-200/50 text-cyan-800 text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md">Scrollable Thread</span>
-                </div>
-                <div class="relative">
-                <div id="conversationBox" class="bg-white/50 border border-cyan-100 p-5 rounded-3xl whitespace-pre-wrap break-words text-stone-700 text-sm leading-relaxed shadow-inner h-[650px] overflow-y-scroll force-visible-scrollbar">
-                    <div class="flex flex-col justify-start space-y-4 pr-2">
-                        {% for msg in conversation %}
-                        {% set is_school = (msg.sender == school_email) %}
-                        <div class="{{ ('bg-cyan-50 border-2 border-cyan-400' if is_school else 'bg-white border-2 border-cyan-400') if loop.last else ('bg-cyan-50/70 border border-cyan-200' if is_school else 'bg-white border border-stone-200') }} rounded-2xl p-5 shadow-md">
-                            <div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
-                                <div class="font-semibold text-sm text-gray-800 flex items-center gap-2">
-                                    {{ '🏫 Coral Academy' if is_school else '👤 Parent' }}
-                                </div>
-                                {% if loop.last %}<span class="bg-cyan-500 text-white text-[9px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded">Latest</span>{% endif %}
-                            </div>
-                            <div>{{ msg.body }}</div>
-                            <div class="text-xs text-stone-400 mt-3 local-time" data-utc="{{ msg.created_at.isoformat() if msg.created_at else '' }}"></div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                <button type="button" id="jumpToLatestBtn"
-                        class="hidden absolute bottom-4 right-4 bg-cyan-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-full shadow-lg hover:bg-cyan-700">
-                    ↓ Jump to latest
-                </button>
-                </div>
+        <!-- AI Quick Summary - a compact, full-width strip so the "understand
+             context" step of the read-thread -> review-draft -> edit -> send
+             workflow happens before either the conversation or the compose
+             workspace below it, without competing for their space. -->
+        <div class="mb-6 p-5 bg-white/70 border border-cyan-200/80 rounded-3xl shadow-sm">
+            <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5 mb-2">📝 AI Quick Summary</h2>
+            <div class="text-stone-700 text-sm leading-relaxed break-words">
+                {% if email.ai_summary and email.ai_summary != "Error" %}{{ email.ai_summary }}
+                {% elif email.ai_summary == "Error" %}<span class="text-red-600 italic">⚠️ Error processing.</span>
+                {% else %}<span class="italic text-stone-400">No AI summary available.</span>{% endif %}
             </div>
+        </div>
 
-            <!-- Right Column: Enhanced UI Layout (40%) -->
-            <div class="flex flex-col gap-6 lg:col-span-2">
-                
-                <!-- Enhanced AI Quick Summary Box -->
-                <div class="bg-white/70 border border-cyan-200/80 p-5 rounded-3xl shadow-sm">
-                    <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5 mb-2">📝 AI Quick Summary</h2>
-                    <div class="text-stone-700 text-sm leading-relaxed break-words">
-                        {% if email.ai_summary and email.ai_summary != "Error" %}{{ email.ai_summary }}
-                        {% elif email.ai_summary == "Error" %}<span class="text-red-600 italic">⚠️ Error processing.</span>
-                        {% else %}<span class="italic text-stone-400">No AI summary available.</span>{% endif %}
+        <!-- Workspace: conversation + compose form the main working area
+             (8 of 12 columns on large screens - previously compose lived in
+             a 2-of-5 sidebar); Knowledge Match / What the AI Used move to a
+             slim supporting sidebar (4 of 12) so they stay visible without
+             competing with the reply editor for space. Single column, and
+             a natural top-to-bottom stack, below the lg breakpoint. -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start mb-8">
+
+            <!-- Main column: conversation, then Compose Reply directly below it. -->
+            <div class="flex flex-col gap-6 lg:col-span-8">
+
+                <div class="flex flex-col">
+                    <div class="flex items-center justify-between mb-2 px-1">
+                        <h2 class="font-bold text-gray-900 text-sm tracking-wider uppercase flex items-center gap-1.5">📥 Conversation</h2>
+                        <span class="bg-cyan-200/50 text-cyan-800 text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md">Scrollable Thread</span>
+                    </div>
+                    <div class="relative">
+                    <div id="conversationBox" class="bg-white/50 border border-cyan-100 p-5 rounded-3xl whitespace-pre-wrap break-words text-stone-700 text-sm leading-relaxed shadow-inner h-[650px] overflow-y-scroll force-visible-scrollbar">
+                        <div class="flex flex-col justify-start space-y-4 pr-2">
+                            {% for msg in conversation %}
+                            {% set is_school = (msg.sender == school_email) %}
+                            <div class="{{ ('bg-cyan-50 border-2 border-cyan-400' if is_school else 'bg-white border-2 border-cyan-400') if loop.last else ('bg-cyan-50/70 border border-cyan-200' if is_school else 'bg-white border border-stone-200') }} rounded-2xl p-5 shadow-md">
+                                <div class="flex items-center justify-between mb-3 pb-2 border-b border-stone-100">
+                                    <div class="font-semibold text-sm text-gray-800 flex items-center gap-2">
+                                        {{ '🏫 Coral Academy' if is_school else '👤 Parent' }}
+                                    </div>
+                                    {% if loop.last %}<span class="bg-cyan-500 text-white text-[9px] uppercase tracking-widest font-bold px-1.5 py-0.5 rounded">Latest</span>{% endif %}
+                                </div>
+                                <div>{{ msg.body }}</div>
+                                <div class="text-xs text-stone-400 mt-3 local-time" data-utc="{{ msg.created_at.isoformat() if msg.created_at else '' }}"></div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <button type="button" id="jumpToLatestBtn"
+                            class="hidden absolute bottom-4 right-4 bg-cyan-600 text-white text-xs font-bold uppercase tracking-wider px-3 py-2 rounded-full shadow-lg hover:bg-cyan-700">
+                        ↓ Jump to latest
+                    </button>
                     </div>
                 </div>
 
-                <!-- Reply Form -->
+                <!-- Compose Reply / AI Draft - the primary working area of the
+                     page: full width of this main column (not a narrow
+                     sidebar), a substantially taller editor, and a toolbar
+                     row next to the label that a future "AI Polish" action
+                     can slot into beside the existing controls without any
+                     further restructuring. -->
                 {% if email.status != "Closed" %}
                 <form action="/email/{{ email.id }}/send" method="POST" enctype="multipart/form-data" class="bg-white/50 p-6 rounded-3xl border border-cyan-100 flex flex-col"
                       onsubmit="this.querySelector('button[type=submit]').disabled=true; this.querySelector('button[type=submit]').innerText='Sending...';">
                     {{ csrf_input(request) }}
-                    <label class="block font-bold text-gray-900 text-sm tracking-wider uppercase px-1 mb-2">✍️ Compose Reply/AI draft</label>
+                    <div class="flex items-center justify-between gap-3 px-1 mb-2">
+                        <label class="font-bold text-gray-900 text-sm tracking-wider uppercase">✍️ Compose Reply/AI draft</label>
+                        <!-- Reserved for a future "AI Polish" action, placed
+                             beside these existing controls - not implemented
+                             in this task. -->
+                    </div>
 
                     {% if request.query_params.get("sent") %}
                     <p class="text-emerald-600 font-semibold mb-2">✓ Reply sent successfully — you can send another below.</p>
@@ -215,14 +232,14 @@
                     <p class="text-amber-700 font-semibold mb-2">⚠️ This draft is flagged for review — read carefully before sending.</p>
                     {% endif %}
 
-                    <textarea name="reply_body" class="w-full min-h-[16rem] rounded-2xl p-4 bg-white/80 border border-cyan-200 shadow-sm mb-4">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>
+                    <textarea name="reply_body" class="w-full min-h-[26rem] lg:min-h-[32rem] flex-1 resize-y rounded-2xl p-5 bg-white/80 border border-cyan-200 shadow-sm mb-4 text-[15px] leading-relaxed">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>
                     <div class="mb-4">
                         <label class="block text-sm font-semibold text-stone-600 mb-1">Attachments (optional)</label>
                         <input type="file" name="attachments" multiple class="w-full rounded-xl border border-cyan-200 bg-white/80 px-3 py-2 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-cyan-800 file:text-white file:font-semibold hover:file:bg-black">
                     </div>
-                    <div class="flex flex-col xl:flex-row gap-3">
-                        <button type="submit" class="bg-cyan-800 text-white px-6 py-3 rounded-2xl font-semibold flex-1 hover:bg-black transition">Send Out 🚀</button>
-                        <a href="/email/{{ email.id }}/dismiss" class="bg-white border border-cyan-200 text-stone-600 px-6 py-3 rounded-2xl font-semibold hover:bg-cyan-50 text-center flex-1">No Reply Needed</a>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="submit" class="bg-cyan-800 text-white px-6 py-3 rounded-2xl font-semibold flex-1 min-w-[10rem] hover:bg-black transition">Send Out 🚀</button>
+                        <a href="/email/{{ email.id }}/dismiss" class="bg-white border border-cyan-200 text-stone-600 px-6 py-3 rounded-2xl font-semibold hover:bg-cyan-50 text-center flex-1 min-w-[10rem]">No Reply Needed</a>
                     </div>
                 </form>
                 {% else %}
@@ -230,6 +247,12 @@
                     <p class="font-semibold text-stone-700">✅ Conversation Closed</p>
                 </div>
                 {% endif %}
+            </div>
+
+            <!-- Sidebar: secondary/reference information only - kept slim so
+                 it never competes with the conversation or compose area for
+                 attention. -->
+            <div class="flex flex-col gap-6 lg:col-span-4">
 
                 {% if email.knowledge_url %}
                 <div class="p-4 bg-white/50 border border-cyan-100 rounded-3xl flex items-center justify-between">
