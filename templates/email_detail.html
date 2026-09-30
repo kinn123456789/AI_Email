@@ -167,15 +167,18 @@
         </div>
 
         <!-- Workspace: conversation + compose form the main working area
-             (8 of 12 columns on large screens - previously compose lived in
-             a 2-of-5 sidebar); Knowledge Match / What the AI Used move to a
-             slim supporting sidebar (4 of 12) so they stay visible without
-             competing with the reply editor for space. Single column, and
-             a natural top-to-bottom stack, below the lg breakpoint. -->
+             (9 of 12 columns on large screens - previously compose lived in
+             a 2-of-5 sidebar, then an 8-of-12 column); Knowledge Match /
+             What the AI Used sit in a slim supporting sidebar (3 of 12) -
+             sticky on large screens (see its own comment below) so that
+             reference info stays reachable while the conversation/compose
+             column, which is much taller, is scrolled. Single column, and
+             a natural top-to-bottom stack with no sticky behavior, below
+             the lg breakpoint. -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:items-start mb-8">
 
             <!-- Main column: conversation, then Compose Reply directly below it. -->
-            <div class="flex flex-col gap-6 lg:col-span-8">
+            <div class="flex flex-col gap-6 lg:col-span-9">
 
                 <div class="flex flex-col">
                     <div class="flex items-center justify-between mb-2 px-1">
@@ -232,7 +235,7 @@
                     <p class="text-amber-700 font-semibold mb-2">⚠️ This draft is flagged for review — read carefully before sending.</p>
                     {% endif %}
 
-                    <textarea name="reply_body" class="w-full min-h-[26rem] lg:min-h-[32rem] flex-1 resize-y rounded-2xl p-5 bg-white/80 border border-cyan-200 shadow-sm mb-4 text-[15px] leading-relaxed">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>
+                    <textarea name="reply_body" class="w-full min-h-[24rem] lg:min-h-[30rem] flex-1 resize-y rounded-2xl p-5 bg-white/80 border border-cyan-200 shadow-sm mb-4 text-[15px] leading-relaxed">{% if not request.query_params.get("sent") %}{{ email.ai_draft_reply }}{% endif %}</textarea>
                     <div class="mb-4">
                         <label class="block text-sm font-semibold text-stone-600 mb-1">Attachments (optional)</label>
                         <input type="file" name="attachments" multiple class="w-full rounded-xl border border-cyan-200 bg-white/80 px-3 py-2 text-sm file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:bg-cyan-800 file:text-white file:font-semibold hover:file:bg-black">
@@ -251,8 +254,14 @@
 
             <!-- Sidebar: secondary/reference information only - kept slim so
                  it never competes with the conversation or compose area for
-                 attention. -->
-            <div class="flex flex-col gap-6 lg:col-span-4">
+                 attention. Sticky on large screens only (lg:sticky) so it
+                 stays reachable while the much-taller main column scrolls,
+                 with a top offset (lg:top-6) clear of the page header, and
+                 its own max-height + scroll as a safety net if its content
+                 ever exceeds the viewport. Reverts to plain, non-sticky
+                 normal-flow content below the lg breakpoint - never sticky
+                 on mobile/narrow layouts. -->
+            <div class="flex flex-col gap-6 lg:col-span-3 lg:sticky lg:top-6 lg:self-start lg:max-h-[calc(100vh-3rem)] lg:overflow-y-auto">
 
                 {% if email.knowledge_url %}
                 <div class="p-4 bg-white/50 border border-cyan-100 rounded-3xl flex items-center justify-between">
