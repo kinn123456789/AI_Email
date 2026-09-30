@@ -510,6 +510,12 @@ def test_browsing_11_known_into_the_wild_incident_cannot_recur():
     check("browsing-11. only the one real class title appears", result["context_text"].count("Class title:") == 1)
     check("browsing-11. 'Scales and Slime' never appears as its own class", "Scales and Slime" not in result["context_text"])
     check("browsing-11. the raw description content never leaks through", "SQUAMATA" not in result["context_text"])
+    check(
+        "browsing-11. the class's raw url_slug ('scalesandslime') never appears in the generated prompt block "
+        "(the exact production leak this fix addresses)",
+        "scalesandslime" not in result["context_text"],
+    )
+    check("browsing-11. no 'Class URL slug' label appears in the generated prompt block", "Class URL slug" not in result["context_text"])
 
 
 def test_browsing_12_capped_at_six_with_more_count():
@@ -565,6 +571,61 @@ def test_20_no_unexpected_fields_in_context():
         "20. an unexpected internal-notes field never appears in the generated prompt block",
         "internal_notes" not in result["context_text"] and "do not show this to parents" not in result["context_text"],
     )
+
+
+# ---------------------------------------------------------------------------
+# Parent-facing context cleanup: the final rendered prompt blocks (single-
+# class AND browsing) must never contain url_slug or a raw Python bool
+# value - the fix for the confirmed "scalesandslime" /
+# "Enrollment currently allowed: True" production leak.
+# ---------------------------------------------------------------------------
+
+def test_21_single_class_prompt_block_never_contains_url_slug():
+    with _Patch(
+        lci,
+        get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [_SAMPLE_CLASS]},
+        find_matching_class=lambda classes, query: {"status": lci.SUCCESS, "class": _SAMPLE_CLASS, "candidates": []},
+    ):
+        result = lci.get_live_class_data("", "How much is Astronomy 101?")
+
+    check(
+        "21. the single-class prompt block never contains the raw url_slug value ('astro101')",
+        "astro101" not in result["context_text"],
+    )
+    check("21. no 'Class URL slug' label appears in the single-class prompt block", "Class URL slug" not in result["context_text"])
+    check("21. the literal substring 'url_slug' never appears in the single-class prompt block", "url_slug" not in result["context_text"])
+
+
+def test_22_single_class_prompt_block_never_contains_raw_boolean():
+    with _Patch(
+        lci,
+        get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [_SAMPLE_CLASS]},
+        find_matching_class=lambda classes, query: {"status": lci.SUCCESS, "class": _SAMPLE_CLASS, "candidates": []},
+    ):
+        result = lci.get_live_class_data("", "How much is Astronomy 101?")
+
+    block = result["context_text"]
+    check(
+        "22. 'Enrollment currently allowed' is followed by 'Yes', never the raw Python bool 'True' "
+        "(the exact production leak this fix addresses)",
+        "Enrollment currently allowed: Yes" in block,
+    )
+    check("22. the literal word 'True' never appears as a fact value in the block", "True" not in block)
+    check("22. the literal word 'False' never appears as a fact value in the block", "False" not in block)
+
+
+def test_23_browsing_prompt_block_never_contains_raw_boolean():
+    available_class = dict(_SAMPLE_CLASS, is_active="true", approval_status="approved", is_enrollment_allowed=False)
+    with _Patch(lci, get_cached_catalog=lambda: {"status": lci.SUCCESS, "classes": [available_class]}):
+        result = lci.get_live_class_data("", "What science classes are currently available?")
+
+    block = result["context_text"]
+    check(
+        "23. is_enrollment_allowed=False renders as 'Enrollment currently allowed: No' in the browsing prompt block",
+        "Enrollment currently allowed: No" in block,
+    )
+    check("23. the literal word 'True' never appears as a fact value in the browsing block", "True" not in block)
+    check("23. the literal word 'False' never appears as a fact value in the browsing block", "False" not in block)
 
 
 def test_no_seat_availability_wording_in_block():
@@ -896,6 +957,9 @@ def main():
 
     test_19_missing_optional_fields_no_crash()
     test_20_no_unexpected_fields_in_context()
+    test_21_single_class_prompt_block_never_contains_url_slug()
+    test_22_single_class_prompt_block_never_contains_raw_boolean()
+    test_23_browsing_prompt_block_never_contains_raw_boolean()
     test_no_seat_availability_wording_in_block()
 
     test_14_default_behavior_unchanged_when_omitted()

@@ -432,12 +432,22 @@ def test_review_reason_fields_still_present():
 
 def test_priority_assignment_logic_files_untouched():
     """Scenario 11 + this task's own explicit constraints: no AI/classifier/
-    RAG/generation/safety/live-class/prompt/scheduler file may have
-    changed. Checked via git diff, scoped only to the files THIS task must
-    never touch (not a brittle exact-set pin like
-    test_email_reader_batch_duplicate_check.py's own unrelated, pre-existing
-    scope guard for a different task, which is left alone - see this
-    session's final report)."""
+    RAG/generation/safety/prompt/scheduler file may have changed. Checked
+    via git diff, scoped only to the files THIS task must never touch (not
+    a brittle exact-set pin like test_email_reader_batch_duplicate_check.py's
+    own unrelated, pre-existing scope guard for a different task, which is
+    left alone - see this session's final report).
+
+    live_class_intent.py and coral_class_catalog.py are no longer checked
+    here for the same reason database.py/main.py were previously retired
+    from similar guards elsewhere in this session: the live-class
+    parent-facing context cleanup (another later, separately-approved
+    task - removing url_slug from the LLM context and formatting booleans
+    as Yes/No) legitimately touches exactly these two files, and only
+    these two. reply_generator.py/teacher_reply_generator1.py/
+    ai_classifier.py/process_email.py/prompt_builder.py/rag_reranker.py/
+    knowledge_search.py/vector_search.py/scheduler.py/email_reader.py all
+    remain untouched by that task and are still checked below."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -448,8 +458,8 @@ def test_priority_assignment_logic_files_untouched():
     for forbidden in [
         "ai_classifier.py", "process_email.py", "prompt_builder.py",
         "reply_generator.py", "teacher_reply_generator1.py", "rag_reranker.py",
-        "knowledge_search.py", "vector_search.py", "live_class_intent.py",
-        "coral_class_catalog.py", "scheduler.py", "email_reader.py",
+        "knowledge_search.py", "vector_search.py",
+        "scheduler.py", "email_reader.py",
     ]:
         check(f"{forbidden} was not modified by this task", forbidden not in changed)
 

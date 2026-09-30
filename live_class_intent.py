@@ -154,6 +154,10 @@ REVIEW_REASON_BROWSING_UNAVAILABLE = "live_class_browsing_unavailable"
 REVIEW_REASON_BROWSING_NO_MATCH = "live_class_browsing_no_match"
 
 
+# No "url_slug" entry here - coral_class_catalog.py's _LIVE_CONTEXT_FIELDS
+# no longer includes it in the context this renders, so a label for it
+# would be permanently dead (never matched by the `if field in context`
+# check below). See that constant's own comment for why.
 _FIELD_LABELS = (
     ("title", "Class title"),
     ("subject", "Subject"),
@@ -173,7 +177,6 @@ _FIELD_LABELS = (
     ("is_free_trial_available", "Free trial currently available"),
     ("is_coral_unlimited_available", "Available on Coral Unlimited"),
     ("is_ppc_available", "Available on Pay Per Class"),
-    ("url_slug", "Class URL slug"),
 )
 
 
@@ -227,13 +230,14 @@ def build_prompt_block(context):
 # ever carries (confirmed against a real fetch of the current catalog).
 # ---------------------------------------------------------------------------
 
+# No "url_slug" entry here either - coral_class_catalog.py's
+# _BROWSING_CONTEXT_FIELDS no longer includes it, for the same reason.
 _BROWSING_FIELD_LABELS = (
     ("title", "Class title"),
     ("subject", "Subject"),
     ("pricing", "Pricing"),
     ("teacher", "Teacher"),
     ("is_enrollment_allowed", "Enrollment currently allowed"),
-    ("url_slug", "Class URL slug"),
 )
 
 _SCHEDULE_FACT_LABELS = (

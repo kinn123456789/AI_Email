@@ -350,6 +350,17 @@ def find_matching_class(classes, query_text):
 # observed to return (e.g. a seat-availability count) can never leak
 # through even if some future response happened to include one under an
 # unexpected key: it's simply not in this list.
+#
+# "url_slug" is deliberately NOT in this list - it's an internal catalog
+# identifier (used only by _dedupe_classes()'s fallback key, on the raw
+# fetched catalog, before this allow-list is ever applied), never a fact
+# a parent-facing reply should contain. A confirmed production incident
+# had a class's bare slug (e.g. "scalesandslime") appear verbatim in a
+# generated reply because it was included here with no formatting -
+# fixed by removing it from the LLM-facing allow-list entirely rather
+# than trying to format it into something presentable. It remains fully
+# available on the raw class dict for matching/deduplication, which
+# never goes through this function.
 _LIVE_CONTEXT_FIELDS = (
     "title",
     "subject",
@@ -370,7 +381,6 @@ _LIVE_CONTEXT_FIELDS = (
     "is_free_trial_available",
     "is_coral_unlimited_available",
     "is_ppc_available",
-    "url_slug",
 )
 
 
@@ -467,6 +477,23 @@ def _format_teacher(teacher):
     return name.strip()
 
 
+def _format_bool_fact(value):
+    """Coral's API returns several context fields (is_active,
+    is_enrollment_allowed, is_free_trial_available, etc.) as raw Python
+    booleans. Placed directly in an f-string, a bare bool renders as the
+    literal words "True"/"False" - not how a parent-facing reply should
+    ever state a yes/no fact, and a confirmed production incident where
+    the model echoed "Enrollment currently allowed: True" verbatim.
+    Non-boolean values are returned unchanged - this only ever reshapes
+    the specific fields it's applied to in the two context builders
+    below, never any other value."""
+
+    if isinstance(value, bool):
+        return "Yes" if value else "No"
+
+    return value
+
+
 def build_live_class_context(class_data):
     """Returns only the fields in _LIVE_CONTEXT_FIELDS, and only when
     actually present (and not None) in class_data - never invents a
@@ -534,6 +561,15 @@ def build_live_class_context(class_data):
                 context[field] = schedule_facts[field]
             else:
                 del context[field]
+
+    # Reshapes any remaining raw booleans (is_active, is_listed,
+    # is_enrollment_allowed, is_free_trial_available,
+    # is_coral_unlimited_available, is_ppc_available) into "Yes"/"No" -
+    # see _format_bool_fact()'s own docstring. Non-boolean values
+    # (pricing/teacher/schedule strings, timestamps, etc.) pass through
+    # unchanged.
+    for field, value in context.items():
+        context[field] = _format_bool_fact(value)
 
     return context
 
@@ -696,20 +732,27 @@ def find_matching_classes_for_browsing(classes, query_text):
 # _LIVE_CONTEXT_FIELDS (no description/summary/learning_goals - see the
 # module docstring's dedicated section on this - and no raw pricing/
 # teacher, which get their own formatted replacements below).
-_BROWSING_CONTEXT_FIELDS = ("title", "subject", "url_slug", "is_enrollment_allowed")
+#
+# "url_slug" is deliberately NOT in this list, for the same reason
+# _LIVE_CONTEXT_FIELDS excludes it (see that constant's own comment) -
+# an internal identifier, never a parent-facing fact. It remains fully
+# available on the raw class dict for find_matching_classes_for_browsing()
+# and _dedupe_classes(), neither of which reads this allow-list.
+_BROWSING_CONTEXT_FIELDS = ("title", "subject", "is_enrollment_allowed")
 
 
 def build_browsing_class_context(class_data):
     """Builds one class's compact entry for a browsing listing - title,
-    subject, url_slug, and is_enrollment_allowed pulled straight from the
-    explicit allow-list above, plus formatted pricing (via the existing,
+    subject, and is_enrollment_allowed pulled straight from the explicit
+    allow-list above (is_enrollment_allowed reshaped to "Yes"/"No" - see
+    _format_bool_fact()), plus formatted pricing (via the existing,
     unmodified _format_pricing() - the same fix from 14b8ec6, not a new
     implementation), formatted teacher name only (via the existing,
     unmodified _format_teacher()), and schedule facts (via
     _format_schedule_facts()). Never includes description, summary,
     learning_goals, resourses, parental_guidance, teacher id/bio/
-    headline/profile_image_url/reviews, or any other raw/internal field -
-    those simply aren't read by this function at all."""
+    headline/profile_image_url/reviews, url_slug, or any other raw/
+    internal field - those simply aren't read by this function at all."""
 
     if not isinstance(class_data, dict):
         return {}
@@ -719,6 +762,13 @@ def build_browsing_class_context(class_data):
         for field in _BROWSING_CONTEXT_FIELDS
         if field in class_data and class_data[field] is not None
     }
+
+    # Reshapes any raw booleans pulled from the allow-list above (today,
+    # only is_enrollment_allowed) into "Yes"/"No" - see
+    # _format_bool_fact()'s own docstring. Non-boolean values (title,
+    # subject) pass through unchanged.
+    for field, value in context.items():
+        context[field] = _format_bool_fact(value)
 
     pricing = class_data.get("pricing")
     if pricing is not None:

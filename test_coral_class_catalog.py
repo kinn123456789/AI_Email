@@ -956,6 +956,114 @@ def test_U_browsing_generic_query_returns_all_classes():
     check("U. a fully generic query with no recognized subject returns every class", len(result) == 3)
 
 
+# ---------------------------------------------------------------------------
+# V-Z. Parent-facing context cleanup: url_slug removed from both LLM
+# contexts (but still available internally for matching/dedup), and every
+# boolean fact reshaped to "Yes"/"No" instead of a raw Python bool - the
+# fix for the confirmed "scalesandslime" / "Enrollment currently allowed:
+# True" production leak.
+# ---------------------------------------------------------------------------
+
+def test_V_url_slug_not_in_live_context_allow_list():
+    check("V. url_slug is not in _LIVE_CONTEXT_FIELDS", "url_slug" not in ccc._LIVE_CONTEXT_FIELDS)
+    check("V. url_slug is not in _BROWSING_CONTEXT_FIELDS", "url_slug" not in ccc._BROWSING_CONTEXT_FIELDS)
+
+
+def test_V2_url_slug_never_in_single_class_context():
+    context = ccc.build_live_class_context(_CLASSES[0])
+    check(
+        "V2. build_live_class_context() output never contains 'url_slug', even for a class whose raw data has it",
+        "url_slug" not in context,
+        f"got keys {sorted(context.keys())}",
+    )
+    check("V2. the source fixture actually has url_slug (proves this isn't a vacuous pass)", "url_slug" in _CLASSES[0])
+
+
+def test_V3_url_slug_never_in_browsing_context():
+    context = ccc.build_browsing_class_context(_CLASSES[0])
+    check(
+        "V3. build_browsing_class_context() output never contains 'url_slug', even for a class whose raw data has it",
+        "url_slug" not in context,
+        f"got keys {sorted(context.keys())}",
+    )
+
+
+def test_V4_url_slug_still_available_internally_for_matching_and_dedup():
+    """url_slug must remain on the raw catalog data and keep working for
+    _dedupe_classes()'s fallback key - only its presence in the two
+    LLM-facing context builders was removed."""
+    raw = _CLASSES[0]
+    check("V4. url_slug is still present on the raw class dict", raw.get("url_slug") == "astro101")
+
+    classes = [
+        {"title": "A", "url_slug": "slug-a"},
+        {"title": "A duplicate", "url_slug": "slug-a"},
+        {"title": "B", "url_slug": "slug-b"},
+    ]
+    deduped = ccc._dedupe_classes(classes)
+    check("V4. _dedupe_classes() still falls back to url_slug when id is missing (unchanged behavior)", len(deduped) == 2)
+
+    check(
+        "V4. find_matching_classes_for_browsing() still receives/operates on raw dicts that still carry url_slug",
+        all("url_slug" in c for c in ccc.find_matching_classes_for_browsing(_BROWSING_CLASSES, "science")),
+    )
+
+
+def test_W_format_bool_fact_direct():
+    check('W. _format_bool_fact(True) == "Yes"', ccc._format_bool_fact(True) == "Yes")
+    check('W. _format_bool_fact(False) == "No"', ccc._format_bool_fact(False) == "No")
+    check("W. a non-boolean value passes through unchanged (string)", ccc._format_bool_fact("hello") == "hello")
+    check("W. a non-boolean value passes through unchanged (int)", ccc._format_bool_fact(5) == 5)
+    check("W. a non-boolean value passes through unchanged (None)", ccc._format_bool_fact(None) is None)
+
+
+def test_X_all_booleans_in_single_class_context_are_yes_no():
+    # _CLASSES[0] has a deliberate mix: is_ppc_available=False, every
+    # other boolean field=True - proves both directions are formatted,
+    # not just a hardcoded "always Yes".
+    context = ccc.build_live_class_context(_CLASSES[0])
+
+    check("X. is_active=True -> 'Yes'", context.get("is_active") == "Yes")
+    check("X. is_listed=True -> 'Yes'", context.get("is_listed") == "Yes")
+    check("X. is_enrollment_allowed=True -> 'Yes'", context.get("is_enrollment_allowed") == "Yes")
+    check("X. is_free_trial_available=True -> 'Yes'", context.get("is_free_trial_available") == "Yes")
+    check("X. is_coral_unlimited_available=True -> 'Yes'", context.get("is_coral_unlimited_available") == "Yes")
+    check("X. is_ppc_available=False -> 'No' (proves False also formats correctly, not just True)", context.get("is_ppc_available") == "No")
+
+    check(
+        "X. no value anywhere in the single-class context is a raw Python bool",
+        all(not isinstance(v, bool) for v in context.values()),
+        f"got {[(k, type(v).__name__) for k, v in context.items() if isinstance(v, bool)]}",
+    )
+
+
+def test_Y_enrollment_allowed_true_and_false_in_browsing_context():
+    context_true = ccc.build_browsing_class_context({"title": "T", "is_enrollment_allowed": True})
+    context_false = ccc.build_browsing_class_context({"title": "T", "is_enrollment_allowed": False})
+
+    check('Y. is_enrollment_allowed=True -> "Yes" in browsing context', context_true.get("is_enrollment_allowed") == "Yes")
+    check('Y. is_enrollment_allowed=False -> "No" in browsing context', context_false.get("is_enrollment_allowed") == "No")
+    check(
+        "Y. no value anywhere in either browsing context is a raw Python bool",
+        all(not isinstance(v, bool) for v in context_true.values())
+        and all(not isinstance(v, bool) for v in context_false.values()),
+    )
+
+
+def test_Z_non_boolean_special_formatting_unaffected():
+    """Sanity check that the new bool-reshaping pass doesn't touch
+    pricing/teacher/schedule/enrollment_type - all still exactly as
+    their own dedicated formatters produce."""
+    context = ccc.build_live_class_context(_CLASSES[0])
+    check("Z. pricing is still the formatted string, untouched by bool-reshaping", context.get("pricing") == "$25.00 per session")
+    check("Z. teacher is still reduced to just the name, untouched by bool-reshaping", context.get("teacher") == "Amalia")
+    check("Z. enrollment_type still passes through as the raw string ('ongoing'), not reshaped as if it were boolean", context.get("enrollment_type") == "ongoing")
+
+    browsing_context = ccc.build_browsing_class_context(_CLASSES[0])
+    check("Z. browsing pricing is still the formatted string", browsing_context.get("pricing") == "$25.00 per session")
+    check("Z. browsing schedule facts are still the dict _format_schedule_facts() produces, not stringified/reshaped", isinstance(browsing_context.get("schedule"), dict))
+
+
 def main():
     test_1_2_successful_fetch_and_parsing()
     test_3_http_error()
@@ -1012,6 +1120,15 @@ def main():
     test_T_browsing_subject_word_boundary_match()
     test_T2_browsing_no_loose_substring_match()
     test_U_browsing_generic_query_returns_all_classes()
+
+    test_V_url_slug_not_in_live_context_allow_list()
+    test_V2_url_slug_never_in_single_class_context()
+    test_V3_url_slug_never_in_browsing_context()
+    test_V4_url_slug_still_available_internally_for_matching_and_dedup()
+    test_W_format_bool_fact_direct()
+    test_X_all_booleans_in_single_class_context_are_yes_no()
+    test_Y_enrollment_allowed_true_and_false_in_browsing_context()
+    test_Z_non_boolean_special_formatting_unaffected()
 
     if _failures:
         print(f"\n{len(_failures)} FAILURE(S): {_failures}")
