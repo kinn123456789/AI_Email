@@ -209,6 +209,27 @@ def generate_reply(
 
         usage = response.usage
 
+        # Observability only, added for the generation-latency investigation
+        # (completion-token count, not prompt size, is what correlates with
+        # latency - see that read-only report). gpt-5-nano is a reasoning
+        # model, and completion_tokens can include invisible reasoning
+        # tokens never surfaced in `reply` above; openai==2.41.1's own
+        # CompletionUsage type declares completion_tokens_details as
+        # Optional[CompletionTokensDetails], and reasoning_tokens as
+        # Optional[int] on that - both default to None when a provider
+        # doesn't populate them, verified against that exact pinned SDK
+        # version's source. getattr() with a default is used anyway, so an
+        # unexpected/malformed usage shape (a different SDK version, or any
+        # object that doesn't have these attributes at all) still safely
+        # resolves to None rather than raising - reply generation, the
+        # returned reply/status, and response_time_ms/prompt_tokens/
+        # completion_tokens/total_tokens below are completely unaffected
+        # either way. No ai_logs column exists to persist this yet, so it's
+        # logged to stdout only for now, not passed to save_ai_log().
+        completion_tokens_details = getattr(usage, "completion_tokens_details", None)
+        reasoning_tokens = getattr(completion_tokens_details, "reasoning_tokens", None)
+        print(f"Reasoning tokens - gmail_message_id={gmail_message_id} reasoning_tokens={reasoning_tokens}")
+
         knowledge_log = []
 
         for item in knowledge or []:

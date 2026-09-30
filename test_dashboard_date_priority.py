@@ -444,10 +444,17 @@ def test_priority_assignment_logic_files_untouched():
     parent-facing context cleanup (another later, separately-approved
     task - removing url_slug from the LLM context and formatting booleans
     as Yes/No) legitimately touches exactly these two files, and only
-    these two. reply_generator.py/teacher_reply_generator1.py/
-    ai_classifier.py/process_email.py/prompt_builder.py/rag_reranker.py/
-    knowledge_search.py/vector_search.py/scheduler.py/email_reader.py all
-    remain untouched by that task and are still checked below."""
+    these two.
+
+    reply_generator.py is retired from this list for the same reason,
+    one task later still: the generation-latency reasoning-token
+    observability task adds a small, defensive, print-only
+    reasoning_tokens extraction there (no model/temperature/prompt/RAG/
+    safety change) - legitimately touching exactly that one file.
+    teacher_reply_generator1.py/ai_classifier.py/process_email.py/
+    prompt_builder.py/rag_reranker.py/knowledge_search.py/
+    vector_search.py/scheduler.py/email_reader.py all remain untouched by
+    that task and are still checked below."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -457,7 +464,7 @@ def test_priority_assignment_logic_files_untouched():
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
     for forbidden in [
         "ai_classifier.py", "process_email.py", "prompt_builder.py",
-        "reply_generator.py", "teacher_reply_generator1.py", "rag_reranker.py",
+        "teacher_reply_generator1.py", "rag_reranker.py",
         "knowledge_search.py", "vector_search.py",
         "scheduler.py", "email_reader.py",
     ]:
