@@ -298,11 +298,171 @@ def test_main_py_contact_form_builds_review_reasons_list():
     )
 
 
-def test_main_py_thread_ai_overwrite_includes_review_reason():
-    src = _read_source("main.py")
+# ---------------------------------------------------------------------------
+# Review-state masking fix (follow-up to the read-only review-state audit):
+# view_email()'s `if latest_ai:` merge block used to also overwrite
+# email_data["requires_review"]/["review_reason"] from latest_ai - the
+# THREAD'S most recent message, which after any human-sent reply is the
+# "sent" row _send_reply_impl() creates via save_email() with no
+# requires_review/review_reason passed at all (always defaults to
+# False/None). That meant sending any reply in a thread silently hid the
+# review flag on every email in that thread afterward, including the one
+# currently being viewed, even though its own database row was untouched
+# and still correct. Fixed by simply no longer assigning those two fields
+# from latest_ai at all - every other latest_ai-sourced field (summary,
+# draft, category, priority, confidence) is unaffected.
+#
+# _merge_latest_ai_into_email_data() below is a byte-for-byte mirror of
+# main.py's real merge block, same justification as _compute_review_reasons()
+# above - main.py needs fastapi + apscheduler (and starts real scheduler.py
+# background jobs at import time), not importable in this environment.
+# ---------------------------------------------------------------------------
+
+def _merge_latest_ai_into_email_data(email_data, latest_ai):
+    email_data = dict(email_data)
+    if latest_ai:
+        email_data["ai_summary"] = latest_ai["ai_summary"]
+        email_data["ai_draft_reply"] = latest_ai["ai_draft_reply"]
+        email_data["category"] = latest_ai["category"]
+        email_data["priority"] = latest_ai["priority"]
+        email_data["ai_confidence"] = latest_ai["ai_confidence"]
+    return email_data
+
+
+def test_case1_own_review_state_survives_a_review_free_latest_row():
+    """Case 1: the currently viewed email is genuinely flagged, but the
+    thread's latest message (e.g. a just-sent human reply) is not - the
+    viewed email's own requires_review/review_reason must still show."""
+    email_data = {
+        "id": 42,
+        "requires_review": True,
+        "review_reason": "live_class_not_found",
+    }
+    latest_ai = {
+        "ai_summary": "Parent asked about the Finance class.",
+        "ai_draft_reply": "Thanks for reaching out...",
+        "category": "Admissions",
+        "priority": "Medium",
+        "ai_confidence": 92,
+        "requires_review": False,
+        "review_reason": None,
+    }
+    merged = _merge_latest_ai_into_email_data(email_data, latest_ai)
     check(
-        "view_email()'s latest-thread-AI overwrite also carries review_reason forward",
-        'email_data["review_reason"] = latest_ai["review_reason"]' in src,
+        "Case 1: requires_review stays True (the viewed email's own value)",
+        merged["requires_review"] is True,
+        f"got {merged['requires_review']!r}",
+    )
+    check(
+        "Case 1: review_reason stays 'live_class_not_found' (not cleared by the review-free latest row)",
+        merged["review_reason"] == "live_class_not_found",
+        f"got {merged['review_reason']!r}",
+    )
+
+
+def test_case2_review_free_email_does_not_inherit_a_flagged_latest_row():
+    """Case 2: the inverse - the viewed email itself is clean, but a
+    LATER message in the thread happens to be flagged. The viewed email
+    must not borrow that later flag either - review state is always the
+    currently viewed row's own, never the thread's latest."""
+    email_data = {
+        "id": 7,
+        "requires_review": False,
+        "review_reason": None,
+    }
+    latest_ai = {
+        "ai_summary": "Follow-up question.",
+        "ai_draft_reply": "Draft text.",
+        "category": "General",
+        "priority": "Low",
+        "ai_confidence": 88,
+        "requires_review": True,
+        "review_reason": "classifier",
+    }
+    merged = _merge_latest_ai_into_email_data(email_data, latest_ai)
+    check(
+        "Case 2: requires_review stays False - not inherited from latest_ai",
+        merged["requires_review"] is False,
+        f"got {merged['requires_review']!r}",
+    )
+    check(
+        "Case 2: review_reason stays None - not inherited from latest_ai",
+        merged["review_reason"] is None,
+        f"got {merged['review_reason']!r}",
+    )
+
+
+def test_case3_other_latest_ai_fields_still_come_from_latest_ai():
+    """Case 3: everything else latest_ai is meant to provide - summary,
+    draft, category, priority, confidence - must still be overwritten
+    from it exactly as before this fix. Only requires_review/review_reason
+    were carved out."""
+    email_data = {
+        "id": 99,
+        "ai_summary": "stale summary",
+        "ai_draft_reply": "stale draft",
+        "category": "Uncategorized",
+        "priority": "Low",
+        "ai_confidence": 10,
+        "requires_review": True,
+        "review_reason": "generation_error",
+    }
+    latest_ai = {
+        "ai_summary": "fresh summary from the latest thread message",
+        "ai_draft_reply": "fresh draft",
+        "category": "Billing",
+        "priority": "High",
+        "ai_confidence": 95,
+        "requires_review": False,
+        "review_reason": None,
+    }
+    merged = _merge_latest_ai_into_email_data(email_data, latest_ai)
+    check("Case 3: ai_summary comes from latest_ai", merged["ai_summary"] == "fresh summary from the latest thread message")
+    check("Case 3: ai_draft_reply comes from latest_ai", merged["ai_draft_reply"] == "fresh draft")
+    check("Case 3: category comes from latest_ai", merged["category"] == "Billing")
+    check("Case 3: priority comes from latest_ai", merged["priority"] == "High")
+    check("Case 3: ai_confidence comes from latest_ai", merged["ai_confidence"] == 95)
+    check(
+        "Case 3: requires_review/review_reason are unaffected by this (still the viewed email's own, per Case 1/2)",
+        merged["requires_review"] is True and merged["review_reason"] == "generation_error",
+    )
+
+
+def test_no_latest_ai_leaves_email_data_untouched():
+    """A missing/falsy latest_ai (e.g. no thread_id) must skip the merge
+    entirely, exactly as before - email_data's own values pass through
+    unchanged, review state included."""
+    email_data = {"id": 3, "category": "General", "requires_review": True, "review_reason": "safety_block"}
+    merged = _merge_latest_ai_into_email_data(email_data, None)
+    check("no latest_ai -> email_data returned unchanged", merged == email_data)
+
+
+def test_main_py_thread_ai_merge_matches_the_mirror_above():
+    """Confirms the real main.py source matches _merge_latest_ai_into_
+    email_data() above byte-for-byte - the same technique this file's
+    other mirrors already use to stay honest about what the real code
+    does without needing to import main.py itself."""
+    src = _read_source("main.py")
+    merge_start = src.index("if latest_ai:")
+    merge_end = src.index("#latest_summary = get_latest_ai_summary", merge_start)
+    merge_block = src[merge_start:merge_end]
+
+    for expected in [
+        'email_data["ai_summary"] = latest_ai["ai_summary"]',
+        'email_data["ai_draft_reply"] = latest_ai["ai_draft_reply"]',
+        'email_data["category"] = latest_ai["category"]',
+        'email_data["priority"] = latest_ai["priority"]',
+        'email_data["ai_confidence"] = latest_ai["ai_confidence"]',
+    ]:
+        check(f"main.py's merge block still assigns: {expected}", expected in merge_block)
+
+    check(
+        "main.py's merge block no longer assigns requires_review from latest_ai",
+        'email_data["requires_review"] = latest_ai["requires_review"]' not in merge_block,
+    )
+    check(
+        "main.py's merge block no longer assigns review_reason from latest_ai",
+        'email_data["review_reason"] = latest_ai["review_reason"]' not in merge_block,
     )
 
 
@@ -751,7 +911,13 @@ def main():
 
     test_process_email_builds_review_reasons_list()
     test_main_py_contact_form_builds_review_reasons_list()
-    test_main_py_thread_ai_overwrite_includes_review_reason()
+
+    test_case1_own_review_state_survives_a_review_free_latest_row()
+    test_case2_review_free_email_does_not_inherit_a_flagged_latest_row()
+    test_case3_other_latest_ai_fields_still_come_from_latest_ai()
+    test_no_latest_ai_leaves_email_data_untouched()
+    test_main_py_thread_ai_merge_matches_the_mirror_above()
+
     test_existing_human_send_path_unaffected()
 
     test_save_email_insert_includes_review_reason_column_and_value()

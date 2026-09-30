@@ -419,8 +419,21 @@ def view_email(request: Request, email_id: int):
         email_data["category"] = latest_ai["category"]
         email_data["priority"] = latest_ai["priority"]
         email_data["ai_confidence"] = latest_ai["ai_confidence"]
-        email_data["requires_review"] = latest_ai["requires_review"]
-        email_data["review_reason"] = latest_ai["review_reason"]
+
+        # requires_review/review_reason are deliberately NOT overwritten
+        # from latest_ai (confirmed bug, read-only audit this follows):
+        # latest_ai is the THREAD'S most recent message, which after any
+        # human reply is the "sent" row send_reply() creates - that row is
+        # saved with no requires_review/review_reason at all (see
+        # _send_reply_impl's save_email() call), so it always defaults to
+        # False/None. Pulling those two fields from latest_ai meant that
+        # sending ANY reply in a thread silently hid the review flag on
+        # every email in that thread afterward, including the one
+        # currently being viewed - even though its own row in the database
+        # was never touched and still had the correct value. email_data
+        # already carries the CURRENTLY VIEWED email's own requires_review/
+        # review_reason from get_email_by_id() above; that's what this
+        # page must keep showing.
 
     #latest_summary = get_latest_ai_summary(thread_id)
 

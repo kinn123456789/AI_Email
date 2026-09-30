@@ -353,7 +353,16 @@ def test_view_email_result_merge_logic_unchanged():
     """The actual field-by-field merge of latest_ai/reply_sources into
     email_data - the part that determines what the template sees - must be
     byte-for-byte the same condition/assignment logic as before
-    parallelization, just no longer nested inside `if thread_id:`."""
+    parallelization, just no longer nested inside `if thread_id:`.
+
+    requires_review/review_reason are deliberately EXCLUDED from this list
+    as of the review-state masking fix (see test_review_reasons.py's own
+    dedicated tests for that behavior) - latest_ai is the thread's most
+    recent message, and pulling those two specific fields from it meant a
+    later human-sent reply (which always saves with requires_review=False,
+    review_reason=None) silently hid the currently-viewed email's own,
+    still-correct review flag. Every other latest_ai-sourced field here is
+    unaffected and still comes from latest_ai exactly as before."""
     body = _view_email_body()
     for expected in [
         'email_data["ai_summary"] = latest_ai["ai_summary"]',
@@ -361,12 +370,27 @@ def test_view_email_result_merge_logic_unchanged():
         'email_data["category"] = latest_ai["category"]',
         'email_data["priority"] = latest_ai["priority"]',
         'email_data["ai_confidence"] = latest_ai["ai_confidence"]',
-        'email_data["requires_review"] = latest_ai["requires_review"]',
-        'email_data["review_reason"] = latest_ai["review_reason"]',
         'email_data["knowledge_used"] = reply_sources["knowledge_used"]',
         'email_data["historical_examples"] = reply_sources["historical_examples"]',
     ]:
         check(f"template-facing assignment preserved: {expected}", expected in body)
+
+
+def test_view_email_no_longer_overwrites_review_state_from_latest_ai():
+    """The review-state masking fix: requires_review/review_reason must
+    come from the currently-viewed email's own row (get_email_by_id()),
+    never from latest_ai. See test_review_reasons.py for the full
+    behavioral regression coverage (the two scenarios this fix exists
+    for) - this is the narrow source-presence half of that coverage."""
+    body = _view_email_body()
+    check(
+        "email_data[\"requires_review\"] is no longer assigned from latest_ai",
+        'email_data["requires_review"] = latest_ai["requires_review"]' not in body,
+    )
+    check(
+        "email_data[\"review_reason\"] is no longer assigned from latest_ai",
+        'email_data["review_reason"] = latest_ai["review_reason"]' not in body,
+    )
 
 
 def test_view_email_template_response_unchanged():
@@ -483,6 +507,7 @@ def main():
     test_view_email_four_lookups_run_through_threadpoolexecutor()
     test_view_email_preserves_thread_id_and_message_id_guards()
     test_view_email_result_merge_logic_unchanged()
+    test_view_email_no_longer_overwrites_review_state_from_latest_ai()
     test_view_email_template_response_unchanged()
     test_main_py_operational_logs_still_present()
     test_dashboard_data_route_untouched()
