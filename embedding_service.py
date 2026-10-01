@@ -2,11 +2,14 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
+from llm_client_config import LLM_REQUEST_TIMEOUT_SECONDS
+
 load_dotenv()
 
 _default_client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("OPENROUTER_API_KEY")
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+    timeout=LLM_REQUEST_TIMEOUT_SECONDS,
 )
 
 EMBEDDING_MODEL = "text-embedding-3-small"
@@ -21,7 +24,8 @@ def new_embedding_client():
 
     return OpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key=os.getenv("OPENROUTER_API_KEY")
+        api_key=os.getenv("OPENROUTER_API_KEY"),
+        timeout=LLM_REQUEST_TIMEOUT_SECONDS,
     )
 
 

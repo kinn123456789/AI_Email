@@ -5,12 +5,14 @@ import re
 import time
 
 from ai_logger import save_ai_log
+from llm_client_config import LLM_REQUEST_TIMEOUT_SECONDS
 
 load_dotenv()
 
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
+    base_url="https://openrouter.ai/api/v1",
+    timeout=LLM_REQUEST_TIMEOUT_SECONDS,
 )
 
 

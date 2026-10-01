@@ -18,6 +18,7 @@ from supabase import create_client
 from supabase_client import supabase
 from database import get_connection, db_pool
 from psycopg2.extras import RealDictCursor
+from llm_client_config import LLM_REQUEST_TIMEOUT_SECONDS
 from ai_logger import save_ai_log
 
 
@@ -136,7 +137,8 @@ def _fetch_in_chunks(table, select_cols, id_column, ids, filters=None, max_worke
 
 _ai_client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
-    base_url="https://openrouter.ai/api/v1"
+    base_url="https://openrouter.ai/api/v1",
+    timeout=LLM_REQUEST_TIMEOUT_SECONDS,
 )
 
 
@@ -147,7 +149,8 @@ def _new_ai_client():
 
     return OpenAI(
         api_key=os.getenv("OPENROUTER_API_KEY"),
-        base_url="https://openrouter.ai/api/v1"
+        base_url="https://openrouter.ai/api/v1",
+        timeout=LLM_REQUEST_TIMEOUT_SECONDS,
     )
 
 

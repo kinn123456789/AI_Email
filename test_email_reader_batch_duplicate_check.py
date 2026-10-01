@@ -519,10 +519,16 @@ def test_real_email_reader_py_three_stage_structure():
 
 
 def test_mailbox_concurrency_and_client_isolation_untouched():
+    """max_workers raised 3 -> 4 by the later, separately-approved final
+    pre-freeze worker-pool capacity fix (to cover the 4th mailbox now
+    active in production - see test_worker_pool_capacity.py for dedicated
+    coverage) - everything else about this executor's shape (per-worker
+    client bundle, close-exactly-once cleanup) is unchanged and still
+    checked below."""
     src = _read_source("email_reader.py")
     check(
-        "ThreadPoolExecutor(max_workers=3) for mailbox concurrency is unchanged",
-        "with ThreadPoolExecutor(max_workers=3) as executor:" in src,
+        "ThreadPoolExecutor(max_workers=4) for mailbox concurrency (raised from 3, see docstring above)",
+        "with ThreadPoolExecutor(max_workers=4) as executor:" in src,
     )
     check(
         "the per-worker 5-client bundle construction is unchanged",

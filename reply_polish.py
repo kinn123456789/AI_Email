@@ -26,6 +26,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from ai_logger import save_ai_log
+from llm_client_config import LLM_REQUEST_TIMEOUT_SECONDS
 
 load_dotenv()
 
@@ -33,10 +34,13 @@ load_dotenv()
 # already uses (ai_classifier.py, rag_reranker.py, reply_generator.py,
 # email_reader.py's _new_llm_client()) - no shared client abstraction
 # exists in this codebase yet, and this phase deliberately doesn't
-# introduce one (see the read-only investigation this follows).
+# introduce one (see the read-only investigation this follows). The one
+# exception is the shared LLM_REQUEST_TIMEOUT_SECONDS constant (final
+# pre-freeze reliability fix) - a single value, not a client abstraction.
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
+    timeout=LLM_REQUEST_TIMEOUT_SECONDS,
 )
 
 

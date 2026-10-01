@@ -2,8 +2,10 @@
 former sequential per-account loop body in main() was extracted into
 _process_account(account), which now owns one isolated 5-client LLM/
 embedding bundle for its entire run and is submitted to a
-ThreadPoolExecutor(max_workers=3) - one worker per core mailbox - instead
-of being called in a sequential for-loop.
+ThreadPoolExecutor(max_workers=4) - one worker per currently active
+mailbox (raised from 3 by the final pre-freeze worker-pool capacity fix,
+to also cover the 4th, Settings-added mailbox now active in production)
+- instead of being called in a sequential for-loop.
 
 Matches this repo's existing test_*.py convention (see
 test_llm_client_isolation.py, test_no_reply_gate.py): a plain script using
@@ -211,9 +213,13 @@ def test_email_reader_structure_email_reader_concurrency_wiring():
         "email_reader.py imports ThreadPoolExecutor and as_completed from the stdlib (no new dependency)",
         "from concurrent.futures import ThreadPoolExecutor, as_completed" in _SRC,
     )
+    # Capacity raised 3 -> 4 by the final pre-freeze worker-pool fix, to
+    # cover the 4th mailbox now active in production (see
+    # test_worker_pool_capacity.py for the dedicated coverage) - still a
+    # fixed, hardcoded capacity, not dynamic.
     check(
-        "main()'s executor uses exactly max_workers=3 (hardcoded, not dynamic)",
-        "with ThreadPoolExecutor(max_workers=3) as executor:" in _SRC,
+        "main()'s executor uses exactly max_workers=4 (hardcoded, not dynamic)",
+        "with ThreadPoolExecutor(max_workers=4) as executor:" in _SRC,
     )
     check(
         "main() uses as_completed() so one slow mailbox doesn't block observing the others",
@@ -373,15 +379,19 @@ def _mirror_process_account(
 
 def _mirror_main(accounts_to_process, **worker_kwargs):
     """Faithful mirror of email_reader.py's real main()'s dispatch shape:
-    exactly max_workers=3, one future per account, as_completed() collection
-    with per-future exception isolation. Returns (results_by_email,
-    failures_by_email) for test introspection - the real main() doesn't
-    return anything, but the dispatch/isolation shape under test is
-    identical."""
+    exactly max_workers=4 (raised from 3 by the final pre-freeze worker-pool
+    fix, to cover the 4th mailbox now active in production), one future per
+    account, as_completed() collection with per-future exception isolation.
+    Returns (results_by_email, failures_by_email) for test introspection -
+    the real main() doesn't return anything, but the dispatch/isolation
+    shape under test is identical. Still tested here with 3 accounts
+    (_THREE_ACCOUNTS) - fewer than the 4-worker capacity, which is exactly
+    the "all submitted accounts run concurrently, none queue" case this
+    test demonstrates."""
     results = {}
     failures = {}
 
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {
             executor.submit(_mirror_process_account, account, **worker_kwargs): account
             for account in accounts_to_process
@@ -392,8 +402,8 @@ def _mirror_main(accounts_to_process, **worker_kwargs):
             len(futures) == len(accounts_to_process),
         )
         check(
-            "2. the executor itself is configured with max_workers=3",
-            executor._max_workers == 3,
+            "2. the executor itself is configured with max_workers=4",
+            executor._max_workers == 4,
         )
 
         for future in as_completed(futures):
@@ -413,7 +423,7 @@ _THREE_ACCOUNTS = [
 ]
 
 
-def test_2_three_futures_max_workers_3():
+def test_2_three_futures_max_workers_4():
     _mirror_main(
         _THREE_ACCOUNTS,
         oauth_login_fn=lambda email: None,
@@ -648,7 +658,7 @@ def main():
     test_email_reader_structure_email_reader_concurrency_wiring()
     test_client_bundle_construction_and_closing_source()
 
-    test_2_three_futures_max_workers_3()
+    test_2_three_futures_max_workers_4()
     test_3_4_each_worker_has_its_own_independent_bundle()
     test_5_each_worker_passes_its_own_bundle_to_process_email()
     test_6_each_worker_closes_all_five_clients_exactly_once()

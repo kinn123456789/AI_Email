@@ -1232,6 +1232,28 @@ def _contact_form_rate_limited(client_ip):
 
 
 def _process_contact_form_enquiry(row_id, subject, body, customer_name):
+    """Thin exception guard around _process_contact_form_enquiry_impl() -
+    final pre-freeze reliability fix. This is the exact function the
+    background task in submit_enquiry() invokes; if the real
+    implementation raises anything unexpected, it's logged here (via this
+    app's existing logger.py logger, never print()) with safe, non-
+    sensitive context - row_id only, never subject/body/customer_name,
+    which are customer-authored content - and never allowed to propagate.
+    Without this, a background task's own uncaught exception would only
+    ever surface as an unlogged stderr traceback, leaving that row stuck
+    at its placeholder (category="Uncategorized", empty draft,
+    requires_review=True) state with no durable record of why. No retry is
+    added - a failed row simply stays in that same, already-existing
+    placeholder state, visible on the dashboard like any row flagged for
+    review."""
+
+    try:
+        _process_contact_form_enquiry_impl(row_id, subject, body, customer_name)
+    except Exception:
+        logger.exception(f"Contact-form background processing failed for row_id={row_id}")
+
+
+def _process_contact_form_enquiry_impl(row_id, subject, body, customer_name):
     """Runs the slow similar-email/knowledge-base/draft-generation work in
     the background, then fills in the row saved synchronously by
     submit_enquiry() — keeps that endpoint fast for the visitor submitting

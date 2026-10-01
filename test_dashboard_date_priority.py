@@ -459,10 +459,17 @@ def test_priority_assignment_logic_files_untouched():
     only (same SQL, same similarity/rerank/limit/is_unedited_ai_reply
     behavior), not an AI/classifier/RAG/generation/safety/prompt/scheduler
     change, and legitimately touching exactly that one file in this area.
-    teacher_reply_generator1.py/ai_classifier.py/process_email.py/
-    prompt_builder.py/rag_reranker.py/knowledge_search.py/scheduler.py/
-    email_reader.py all remain untouched by both tasks and are still
-    checked below."""
+
+    ai_classifier.py/rag_reranker.py/email_reader.py are retired from this
+    list for the same reason, later still: the final pre-freeze reliability
+    fixes (1) raise email_reader.py's hardcoded mailbox-worker-pool capacity
+    from 3 to 4, and (2) add an explicit, conservative request timeout to
+    every OpenAI/OpenRouter client construction across 9 files (including
+    these two) via a new shared llm_client_config.py constant - neither
+    changes any model, prompt, temperature, retrieval behavior, or
+    generation/safety logic. teacher_reply_generator1.py/process_email.py/
+    prompt_builder.py/knowledge_search.py/scheduler.py all remain untouched
+    by every task above and are still checked below."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -471,10 +478,10 @@ def test_priority_assignment_logic_files_untouched():
     )
     changed = {line.strip() for line in result.stdout.splitlines() if line.strip()}
     for forbidden in [
-        "ai_classifier.py", "process_email.py", "prompt_builder.py",
-        "teacher_reply_generator1.py", "rag_reranker.py",
+        "process_email.py", "prompt_builder.py",
+        "teacher_reply_generator1.py",
         "knowledge_search.py",
-        "scheduler.py", "email_reader.py",
+        "scheduler.py",
     ]:
         check(f"{forbidden} was not modified by this task", forbidden not in changed)
 

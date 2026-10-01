@@ -9,6 +9,7 @@ import time
 
 from ai_logger import save_ai_log
 from logger import logger
+from llm_client_config import LLM_REQUEST_TIMEOUT_SECONDS
 
 # Catches teacher/staff-only content leaking into a parent-facing reply —
 # the same red-flag phrases prompt_builder.py's KNOWLEDGE RETRIEVAL section
@@ -57,6 +58,7 @@ load_dotenv()
 client = OpenAI(
     api_key=os.getenv("OPENROUTER_API_KEY"),
     base_url="https://openrouter.ai/api/v1",
+    timeout=LLM_REQUEST_TIMEOUT_SECONDS,
 )
 
 

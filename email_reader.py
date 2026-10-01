@@ -25,6 +25,7 @@ from knowledge_search import search_knowledge_base
 from process_email import process_email
 from database import email_ids_exist
 from embedding_service import new_embedding_client, close_embedding_client
+from llm_client_config import LLM_REQUEST_TIMEOUT_SECONDS
 
 # Custom modules
 from email_filter import is_automated_email
@@ -74,6 +75,7 @@ def _new_llm_client():
     return OpenAI(
         api_key=os.getenv("OPENROUTER_API_KEY"),
         base_url="https://openrouter.ai/api/v1",
+        timeout=LLM_REQUEST_TIMEOUT_SECONDS,
     )
 
 
@@ -273,15 +275,20 @@ def main(target_email=None):
         if not target_email or account["email"] == target_email
     ]
 
-    # Exactly 3 workers because there are exactly 3 core mailboxes today -
-    # not a dynamic count. Each mailbox worker (_process_account) owns its
-    # own isolated LLM/embedding client bundle; nothing here shares state
-    # across workers. as_completed() means one slow mailbox never blocks
-    # collecting/logging the others' results. The existing reader_lock in
-    # scheduler.py already ensures only one full email_reader.main() run is
-    # in flight at a time - unchanged, not touched here - so this executor
-    # only ever parallelizes the mailboxes within one such run.
-    with ThreadPoolExecutor(max_workers=3) as executor:
+    # 4 workers to cover the 4 mailboxes currently active in production (the
+    # 3 core mailboxes plus one added via Settings) - still a fixed capacity,
+    # not a dynamic count derived from the account list, consistent with how
+    # this was originally sized. If a 5th mailbox is ever added, it will
+    # queue behind the first 4 within a single run rather than running fully
+    # in parallel - the same behavior a 4th mailbox had before this change.
+    # Each mailbox worker (_process_account) owns its own isolated LLM/
+    # embedding client bundle; nothing here shares state across workers.
+    # as_completed() means one slow mailbox never blocks collecting/logging
+    # the others' results. The existing reader_lock in scheduler.py already
+    # ensures only one full email_reader.main() run is in flight at a time -
+    # unchanged, not touched here - so this executor only ever parallelizes
+    # the mailboxes within one such run.
+    with ThreadPoolExecutor(max_workers=4) as executor:
         futures = {
             executor.submit(_process_account, account): account
             for account in accounts
