@@ -30,7 +30,7 @@ def get_email_accounts():
     return get_all_email_accounts()
 
 
-def sync_sent_mail_style_examples():
+def sync_sent_mail_style_examples(only_email=None):
     """Scans each staff mailbox's Sent Mail folder for replies sent in the
     last IMPORT_WINDOW_DAYS days and imports any not already saved as a
     historical-email style example (redacted, not yet embedded). Meant as
@@ -39,7 +39,16 @@ def sync_sent_mail_style_examples():
     its own Send button automatically (see main.py's
     _save_reply_to_historical_emails). Scheduled every 15 days in
     scheduler.py, chained with embed_historical_emails so new rows also
-    get embedded in the same run — see sync_sent_mail_and_embed.py."""
+    get embedded in the same run — see sync_sent_mail_and_embed.py.
+
+    only_email, when given, scopes this to exactly that one mailbox instead
+    of every active account - used for the one-time history onboarding of a
+    single newly added Settings mailbox (see main.py's
+    add_settings_account()), so it doesn't re-scan every other mailbox just
+    to seed one new one. Same selection-time filtering approach already
+    used by email_reader.py's main(target_email=None); every other account
+    is simply never iterated, not iterated-and-skipped. Default (None)
+    behavior - scan every active account - is completely unchanged."""
 
     # Computed fresh on every call (not at import time) so a scheduled job
     # that keeps running for weeks/months always uses a rolling window
@@ -47,7 +56,10 @@ def sync_sent_mail_style_examples():
     # first imported.
     since_date = (datetime.now() - timedelta(days=IMPORT_WINDOW_DAYS)).strftime("%d-%b-%Y")
 
-    accounts = get_email_accounts()
+    accounts = [
+        account for account in get_email_accounts()
+        if not only_email or account["email"] == only_email
+    ]
 
     for account in accounts:
         if not account["email"]:

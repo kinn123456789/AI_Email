@@ -1054,8 +1054,41 @@ def settings_page(request: Request, error: str = None, added: str = None):
     )
 
 
+def _onboard_new_mailbox_history(email):
+    """One-time history onboarding for a genuinely new Settings-added
+    mailbox (see add_settings_account() below) - seeds its Sent Mail style
+    examples immediately instead of waiting for the existing 15-day
+    scheduled sync_sent_mail_and_embed() job to eventually reach it.
+    Reuses that same job's own two steps completely unmodified, just
+    scoped to this one mailbox for the sync step:
+
+    1. sync_sent_mail_style_examples(only_email=email) - the exact same
+       IMAP Sent-mail scan, redaction, and historical_emails save logic
+       the 15-day job already uses, narrowed to just this mailbox.
+    2. embed_historical_emails.main() - embeds whatever that just saved
+       (and anything else still pending table-wide) - already safe to
+       call unscoped, since it only ever processes currently-unembedded
+       rows regardless of which mailbox they came from.
+
+    Runs as a background task (see the add_settings_account() call site) -
+    an IMAP Sent-folder scan over a 90-day window has unpredictable
+    latency, so it must never run inline inside the Settings request.
+    Failure here must never be allowed to look like "mailbox add failed" -
+    by the time this runs, the account row is already committed and the
+    success redirect has already been returned to the browser."""
+
+    from learn_email_style import sync_sent_mail_style_examples
+    from embed_historical_emails import main as embed_historical_emails
+
+    try:
+        sync_sent_mail_style_examples(only_email=email)
+        embed_historical_emails()
+    except Exception as e:
+        print(f"Mailbox history onboarding failed for {email}: {e}")
+
+
 @app.post("/settings/accounts/add")
-async def add_settings_account(request: Request):
+async def add_settings_account(request: Request, background_tasks: BackgroundTasks):
 
     from gmail_auth import get_gmail_service
     from gmail_watch import register_watch
@@ -1091,7 +1124,7 @@ async def add_settings_account(request: Request):
             status_code=303
         )
 
-    add_email_account(email)
+    account_id, is_new = add_email_account(email)
 
     # Best-effort: start push notifications immediately instead of waiting
     # for the daily watch-renewal job. The 5-minute polling backup already
@@ -1100,6 +1133,14 @@ async def add_settings_account(request: Request):
         register_watch(email)
     except Exception as e:
         print(f"Could not register watch for new account {email}: {e}")
+
+    # One-time history onboarding, only for a genuinely new mailbox - never
+    # on a re-add/reactivation of one that already existed (is_new is False
+    # there, see add_email_account()'s own docstring). Scheduled as a
+    # background task, not run here inline - see _onboard_new_mailbox_history()
+    # above for why.
+    if is_new:
+        background_tasks.add_task(_onboard_new_mailbox_history, email)
 
     return RedirectResponse(
         url=f"/settings?added={email}",

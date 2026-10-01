@@ -101,8 +101,13 @@ def test_no_longer_uses_declarative_form_dependency():
     body = _route_body()
     check('add_settings_account no longer declares "email: str = Form(...)"',
           "email: str = Form(...)" not in body)
-    check("the route signature still takes request: Request",
-          "async def add_settings_account(request: Request):" in body)
+    # Signature updated by the mailbox history onboarding fix (a later,
+    # separately-approved task): add_settings_account() now also takes
+    # background_tasks: BackgroundTasks, used to schedule one-time history
+    # onboarding for a genuinely new mailbox. Still takes request: Request
+    # first, unchanged - only a second parameter was added.
+    check("the route signature still takes request: Request (now alongside background_tasks: BackgroundTasks)",
+          "async def add_settings_account(request: Request, background_tasks: BackgroundTasks):" in body)
 
 
 # ---------------------------------------------------------------------------

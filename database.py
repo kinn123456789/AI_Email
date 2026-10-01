@@ -2669,6 +2669,15 @@ def get_all_email_accounts():
 
 
 def add_email_account(email, source_label=None):
+    """Returns (id, is_new) - is_new is True only for a genuine first-time
+    INSERT, False when this email already existed and the ON CONFLICT
+    branch just reactivated it (xmax = 0 is the standard Postgres idiom
+    for "this row came from the INSERT branch, not an UPDATE" - no schema
+    change, just a smarter RETURNING clause). Used by add_settings_account()
+    to trigger one-time history onboarding only for a mailbox that's
+    actually new, never on a re-add/reactivation. Email uniqueness and the
+    existing status='active' reactivation behavior are unchanged."""
+
     conn = get_connection()
     cursor = conn.cursor(cursor_factory=RealDictCursor)
 
@@ -2678,13 +2687,13 @@ def add_email_account(email, source_label=None):
             INSERT INTO email_accounts (email, source_label)
             VALUES (%s, %s)
             ON CONFLICT (email) DO UPDATE SET status = 'active'
-            RETURNING id
+            RETURNING id, (xmax = 0) AS inserted
             """,
             (email, source_label or email)
         )
         row = cursor.fetchone()
         conn.commit()
-        return row["id"]
+        return row["id"], row["inserted"]
 
     finally:
         cursor.close()

@@ -451,10 +451,18 @@ def test_priority_assignment_logic_files_untouched():
     observability task adds a small, defensive, print-only
     reasoning_tokens extraction there (no model/temperature/prompt/RAG/
     safety change) - legitimately touching exactly that one file.
+
+    vector_search.py is retired from this list for the same reason, later
+    still: the mailbox history onboarding fix replaces its fixed 3-address
+    STAFF_EMAIL_ADDRESSES constant with a small TTL-cached list derived
+    from database.get_all_email_accounts() - a retrieval-eligibility change
+    only (same SQL, same similarity/rerank/limit/is_unedited_ai_reply
+    behavior), not an AI/classifier/RAG/generation/safety/prompt/scheduler
+    change, and legitimately touching exactly that one file in this area.
     teacher_reply_generator1.py/ai_classifier.py/process_email.py/
-    prompt_builder.py/rag_reranker.py/knowledge_search.py/
-    vector_search.py/scheduler.py/email_reader.py all remain untouched by
-    that task and are still checked below."""
+    prompt_builder.py/rag_reranker.py/knowledge_search.py/scheduler.py/
+    email_reader.py all remain untouched by both tasks and are still
+    checked below."""
     import subprocess
     repo_dir = os.path.dirname(os.path.abspath(__file__))
     result = subprocess.run(
@@ -465,7 +473,7 @@ def test_priority_assignment_logic_files_untouched():
     for forbidden in [
         "ai_classifier.py", "process_email.py", "prompt_builder.py",
         "teacher_reply_generator1.py", "rag_reranker.py",
-        "knowledge_search.py", "vector_search.py",
+        "knowledge_search.py",
         "scheduler.py", "email_reader.py",
     ]:
         check(f"{forbidden} was not modified by this task", forbidden not in changed)

@@ -1,18 +1,57 @@
-import os
+import threading
+from datetime import datetime, timezone
 
-from database import get_connection, db_pool
+from database import get_connection, db_pool, get_all_email_accounts
 from embedding_service import generate_embedding
 from emails_cleaner import clean_email_body
 
 # Style examples must only ever be Coral Academy's own past replies, never
 # customer-authored content — otherwise one customer's email (with their
 # personal details) could be pulled in verbatim while drafting a reply to a
-# different customer. Restrict retrieval to these known staff addresses
-# regardless of what ended up in historical_emails historically.
-STAFF_EMAIL_ADDRESSES = [
-    e for e in (os.getenv("EMAIL_1"), os.getenv("EMAIL_2"), os.getenv("EMAIL_3"))
-    if e
-]
+# different customer. Restrict retrieval to known staff addresses regardless
+# of what ended up in historical_emails historically.
+#
+# Previously a fixed 3-element list read from EMAIL_1/EMAIL_2/EMAIL_3 - that
+# meant any mailbox added later via Settings could never have its own
+# history retrieved here, no matter how much accumulated (see the mailbox
+# onboarding investigation this follows). Now derived from
+# database.get_all_email_accounts() (the 3 core mailboxes plus every active
+# Settings-added one) instead, through the small TTL cache below so this
+# doesn't add a database round trip to every single email processed -
+# same pattern already used by coral_class_catalog.py's get_cached_catalog()
+# for the same reason (a process-local dict behind a lock, no new
+# infrastructure).
+
+STAFF_EMAIL_CACHE_TTL_SECONDS = 5 * 60
+
+_staff_email_cache_lock = threading.Lock()
+_staff_email_cache = {"result": None, "fetched_at": None}
+
+
+def _get_staff_email_addresses(ttl_seconds=STAFF_EMAIL_CACHE_TTL_SECONDS, now=None):
+    """Returns the cached list of active mailbox addresses if younger than
+    ttl_seconds; otherwise calls get_all_email_accounts() for a fresh one
+    and caches that. now is only for tests - defaults to the real current
+    time."""
+
+    current_time = now or datetime.now(timezone.utc)
+
+    with _staff_email_cache_lock:
+        cached = _staff_email_cache["result"]
+        cached_at = _staff_email_cache["fetched_at"]
+
+        if cached is not None and cached_at is not None:
+            age_seconds = (current_time - cached_at).total_seconds()
+            if age_seconds < ttl_seconds:
+                return cached
+
+    fresh = [a["email"] for a in get_all_email_accounts() if a.get("email")]
+
+    with _staff_email_cache_lock:
+        _staff_email_cache["result"] = fresh
+        _staff_email_cache["fetched_at"] = current_time
+
+    return fresh
 
 
 def search_similar_emails(subject, body, limit=30, embedding_client=None):
@@ -27,6 +66,8 @@ def search_similar_emails(subject, body, limit=30, embedding_client=None):
     query_embedding = generate_embedding(text, client=embedding_client)
 
     print("embedding Generated")
+
+    staff_email_addresses = _get_staff_email_addresses()
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -67,7 +108,7 @@ def search_similar_emails(subject, body, limit=30, embedding_client=None):
             ORDER BY embedding <=> %s::vector
 
             LIMIT %s
-        """, (STAFF_EMAIL_ADDRESSES, query_embedding, query_embedding, limit))
+        """, (staff_email_addresses, query_embedding, query_embedding, limit))
 
         return cursor.fetchall()
 
