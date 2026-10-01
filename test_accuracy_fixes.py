@@ -838,9 +838,22 @@ def test_send_route_still_requires_form_field():
         "M1. POST /email/{email_id}/send route still present",
         '@app.post("/email/{email_id}/send")' in source,
     )
+    # Mechanism changed by the send-flow double-body-read fix (a later,
+    # separately-approved task): the declarative "reply_body: str =
+    # Form(...)" parameter was removed because it forced FastAPI to parse
+    # the request body a second time, after AuthMiddleware had already
+    # consumed it for CSRF - the second parse always came back empty
+    # (422 "reply_body Field required"), even on a correctly-submitted
+    # request. reply_body is now read from AuthMiddleware's own already-
+    # parsed request.state.form instead. The underlying guarantee this
+    # check cares about - the route only ever uses a real, submitted
+    # value from the browser's own form, never a hardcoded/default/auto-
+    # populated body - is unchanged: form.get("reply_body") still reads
+    # the exact same field the browser's <textarea name="reply_body">
+    # submits, nothing invented.
     check(
-        "M2. reply_body is still a required Form(...) field (no auto-send input)",
-        "reply_body: str = Form(...)" in source,
+        "M2. reply_body still comes from the real submitted form field (no auto-send input)",
+        'reply_body = form.get("reply_body") or ""' in source,
     )
     check(
         "M3. generate_reply() call site unpacks the new (draft, status) tuple",

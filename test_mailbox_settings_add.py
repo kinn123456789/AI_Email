@@ -277,8 +277,17 @@ def test_other_post_routes_unaffected():
     # routes, confirmed still declared exactly as before - this change
     # only ever ADDS an attribute to request.state; it never alters how
     # FastAPI resolves any other route's own parameters.
+    #
+    # "reply_body: str = Form(...)" was swapped out for
+    # "subject: str = Form(...), body: str = Form(...)" (subscription_cancel_email_send,
+    # still untouched) by the later, separately-approved send-flow
+    # double-body-read fix: /email/{email_id}/send's own declarative
+    # reply_body/attachments parameters were deliberately removed there -
+    # that route now reuses request.state.form itself (see
+    # test_send_reply_form.py for its own dedicated coverage), exactly
+    # the pattern this fix established.
     for signature in [
-        "reply_body: str = Form(...)",
+        "subject: str = Form(...), body: str = Form(...)",
         "email_ids: list[int] = Form(...)",
         "chat_id: str = Form(...)",
         "row_keys: list[str] = Form(...), show_all: str = Form(None)",

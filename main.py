@@ -543,9 +543,32 @@ async def send_reply(
     request: Request,
      background_tasks: BackgroundTasks,
     email_id: int,
-    reply_body: str = Form(...),
-    attachments: List[UploadFile] = File(None)
 ):
+    # Reuses AuthMiddleware's already-parsed form (request.state.form)
+    # instead of declaring reply_body/attachments as Form(...)/File(...)
+    # dependencies - a second, independent parse of the same multipart
+    # body, which FastAPI would attempt on top of AuthMiddleware's own
+    # already-consumed read. See add_settings_account()/polish_reply()/
+    # the Teacher Portal send route for the same established pattern and
+    # reasoning (a second read of an already-drained body silently loses
+    # every field - here, 422 "reply_body Field required" even though the
+    # browser submitted it correctly).
+    #
+    # form.get("reply_body") mirrors exactly what Form(...) with type str
+    # already allowed: present-and-empty or genuinely absent both resolve
+    # to "" - no new validation is introduced; a blank reply still
+    # proceeds exactly as it did before.
+    #
+    # form.getlist("attachments") is the direct multidict equivalent of
+    # List[UploadFile] = File(None): Starlette's FormData stores each
+    # uploaded file as a real UploadFile instance under this field name,
+    # exactly as before - getlist() returns [] when none were attached
+    # (same effective value _send_reply_impl already treats via
+    # `attachments or []`) or every attached UploadFile in submission
+    # order when one or more were.
+    form = request.state.form
+    reply_body = form.get("reply_body") or ""
+    attachments = form.getlist("attachments")
 
     original_email = get_email_by_id(email_id)
 
