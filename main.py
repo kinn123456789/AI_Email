@@ -2159,7 +2159,12 @@ async def send_reply(request: Request):
 
 #):
     print(">>> ENTERED send_reply")
-    form = await request.form()
+    # Reuses AuthMiddleware's already-parsed form instead of reading the
+    # body a second time - see add_settings_account()/polish_reply() for
+    # the established reasoning (a second, independent read of the same
+    # body silently loses form fields in production; the exact bug this
+    # route previously had).
+    form = request.state.form
 
     chat_id = form.get("chat_id")
     teacher_id = form.get("teacher_id")
