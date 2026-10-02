@@ -43,6 +43,25 @@
 <body class="min-h-screen p-6 md:p-12 font-sans text-stone-700 bg-cyan-50"
       style="background: url('/static/background.png') center/cover no-repeat fixed;">
 
+    <!-- Floating Back button - only the Back control (not Sync Gmail Sent /
+         View AI Log, which must stay exactly where they are in the header,
+         never sticky) stays reachable once the header's own Back link has
+         scrolled out of view. Identical href/text/icon to that header link
+         (see #backLink above) and the exact same button classes, so it
+         matches the existing visual design and inherits Dark Mode support
+         from the same theme.css rules with no new CSS needed - only the
+         "fixed" positioning classes are new. Hidden by default; toggled by
+         the IntersectionObserver below, never covering the conversation
+         thread or compose area since it only ever occupies this one corner,
+         the same pattern this page's own "Jump to latest" button already
+         uses within the conversation box. -->
+    <a id="floatingBackLink"
+       href="{% if email.mailbox == 'contact_form' %}/contact-dashboard{% else %}/dashboard{% endif %}"
+       class="fixed top-4 left-4 z-50 px-4 py-2 bg-white border border-cyan-200 text-stone-700 font-bold rounded-2xl hover:bg-cyan-50 transition-all flex items-center gap-2 text-sm shadow-lg whitespace-nowrap"
+       hidden>
+        ← Back
+    </a>
+
     {% if request.query_params.get("dismissed") %}
     <div class="mb-6 max-w-7xl mx-auto bg-cyan-100/50 border border-cyan-200 text-cyan-800 rounded-3xl p-4 flex items-center gap-3">
         <span class="text-xl">✔️</span>
@@ -120,7 +139,7 @@
                 </a>
                 {% endif %}
 
-                <a href="{% if email.mailbox == 'contact_form' %}/contact-dashboard{% else %}/dashboard{% endif %}" class="px-4 py-2 bg-white border border-cyan-200 text-stone-700 font-bold rounded-2xl hover:bg-cyan-50 transition-all flex items-center gap-2 text-sm shadow-sm whitespace-nowrap">
+                <a id="backLink" href="{% if email.mailbox == 'contact_form' %}/contact-dashboard{% else %}/dashboard{% endif %}" class="px-4 py-2 bg-white border border-cyan-200 text-stone-700 font-bold rounded-2xl hover:bg-cyan-50 transition-all flex items-center gap-2 text-sm shadow-sm whitespace-nowrap">
                     ← Back
                 </a>
             </div>
@@ -377,6 +396,36 @@
             });
         }
     });
+    </script>
+
+    <script>
+    (function () {
+        // Shows the floating Back button only once the header's own Back
+        // link has scrolled out of the viewport - IntersectionObserver
+        // (not a hardcoded scroll-position threshold) so this stays
+        // correct regardless of how much variable-height content (the
+        // conditional sent/failed/already-sent banners above the header)
+        // happens to be on the page. Sync Gmail Sent and View AI Log are
+        // never touched - only #backLink is observed and only
+        // #floatingBackLink is ever shown or hidden.
+        const headerBackLink = document.getElementById("backLink");
+        const floatingBackLink = document.getElementById("floatingBackLink");
+
+        if (!headerBackLink || !floatingBackLink || !("IntersectionObserver" in window)) {
+            // No IntersectionObserver support (or the elements are
+            // missing) - leave the floating button hidden rather than
+            // risk showing a permanently-stuck duplicate; the header's
+            // own Back link is always present and unaffected either way.
+            return;
+        }
+
+        const observer = new IntersectionObserver(function (entries) {
+            const headerLinkVisible = entries[0].isIntersecting;
+            floatingBackLink.hidden = headerLinkVisible;
+        });
+
+        observer.observe(headerBackLink);
+    })();
     </script>
 
     <script>
