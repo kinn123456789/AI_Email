@@ -23,24 +23,6 @@
 })();
 </script>
 <link rel="stylesheet" href="/static/theme.css">
-<style>
-    /* Quick Keys (v1.1) - visible keyboard-focus indicator for email rows.
-       A plain, hand-written rule (not a Tailwind utility class) so it
-       can never collide with theme.css's attribute-substring dark-mode
-       overrides, which match on *any* class name containing a given
-       color string - this one has a name that shares no substring with
-       anything theme.css already matches on. Explicitly themed for both
-       palettes here instead. */
-    .quick-keys-focused-row {
-        outline: 2px solid #0e7490;
-        outline-offset: -2px;
-        background-color: rgba(8, 145, 178, 0.12);
-    }
-    html[data-theme="dark"] .quick-keys-focused-row {
-        outline-color: #22d3ee;
-        background-color: rgba(34, 211, 238, 0.14);
-    }
-</style>
 {% if trashed %}
 <div id="trash-message" class="mb-6 rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
     🗑️ {{ trashed }} email(s) moved to Trash.
@@ -50,64 +32,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="min-h-screen p-6 md:p-10 font-sans text-stone-700 bg-cyan-50" style="background: url('/static/background.png') center/cover no-repeat fixed;">
-
-<!-- Quick Keys help panel - hidden by default, toggled by "?" (see
-     static/quick-keys.js). A proper dialog: role="dialog", aria-modal,
-     an accessible label, closable via the button below or Escape, with
-     focus returned to whatever was focused before it opened. -->
-<div id="quickKeysHelp" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden
-     class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl border border-cyan-200 p-6 max-w-sm w-full">
-        <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-bold text-gray-900">Keyboard Shortcuts</h2>
-            <button type="button" data-quick-keys-close aria-label="Close keyboard shortcuts help"
-                    class="text-stone-500 hover:text-stone-800 text-xl leading-none">&times;</button>
-        </div>
-        <!-- Full reference of every Quick Key implemented anywhere in the
-             app (not just this page) - kept in sync with the permanent
-             "Keyboard Shortcuts" dashboard card below, which shows this
-             exact same set. B/R are Email Detail's own shortcuts (this
-             page has no composeForm/replyBody to focus) - included here,
-             under their own "Email" section, purely as reference. -->
-        <div class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-1">Navigation</div>
-        <dl class="space-y-2 text-sm text-stone-700 mb-4">
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">J</kbd></dt>
-                <dd>Next email</dd>
-            </div>
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">K</kbd></dt>
-                <dd>Previous email</dd>
-            </div>
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">Enter</kbd> / <kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">O</kbd></dt>
-                <dd>Open selected email</dd>
-            </div>
-        </dl>
-        <div class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-1">Email</div>
-        <dl class="space-y-2 text-sm text-stone-700 mb-4">
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">B</kbd></dt>
-                <dd>Back</dd>
-            </div>
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">R</kbd></dt>
-                <dd>Focus reply box</dd>
-            </div>
-        </dl>
-        <div class="text-[10px] font-bold uppercase tracking-wider text-stone-400 mb-1">Help</div>
-        <dl class="space-y-2 text-sm text-stone-700">
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">?</kbd></dt>
-                <dd>Show keyboard shortcuts</dd>
-            </div>
-            <div class="flex items-center justify-between">
-                <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">Esc</kbd></dt>
-                <dd>Close help</dd>
-            </div>
-        </dl>
-    </div>
-</div>
 
 <div class="flex items-center justify-between mb-6">
 <h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">✨ AI Unified Inbox</h1>
@@ -195,27 +119,20 @@
 </div>
 <!-- Permanent Quick Keys reference card - fills the grid's own existing
      5th column (grid-cols-5 with only 4 cards above it already left this
-     space empty; adding a 5th card here cannot move, resize, or push
-     down anything - it only occupies space the grid was already
-     reserving). Informational only, no click handlers, so it never
-     interferes with normal dashboard interaction. Reuses the exact same
-     card classes as its siblings (bg-cyan-200/40 border-cyan-100/50 ...)
-     for visual/Dark Mode consistency, and the same kbd style already
-     used in the "?" help dialog above - kept in sync with that dialog's
-     content; see the comment on #quickKeysHelp for why B/R (Email
-     Detail's own shortcuts) are included here too, as reference. -->
+     space empty; this card cannot move, resize, or push down anything -
+     it only occupies space the grid was already reserving).
+     Informational only, no click handlers, so it never interferes with
+     normal dashboard interaction. Reuses the exact same card classes as
+     its siblings (bg-cyan-200/40 border-cyan-100/50 ...) for visual/Dark
+     Mode consistency. B and R are the only two Quick Keys shortcuts in
+     the app (both act on Email Detail - see templates/email_detail.html
+     and static/quick-keys.js); the Dashboard itself has no active
+     shortcut of its own. -->
 <div class="bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl">
 <h3 class="text-cyan-950/70 text-sm font-bold mb-2">⌨ Keyboard Shortcuts</h3>
 <div class="space-y-1 text-xs">
-<div class="text-cyan-950/50 font-bold uppercase tracking-wider text-[10px] mt-0.5">Navigation</div>
-<div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">J</kbd><span class="text-cyan-950/70">Next email</span></div>
-<div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">K</kbd><span class="text-cyan-950/70">Previous email</span></div>
-<div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">Enter / O</kbd><span class="text-cyan-950/70">Open email</span></div>
-<div class="text-cyan-950/50 font-bold uppercase tracking-wider text-[10px] mt-1.5">Email</div>
 <div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">B</kbd><span class="text-cyan-950/70">Back</span></div>
-<div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">R</kbd><span class="text-cyan-950/70">Focus reply</span></div>
-<div class="text-cyan-950/50 font-bold uppercase tracking-wider text-[10px] mt-1.5">Help</div>
-<div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">?</kbd><span class="text-cyan-950/70">Show all shortcuts</span></div>
+<div class="flex justify-between"><kbd class="bg-white/60 border border-cyan-200 rounded px-1 font-mono">R</kbd><span class="text-cyan-950/70">Focus reply box</span></div>
 </div>
 </div>
 </div>
@@ -408,7 +325,6 @@ Response Metrics
 <tr
 onclick="window.location='/email/{{ email.id }}'"
 class="hover:bg-cyan-300/40 transition-colors cursor-pointer"
-tabindex="-1"
 >
 <td class="p-4 text-center"
     onclick="event.stopPropagation();">
@@ -751,7 +667,7 @@ function buildRowsHtml(emails) {
 function buildRowHtml(email) {
     const catClass = catColors[email.category] || "bg-gray-300/60 text-gray-950";
 
-    return '<tr onclick="window.location=\'/email/' + email.id + '\'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer" tabindex="-1">' +
+    return '<tr onclick="window.location=\'/email/' + email.id + '\'" class="hover:bg-cyan-300/40 transition-colors cursor-pointer">' +
         '<td class="p-4 text-center" onclick="event.stopPropagation();">' +
             '<input type="checkbox" name="email_ids" value="' + email.id + '" form="delete-form" class="email-checkbox" onclick="event.stopPropagation();">' +
         '</td>' +
@@ -857,103 +773,6 @@ function refreshDashboard() {
 }
 
 setInterval(refreshDashboard, 8000);
-</script>
-
-<script src="/static/quick-keys.js"></script>
-<script>
-(function () {
-    // Quick Keys (v1.1) - j/k move a real, visible DOM focus between
-    // email rows; Enter/o open the currently focused row by reusing its
-    // own existing onclick handler (never a second, hardcoded URL); ?
-    // opens the help panel above (wired by QuickKeys.init itself).
-    //
-    // Rows are looked up fresh on every call rather than cached, and
-    // "which row is focused" is read directly from document.activeElement
-    // rather than a separately-tracked index variable - this can never
-    // drift out of sync with reality, and it also means the existing 8s
-    // auto-refresh (which replaces #tableBody's entire innerHTML) resets
-    // the keyboard focus to "none" for free: the old focused <tr> is
-    // destroyed along with the rest of the old rows, so no row matches
-    // document.activeElement afterwards - no extra reset code needed.
-    function getRows() {
-        return Array.from(document.querySelectorAll('#tableBody tr[tabindex="-1"]'));
-    }
-
-    function currentRowIndex(rows) {
-        return rows.indexOf(document.activeElement);
-    }
-
-    // Set true the first time any row actually receives focus (see the
-    // focusin listener below) and never cleared - distinguishes a
-    // genuine first-ever j/k press (currentRowIndex is -1 because
-    // nothing has been focused yet - still fine to jump to a sensible
-    // end) from the 8s auto-refresh having just destroyed the
-    // previously-focused row (currentRowIndex is ALSO -1 here, since
-    // that old DOM node no longer matches anything in the freshly
-    // rebuilt rows - but this is not a fresh start, and treating it
-    // like one was the exact bug: pressing j right after a refresh wiped
-    // focus landed on idx -1 -> "start at row 0", which looked
-    // indistinguishable from "k at the last row wrapped to the first
-    // row" - and the equivalent for k landing on the last row looked
-    // like j-at-the-end wrapping to the end. Once the user has focused
-    // any row at all, a later idx of -1 is always this refresh case, so
-    // moveFocus simply does nothing instead of jumping to either end.
-    let hasFocusedBefore = false;
-
-    function moveFocus(delta) {
-        const rows = getRows();
-        if (rows.length === 0) {
-            return;
-        }
-        const idx = currentRowIndex(rows);
-        if (idx === -1) {
-            if (hasFocusedBefore) {
-                return;
-            }
-            rows[delta > 0 ? 0 : rows.length - 1].focus();
-            return;
-        }
-        const next = Math.max(0, Math.min(idx + delta, rows.length - 1)); // clamp, never wrap
-        rows[next].focus();
-    }
-
-    function openFocusedRow() {
-        const rows = getRows();
-        const idx = currentRowIndex(rows);
-        if (idx === -1) {
-            return;
-        }
-        rows[idx].click(); // reuses the row's own existing onclick - no URL built here
-    }
-
-    // Visible focus indicator, kept in sync purely by real focus events
-    // (not by moveFocus itself) so it stays correct however focus
-    // actually changes - keyboard shortcut, Tab, or a plain mouse click.
-    const tableBody = document.getElementById("tableBody");
-    tableBody.addEventListener("focusin", function (e) {
-        const row = e.target.closest('tr[tabindex="-1"]');
-        if (row) {
-            row.classList.add("quick-keys-focused-row");
-            hasFocusedBefore = true;
-        }
-    });
-    tableBody.addEventListener("focusout", function (e) {
-        const row = e.target.closest('tr[tabindex="-1"]');
-        if (row) {
-            row.classList.remove("quick-keys-focused-row");
-        }
-    });
-
-    QuickKeys.init({
-        helpPanelId: "quickKeysHelp",
-        bindings: {
-            "j": { handler: function () { moveFocus(1); } },
-            "k": { handler: function () { moveFocus(-1); } },
-            "Enter": { handler: openFocusedRow },
-            "o": { handler: openFocusedRow },
-        },
-    });
-})();
 </script>
 
 </html>
