@@ -5,6 +5,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Inbox Dashboard</title>
+<script>
+// Restores the saved Light/Dark preference before first paint, so the
+// page never flashes the wrong theme - must run inline, here, before
+// theme.css loads (an external script would load too late for this).
+// No stored preference -> leaves html with no data-theme attribute at
+// all, which is exactly today's existing Light-mode appearance.
+(function () {
+    try {
+        var t = localStorage.getItem("aiEmailTheme");
+        if (t === "dark" || t === "light") {
+            document.documentElement.setAttribute("data-theme", t);
+        }
+    } catch (e) {
+        // localStorage unavailable - falls back to today's default Light mode.
+    }
+})();
+</script>
+<link rel="stylesheet" href="/static/theme.css">
 {% if trashed %}
 <div id="trash-message" class="mb-6 rounded-xl border border-amber-300 bg-amber-100 px-5 py-3 text-amber-900 font-semibold shadow">
     🗑️ {{ trashed }} email(s) moved to Trash.
@@ -17,6 +35,19 @@
 <div class="flex items-center justify-between mb-6">
 <h1 class="text-3xl font-bold mb-6 text-gray-900 tracking-tight">✨ AI Unified Inbox</h1>
 <div class="flex items-center gap-3">
+
+<button type="button"
+        id="themeToggle"
+        class="theme-toggle"
+        role="switch"
+        aria-checked="false"
+        aria-label="Switch to dark mode"
+        title="Switch to dark mode"
+        data-theme-toggle>
+    <span class="theme-toggle-icon theme-toggle-icon-light" aria-hidden="true">☀</span>
+    <span class="theme-toggle-thumb"></span>
+    <span class="theme-toggle-icon theme-toggle-icon-dark" aria-hidden="true">🌙</span>
+</button>
 
 <a href="/"
    class="bg-cyan-800 text-white px-8 py-4 rounded-3xl font-bold hover:bg-black transition shadow-lg border border-white/20 flex items-center gap-2">
@@ -419,6 +450,7 @@ Showing 0 emails
 </div>
 </body>
 <script src="/static/local-time.js"></script>
+<script src="/static/theme.js"></script>
 <script>
 // Lets the server compute TODAY/YESTERDAY date-group boundaries and
 // date-first sort order in the *viewer's own* calendar day, matching the

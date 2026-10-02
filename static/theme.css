@@ -1,0 +1,485 @@
+/* AI_Email · Light/Dark theme layer (v1.1)
+ *
+ * Light mode is the existing, untouched appearance of dashboard.html and
+ * email_detail.html - nothing in this file changes anything unless
+ * html[data-theme="dark"] is set, so a viewer who never opens the toggle
+ * (or whose browser has JS/localStorage disabled) sees exactly today's
+ * page, pixel for pixel.
+ *
+ * Both templates are standalone documents (no shared base/include), so
+ * this file - plus theme.js - is the one place the whole Light/Dark
+ * system lives; each template only adds a stylesheet <link>, the toggle
+ * control markup, and a script tag.
+ *
+ * Every rule below targets the *existing* Tailwind utility classes
+ * already present in the markup (via attribute substring selectors, so
+ * arbitrary-value classes like text-[10px] or shadow-[inset_...] never
+ * need backslash-escaping) rather than rewriting any element's class
+ * list - this is intentionally a thin override layer, not a redesign.
+ * Every override reuses one of the tokens below instead of a one-off
+ * hex value, so the whole palette lives in one small, adjustable place.
+ */
+
+:root {
+  /* Light tokens - documented for completeness; not consumed by any
+     rule below (every consuming selector is scoped to
+     html[data-theme="dark"]), so defining them here can never change
+     today's Light-mode appearance. */
+  --t-bg-page: #ecfeff;
+  --t-surface: rgba(255, 255, 255, 0.5);
+  --t-surface-strong: rgba(8, 145, 178, 0.1);
+  --t-surface-solid: #ffffff;
+  --t-border: rgba(165, 243, 252, 0.5);
+  --t-text-primary: #0c0a09;
+  --t-text-secondary: #164e63;
+  --t-text-muted: #78716c;
+  --t-link: #155e75;
+  --t-focus-ring: #0e7490;
+  --t-input-bg: rgba(255, 255, 255, 0.6);
+  --t-input-text: #164e63;
+  --t-input-placeholder: rgba(22, 78, 99, 0.4);
+  --t-btn-primary-bg: #155e75;
+  --t-btn-primary-text: #ffffff;
+  --t-btn-primary-hover: #000000;
+  --t-btn-danger-bg: #dc2626;
+  --t-btn-danger-hover: #b91c1c;
+  --t-btn-neutral-bg: #374151;
+  --t-btn-neutral-hover: #000000;
+  --t-btn-secondary-bg: #ffffff;
+  --t-btn-secondary-text: #44403c;
+  --t-btn-secondary-hover: #ecfeff;
+  --t-code-bg: rgba(255, 255, 255, 0.5);
+  --t-code-text: #44403c;
+  --t-scrollbar-track: #f1f0ee;
+  --t-scrollbar-thumb: #a8a29e;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+
+  --t-bg-page: #0b1220;
+  --t-surface: rgba(30, 41, 59, 0.55);
+  --t-surface-strong: rgba(15, 23, 42, 0.75);
+  --t-surface-solid: #1e293b;
+  --t-border: rgba(100, 116, 139, 0.35);
+  --t-text-primary: #e5e7eb;
+  --t-text-secondary: #94a3b8;
+  --t-text-muted: #64748b;
+  --t-link: #67e8f9;
+  --t-focus-ring: #22d3ee;
+  --t-input-bg: rgba(15, 23, 42, 0.7);
+  --t-input-text: #e5e7eb;
+  --t-input-placeholder: rgba(148, 163, 184, 0.6);
+  --t-btn-primary-bg: #0e7490;
+  --t-btn-primary-text: #ecfeff;
+  --t-btn-primary-hover: #155e75;
+  --t-btn-danger-bg: #b91c1c;
+  --t-btn-danger-hover: #991b1b;
+  --t-btn-neutral-bg: #334155;
+  --t-btn-neutral-hover: #1e293b;
+  --t-btn-secondary-bg: #1e293b;
+  --t-btn-secondary-text: #cbd5e1;
+  --t-btn-secondary-hover: #273449;
+  --t-code-bg: rgba(15, 23, 42, 0.6);
+  --t-code-text: #cbd5e1;
+  --t-scrollbar-track: #1e293b;
+  --t-scrollbar-thumb: #475569;
+
+  /* Badge/status hues - kept distinct per category rather than flattened
+     to one gray, so category/priority/status/source badges stay
+     visually distinguishable (same intent as light mode, not inverted). */
+  --t-badge-cyan-bg: rgba(8, 145, 178, 0.28);
+  --t-badge-cyan-text: #a5f3fc;
+  --t-badge-pink-bg: rgba(219, 39, 119, 0.25);
+  --t-badge-pink-text: #fbcfe8;
+  --t-badge-indigo-bg: rgba(79, 70, 229, 0.28);
+  --t-badge-indigo-text: #c7d2fe;
+  --t-badge-emerald-bg: rgba(5, 150, 105, 0.28);
+  --t-badge-emerald-text: #a7f3d0;
+  --t-badge-amber-bg: rgba(217, 119, 6, 0.25);
+  --t-badge-amber-text: #fde68a;
+  --t-badge-red-bg: rgba(220, 38, 38, 0.28);
+  --t-badge-red-text: #fecaca;
+  --t-badge-yellow-bg: rgba(202, 138, 4, 0.25);
+  --t-badge-yellow-text: #fef08a;
+  --t-badge-green-bg: rgba(22, 163, 74, 0.28);
+  --t-badge-green-text: #bbf7d0;
+  --t-badge-gray-bg: rgba(100, 116, 139, 0.3);
+  --t-badge-gray-text: #e2e8f0;
+  --t-badge-orange-text: #fdba74;
+
+  --t-banner-success-bg: rgba(22, 163, 74, 0.18);
+  --t-banner-success-border: rgba(22, 163, 74, 0.4);
+  --t-banner-success-text: #86efac;
+  --t-banner-danger-bg: rgba(220, 38, 38, 0.18);
+  --t-banner-danger-border: rgba(220, 38, 38, 0.4);
+  --t-banner-danger-text: #fca5a5;
+  --t-banner-warning-bg: rgba(217, 119, 6, 0.18);
+  --t-banner-warning-border: rgba(217, 119, 6, 0.4);
+  --t-banner-warning-text: #fcd34d;
+  --t-banner-info-bg: rgba(8, 145, 178, 0.18);
+  --t-banner-info-border: rgba(8, 145, 178, 0.4);
+  --t-banner-info-text: #a5f3fc;
+}
+
+/* ---------------------------------------------------------------------
+ * Page background (wins over the inline background-image style both
+ * templates set on <body> - !important is required to beat an inline
+ * style, and is scoped tightly to this one dark-mode rule).
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] body {
+  background: var(--t-bg-page) !important;
+  color: var(--t-text-primary);
+}
+
+/* ---------------------------------------------------------------------
+ * Cards / panels / surfaces
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] [class*="bg-cyan-50"],
+html[data-theme="dark"] [class*="bg-cyan-100/30"],
+html[data-theme="dark"] [class*="bg-cyan-100/50"],
+html[data-theme="dark"] [class*="bg-cyan-200/40"],
+html[data-theme="dark"] [class*="bg-cyan-200/50"],
+html[data-theme="dark"] [class*="bg-white/40"],
+html[data-theme="dark"] [class*="bg-white/50"],
+html[data-theme="dark"] [class*="bg-white/70"],
+html[data-theme="dark"] [class*="bg-cyan-50/60"],
+html[data-theme="dark"] [class*="bg-cyan-50/70"] {
+  background-color: var(--t-surface) !important;
+  border-color: var(--t-border) !important;
+}
+
+html[data-theme="dark"] [class*="bg-cyan-900/10"] {
+  background-color: var(--t-surface-strong) !important;
+}
+
+html[data-theme="dark"] [class*="bg-white/60"],
+html[data-theme="dark"] [class*="bg-white/80"],
+html[data-theme="dark"] [class*="bg-white/90"] {
+  background-color: var(--t-input-bg) !important;
+  border-color: var(--t-border) !important;
+}
+
+html[data-theme="dark"] .bg-white:not([class*="bg-white/"]) {
+  background-color: var(--t-surface-solid) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Borders
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] [class*="border-cyan-100"],
+html[data-theme="dark"] [class*="border-cyan-200"],
+html[data-theme="dark"] [class*="border-cyan-300"],
+html[data-theme="dark"] [class*="border-cyan-400"],
+html[data-theme="dark"] [class*="border-white/"],
+html[data-theme="dark"] [class*="border-stone-100"],
+html[data-theme="dark"] [class*="border-stone-200"],
+html[data-theme="dark"] [class*="divide-cyan-300"] {
+  border-color: var(--t-border) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Text colors - headings/body vs. secondary/muted
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] [class*="text-gray-900"],
+html[data-theme="dark"] [class*="text-gray-950"],
+html[data-theme="dark"] [class*="text-cyan-950"],
+html[data-theme="dark"] [class*="text-stone-900"],
+html[data-theme="dark"] [class*="text-stone-700"],
+html[data-theme="dark"] [class*="text-gray-800"] {
+  color: var(--t-text-primary) !important;
+}
+
+html[data-theme="dark"] [class*="text-stone-500"],
+html[data-theme="dark"] [class*="text-stone-600"],
+html[data-theme="dark"] [class*="text-gray-600"],
+html[data-theme="dark"] [class*="text-stone-400"] {
+  color: var(--t-text-secondary) !important;
+}
+
+html[data-theme="dark"] [class*="text-[#0F5D7A]"] {
+  color: var(--t-link) !important;
+}
+
+/* Priority text (dashboard.html's Urgent/High/Medium spans carry only a
+   text-*-950 color class, no background) - each stays a distinct,
+   readable hue rather than collapsing to the primary text color. Any of
+   these same classes that ALSO appear on a badge with a bg-*-300/60
+   companion class (category/source/status badges) are re-set by the
+   badge rules further below, which load later and win. */
+html[data-theme="dark"] [class*="text-red-950"] {
+  color: var(--t-banner-danger-text) !important;
+}
+html[data-theme="dark"] [class*="text-orange-950"] {
+  color: var(--t-badge-orange-text) !important;
+}
+html[data-theme="dark"] [class*="text-yellow-950"] {
+  color: var(--t-badge-yellow-text) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Inputs, selects, textareas, file inputs
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] input[type="text"],
+html[data-theme="dark"] input[type="date"],
+html[data-theme="dark"] select,
+html[data-theme="dark"] textarea {
+  background-color: var(--t-input-bg) !important;
+  color: var(--t-input-text) !important;
+  border-color: var(--t-border) !important;
+}
+
+html[data-theme="dark"] input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+  color: var(--t-input-placeholder) !important;
+}
+
+html[data-theme="dark"] input[type="file"] {
+  color: var(--t-text-secondary) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Buttons / links
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] [class*="bg-cyan-800"] {
+  background-color: var(--t-btn-primary-bg) !important;
+  color: var(--t-btn-primary-text) !important;
+}
+html[data-theme="dark"] [class*="bg-cyan-800"]:hover,
+html[data-theme="dark"] [class*="hover:bg-black"]:hover {
+  background-color: var(--t-btn-primary-hover) !important;
+}
+
+html[data-theme="dark"] [class*="bg-red-600"] {
+  background-color: var(--t-btn-danger-bg) !important;
+}
+html[data-theme="dark"] [class*="hover:bg-red-700"]:hover {
+  background-color: var(--t-btn-danger-hover) !important;
+}
+
+html[data-theme="dark"] [class*="bg-gray-700"],
+html[data-theme="dark"] [class*="bg-stone-700"] {
+  background-color: var(--t-btn-neutral-bg) !important;
+}
+html[data-theme="dark"] [class*="bg-gray-700"]:hover,
+html[data-theme="dark"] [class*="bg-stone-700"]:hover {
+  background-color: var(--t-btn-neutral-hover) !important;
+}
+
+html[data-theme="dark"] [class*="bg-cyan-600"] {
+  background-color: var(--t-btn-primary-bg) !important;
+}
+html[data-theme="dark"] [class*="hover:bg-cyan-700"]:hover {
+  background-color: var(--t-btn-primary-hover) !important;
+}
+
+/* Secondary (white/bordered) buttons and links, e.g. Back, AI Polish,
+   Apply/Discard, Knowledge Match "Read Article". */
+html[data-theme="dark"] a[class*="bg-white"],
+html[data-theme="dark"] button[class*="bg-white"] {
+  background-color: var(--t-btn-secondary-bg) !important;
+  color: var(--t-btn-secondary-text) !important;
+}
+html[data-theme="dark"] [class*="hover:bg-cyan-50"]:hover,
+html[data-theme="dark"] [class*="hover:bg-white/90"]:hover {
+  background-color: var(--t-btn-secondary-hover) !important;
+}
+
+html[data-theme="dark"] [class*="text-cyan-800"] {
+  color: var(--t-link) !important;
+}
+
+html[data-theme="dark"] [class*="file:bg-cyan-800"]::file-selector-button {
+  background-color: var(--t-btn-primary-bg) !important;
+  color: var(--t-btn-primary-text) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Focus state - visible on every interactive element, keyboard or mouse.
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] a:focus-visible,
+html[data-theme="dark"] button:focus-visible,
+html[data-theme="dark"] input:focus-visible,
+html[data-theme="dark"] select:focus-visible,
+html[data-theme="dark"] textarea:focus-visible {
+  outline: 2px solid var(--t-focus-ring) !important;
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------------
+ * Preformatted / code-like areas - the scrollable conversation thread
+ * (templates/email_detail.html's #conversationBox, whitespace-pre-wrap)
+ * is this app's one long-form preformatted text area.
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] #conversationBox {
+  background-color: var(--t-code-bg) !important;
+  color: var(--t-code-text) !important;
+}
+
+html[data-theme="dark"] .force-visible-scrollbar::-webkit-scrollbar {
+  background-color: var(--t-scrollbar-track) !important;
+}
+html[data-theme="dark"] .force-visible-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--t-scrollbar-thumb) !important;
+  border-color: var(--t-scrollbar-track) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Status / review / category / priority / source badges - distinct hues
+ * preserved (see the --t-badge-* tokens above), not flattened to gray.
+ * ------------------------------------------------------------------- */
+html[data-theme="dark"] [class*="bg-cyan-300/60"],
+html[data-theme="dark"] [class*="bg-cyan-400/50"] {
+  background-color: var(--t-badge-cyan-bg) !important;
+  color: var(--t-badge-cyan-text) !important;
+  border-color: transparent !important;
+}
+html[data-theme="dark"] [class*="bg-pink-300/60"] {
+  background-color: var(--t-badge-pink-bg) !important;
+  color: var(--t-badge-pink-text) !important;
+}
+html[data-theme="dark"] [class*="bg-indigo-300/60"] {
+  background-color: var(--t-badge-indigo-bg) !important;
+  color: var(--t-badge-indigo-text) !important;
+}
+html[data-theme="dark"] [class*="bg-emerald-300/60"],
+html[data-theme="dark"] [class*="bg-emerald-100"] {
+  background-color: var(--t-badge-emerald-bg) !important;
+  color: var(--t-badge-emerald-text) !important;
+}
+html[data-theme="dark"] [class*="bg-amber-300/60"],
+html[data-theme="dark"] [class*="bg-amber-100"] {
+  background-color: var(--t-badge-amber-bg) !important;
+  color: var(--t-badge-amber-text) !important;
+}
+html[data-theme="dark"] [class*="bg-red-300/60"],
+html[data-theme="dark"] [class*="bg-red-100"] {
+  background-color: var(--t-badge-red-bg) !important;
+  color: var(--t-badge-red-text) !important;
+}
+html[data-theme="dark"] [class*="bg-yellow-200/40"],
+html[data-theme="dark"] [class*="bg-yellow-200/60"] {
+  background-color: var(--t-badge-yellow-bg) !important;
+  color: var(--t-badge-yellow-text) !important;
+}
+html[data-theme="dark"] [class*="bg-green-100"],
+html[data-theme="dark"] [class*="bg-green-300/60"] {
+  background-color: var(--t-badge-green-bg) !important;
+  color: var(--t-badge-green-text) !important;
+}
+html[data-theme="dark"] [class*="bg-gray-300/60"] {
+  background-color: var(--t-badge-gray-bg) !important;
+  color: var(--t-badge-gray-text) !important;
+}
+
+html[data-theme="dark"] [class*="text-amber-700"],
+html[data-theme="dark"] [class*="text-amber-800"] {
+  color: var(--t-banner-warning-text) !important;
+}
+html[data-theme="dark"] [class*="text-amber-900"] {
+  color: var(--t-banner-warning-text) !important;
+}
+html[data-theme="dark"] [class*="text-red-600"],
+html[data-theme="dark"] [class*="text-red-700"],
+html[data-theme="dark"] [class*="text-red-800"],
+html[data-theme="dark"] [class*="text-red-500"] {
+  color: var(--t-banner-danger-text) !important;
+}
+html[data-theme="dark"] [class*="text-green-800"],
+html[data-theme="dark"] [class*="text-emerald-600"],
+html[data-theme="dark"] [class*="text-emerald-700"],
+html[data-theme="dark"] [class*="text-emerald-800"] {
+  color: var(--t-banner-success-text) !important;
+}
+html[data-theme="dark"] [class*="text-cyan-800"][class*="border"] {
+  color: var(--t-banner-info-text) !important;
+}
+
+/* Top-of-page status banners (dismissed/sent/send_failed/already_sent,
+   trash-move confirmation). */
+html[data-theme="dark"] [class*="bg-amber-100"],
+html[data-theme="dark"] #trash-message[class*="bg-amber-100"] {
+  background-color: var(--t-banner-warning-bg) !important;
+  border-color: var(--t-banner-warning-border) !important;
+}
+html[data-theme="dark"] [class*="bg-green-100"] {
+  background-color: var(--t-banner-success-bg) !important;
+  border-color: var(--t-banner-success-border) !important;
+}
+html[data-theme="dark"] [class*="bg-red-100"] {
+  background-color: var(--t-banner-danger-bg) !important;
+  border-color: var(--t-banner-danger-border) !important;
+}
+html[data-theme="dark"] [class*="bg-cyan-100/50"][class*="border-cyan-200"] {
+  background-color: var(--t-banner-info-bg) !important;
+  border-color: var(--t-banner-info-border) !important;
+}
+
+/* Polish error box keeps its own distinct danger styling even though it
+   also matches the generic bg-red-50/border-red-200 pattern above. */
+html[data-theme="dark"] [class*="bg-red-50"] {
+  background-color: var(--t-banner-danger-bg) !important;
+  border-color: var(--t-banner-danger-border) !important;
+  color: var(--t-banner-danger-text) !important;
+}
+
+/* ---------------------------------------------------------------------
+ * Compact Light/Dark toggle control
+ * ------------------------------------------------------------------- */
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: 64px;
+  height: 32px;
+  padding: 0 6px;
+  border-radius: 999px;
+  border: 1px solid var(--t-border, rgba(165, 243, 252, 0.5));
+  background: var(--t-surface-solid, #ffffff);
+  cursor: pointer;
+  flex-shrink: 0;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme="dark"] .theme-toggle {
+  background: var(--t-surface-solid);
+  border-color: var(--t-border);
+}
+
+.theme-toggle-icon {
+  font-size: 13px;
+  line-height: 1;
+  width: 16px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  opacity: 0.55;
+}
+
+.theme-toggle[aria-checked="true"] .theme-toggle-icon-dark,
+.theme-toggle[aria-checked="false"] .theme-toggle-icon-light {
+  opacity: 1;
+}
+
+.theme-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #155e75;
+  transition: transform 0.15s ease-out;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25);
+}
+
+.theme-toggle[aria-checked="true"] .theme-toggle-thumb {
+  transform: translateX(32px);
+  background: #0e7490;
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--t-focus-ring, #0e7490);
+  outline-offset: 2px;
+}

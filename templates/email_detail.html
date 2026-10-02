@@ -5,6 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Review Email</title>
+    <script>
+    // Restores the saved Light/Dark preference before first paint, so the
+    // page never flashes the wrong theme - must run inline, here, before
+    // theme.css loads (an external script would load too late for this).
+    // No stored preference -> leaves html with no data-theme attribute at
+    // all, which is exactly today's existing Light-mode appearance.
+    (function () {
+        try {
+            var t = localStorage.getItem("aiEmailTheme");
+            if (t === "dark" || t === "light") {
+                document.documentElement.setAttribute("data-theme", t);
+            }
+        } catch (e) {
+            // localStorage unavailable - falls back to today's default Light mode.
+        }
+    })();
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style>
         .force-visible-scrollbar {
@@ -21,6 +38,7 @@
             border-radius: 10px !important;
         }
     </style>
+    <link rel="stylesheet" href="/static/theme.css">
 </head>
 <body class="min-h-screen p-6 md:p-12 font-sans text-stone-700 bg-cyan-50"
       style="background: url('/static/background.png') center/cover no-repeat fixed;">
@@ -77,6 +95,19 @@
             
             <!-- Button Container -->
             <div class="flex items-center gap-3 shrink-0">
+                <button type="button"
+                        id="themeToggle"
+                        class="theme-toggle"
+                        role="switch"
+                        aria-checked="false"
+                        aria-label="Switch to dark mode"
+                        title="Switch to dark mode"
+                        data-theme-toggle>
+                    <span class="theme-toggle-icon theme-toggle-icon-light" aria-hidden="true">☀</span>
+                    <span class="theme-toggle-thumb"></span>
+                    <span class="theme-toggle-icon theme-toggle-icon-dark" aria-hidden="true">🌙</span>
+                </button>
+
                 <a href="/sync-sent/{{ email.id }}"
                     class="px-4 py-2 bg-cyan-800 text-white font-bold rounded-2xl hover:bg-black transition-all text-sm shadow-sm whitespace-nowrap">
                     🔄 Sync Gmail Sent
@@ -484,6 +515,7 @@
     })();
     </script>
 <script src="/static/local-time.js"></script>
+<script src="/static/theme.js"></script>
 </body>
 </html>
 
