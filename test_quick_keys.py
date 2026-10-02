@@ -187,14 +187,31 @@ def _mirror_current_row_index(rows, active_element):
         return -1
 
 
-def _mirror_move_focus(rows, active_element, delta):
+def _mirror_move_focus(rows, active_element, delta, has_focused_before=False):
     """Byte-for-byte mirror of moveFocus()'s index math in
-    templates/dashboard.html. Returns the row that would receive focus,
-    or None if there are no rows (a no-op, exactly like the real code)."""
+    templates/dashboard.html (post wrap-around fix). Returns the row that
+    would receive focus, or None if there are no rows or if this call is
+    correctly a no-op (empty list, or a post-refresh "lost focus" state -
+    see has_focused_before below) - exactly like the real code, which
+    simply returns without calling .focus() on anything in those cases.
+
+    has_focused_before mirrors the real hasFocusedBefore closure
+    variable: False only until any row has ever genuinely been focused.
+    This is what lets the fix distinguish a true first-ever j/k press
+    (idx is -1 because nothing has been focused yet - still fine to jump
+    to a sensible end) from the 8s auto-refresh having just destroyed the
+    previously-focused row (idx is ALSO -1 here, since that old row no
+    longer matches anything in the freshly rebuilt list - but this is not
+    a fresh start, and treating it like one was the exact reported bug:
+    j right after a refresh wiped focus landed on idx -1 -> "start at row
+    0", indistinguishable from k-at-the-last-row wrapping to the first
+    row, and the mirror image for k wrapping to the last row)."""
     if not rows:
         return None
     idx = _mirror_current_row_index(rows, active_element)
     if idx == -1:
+        if has_focused_before:
+            return None
         next_idx = 0 if delta > 0 else len(rows) - 1
     else:
         next_idx = max(0, min(idx + delta, len(rows) - 1))
@@ -222,6 +239,41 @@ def test_jk_clamp_at_first_and_last_row_never_wrap():
     check(
         "k from the first row stays on the first row (no wrap to the last)",
         _mirror_move_focus(rows, active_element=rows[0], delta=-1) is rows[0],
+    )
+
+
+def test_wrap_around_bug_fix_after_focus_is_lost_mid_navigation():
+    """Regression test for the exact reported production bug: pressing k
+    while genuinely focused on the first row looked like it "jumped to
+    the last row," and j from the last row looked like it "jumped to the
+    first row." Root cause: if focus is ever lost for a reason OTHER
+    than a true first-ever press (the only real-world trigger here is
+    the dashboard's own 8s auto-refresh destroying the previously
+    focused <tr>), currentRowIndex() correctly reports -1 (nothing
+    matches), but the OLD code treated every -1 as "first use" and
+    jumped to an end anyway - landing on row 0 for j (reported as "k
+    wrapped me to the end, then j wrapped me back to the start" when
+    observed over a couple of presses) or the last row for k. The fix:
+    once has_focused_before is true, an idx of -1 is never a fresh
+    start - it's a lost-focus state, and the correct behavior is to do
+    nothing at all (not wrap, not jump)."""
+    rows = [_FakeElement() for _ in range(3)]
+
+    check(
+        "a genuine first-ever j press (has_focused_before=False) still starts at row 0 (unchanged convenience)",
+        _mirror_move_focus(rows, active_element=None, delta=1, has_focused_before=False) is rows[0],
+    )
+    check(
+        "a genuine first-ever k press (has_focused_before=False) still starts at the last row (unchanged convenience)",
+        _mirror_move_focus(rows, active_element=None, delta=-1, has_focused_before=False) is rows[-1],
+    )
+    check(
+        "j after focus was lost mid-navigation (has_focused_before=True) does nothing - no jump to row 0",
+        _mirror_move_focus(rows, active_element=None, delta=1, has_focused_before=True) is None,
+    )
+    check(
+        "k after focus was lost mid-navigation (has_focused_before=True) does nothing - no jump to the last row",
+        _mirror_move_focus(rows, active_element=None, delta=-1, has_focused_before=True) is None,
     )
 
 
@@ -376,6 +428,106 @@ def test_dashboard_focus_css_defined_for_both_themes():
     )
 
 
+# ---------------------------------------------------------------------------
+# E. The j/k wrap-around fix, the permanent shortcut card, and the
+#    updated "?" help dialog content (production bug follow-up).
+# ---------------------------------------------------------------------------
+
+def test_dashboard_source_implements_the_has_focused_before_guard():
+    check(
+        "dashboard.html declares the hasFocusedBefore state variable",
+        "let hasFocusedBefore = false;" in DASHBOARD_HTML,
+    )
+    check(
+        "moveFocus checks hasFocusedBefore before falling back to jumping to an end",
+        "if (hasFocusedBefore) {" in DASHBOARD_HTML,
+    )
+    check(
+        "the focusin listener sets hasFocusedBefore = true",
+        "hasFocusedBefore = true;" in DASHBOARD_HTML,
+    )
+    # Confirms the guard was added inside moveFocus itself, not bolted on
+    # elsewhere disconnected from the actual index math.
+    move_focus_start = DASHBOARD_HTML.index("function moveFocus(delta)")
+    move_focus_end = DASHBOARD_HTML.index("function openFocusedRow()")
+    move_focus_body = DASHBOARD_HTML[move_focus_start:move_focus_end]
+    check(
+        "the hasFocusedBefore check lives inside moveFocus()'s own body",
+        "if (hasFocusedBefore) {" in move_focus_body and "return;" in move_focus_body,
+    )
+
+
+def test_permanent_shortcut_card_present_in_metrics_grid_fifth_slot():
+    metrics_start = DASHBOARD_HTML.index("<!-- Metrics Cards -->")
+    metrics_end = DASHBOARD_HTML.index("<!-- Actions Bar -->")
+    metrics_block = DASHBOARD_HTML[metrics_start:metrics_end]
+
+    check("metrics grid still contains exactly one Total Messages card", metrics_block.count("Total Messages") == 1)
+    check("metrics grid still contains exactly one Auto Replies card", metrics_block.count("Auto Replies") == 1)
+    check("metrics grid still contains exactly one Needs Review card", metrics_block.count("Needs Review") == 1)
+    check("metrics grid still contains exactly one By Category card", metrics_block.count("By Category") == 1)
+    check(
+        "metrics grid now contains exactly one new Keyboard Shortcuts card",
+        metrics_block.count("⌨ Keyboard Shortcuts") == 1,
+    )
+    check(
+        "the new card appears AFTER By Category in source order (fills the grid's existing empty 5th slot)",
+        metrics_block.index("By Category") < metrics_block.index("⌨ Keyboard Shortcuts"),
+    )
+    check(
+        "the new card reuses the exact same card styling as its siblings (visual consistency, automatic Dark Mode coverage)",
+        'bg-cyan-200/40 backdrop-blur-xl border border-cyan-100/50 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5),0_4px_12px_rgba(0,0,0,0.05)] p-6 rounded-3xl">\n<h3 class="text-cyan-950/70 text-sm font-bold mb-2">⌨ Keyboard Shortcuts' in metrics_block,
+    )
+    check("the metrics grid container itself is untouched (still grid-cols-5)", "grid grid-cols-5 gap-6 mb-8" in DASHBOARD_HTML)
+
+
+def test_permanent_card_lists_only_real_implemented_shortcuts():
+    card_start = DASHBOARD_HTML.index("⌨ Keyboard Shortcuts</h3>")
+    card_end = DASHBOARD_HTML.index("</div>\n</div>\n</div>\n<!-- Actions Bar -->")
+    card_block = DASHBOARD_HTML[card_start:card_end]
+
+    for expected in ["Next email", "Previous email", "Open email", "Back", "Focus reply", "Show all shortcuts"]:
+        check(f'permanent card lists "{expected}"', expected in card_block)
+
+    check('permanent card does not invent a "d" mark-as-read entry', ">D<" not in card_block and ">d<" not in card_block)
+    check(
+        'permanent card does not invent a Send/dismiss shortcut entry',
+        "Send" not in card_block and "Dismiss" not in card_block and "No Reply" not in card_block,
+    )
+
+
+def test_help_dialog_lists_the_same_complete_shortcut_set_as_the_card():
+    dialog_start = DASHBOARD_HTML.index('id="quickKeysHelp"')
+    dialog_end = DASHBOARD_HTML.index("<!-- Floating Back button") if "<!-- Floating Back button" in DASHBOARD_HTML else DASHBOARD_HTML.index('<div class="flex items-center justify-between mb-6">')
+    dialog_block = DASHBOARD_HTML[dialog_start:dialog_end]
+
+    for expected in [
+        "Next email", "Previous email", "Open selected email",
+        "Back", "Focus reply box",
+        "Show keyboard shortcuts", "Close help",
+    ]:
+        check(f'"?" help dialog lists "{expected}"', expected in dialog_block)
+
+    check('"?" help dialog is organized into a "Navigation" section', ">Navigation<" in dialog_block)
+    check('"?" help dialog is organized into an "Email" section', ">Email<" in dialog_block)
+    check('"?" help dialog is organized into a "Help" section', ">Help<" in dialog_block)
+    check(
+        '"?" help dialog does not invent a "d" mark-as-read entry',
+        "mark as read" not in dialog_block.lower() and "mark-as-read" not in dialog_block.lower(),
+    )
+
+
+def test_existing_dashboard_components_outside_the_new_card_are_untouched():
+    for marker in [
+        'id="delete-form"', 'id="select-all"', 'id="searchInput"', 'id="filterForm"',
+        'id="tableBody"', 'name="source"', 'name="status"', 'name="priority"',
+        'name="date_from"', 'name="date_to"', "function refreshDashboard()",
+        "setInterval(refreshDashboard, 8000);", 'href="/"', 'href="/trash"',
+        'href="/compose"', 'id="delete-btn"',
+    ]:
+        check(f"dashboard.html still contains {marker!r} (unrelated component untouched)", marker in DASHBOARD_HTML)
+
+
 def test_email_detail_loads_quick_keys_and_wires_b_and_r():
     check("email_detail.html loads static/quick-keys.js", '<script src="/static/quick-keys.js"></script>' in EMAIL_DETAIL_HTML)
     check('email_detail.html binds "b"', '"b": {' in EMAIL_DETAIL_HTML)
@@ -474,6 +626,7 @@ def main():
         test_j_moves_to_the_next_row,
         test_k_moves_to_the_previous_row,
         test_jk_clamp_at_first_and_last_row_never_wrap,
+        test_wrap_around_bug_fix_after_focus_is_lost_mid_navigation,
         test_jk_with_no_prior_focus_starts_at_a_sensible_end,
         test_empty_row_list_is_a_safe_no_op,
         test_enter_and_o_open_the_same_focused_row_via_click,
@@ -484,6 +637,11 @@ def main():
         test_dashboard_rows_have_tabindex_in_both_render_paths,
         test_dashboard_focus_indicator_class_toggled_by_real_focus_events,
         test_dashboard_focus_css_defined_for_both_themes,
+        test_dashboard_source_implements_the_has_focused_before_guard,
+        test_permanent_shortcut_card_present_in_metrics_grid_fifth_slot,
+        test_permanent_card_lists_only_real_implemented_shortcuts,
+        test_help_dialog_lists_the_same_complete_shortcut_set_as_the_card,
+        test_existing_dashboard_components_outside_the_new_card_are_untouched,
         test_email_detail_loads_quick_keys_and_wires_b_and_r,
         test_b_uses_backLink_own_href_not_a_hardcoded_url,
         test_r_focuses_replyBody_only_and_cannot_send_or_modify,
