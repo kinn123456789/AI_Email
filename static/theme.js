@@ -50,6 +50,40 @@
         syncToggleButtons(theme);
     }
 
+    // Re-reads whatever is actually in storage right now and applies it -
+    // unlike the inline <head> bootstrap script (which only ever runs once,
+    // at initial document parse, and is intentionally left untouched here),
+    // this is safe to call again later in the page's life. Needed for two
+    // cases a one-time bootstrap script can never catch on its own:
+    //
+    // 1. Back/forward-cache (bfcache) restores. Returning to an already-
+    //    visited page (browser Back/Forward) can restore its exact
+    //    previous live DOM - including whatever data-theme attribute it
+    //    had *before* the user navigated away - without re-running any
+    //    <script> tag. If the theme was changed on a different page in
+    //    between, the restored page would otherwise keep showing its own
+    //    stale theme indefinitely, even though the correct preference is
+    //    already sitting in localStorage. The "pageshow" event fires on
+    //    every bfcache restore (with event.persisted === true) as well as
+    //    on a normal fresh load, so re-applying here is a safe no-op on a
+    //    fresh load and the actual fix on a bfcache restore.
+    // 2. Another already-open tab/page changing the preference. The
+    //    "storage" event fires on every other same-origin document when
+    //    localStorage changes (never on the document that made the change
+    //    itself) - this keeps a Dashboard tab left open in sync the
+    //    moment Dark Mode is toggled on an Email Detail tab, instead of
+    //    only catching up on its next full reload.
+    //
+    // Always resolves to an explicit "dark" or "light" (never leaves the
+    // attribute at a stale, no-longer-correct value) - matching
+    // currentTheme()'s own dark/light resolution, and deliberately
+    // tolerant of a since-corrupted/cleared storage value the same way
+    // the initial bootstrap script is.
+    function restoreThemeFromStorage() {
+        var stored = getStoredTheme();
+        applyTheme(stored === "dark" ? "dark" : "light");
+    }
+
     document.addEventListener("DOMContentLoaded", function () {
         // Reflects whatever the inline head script already applied before
         // first paint - never re-decides the theme itself here.
@@ -62,6 +96,18 @@
                 applyTheme(next);
                 setStoredTheme(next);
             });
+        }
+    });
+
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            restoreThemeFromStorage();
+        }
+    });
+
+    window.addEventListener("storage", function (event) {
+        if (event.key === STORAGE_KEY) {
+            restoreThemeFromStorage();
         }
     });
 })();

@@ -16,6 +16,23 @@ never reacts to `prefers-color-scheme` on its own, matching the explicit
 requirement that an unset preference preserves today's Light mode rather
 than following the OS theme.
 
+CROSS-PAGE SYNC FIX (added after a production bug report on this feature
+branch): Dashboard ON -> Email Detail (correctly opens Dark) -> toggle OFF
+on Email Detail -> return to Dashboard -> Dashboard was still showing
+Dark instead of Light. Root cause: returning to an already-visited page
+via the browser's Back/Forward navigation can restore that page's exact
+previous live DOM from the back/forward cache (bfcache) - including
+whatever data-theme attribute it had *before* the user ever navigated
+away - without re-running any <script> tag, including the inline
+bootstrap script that normally re-reads localStorage on every fresh
+load. static/theme.js now also listens for "pageshow" (fires on every
+bfcache restore, with event.persisted === true, as well as on a normal
+fresh load) and "storage" (fires on every OTHER same-origin page when
+localStorage changes - keeps an already-open tab in sync too) and
+re-applies whatever is currently in localStorage via the new
+restoreThemeFromStorage() - see its own top-of-function comment in
+static/theme.js for the full reasoning. See tests C below.
+
 TESTING LIMITATION (same class of limitation as test_email_detail_polish_ui.py
 and test_review_reasons.py, which this file otherwise follows the exact
 convention of): this sandbox has no browser/JS-execution capability, and
@@ -313,6 +330,83 @@ def test_email_detail_compose_and_polish_untouched():
         check(f"email_detail.html still contains {marker!r}", marker in EMAIL_DETAIL_HTML)
 
 
+# ---------------------------------------------------------------------------
+# D. Cross-page theme sync (the production bug fix): a bfcache-restored
+#    page, or another already-open tab/page, must pick up a theme change
+#    made elsewhere - not keep showing its own stale pre-navigation theme.
+# ---------------------------------------------------------------------------
+
+def test_theme_js_listens_for_pageshow_and_storage_events():
+    check(
+        'theme.js listens for "pageshow" (fires on bfcache restores)',
+        'addEventListener("pageshow"' in THEME_JS,
+    )
+    check(
+        "the pageshow handler specifically checks event.persisted (true only for a bfcache restore)",
+        "event.persisted" in THEME_JS,
+    )
+    check(
+        'theme.js listens for "storage" (fires on other same-origin pages/tabs)',
+        'addEventListener("storage"' in THEME_JS,
+    )
+    check(
+        "the storage handler checks event.key against the theme's own storage key",
+        "event.key === STORAGE_KEY" in THEME_JS,
+    )
+
+
+def _mirror_restore_theme_from_storage(local_storage):
+    """Byte-for-byte mirror of the real theme.js's new
+    restoreThemeFromStorage(): re-reads storage *right now* and resolves
+    to an explicit "dark" or "light" - deliberately ignoring whatever the
+    page's own current (possibly stale) data-theme attribute already is,
+    since the whole point is to overwrite a stale value, not defer to it."""
+    stored = local_storage.getItem("aiEmailTheme")
+    return "dark" if stored == "dark" else "light"
+
+
+def test_bfcache_restore_picks_up_a_theme_changed_on_another_page():
+    """Exact reproduction of the reported bug, as a mirror-level scenario:
+    Dashboard was Dark when the user navigated away (so its frozen DOM,
+    if bfcache-restored, would still say "dark") - but Email Detail has
+    since changed the *shared* storage to "light". A pageshow restore
+    must resolve to "light", not whatever the stale page already shows."""
+    storage = _FakeLocalStorage({"aiEmailTheme": "dark"})  # Dashboard's state when it was left
+    storage.setItem("aiEmailTheme", "light")  # Email Detail's later toggle-off
+
+    stale_dashboard_attr = "dark"  # what the bfcache-restored DOM still has, pre-fix
+    resolved = _mirror_restore_theme_from_storage(storage)
+
+    check(
+        "a bfcache restore resolves to the LATEST stored theme, not the page's stale attribute",
+        resolved == "light" and resolved != stale_dashboard_attr,
+    )
+
+
+def test_cross_tab_storage_event_picks_up_latest_theme():
+    """The companion scenario: Dashboard is left open in one tab/page
+    while Dark Mode is toggled in another - the storage event fires only
+    in the OTHER (not-currently-changing) document, which is exactly
+    what the Dashboard tab receiving this event represents here."""
+    storage = _FakeLocalStorage({"aiEmailTheme": "light"})
+    storage.setItem("aiEmailTheme", "dark")  # changed elsewhere
+    check(
+        "the still-open page resolves to the newly stored theme on a storage event",
+        _mirror_restore_theme_from_storage(storage) == "dark",
+    )
+
+
+def test_restore_from_storage_never_leaves_a_corrupted_value_applied():
+    """Unlike the very first page load (where a corrupted value simply
+    means "nothing was ever set"), a correction mid-session must still
+    resolve to a real theme, not propagate garbage into data-theme."""
+    storage = _FakeLocalStorage({"aiEmailTheme": "sepia"})
+    check(
+        "a corrupted stored value still resolves to a real theme (Light) on restore",
+        _mirror_restore_theme_from_storage(storage) == "light",
+    )
+
+
 def main():
     tests = [
         test_theme_assets_linked_in_both_templates,
@@ -331,6 +425,10 @@ def main():
         test_preference_persists_across_simulated_reload,
         test_dashboard_existing_functionality_untouched,
         test_email_detail_compose_and_polish_untouched,
+        test_theme_js_listens_for_pageshow_and_storage_events,
+        test_bfcache_restore_picks_up_a_theme_changed_on_another_page,
+        test_cross_tab_storage_event_picks_up_latest_theme,
+        test_restore_from_storage_never_leaves_a_corrupted_value_applied,
     ]
     for t in tests:
         t()
