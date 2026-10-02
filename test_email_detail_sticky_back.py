@@ -139,15 +139,36 @@ def test_floating_back_button_exists_hidden_with_matching_destination():
 
 
 def test_only_one_new_fixed_element_was_added():
-    """Confirms the fix didn't accidentally make any *other* existing
-    element (Sync Gmail Sent, View AI Log, or anything else) fixed/sticky
-    - the only new `fixed`-positioned element in the whole file is the
-    floating Back button itself."""
-    fixed_tags = re.findall(r'class="[^"]*\bfixed\b[^"]*"', SRC)
+    """Confirms the Sticky Back fix didn't accidentally make any *other*
+    existing element (Sync Gmail Sent, View AI Log, or anything else)
+    fixed/sticky - the floating Back button is still the only `fixed`
+    element this fix itself introduced.
+
+    This originally asserted exactly ONE `fixed` element existed in the
+    whole file. A later, separately-approved task (Quick Keys, v1.1)
+    added a second one - the keyboard-shortcuts help panel
+    (id="quickKeysHelp") - which is unrelated to this fix and has its
+    own dedicated coverage in test_quick_keys.py. Updated to check by
+    identity (the floating Back link's own id is present among the
+    fixed-positioned elements, and neither Sync Gmail Sent nor View AI
+    Log is among them) rather than by a raw count that a later,
+    legitimate addition would otherwise break."""
+    fixed_tags = re.findall(r'<[a-z]+ [^>]*class="[^"]*\bfixed\b[^"]*"[^>]*>', SRC)
     check(
-        "exactly one element in the file uses the \"fixed\" positioning class",
-        len(fixed_tags) == 1,
-        f"found {len(fixed_tags)}: {fixed_tags}",
+        "the floating Back link (#floatingBackLink) is one of the fixed-positioned elements",
+        any('id="floatingBackLink"' in tag for tag in fixed_tags),
+    )
+    check(
+        "Sync Gmail Sent is not among the fixed-positioned elements",
+        not any("sync-sent" in tag for tag in fixed_tags),
+    )
+    check(
+        "View AI Log is not among the fixed-positioned elements",
+        not any("ai-insights" in tag for tag in fixed_tags),
+    )
+    check(
+        "the header's own #backLink is not itself fixed-positioned (only the floating duplicate is)",
+        not any('id="backLink"' in tag for tag in fixed_tags),
     )
 
 

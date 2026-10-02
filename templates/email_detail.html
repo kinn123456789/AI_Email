@@ -43,6 +43,35 @@
 <body class="min-h-screen p-6 md:p-12 font-sans text-stone-700 bg-cyan-50"
       style="background: url('/static/background.png') center/cover no-repeat fixed;">
 
+    <!-- Quick Keys help panel - hidden by default, toggled by "?" (see
+         static/quick-keys.js). A proper dialog: role="dialog", aria-modal,
+         an accessible label, closable via the button below or Escape,
+         with focus returned to whatever was focused before it opened. -->
+    <div id="quickKeysHelp" role="dialog" aria-modal="true" aria-label="Keyboard shortcuts" hidden
+         class="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-cyan-200 p-6 max-w-sm w-full">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-bold text-gray-900">Keyboard Shortcuts</h2>
+                <button type="button" data-quick-keys-close aria-label="Close keyboard shortcuts help"
+                        class="text-stone-500 hover:text-stone-800 text-xl leading-none">&times;</button>
+            </div>
+            <dl class="space-y-2 text-sm text-stone-700">
+                <div class="flex items-center justify-between">
+                    <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">b</kbd></dt>
+                    <dd>Back</dd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">r</kbd></dt>
+                    <dd>Focus the reply box</dd>
+                </div>
+                <div class="flex items-center justify-between">
+                    <dt><kbd class="bg-cyan-50 border border-cyan-200 rounded px-1.5 py-0.5 font-mono text-xs">?</kbd></dt>
+                    <dd>Show this help</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+
     <!-- Floating Back button - only the Back control (not Sync Gmail Sent /
          View AI Log, which must stay exactly where they are in the header,
          never sticky) stays reachable once the header's own Back link has
@@ -565,6 +594,38 @@
     </script>
 <script src="/static/local-time.js"></script>
 <script src="/static/theme.js"></script>
+<script src="/static/quick-keys.js"></script>
+<script>
+(function () {
+    // Quick Keys (v1.1) - "b" reuses #backLink's own already-resolved
+    // href (never a second, hardcoded URL - correct for both the normal
+    // /dashboard and the contact-form /contact-dashboard case the same
+    // link already handles); "r" only ever moves focus into the existing
+    // #replyBody textarea - it never creates, edits, or sends anything.
+    // "?" opens the help panel above (wired by QuickKeys.init itself).
+    QuickKeys.init({
+        helpPanelId: "quickKeysHelp",
+        bindings: {
+            "b": {
+                handler: function () {
+                    var backLink = document.getElementById("backLink");
+                    if (backLink) {
+                        window.location.href = backLink.href;
+                    }
+                },
+            },
+            "r": {
+                handler: function () {
+                    var replyBody = document.getElementById("replyBody");
+                    if (replyBody) {
+                        replyBody.focus();
+                    }
+                },
+            },
+        },
+    });
+})();
+</script>
 </body>
 </html>
 
