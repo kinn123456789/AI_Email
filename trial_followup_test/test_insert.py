@@ -1,5 +1,6 @@
 import uuid
 from helpers import (
+    require_test_write_opt_in,
     create_auth_user,
     insert_user,
     insert_parent,
@@ -10,6 +11,15 @@ from helpers import (
     generate_parent_name,
     generate_learner_name,
 )
+
+# Fast, top-level fail before anything else runs - this script creates a
+# real Supabase auth user and real Users/Parents/Learners/Enrollments/
+# FreeTrialPass rows against whatever project is configured in the
+# current environment (config.py has no separate "test" project of its
+# own). Each helper call below also checks this independently (see
+# helpers.py's require_test_write_opt_in()), so this top-level call is
+# purely for a fast, immediate failure rather than the sole guard.
+require_test_write_opt_in()
 
 print("Creating Parent Auth User...")
 

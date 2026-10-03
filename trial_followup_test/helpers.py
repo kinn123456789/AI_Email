@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime, timezone, timedelta
 
@@ -9,10 +10,37 @@ from config import (
     TEST_PREFIX
 )
 
+# Safety guard (see test_insert.py's own top-level check for the primary,
+# fast-fail version of this) - every function below that actually writes
+# to Supabase (auth-user creation or a table insert) calls this first, so
+# the guard holds regardless of which script calls these helpers, now or
+# in the future. config.py's `supabase` client is built from the same
+# SUPABASE_URL/SUPABASE_SECRET_KEY as the rest of this app - there is no
+# separate "test" project, so this is the only thing standing between a
+# misconfigured local .env and real writes against the wrong project.
+ALLOW_TEST_SUPABASE_WRITES_ENV_VAR = "AI_EMAIL_ALLOW_TEST_SUPABASE_WRITES"
+
+
+class TestSupabaseWritesNotAllowed(RuntimeError):
+    """Raised when a Supabase-writing test helper is called without the
+    explicit opt-in env var set to exactly "true"."""
+
+
+def require_test_write_opt_in():
+    if os.environ.get(ALLOW_TEST_SUPABASE_WRITES_ENV_VAR) != "true":
+        raise TestSupabaseWritesNotAllowed(
+            "Refusing to write to Supabase: this would create a real auth "
+            "user and/or table rows against whatever Supabase project is "
+            f"configured in the current environment. Set {ALLOW_TEST_SUPABASE_WRITES_ENV_VAR}=true "
+            "to confirm you intend to run this."
+        )
+
+
 def create_auth_user(email):
     """
     Creates a Supabase Auth user.
     """
+    require_test_write_opt_in()
 
     response = supabase.auth.admin.create_user(
         {
@@ -55,6 +83,7 @@ def insert_user(user_id, name, user_type):
     Inserts into Users table.
     user_type should be ["parent"] or ["learner"]
     """
+    require_test_write_opt_in()
 
     response = (
         supabase
@@ -81,6 +110,7 @@ def insert_parent(parent_id):
     """
     Inserts into Parents table.
     """
+    require_test_write_opt_in()
 
     response = (
         supabase
@@ -102,6 +132,7 @@ def insert_learner(
     """
     Inserts into Learners table.
     """
+    require_test_write_opt_in()
 
     response = (
         supabase
@@ -122,6 +153,8 @@ def insert_learner(
 from datetime import datetime, timezone
 
 def insert_enrollment(learner_id):
+    require_test_write_opt_in()
+
     enrollment_id = str(uuid.uuid4())
 
     response = (
@@ -150,6 +183,7 @@ def insert_enrollment(learner_id):
 
     return enrollment_id
 def insert_free_trial(parent_id, enrollment_id):
+    require_test_write_opt_in()
 
     trial_id = str(uuid.uuid4())
 
