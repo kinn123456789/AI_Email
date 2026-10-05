@@ -44,7 +44,7 @@ style="background:url('/static/background.png') center/cover fixed no-repeat;">
 <div class="flex h-screen bg-white/30 backdrop-blur-xl">
 
 <!-- ================= CONVERSATIONS COLUMN ================= -->
-<div class="w-[26%] border-r border-white/30 flex flex-col h-full min-h-0">
+<div class="w-[26%] lg:w-[460px] lg:flex-shrink-0 border-r border-white/30 flex flex-col h-full min-h-0">
 
 <div class="p-3 border-b border-white/20 flex-shrink-0 flex items-center justify-between gap-2">
 <div class="font-bold text-lg text-[#0F5D7A]">Teacher Portal</div>
@@ -124,7 +124,7 @@ class="block p-3.5 border-b border-white/10 hover:bg-white/40
 {% if selected_chat == row.chat_id %}bg-white/50{% endif %}">
 <div class="flex justify-between items-start mb-1 gap-2">
 <div class="min-w-0">
-<div class="font-bold text-gray-800 text-sm truncate">Teacher: {{ row.teacher_name }}</div>
+<div class="font-bold text-gray-800 text-sm truncate">{{ row.teacher_name }}</div>
 {% if row.sender_name %}
 <div class="text-[11px] text-[#0F5D7A] font-semibold truncate">Sender: {{ row.sender_name }}</div>
 {% endif %}
