@@ -49,7 +49,7 @@ _TEACHER_FACING_LEAK_PATTERNS = re.compile(
 )
 
 from prompt_builder import (
-    SYSTEM_PROMPT,
+    build_system_prompt,
     build_user_prompt,
 )
 
@@ -142,6 +142,7 @@ def generate_reply(
             source=source,
             customer_name=customer_name,
             email_date=email_date,
+            audience=audience,
         )
 
         # Prepended, not merged into prompt_builder.py's own prompt -
@@ -193,7 +194,7 @@ def generate_reply(
             messages=[
                 {
                     "role": "system",
-                    "content": SYSTEM_PROMPT,
+                    "content": build_system_prompt(audience=audience),
                 },
                 {
                     "role": "user",

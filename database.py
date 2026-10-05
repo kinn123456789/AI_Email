@@ -1790,6 +1790,141 @@ def get_teacher_conversations(teacher_id):
         db_pool.putconn(conn)
 
 
+def get_all_teacher_conversations(
+    search=None,
+    teacher_id=None,
+    date_from=None,
+    date_to=None,
+    status=None,
+    viewer_timezone="UTC",
+):
+    """
+    Cross-teacher Teacher Portal conversation list: one row per chat_id,
+    across every teacher, ordered by latest activity - additive alongside
+    get_teacher_conversations() above (single-teacher), which is unchanged
+    and still used wherever it already was.
+
+    needs_reply follows the approved semantics: the latest message in the
+    chat was sent by the parent AND that message's reply_sent is false.
+    is_read/unread (the existing "New" badge signal) is a separate,
+    independent value and never factors into needs_reply - a message can
+    be read but still need a reply.
+
+    date_label/is_new_date_group are computed the same way get_emails()
+    computes them for the Email dashboard (viewer-timezone-aware TODAY/
+    YESTERDAY/plain-date grouping) - see _compute_date_label() above.
+    """
+
+    conn = get_connection()
+    cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+    try:
+        tz = _sanitize_timezone(viewer_timezone)
+
+        filters = ""
+        params = []
+
+        if teacher_id:
+            filters += " AND c.teacher_id = %s"
+            params.append(teacher_id)
+
+        if date_from:
+            filters += " AND cm.created_at::date >= %s"
+            params.append(date_from)
+
+        if date_to:
+            filters += " AND cm.created_at::date <= %s"
+            params.append(date_to)
+
+        if search:
+            filters += " AND (c.teacher_name ILIKE %s OR c.parent_name ILIKE %s OR cm.body ILIKE %s)"
+            like = f"%{search}%"
+            params.extend([like, like, like])
+
+        status_filter = ""
+        if status == "Needs Reply":
+            status_filter = "AND latest.needs_reply = TRUE"
+        elif status == "Replied":
+            status_filter = "AND latest.needs_reply = FALSE"
+
+        cursor.execute(
+            f"""
+            SELECT *
+            FROM (
+                SELECT DISTINCT ON (cm.chat_id)
+
+                    cm.chat_id,
+                    cm.body,
+                    cm.created_at,
+                    cm.ai_priority,
+                    cm.is_read,
+
+                    c.parent_name,
+                    c.parent_id,
+                    c.teacher_name,
+                    c.teacher_id,
+
+                    EXISTS (
+                        SELECT 1
+                        FROM conversation_messages x
+                        WHERE x.chat_id = cm.chat_id
+                          AND x.sender = c.parent_id
+                          AND x.is_read = FALSE
+                    ) AS unread,
+
+                    (
+                        cm.sender = c.parent_id
+                        AND COALESCE(cm.reply_sent, FALSE) = FALSE
+                    ) AS needs_reply,
+
+                    (cm.created_at AT TIME ZONE %s)::date AS local_date,
+                    (NOW() AT TIME ZONE %s)::date AS viewer_today
+
+                FROM conversation_messages cm
+
+                JOIN conversations c
+                  ON cm.chat_id = c.chat_id
+
+                WHERE 1=1
+                {filters}
+
+                ORDER BY
+                    cm.chat_id,
+                    cm.created_at DESC,
+                    cm.id DESC
+
+            ) latest
+
+            WHERE 1=1
+            {status_filter}
+
+            ORDER BY
+                latest.created_at DESC
+            """,
+            [tz, tz] + params,
+        )
+
+        rows = cursor.fetchall()
+
+        previous_date_label = None
+
+        for row in rows:
+            date_label = _compute_date_label(row.pop("local_date", None), row.pop("viewer_today", None))
+            row["date_label"] = date_label
+            row["is_new_date_group"] = (date_label != previous_date_label)
+            previous_date_label = date_label
+
+            if row["created_at"]:
+                row["created_at"] = row["created_at"].replace(tzinfo=timezone.utc).isoformat()
+
+        return rows
+
+    finally:
+
+        cursor.close()
+        db_pool.putconn(conn)
+
+
 def get_last_message_id(chat_id):
 
     conn = get_connection()

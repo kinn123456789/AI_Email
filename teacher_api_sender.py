@@ -1,11 +1,18 @@
-import os
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+from teacher_portal_config import (
+    get_base_url,
+    get_api_key,
+    get_timeout,
+    build_headers,
+)
 
-API_KEY = os.getenv("TEACHER_PORTAL_API_KEY")
-BASE_URL = "https://api.preprod.coralacademy.com"
+# Read once at import time, same as before - mutate these directly (e.g. in
+# tests) to override. BASE_URL now comes from TEACHER_PORTAL_BASE_URL if set,
+# defaulting to preprod exactly as before.
+API_KEY = get_api_key()
+BASE_URL = get_base_url()
+REQUEST_TIMEOUT = get_timeout(20)
 
 
 def send_teacher_reply(chat_id, teacher_id, message):
@@ -27,10 +34,7 @@ def send_teacher_reply(chat_id, teacher_id, message):
             "data": "TEACHER_PORTAL_API_KEY is not configured"
         }
 
-    headers = {
-        "x-api-key": API_KEY,
-        "Content-Type": "application/json"
-    }
+    headers = build_headers(API_KEY, extra={"Content-Type": "application/json"})
 
     payload = {
         "teacher_id": teacher_id,
@@ -54,7 +58,7 @@ def send_teacher_reply(chat_id, teacher_id, message):
             url,
             headers=headers,
             json=payload,
-            timeout=20
+            timeout=REQUEST_TIMEOUT
         )
 
         print("Status Code :", response.status_code)
@@ -90,18 +94,18 @@ def delete_teacher_message(chat_id, message_id, teacher_id):
     if not API_KEY:
         raise ValueError("TEACHER_PORTAL_API_KEY is not configured")
 
-    headers = {
-        "x-api-key": API_KEY,
-        #"Ca-Id": "a88e2aaa-a02b-40b8-9385-f26827f3820d",
-        #"Ca-Teacher-Id": teacher_id,
-        #"Origin": "https://teacher.preprod.coralacademy.com",
-        #"Website-Base-Url": "https://teacher.preprod.coralacademy.com"
-    }
+    headers = build_headers(API_KEY)
+    # Previously-trialled extra headers, left disabled - not required by the
+    # current /ai-email/* wrapper's auth:
+    # headers["Ca-Id"] = "a88e2aaa-a02b-40b8-9385-f26827f3820d"
+    # headers["Ca-Teacher-Id"] = teacher_id
+    # headers["Origin"] = "https://teacher.preprod.coralacademy.com"
+    # headers["Website-Base-Url"] = "https://teacher.preprod.coralacademy.com"
 
     response = requests.delete(
         f"{BASE_URL}/ai-email/chats/{chat_id}/messages/{message_id}?teacher_id={teacher_id}",
         headers=headers,
-        timeout=20
+        timeout=REQUEST_TIMEOUT
     )
 
     print("DELETE STATUS:", response.status_code)
@@ -113,6 +117,8 @@ def delete_teacher_message(chat_id, message_id, teacher_id):
         return response.json()
 
     return {}
+
+
 if __name__ == "__main__":
     result = send_teacher_reply(
         chat_id="0e3583ec-47ce-4fca-866c-f423bbdc3ae1",

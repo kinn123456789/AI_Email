@@ -666,6 +666,49 @@ Do not include:
 • quotation marks
 """
 
+# Appended to SYSTEM_PROMPT only for audience="teacher" (see
+# build_system_prompt() below) - every other rule in SYSTEM_PROMPT above
+# still applies in full; this only overrides the greeting/signature
+# instructions, since a Teacher Portal reply is a chat message, not an
+# email. Kept as a separate, additive block rather than editing
+# SYSTEM_PROMPT itself, so the parent/email path's system prompt stays
+# byte-for-byte unchanged.
+_TEACHER_PORTAL_OVERRIDE = """
+--------------------------------------------------
+TEACHER PORTAL OVERRIDE
+--------------------------------------------------
+
+This reply is a single Teacher Portal chat message, not an email. Every
+other rule above still applies in full (accuracy, Knowledge Base
+priority, never inventing facts/policies/dates/promises, the audience
+checks, all safety rules) - only the greeting/signature formatting
+changes:
+
+Do not start with a greeting ("Hi," or similar).
+
+Do not end with a sign-off, signature, or name of any kind.
+
+Answer directly, the way one message in an ongoing chat conversation
+reads - warm, concise, conversational, and genuinely human.
+"""
+
+
+def build_system_prompt(audience="parent"):
+    """Returns the system prompt sent to the model. For every caller that
+    doesn't pass audience="teacher" (every parent/email-facing caller
+    today - the default), this returns SYSTEM_PROMPT completely
+    unchanged. Only audience="teacher" (Teacher Portal) gets
+    _TEACHER_PORTAL_OVERRIDE appended, since Teacher Portal replies are
+    chat messages and must not carry an email-style greeting/signature.
+    Pairs with build_user_prompt()'s own audience branch, which removes
+    the YOUR GREETING/YOUR SIGNATURE sections from the user prompt for
+    the same audience - both halves change together, only for
+    audience="teacher"."""
+    if audience == "teacher":
+        return SYSTEM_PROMPT + _TEACHER_PORTAL_OVERRIDE
+    return SYSTEM_PROMPT
+
+
 ACCOUNT_DISPLAY_NAMES = {
     # These 4 keys are every `source` value the parent-facing pipeline is
     # confirmed to pass here: process_email.py's 3 monitored mailboxes
@@ -816,13 +859,48 @@ def build_user_prompt(
     source=None,
     customer_name=None,
     email_date=None,
+    audience="parent",
 ):
 
     knowledge_text = build_knowledge_section(knowledge)
     examples_text = build_examples_section(similar_emails)
-    signature_name = ACCOUNT_DISPLAY_NAMES.get(source, DEFAULT_DISPLAY_NAME)
-    greeting = f"Hi {customer_name}," if customer_name else "Hi,"
     date_received = email_date.strftime("%A, %B %d, %Y") if email_date else "Unknown"
+
+    # Teacher Portal replies are chat messages, not emails - audience is an
+    # explicit "parent" (default, unchanged) or "teacher" signal from the
+    # caller, same convention as generate_reply()'s own audience parameter.
+    # See build_system_prompt()'s matching TEACHER PORTAL OVERRIDE section
+    # for the companion system-level instruction - both halves change
+    # together, only for audience="teacher".
+    if audience == "teacher":
+        greeting_section = (
+            "TEACHER PORTAL REPLY FORMAT\n\n"
+            "This is a chat reply, not an email - do not include a "
+            "greeting or a signature/sign-off of any kind. Just answer "
+            "naturally, the way one message in an ongoing chat "
+            "conversation reads."
+        )
+        greeting_task_lines = (
+            "• Do not include a greeting.\n"
+            "• Do not include a signature or sign-off of any kind."
+        )
+        output_instruction = "Return ONLY the reply text."
+    else:
+        signature_name = ACCOUNT_DISPLAY_NAMES.get(source, DEFAULT_DISPLAY_NAME)
+        greeting = f"Hi {customer_name}," if customer_name else "Hi,"
+        greeting_section = (
+            "YOUR GREETING\n\n"
+            "Start the reply with exactly this greeting, and nothing else:\n\n"
+            f"{greeting}\n\n"
+            "YOUR SIGNATURE\n\n"
+            "Sign every reply with exactly this closing, and nothing else:\n\n"
+            f"Best regards,\n{signature_name}"
+        )
+        greeting_task_lines = (
+            "• Start with exactly one greeting, matching YOUR GREETING above.\n"
+            "• End with exactly one signature block, matching YOUR SIGNATURE above."
+        )
+        output_instruction = "Return ONLY the email body."
 
     return f"""
 CURRENT EMAIL
@@ -842,18 +920,7 @@ Subject:
 Body:
 {body}
 
-YOUR GREETING
-
-Start the reply with exactly this greeting, and nothing else:
-
-{greeting}
-
-YOUR SIGNATURE
-
-Sign every reply with exactly this closing, and nothing else:
-
-Best regards,
-{signature_name}
+{greeting_section}
 
 ==================================================
 
@@ -969,8 +1036,7 @@ Always:
 • Do not add offers, alternatives, or recommendations the customer didn't ask for.
 • Do not assume intent beyond what was actually written.
 • Close by thanking the customer.
-• Start with exactly one greeting, matching YOUR GREETING above.
-• End with exactly one signature block, matching YOUR SIGNATURE above.
+{greeting_task_lines}
 
-Return ONLY the email body.
+{output_instruction}
 """

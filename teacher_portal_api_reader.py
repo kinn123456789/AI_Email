@@ -1,24 +1,22 @@
-import os
 import requests
-from dotenv import load_dotenv
 
-load_dotenv()
+from teacher_portal_config import (
+    get_base_url,
+    get_api_key,
+    get_timeout,
+    build_headers,
+)
 
-# Read API Key from .env
-API_KEY = os.getenv("TEACHER_PORTAL_API_KEY")
-
-BASE_URL = "https://api.preprod.coralacademy.com"
+# Read once at import time, same as before - mutate these directly (e.g. in
+# tests) to override. BASE_URL now comes from TEACHER_PORTAL_BASE_URL if set,
+# defaulting to preprod exactly as before.
+API_KEY = get_api_key()
+BASE_URL = get_base_url()
+REQUEST_TIMEOUT = get_timeout(30)
 
 
 def get_headers(teacher_id=None):
-    if not API_KEY:
-        raise ValueError(
-            "TEACHER_PORTAL_API_KEY is not configured. Set it in your environment or .env file."
-        )
-
-    return {
-        "x-api-key": API_KEY,
-    }
+    return build_headers(API_KEY)
 
 
 # ----------------------------------------------------
@@ -30,7 +28,7 @@ def get_teachers():
     response = requests.get(
         f"{BASE_URL}/ai-email/teachers",
         headers=get_headers(),
-        timeout=30
+        timeout=REQUEST_TIMEOUT
     )
 
     response.raise_for_status()
@@ -49,7 +47,7 @@ def get_chats(teacher_id):
     response = requests.get(
         f"{BASE_URL}/ai-email/chats?teacher_id={teacher_id}",
         headers=get_headers(),
-        timeout=30
+        timeout=REQUEST_TIMEOUT
     )
 
     response.raise_for_status()
@@ -68,7 +66,7 @@ def get_messages(chat_id, teacher_id):
     response = requests.get(
         f"{BASE_URL}/ai-email/chats/{chat_id}/messages?teacher_id={teacher_id}&page=0",
         headers=get_headers(),
-        timeout=30
+        timeout=REQUEST_TIMEOUT
     )
 
     response.raise_for_status()

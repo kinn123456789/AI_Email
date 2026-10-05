@@ -77,6 +77,7 @@ import requests
 
 from database import (mark_email_read,get_connection,save_conversation_message,
                        get_teachers,get_teacher_conversations,
+                       get_all_teacher_conversations,
                        get_conversation,
                        get_conversation_messages,save_teacher_reply,
                        delete_conversation_message)
@@ -2139,24 +2140,38 @@ templates.env.globals["csrf_input"] = auth.csrf_input
 def teacher_inbox(
     request: Request,
     teacher_id: str = None,
-    chat_id: str = None
+    chat_id: str = None,
+    search: str = None,
+    date_from: str = None,
+    date_to: str = None,
+    status: str = None
 ):
 
     teachers = get_teachers()
     print(f"Loaded teachers: count={len(teachers)}")
 
-    conversations = []
+    # Cross-teacher list by default (teacher_id, when present, now acts as
+    # an optional filter on this same list rather than a gate that hides
+    # every other teacher's conversations - see the Teacher Portal UI
+    # redesign audit for why this replaced the old "pick a teacher first"
+    # flow).
+    t = time.time()
+    viewer_timezone = _resolve_viewer_timezone(request)
+    conversations = get_all_teacher_conversations(
+        search=search,
+        teacher_id=teacher_id,
+        date_from=date_from,
+        date_to=date_to,
+        status=status,
+        viewer_timezone=viewer_timezone
+    )
+    print(f"conversations: count={len(conversations)} elapsed={time.time() - t}")
 
     conversation = None
     messages = []
+    latest_parent_message = None
 
-    if teacher_id:
-        t = time.time()
-        conversations = get_teacher_conversations(teacher_id)
-        print("conversations:", time.time() - t)
     if chat_id:
-        t = time.time()
-
         conversation = get_conversation(chat_id)
 
         mark_conversation_read(chat_id)
@@ -2166,14 +2181,13 @@ def teacher_inbox(
         messages = get_conversation_messages(chat_id)
         print(f"messages: count={len(messages)} elapsed={time.time() - t}")
 
-        for msg in reversed(messages):
-            if msg["sender"] == conversation["parent_id"]:
-                latest_parent_message = msg
-                break
+        if conversation:
+            for msg in reversed(messages):
+                if msg["sender"] == conversation["parent_id"]:
+                    latest_parent_message = msg
+                    break
         # Message ID only - never the sender or message body.
         print(f"Latest parent message id: {latest_parent_message.get('id') if latest_parent_message else None}")
-    else:
-        latest_parent_message = None
 
     return templates.TemplateResponse(
         "teacher_inbox.html",
@@ -2185,7 +2199,11 @@ def teacher_inbox(
             "selected_chat": chat_id,
             "conversation": conversation,
             "messages": messages,
-            "latest_parent_message": latest_parent_message
+            "latest_parent_message": latest_parent_message,
+            "search_query": search,
+            "selected_date_from": date_from,
+            "selected_date_to": date_to,
+            "selected_status": status
         }
     )
 
