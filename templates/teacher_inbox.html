@@ -229,7 +229,13 @@ placeholder="Type your reply..."
 oninput="this.style.height='auto'; this.style.height=Math.max(this.scrollHeight,200)+'px';"
 class="w-full border border-white/60 bg-white/80 rounded-xl p-3 min-h-[200px] resize-y focus:ring-2 focus:ring-[#0F5D7A] outline-none text-base shadow-sm leading-relaxed mb-2">{{ latest_parent_message.ai_draft_reply }}</textarea>
 
-<div class="flex justify-end">
+<div id="polishError" class="hidden mb-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+
+<div class="flex items-center justify-between gap-2">
+<button type="button" id="polishBtn"
+class="bg-white/70 hover:bg-white/90 border border-[#0F5D7A]/40 text-[#0F5D7A] font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all">
+<span id="polishBtnLabel">✨ Polish</span>
+</button>
 <button
 type="submit"
 class="bg-[#0F5D7A] hover:bg-[#0c4c65] text-white px-5 py-2 rounded-xl font-bold text-sm shadow-md transition-all">
@@ -258,7 +264,13 @@ placeholder="Type your reply..."
 oninput="this.style.height='auto'; this.style.height=Math.max(this.scrollHeight,200)+'px';"
 class="w-full border border-white/60 bg-white/80 rounded-xl p-3 min-h-[200px] resize-y focus:ring-2 focus:ring-[#0F5D7A] outline-none text-base shadow-sm leading-relaxed mb-2"></textarea>
 
-<div class="flex justify-end">
+<div id="polishError" class="hidden mb-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2"></div>
+
+<div class="flex items-center justify-between gap-2">
+<button type="button" id="polishBtn"
+class="bg-white/70 hover:bg-white/90 border border-[#0F5D7A]/40 text-[#0F5D7A] font-bold text-sm px-4 py-2 rounded-xl shadow-sm transition-all">
+<span id="polishBtnLabel">✨ Polish</span>
+</button>
 <button
 type="submit"
 class="bg-[#0F5D7A] hover:bg-[#0c4c65] text-white px-5 py-2 rounded-xl font-bold text-sm shadow-md transition-all">
@@ -292,6 +304,101 @@ replyBox.style.height = "auto";
 replyBox.style.height = Math.max(replyBox.scrollHeight, 200) + "px";
 }
 };
+</script>
+<script>
+(function () {
+var replyBox = document.getElementById("replyBox");
+var polishBtn = document.getElementById("polishBtn");
+var polishBtnLabel = document.getElementById("polishBtnLabel");
+var polishError = document.getElementById("polishError");
+
+if (!replyBox || !polishBtn) {
+    return;
+}
+
+var polishInFlight = false;
+
+function resizeReplyBox() {
+    replyBox.style.height = "auto";
+    replyBox.style.height = Math.max(replyBox.scrollHeight, 200) + "px";
+}
+
+function hidePolishError() {
+    if (polishError) {
+        polishError.classList.add("hidden");
+        polishError.textContent = "";
+    }
+}
+
+function showPolishError(message) {
+    if (polishError) {
+        polishError.textContent = message;
+        polishError.classList.remove("hidden");
+    }
+}
+
+function setPolishing(isPolishing) {
+    polishInFlight = isPolishing;
+    polishBtn.disabled = isPolishing;
+    if (polishBtnLabel) {
+        polishBtnLabel.textContent = isPolishing ? "✨ Polishing..." : "✨ Polish";
+    }
+}
+
+polishBtn.addEventListener("click", function () {
+    if (polishInFlight) {
+        return;
+    }
+
+    // The ORIGINAL text, preserved exactly as-is if the request fails -
+    // never cleared or overwritten until a successful response arrives.
+    var originalText = replyBox.value;
+
+    if (!originalText.trim()) {
+        showPolishError("Enter some reply text before polishing.");
+        return;
+    }
+
+    hidePolishError();
+    setPolishing(true);
+
+    var csrfInput = document.querySelector('#replyForm input[name="csrf_token"]');
+    var formData = new FormData();
+    formData.append("csrf_token", csrfInput ? csrfInput.value : "");
+    formData.append("draft", originalText);
+
+    fetch("/teacher/polish-reply", {
+        method: "POST",
+        body: formData
+    })
+        .then(function (response) {
+            return response.json().catch(function () {
+                return null;
+            }).then(function (data) {
+                return { ok: response.ok, data: data };
+            });
+        })
+        .then(function (result) {
+            setPolishing(false);
+
+            var polished = result.data && typeof result.data.polished === "string"
+                ? result.data.polished.trim()
+                : "";
+
+            if (!result.ok || !polished) {
+                showPolishError("We couldn't polish this reply right now. Your original text is unchanged.");
+                return;
+            }
+
+            replyBox.value = polished;
+            resizeReplyBox();
+        })
+        .catch(function () {
+            setPolishing(false);
+            showPolishError("We couldn't polish this reply right now. Your original text is unchanged.");
+        });
+});
+})();
 </script>
 <script src="/static/local-time.js"></script>
 </body>

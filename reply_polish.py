@@ -106,7 +106,40 @@ Do not surround the answer with quotation marks.
 """
 
 
-def polish_draft(draft, llm_client=None):
+# Appended to POLISH_SYSTEM_PROMPT only for channel="teacher" (Teacher
+# Portal's /teacher/polish-reply route) - every other rule above still
+# applies in full (preserve meaning/facts/names/dates/prices/policies,
+# never invent anything, return only the polished text); this only
+# clarifies that the text being polished is a chat message, not an email,
+# so the model doesn't add an email-style greeting/signature or otherwise
+# treat it as formal correspondence. Kept as a separate, additive block
+# rather than editing POLISH_SYSTEM_PROMPT itself, so the existing email
+# Polish feature's system prompt stays byte-for-byte unchanged - same
+# pattern already used for prompt_builder.py's audience-aware fix.
+_TEACHER_POLISH_OVERRIDE = """
+--------------------------------------------------
+TEACHER PORTAL CHAT CONTEXT
+--------------------------------------------------
+
+The text you are polishing is a single Teacher Portal chat message
+between a teacher and a parent, not an email. Polish it as a natural,
+warm, concise chat reply - do not add a greeting or a signature/sign-off
+of any kind, and do not treat it as formal email correspondence.
+"""
+
+
+def build_polish_system_prompt(channel="email"):
+    """Returns the system prompt sent to the model for a polish request.
+    For every caller that doesn't pass channel="teacher" (the existing
+    email Polish feature - the default), this returns POLISH_SYSTEM_PROMPT
+    completely unchanged. Only channel="teacher" gets
+    _TEACHER_POLISH_OVERRIDE appended."""
+    if channel == "teacher":
+        return POLISH_SYSTEM_PROMPT + _TEACHER_POLISH_OVERRIDE
+    return POLISH_SYSTEM_PROMPT
+
+
+def polish_draft(draft, llm_client=None, channel="email"):
     """Sends exactly one request to OpenRouter/gpt-5-nano asking it to
     polish `draft` in place. Returns (polished_text, status), where
     status is one of:
@@ -126,6 +159,11 @@ def polish_draft(draft, llm_client=None):
     reasoning as every other LLM module in this codebase - see
     ai_classifier.ai_triage()'s docstring). Defaults to the shared
     module-level `client` when omitted.
+
+    channel is "email" (default, unchanged) or "teacher" - see
+    build_polish_system_prompt() above. Only changes which system prompt
+    is sent; the draft is still passed verbatim as its own user message
+    either way.
 
     Logging: exactly one ai_logs row is written per call, via the
     existing save_ai_log() (category="Polish"), recording model/token
@@ -148,7 +186,7 @@ def polish_draft(draft, llm_client=None):
             messages=[
                 {
                     "role": "system",
-                    "content": POLISH_SYSTEM_PROMPT,
+                    "content": build_polish_system_prompt(channel=channel),
                 },
                 {
                     "role": "user",

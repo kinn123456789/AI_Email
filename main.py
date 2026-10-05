@@ -2360,6 +2360,47 @@ def delete_message_route(
         status_code=303
     )
 
+
+@app.post("/teacher/polish-reply")
+async def polish_teacher_reply(request: Request):
+    """Teacher Portal counterpart to /email/{email_id}/polish above -
+    reuses the exact same reply_polish.polish_draft() function (same
+    OpenRouter client, same ai_logs logging, same never-raises contract),
+    passing channel="teacher" so the system prompt treats the text as a
+    chat message rather than an email (see reply_polish.py's
+    build_polish_system_prompt()). Works on whatever is CURRENTLY in the
+    reply box - the original AI draft, an edited AI draft, or a fully
+    manual message - since the caller always submits the live textarea
+    value, never something re-read from the database.
+
+    Nothing is persisted here: no conversation_messages write, no Coral
+    API call, no send - identical in spirit to the email polish route,
+    which never touches messages.ai_draft_reply/final_reply either.
+
+    Reuses AuthMiddleware's own already-parsed form (request.state.form),
+    same established reasoning as every other POST route in this app that
+    avoids a second, independent body read."""
+
+    form = request.state.form
+    draft = (form.get("draft") or "").strip()
+
+    if not draft:
+        return JSONResponse(
+            status_code=400,
+            content={"error": "Enter some reply text before polishing."}
+        )
+
+    polished, status = polish_draft(draft, channel="teacher")
+
+    if status != "ok":
+        return JSONResponse(
+            status_code=502,
+            content={"error": "Unable to polish the reply right now."}
+        )
+
+    return JSONResponse(content={"polished": polished})
+
+
 @app.post("/email/{email_id}/trash")
 def trash_email(email_id: int):
 
