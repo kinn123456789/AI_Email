@@ -1864,6 +1864,12 @@ def get_all_teacher_conversations(
                     c.teacher_name,
                     c.teacher_id,
 
+                    CASE
+                        WHEN cm.sender = c.parent_id THEN c.parent_name
+                        WHEN cm.sender = c.teacher_id THEN c.teacher_name
+                        ELSE NULL
+                    END AS sender_name,
+
                     EXISTS (
                         SELECT 1
                         FROM conversation_messages x
