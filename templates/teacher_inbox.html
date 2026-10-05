@@ -208,7 +208,7 @@ Delete
      separate side panel. Only rendered when a draft actually exists. -->
 {% if latest_parent_message and latest_parent_message.ai_draft_reply and not latest_parent_message.reply_sent %}
 <div class="flex justify-end">
-<div class="max-w-md w-full rounded-2xl px-4 py-3 shadow-sm border-2 border-dashed border-[#0F5D7A]/40 bg-[#0F5D7A]/5">
+<div class="w-full rounded-2xl px-4 py-3 shadow-sm border-2 border-dashed border-[#0F5D7A]/40 bg-[#0F5D7A]/5">
 
 <div class="flex items-center gap-1.5 mb-2 text-[11px] font-bold uppercase tracking-wide text-[#0F5D7A]">
 <span>✨ AI Draft</span>
@@ -226,7 +226,8 @@ id="replyBox"
 name="reply"
 required
 placeholder="Type your reply..."
-class="w-full border border-white/60 bg-white/80 rounded-xl p-3 h-28 resize-none focus:ring-2 focus:ring-[#0F5D7A] outline-none text-base shadow-sm leading-relaxed mb-2">{{ latest_parent_message.ai_draft_reply }}</textarea>
+oninput="this.style.height='auto'; this.style.height=Math.max(this.scrollHeight,200)+'px';"
+class="w-full border border-white/60 bg-white/80 rounded-xl p-3 min-h-[200px] resize-y focus:ring-2 focus:ring-[#0F5D7A] outline-none text-base shadow-sm leading-relaxed mb-2">{{ latest_parent_message.ai_draft_reply }}</textarea>
 
 <div class="flex justify-end">
 <button
@@ -242,7 +243,7 @@ Send Reply
 {% elif latest_parent_message and not latest_parent_message.reply_sent %}
 <!-- No AI draft yet for the latest parent message - still allow a manual reply. -->
 <div class="flex justify-end">
-<div class="max-w-md w-full rounded-2xl px-4 py-3 shadow-sm bg-white/60">
+<div class="w-full rounded-2xl px-4 py-3 shadow-sm bg-white/60">
 <form id="replyForm" action="/teacher/send-reply" method="POST">
 {{ csrf_input(request) }}
 <input type="hidden" name="chat_id" value="{{ conversation.chat_id }}">
@@ -254,7 +255,8 @@ id="replyBox"
 name="reply"
 required
 placeholder="Type your reply..."
-class="w-full border border-white/60 bg-white/80 rounded-xl p-3 h-28 resize-none focus:ring-2 focus:ring-[#0F5D7A] outline-none text-base shadow-sm leading-relaxed mb-2"></textarea>
+oninput="this.style.height='auto'; this.style.height=Math.max(this.scrollHeight,200)+'px';"
+class="w-full border border-white/60 bg-white/80 rounded-xl p-3 min-h-[200px] resize-y focus:ring-2 focus:ring-[#0F5D7A] outline-none text-base shadow-sm leading-relaxed mb-2"></textarea>
 
 <div class="flex justify-end">
 <button
@@ -283,6 +285,11 @@ window.onload = function () {
 const box = document.getElementById("messages");
 if (box) {
 box.scrollTop = box.scrollHeight;
+}
+const replyBox = document.getElementById("replyBox");
+if (replyBox) {
+replyBox.style.height = "auto";
+replyBox.style.height = Math.max(replyBox.scrollHeight, 200) + "px";
 }
 };
 </script>
