@@ -314,12 +314,9 @@ app.mount(
 
 @app.get("/")
 def home(request: Request):
-    due_followups = get_due_followups() 
     return templates.TemplateResponse(
         "home.html",
-        {"request": request,
-        "due_followups": due_followups
-        }
+        {"request": request}
     )
 
 
